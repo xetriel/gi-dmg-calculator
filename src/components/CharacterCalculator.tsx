@@ -12,7 +12,7 @@ const GROUPS: { key: StatField["group"]; label: string }[] = [
   { key: "base", label: "Base Stats" },
   { key: "combat", label: "Combat Stats" },
   { key: "advanced", label: "Advanced Stats" },
-  { key: "defense", label: "Enemy & Defense" },
+  { key: "defense", label: "Target Stats" },
 ];
 
 const REACTION_LABEL: Record<ReactionType, string> = {
@@ -25,7 +25,26 @@ const fmt = (n: number) => Math.round(n).toLocaleString();
 const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all";
 
 export function CharacterCalculator({ config, scaling }: { config: CharacterConfig; scaling: TalentScalingData }) {
-  const [stats, setStats] = useState<Record<string, string>>({});
+  const [stats, setStats] = useState<Record<string, string>>({
+    "hp.base": "15000",
+    "hp.flat": "0",
+    "atk.base": "1500",
+    "atk.flat": "0",
+    "def.base": "800",
+    "def.flat": "0",
+    "critRate": "70",
+    "critDmg": "140",
+    "dmgBonus": "46.6",
+    "em": "0",
+    "energyRecharge": "100",
+    "healingBonus": "0",
+    "dmgReduction": "0",
+    "enemyRes": "10",
+    "levelChar": "90",
+    "levelEnemy": "100",
+    "defReduction": "0",
+    "defIgnore": "0",
+  });
   const [hits, setHits] = useState<Record<string, string>>({});
   // Selected talent level per talent type; defaults to the max available level.
   const [levels, setLevels] = useState<Record<string, string>>(() => {
