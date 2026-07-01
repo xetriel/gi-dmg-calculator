@@ -73,10 +73,13 @@ function constellationStatBonuses(effects: ConstellationEffect[]): Record<string
 
 const initialStats = {
   "hp.base": "0",
+  "hp.percent": "0",
   "hp.flat": "15000",
   "atk.base": "0",
+  "atk.percent": "0",
   "atk.flat": "1500",
   "def.base": "0",
+  "def.percent": "0",
   "def.flat": "800",
   "critRate": "70",
   "critDmg": "140",
@@ -419,7 +422,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                       <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{group.label}</h2>
                       <div className="grid grid-cols-1 gap-2">
                         {fields.map(f => {
-                          const baseErr = err(`${f.key}.base`) || err(`${f.key}.flat`);
+                          const baseErr = err(`${f.key}.base`) || err(`${f.key}.flat`) || err(`${f.key}.percent`);
                           const singleErr = err(f.key);
                           return (
                             <label key={f.key} className="flex flex-col gap-1 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5 shadow-2xs transition-colors">
@@ -427,16 +430,20 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{f.label}</span>
                                 {f.hasBaseAndFlat ? (
                                   <span className="flex items-center gap-1">
-                                    <input className={inputCls(`${f.key}.base`, "w-20")} type="number" placeholder="Base"
+                                    <input className={inputCls(`${f.key}.base`, "w-16")} type="number" placeholder="Base"
                                       value={inst.stats[`${f.key}.base`] ?? ""}
                                       onChange={e => setStat(inst.id, `${f.key}.base`, e.target.value)} />
                                     <span className="text-gray-400 dark:text-gray-500">+</span>
-                                    <input className={inputCls(`${f.key}.flat`, "w-20")} type="number" placeholder="Flat"
+                                    <div className="relative">
+                                      <input className={inputCls(`${f.key}.percent`, "w-16 pr-4")} type="number" placeholder="%"
+                                        value={inst.stats[`${f.key}.percent`] ?? ""}
+                                        onChange={e => setStat(inst.id, `${f.key}.percent`, e.target.value)} />
+                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] pointer-events-none">%</span>
+                                    </div>
+                                    <span className="text-gray-400 dark:text-gray-500">+</span>
+                                    <input className={inputCls(`${f.key}.flat`, "w-16")} type="number" placeholder="Flat"
                                       value={inst.stats[`${f.key}.flat`] ?? ""}
                                       onChange={e => setStat(inst.id, `${f.key}.flat`, e.target.value)} />
-                                    <span className="w-16 text-right text-xs tabular-nums text-gray-500 dark:text-gray-400 font-medium">
-                                      = {(Number(inst.stats[`${f.key}.base`]) || 0) + (Number(inst.stats[`${f.key}.flat`]) || 0)}
-                                    </span>
                                   </span>
                                 ) : (
                                   <input className={inputCls(f.key, "w-24")} type="number"
@@ -444,6 +451,19 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                                     onChange={e => setStat(inst.id, f.key, e.target.value)} />
                                 )}
                               </span>
+                              {f.hasBaseAndFlat ? (() => {
+                                const base = Number(inst.stats[`${f.key}.base`]) || 0;
+                                const pct = Number(inst.stats[`${f.key}.percent`]) || 0;
+                                const flat = Number(inst.stats[`${f.key}.flat`]) || 0;
+                                const increment = Math.round(base * (pct / 100));
+                                const total = base + increment + flat;
+                                return (
+                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800/50 p-1.5 rounded border border-gray-200 dark:border-zinc-700/50 mt-1 select-none flex justify-between">
+                                    <span>{base} (Base) + {increment} ({pct}%) + {flat} (Flat)</span>
+                                    <span className="font-semibold text-gray-700 dark:text-gray-300">= {total} (Total)</span>
+                                  </div>
+                                );
+                              })() : null}
                               {(f.hasBaseAndFlat ? baseErr : singleErr) ? (
                                 <span className="text-xs text-red-600">{f.hasBaseAndFlat ? baseErr : singleErr}</span>
                               ) : null}

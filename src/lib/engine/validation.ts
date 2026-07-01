@@ -30,7 +30,7 @@ export function toNum(s: string | undefined): number | null {
 export function statInputIds(config: CharacterConfig): string[] {
   const ids: string[] = [];
   for (const f of config.stats) {
-    if (f.hasBaseAndFlat) ids.push(`${f.key}.base`, `${f.key}.flat`);
+    if (f.hasBaseAndFlat) ids.push(`${f.key}.base`, `${f.key}.flat`, `${f.key}.percent`);
     else ids.push(f.key);
   }
   return ids;
@@ -132,7 +132,7 @@ export function validate(
 // Resolve validated raw inputs into engine-ready numeric stats.
 export function resolveStats(raw: RawInputs): DamageStats {
   const g = (id: string) => toNum(raw.stats[id]) ?? 0;
-  const total = (key: string) => g(`${key}.base`) + g(`${key}.flat`);
+  const total = (key: string) => g(`${key}.base`) + (g(`${key}.base`) * g(`${key}.percent`) / 100) + g(`${key}.flat`);
   return {
     atk: total("atk"),
     hp: total("hp"),
