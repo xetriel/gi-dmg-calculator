@@ -40,7 +40,7 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
 
   const err = (id: string) => (attempted ? validation.errors[id] : undefined);
   const inputCls = (id: string, w: string) =>
-    `${w} border px-1 ${err(id) ? "border-red-500" : ""}`;
+    `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""}`;
 
   function onCalculate() {
     setAttempted(true);
@@ -83,19 +83,19 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
                 const baseErr = err(`${f.key}.base`) || err(`${f.key}.flat`);
                 const singleErr = err(f.key);
                 return (
-                  <label key={f.key} className="flex flex-col gap-1 rounded border p-2">
+                  <label key={f.key} className="flex flex-col gap-1 rounded-lg border border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 p-2.5 shadow-xs transition-colors">
                     <span className="flex items-center justify-between gap-3">
-                      <span className="text-sm">{f.label}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{f.label}</span>
                       {f.hasBaseAndFlat ? (
                         <span className="flex items-center gap-1">
                           <input className={inputCls(`${f.key}.base`, "w-20")} type="number" placeholder="Base"
                             value={stats[`${f.key}.base`] ?? ""}
                             onChange={e => setStat(`${f.key}.base`, e.target.value)} />
-                          <span className="text-gray-400">+</span>
+                          <span className="text-gray-400 dark:text-gray-500">+</span>
                           <input className={inputCls(`${f.key}.flat`, "w-20")} type="number" placeholder="Flat"
                             value={stats[`${f.key}.flat`] ?? ""}
                             onChange={e => setStat(`${f.key}.flat`, e.target.value)} />
-                          <span className="w-16 text-right text-sm tabular-nums text-gray-600">
+                          <span className="w-16 text-right text-sm tabular-nums text-gray-600 dark:text-gray-400 font-medium">
                             = {(Number(stats[`${f.key}.base`]) || 0) + (Number(stats[`${f.key}.flat`]) || 0)}
                           </span>
                         </span>
@@ -120,9 +120,13 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
         <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">Reaction</h2>
         {reactionOptions.length > 1 ? (
           <div className="flex flex-wrap items-center gap-3">
-            <select className="border px-2 py-1 text-sm" value={reaction}
+            <select className="border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all" value={reaction}
               onChange={e => { setReaction(e.target.value as ReactionType); setResults(null); }}>
-              {reactionOptions.map(r => <option key={r} value={r}>{REACTION_LABEL[r]}</option>)}
+              {reactionOptions.map(r => (
+                <option key={r} value={r} className="bg-white dark:bg-zinc-800 text-black dark:text-white">
+                  {REACTION_LABEL[r]}
+                </option>
+              ))}
             </select>
             {reaction !== "none" ? (
               <label className="flex items-center gap-2 text-sm">
@@ -141,7 +145,7 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onCalculate}
-          className="rounded bg-black px-4 py-2 text-sm font-medium text-white">
+          className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer">
           Calculate
         </button>
         {attempted && !validation.ok ? (
@@ -177,9 +181,9 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
                 const id = hitId(gi, hi);
                 const res = results?.[id];
                 return (
-                  <tr key={id} className="border-t">
-                    <td className="py-1 pr-2">
-                      {h.name} <span className="text-xs text-gray-400">({h.scaling.toUpperCase()})</span>
+                  <tr key={id} className="border-t border-gray-200 dark:border-zinc-800">
+                    <td className="py-1 pr-2 text-gray-700 dark:text-gray-300">
+                      {h.name} <span className="text-xs text-gray-400 dark:text-gray-500">({h.scaling.toUpperCase()})</span>
                     </td>
                     <td className="py-1 pr-2">
                       <input className={inputCls(id, "w-24")} type="number" placeholder="%"

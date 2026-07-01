@@ -31,7 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <div className="flex min-h-screen flex-col">
-          <header className="flex items-center border-b px-4 py-3">
+          <header className="flex items-center border-b border-gray-200 dark:border-zinc-800 px-4 py-3">
             <Link href="/" className="font-semibold">GI Damage Calculator</Link>
           </header>
           <div className="flex flex-1">
