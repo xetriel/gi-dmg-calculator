@@ -1,6 +1,7 @@
 // Input processing + validation for the calculator UI.
 // Works on raw string inputs so we can distinguish "empty" from "0".
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
+import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { DamageStats } from "./damage";
 
 export interface RawInputs {
@@ -39,7 +40,33 @@ export function statInputIds(config: CharacterConfig): string[] {
 
 const LEVEL_FIELDS = ["levelChar", "levelEnemy"];
 
-export function validate(config: CharacterConfig, raw: RawInputs): ValidationResult {
+// Resolve each hit's effective multiplier: the level-backed value if a talent level
+// is selected and the scaling table has a value for that hit, otherwise the manual input.
+// Returns null when neither is available (i.e. the hit is not yet filled).
+export function resolveHitMultipliers(
+  config: CharacterConfig,
+  scaling: TalentScalingData,
+  levels: Record<string, string>,
+  manualHits: Record<string, string>,
+): Record<string, number | null> {
+  const out: Record<string, number | null> = {};
+  config.talents.forEach((g, gi) => {
+    const s = scaling[g.type];
+    const lvl = s ? Number(levels[g.type]) : NaN;
+    g.hits.forEach((h, hi) => {
+      const id = hitId(gi, hi);
+      const levelVal = s && lvl ? s.byLevel[lvl]?.[h.key] : undefined;
+      out[id] = levelVal != null ? levelVal : toNum(manualHits[id] ?? "");
+    });
+  });
+  return out;
+}
+
+export function validate(
+  config: CharacterConfig,
+  raw: RawInputs,
+  resolvedHits: Record<string, number | null>,
+): ValidationResult {
   const errors: Record<string, string> = {};
   const general: string[] = [];
 
@@ -54,11 +81,12 @@ export function validate(config: CharacterConfig, raw: RawInputs): ValidationRes
     if (v !== null && !(v > 0 && v <= 100)) errors[lvl] = "Must be 0 < level ≤ 100";
   }
 
-  // Every talent-hit multiplier must be filled.
+  // Every talent hit must resolve to a multiplier (from its talent level or manual input).
   config.talents.forEach((g, gi) =>
     g.hits.forEach((_h, hi) => {
       const id = hitId(gi, hi);
-      if (toNum(raw.hits[id]) === null) errors[id] = "Required";
+      const m = resolvedHits[id];
+      if (m == null || !Number.isFinite(m)) errors[id] = "Required";
     }),
   );
 

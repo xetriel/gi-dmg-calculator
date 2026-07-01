@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
 import type { CharacterConfig, ReactionType, StatField } from "@/data/registry/types";
+import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, type HitResult } from "@/lib/engine/damage";
-import { validate, resolveStats, hitId, type RawInputs } from "@/lib/engine/validation";
+import { validate, resolveStats, resolveHitMultipliers, hitId, type RawInputs } from "@/lib/engine/validation";
 
 // Excel-style stat panel wired to the pure damage engine.
-// Fill every field, pick a reaction (where available), then Calculate to see
-// each talent hit's Non-Crit / CRIT / Average damage.
+// Fill every field, pick a talent level (where data exists) or type a multiplier,
+// choose a reaction, then Calculate to see each hit's Non-Crit / CRIT / Average damage.
 const GROUPS: { key: StatField["group"]; label: string }[] = [
   { key: "base", label: "Base Stats" },
   { key: "combat", label: "Combat Stats" },
@@ -21,10 +22,20 @@ const REACTION_LABEL: Record<ReactionType, string> = {
 };
 
 const fmt = (n: number) => Math.round(n).toLocaleString();
+const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all";
 
-export function CharacterCalculator({ config }: { config: CharacterConfig }) {
+export function CharacterCalculator({ config, scaling }: { config: CharacterConfig; scaling: TalentScalingData }) {
   const [stats, setStats] = useState<Record<string, string>>({});
   const [hits, setHits] = useState<Record<string, string>>({});
+  // Selected talent level per talent type; defaults to the max available level.
+  const [levels, setLevels] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const g of config.talents) {
+      const s = scaling[g.type];
+      if (s && s.levels.length) init[g.type] = String(s.levels[s.levels.length - 1]);
+    }
+    return init;
+  });
   const [reaction, setReaction] = useState<ReactionType>("none");
   const [reactionBonus, setReactionBonus] = useState<string>("");
   const [results, setResults] = useState<Record<string, HitResult> | null>(null);
@@ -32,11 +43,13 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
 
   const reactionOptions = availableReactions(config.element);
   const raw: RawInputs = { stats, hits, reaction, reactionBonus };
-  const validation = validate(config, raw);
+  const resolved = resolveHitMultipliers(config, scaling, levels, hits);
+  const validation = validate(config, raw, resolved);
 
   // Editing anything invalidates the last calculation so stale numbers never linger.
   const setStat = (id: string, v: string) => { setStats(s => ({ ...s, [id]: v })); setResults(null); };
   const setHit = (id: string, v: string) => { setHits(s => ({ ...s, [id]: v })); setResults(null); };
+  const setLevel = (type: string, v: string) => { setLevels(s => ({ ...s, [type]: v })); setResults(null); };
 
   const err = (id: string) => (attempted ? validation.errors[id] : undefined);
   const inputCls = (id: string, w: string) =>
@@ -51,7 +64,7 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
       g.hits.forEach((h, hi) => {
         const id = hitId(gi, hi);
         out[id] = computeHit(s, {
-          multiplier: Number(hits[id]),
+          multiplier: resolved[id] ?? 0,
           scaling: h.scaling,
           element: config.element,
           reaction,
@@ -120,7 +133,7 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
         <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">Reaction</h2>
         {reactionOptions.length > 1 ? (
           <div className="flex flex-wrap items-center gap-3">
-            <select className="border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all" value={reaction}
+            <select className={selectCls} value={reaction}
               onChange={e => { setReaction(e.target.value as ReactionType); setResults(null); }}>
               {reactionOptions.map(r => (
                 <option key={r} value={r} className="bg-white dark:bg-zinc-800 text-black dark:text-white">
@@ -159,51 +172,74 @@ export function CharacterCalculator({ config }: { config: CharacterConfig }) {
         <p key={g} className="mb-2 text-sm text-amber-600">{g}</p>
       ))}
 
-      {config.talents.map((g, gi) => (
-        <section key={g.name} className="mt-4">
-          <h2 className="font-medium">{g.name}</h2>
-          <table className="mt-1 w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
-                <th className="py-1 font-normal">Hit</th>
-                <th className="py-1 font-normal">Multiplier %</th>
-                {results ? (
-                  <>
-                    <th className="py-1 pl-4 text-right font-normal">Non-Crit</th>
-                    <th className="py-1 pl-4 text-right font-normal">CRIT</th>
-                    <th className="py-1 pl-4 text-right font-normal">Average</th>
-                  </>
-                ) : null}
-              </tr>
-            </thead>
-            <tbody>
-              {g.hits.map((h, hi) => {
-                const id = hitId(gi, hi);
-                const res = results?.[id];
-                return (
-                  <tr key={id} className="border-t border-gray-200 dark:border-zinc-800">
-                    <td className="py-1 pr-2 text-gray-700 dark:text-gray-300">
-                      {h.name} <span className="text-xs text-gray-400 dark:text-gray-500">({h.scaling.toUpperCase()})</span>
-                    </td>
-                    <td className="py-1 pr-2">
-                      <input className={inputCls(id, "w-24")} type="number" placeholder="%"
-                        value={hits[id] ?? ""} onChange={e => setHit(id, e.target.value)} />
-                      {err(id) ? <span className="ml-2 text-xs text-red-600">{err(id)}</span> : null}
-                    </td>
-                    {results ? (
-                      <>
-                        <td className="py-1 pl-4 text-right tabular-nums">{res ? fmt(res.nonCrit) : "—"}</td>
-                        <td className="py-1 pl-4 text-right tabular-nums">{res ? fmt(res.crit) : "—"}</td>
-                        <td className="py-1 pl-4 text-right tabular-nums font-medium">{res ? fmt(res.avg) : "—"}</td>
-                      </>
-                    ) : null}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      ))}
+      {config.talents.map((g, gi) => {
+        const s = scaling[g.type];
+        const selLevel = s ? Number(levels[g.type]) : NaN;
+        return (
+          <section key={g.name} className="mt-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-medium">{g.name}</h2>
+              {s && s.levels.length ? (
+                <label className="flex items-center gap-2 text-xs text-gray-500">
+                  Talent Lv.
+                  <select className={selectCls} value={levels[g.type] ?? ""}
+                    onChange={e => setLevel(g.type, e.target.value)}>
+                    {s.levels.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+            <table className="mt-1 w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
+                  <th className="py-1 font-normal">Hit</th>
+                  <th className="py-1 font-normal">Multiplier %</th>
+                  {results ? (
+                    <>
+                      <th className="py-1 pl-4 text-right font-normal">Non-Crit</th>
+                      <th className="py-1 pl-4 text-right font-normal">CRIT</th>
+                      <th className="py-1 pl-4 text-right font-normal">Average</th>
+                    </>
+                  ) : null}
+                </tr>
+              </thead>
+              <tbody>
+                {g.hits.map((h, hi) => {
+                  const id = hitId(gi, hi);
+                  const res = results?.[id];
+                  const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
+                  return (
+                    <tr key={id} className="border-t border-gray-200 dark:border-zinc-800">
+                      <td className="py-1 pr-2 text-gray-700 dark:text-gray-300">
+                        {h.name} <span className="text-xs text-gray-400 dark:text-gray-500">({h.scaling.toUpperCase()})</span>
+                      </td>
+                      <td className="py-1 pr-2">
+                        {levelVal != null ? (
+                          <span className="inline-block w-24 tabular-nums text-gray-700 dark:text-gray-300"
+                            title={`Talent Lv. ${selLevel}`}>{levelVal}</span>
+                        ) : (
+                          <>
+                            <input className={inputCls(id, "w-24")} type="number" placeholder="%"
+                              value={hits[id] ?? ""} onChange={e => setHit(id, e.target.value)} />
+                            {err(id) ? <span className="ml-2 text-xs text-red-600">{err(id)}</span> : null}
+                          </>
+                        )}
+                      </td>
+                      {results ? (
+                        <>
+                          <td className="py-1 pl-4 text-right tabular-nums">{res ? fmt(res.nonCrit) : "—"}</td>
+                          <td className="py-1 pl-4 text-right tabular-nums">{res ? fmt(res.crit) : "—"}</td>
+                          <td className="py-1 pl-4 text-right tabular-nums font-medium">{res ? fmt(res.avg) : "—"}</td>
+                        </>
+                      ) : null}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        );
+      })}
 
       {config.mechanics?.length ? (
         <section className="mt-4">
