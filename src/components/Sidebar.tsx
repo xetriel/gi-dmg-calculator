@@ -7,7 +7,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="w-60 shrink-0 border-r border-gray-200 dark:border-zinc-800 p-3 space-y-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-sm">
+    <nav className="w-60 shrink-0 border-r border-gray-200 dark:border-zinc-800 p-3 space-y-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-sm h-full overflow-y-auto">
       <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Character Calculators</p>
       {CHARACTERS.map(c => {
         const href = `/characters/${c.id}`;

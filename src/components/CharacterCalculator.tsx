@@ -26,12 +26,12 @@ const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black
 
 export function CharacterCalculator({ config, scaling }: { config: CharacterConfig; scaling: TalentScalingData }) {
   const [stats, setStats] = useState<Record<string, string>>({
-    "hp.base": "15000",
-    "hp.flat": "0",
-    "atk.base": "1500",
-    "atk.flat": "0",
-    "def.base": "800",
-    "def.flat": "0",
+    "hp.base": "0",
+    "hp.flat": "15000",
+    "atk.base": "0",
+    "atk.flat": "1500",
+    "def.base": "0",
+    "def.flat": "800",
     "critRate": "70",
     "critDmg": "140",
     "dmgBonus": "46.6",
