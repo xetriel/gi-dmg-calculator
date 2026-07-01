@@ -2,6 +2,9 @@ export type ScalingSource = "atk" | "hp" | "def" | "em";
 export type Element = "Pyro" | "Hydro" | "Electro" | "Cryo" | "Anemo" | "Geo" | "Dendro";
 export type Weapon = "Sword" | "Claymore" | "Polearm" | "Catalyst" | "Bow";
 
+// Amplifying reactions supported by the engine (v1). "none" = no reaction.
+export type ReactionType = "none" | "vaporize" | "melt";
+
 export type StatKey =
   | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge"
   | "dmgBonus" | "healingBonus" | "dmgReduction" | "enemyRes"
@@ -16,7 +19,11 @@ export interface StatField {
   derived?: boolean;                     // RES/Level/Defense multipliers are computed, not typed
 }
 
-export interface TalentGroup { name: string; hits: string[]; }
+// A single damage instance within a talent. `scaling` is the stat this hit's
+// multiplier applies to — it is per-hit because a character's hits can scale off
+// different stats (e.g. Neuvillette's basic NA scale on ATK, his HP hits on Max HP).
+export interface TalentHit { name: string; scaling: ScalingSource; }
+export interface TalentGroup { name: string; hits: TalentHit[]; }
 
 export interface CharacterConfig {
   id: string;
