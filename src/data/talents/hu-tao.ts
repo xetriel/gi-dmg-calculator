@@ -11,7 +11,7 @@ export const huTaoSeed: CharacterTalentSeed = {
     { hitKey: "2-hit", talentType: "normal", values: [48.25, 51.54, 54.83, 59.22, 62.51, 66.35, 71.28, 76.22, 81.15, 86.09, 91.02] },
     { hitKey: "3-hit", talentType: "normal", values: [61.05, 65.21, 69.38, 74.92, 79.09, 83.94, 90.19, 96.43, 102.68, 108.92, 115.16] },
     { hitKey: "4-hit", talentType: "normal", values: [65.64, 70.12, 74.59, 80.56, 85.03, 90.26, 96.97, 103.68, 110.40, 117.11, 123.82] },
-    { hitKey: "5-hit", talentType: "normal", values: [33.27] },
+    { hitKey: "5-hit", talentType: "normal", values: [65.64, 70.12, 74.59, 80.56, 85.03, 90.26, 96.97, 103.68, 110.40, 117.11, 123.82] },
     { hitKey: "6-hit", talentType: "normal", values: [85.96, 91.82, 97.68, 105.49, 111.36, 118.19, 126.98, 135.78, 144.57, 153.36, 162.15] },
     { hitKey: "charged", talentType: "normal", values: [135.96, 145.23, 154.50, 166.86, 176.13, 186.94, 200.85, 214.75, 228.66, 242.56, 256.47] },
     { hitKey: "plunge", talentType: "normal", values: [65.42, 69.88, 74.34, 80.29, 84.75, 89.95, 96.64, 103.33, 110.02, 116.71, 123.40] },
