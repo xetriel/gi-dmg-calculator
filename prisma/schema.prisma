@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Build {
+  id          String     @id @default(cuid())
+  name        String
+  characterId String
+  data        Json
+  enemy       Json
+  notes       String?    @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  rotations   Rotation[]
+
+  @@index([characterId])
+}
+
+model Rotation {
+  id        String   @id @default(cuid())
+  name      String
+  buildId   String
+  build     Build    @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  steps     Json
+  totalTime Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([buildId])
+}
