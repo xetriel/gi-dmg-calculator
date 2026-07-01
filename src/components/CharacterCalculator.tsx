@@ -110,7 +110,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
         return (
           <section key={group.key} className="mb-4">
             <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">{group.label}</h2>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 max-w-md">
               {fields.map(f => {
                 const baseErr = err(`${f.key}.base`) || err(`${f.key}.flat`);
                 const singleErr = err(f.key);
