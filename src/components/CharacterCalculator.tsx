@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import type { CharacterConfig, ReactionType, StatField } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType, StatField, ConstellationEffect } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
-import { computeHit, availableReactions, type HitResult } from "@/lib/engine/damage";
+import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, hitId, type RawInputs } from "@/lib/engine/validation";
 
 // Excel-style stat panel wired to the pure damage engine.
@@ -33,6 +33,42 @@ interface CalcInstance {
   reactionBonus: string;
   results: Record<string, HitResult> | null;
   attempted: boolean;
+  constellationLevel: number;
+}
+
+// Collect all active constellation effects up to the given level.
+function activeEffects(config: CharacterConfig, level: number): ConstellationEffect[] {
+  if (!config.constellations) return [];
+  return config.constellations
+    .filter(c => c.level <= level)
+    .flatMap(c => c.effects);
+}
+
+// Compute flat DMG bonus for a specific hit key from constellation effects.
+function constellationFlatBonus(
+  effects: ConstellationEffect[],
+  hitKey: string,
+  stats: DamageStats,
+): number {
+  let bonus = 0;
+  for (const e of effects) {
+    if (e.type === "flat_dmg_bonus" && e.affectedHitKeys?.includes(hitKey)) {
+      const base = e.bonusScaling ? scalingTotal(stats, e.bonusScaling) : 0;
+      bonus += base * (e.bonusPercent ?? 0) / 100;
+    }
+  }
+  return bonus;
+}
+
+// Compute stat bonuses from constellation effects.
+function constellationStatBonuses(effects: ConstellationEffect[]): Record<string, number> {
+  const bonuses: Record<string, number> = {};
+  for (const e of effects) {
+    if (e.type === "stat_bonus" && e.statKey) {
+      bonuses[e.statKey] = (bonuses[e.statKey] ?? 0) + (e.statValue ?? 0);
+    }
+  }
+  return bonuses;
 }
 
 const initialStats = {
@@ -72,6 +108,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
       reactionBonus: "",
       results: null,
       attempted: false,
+      constellationLevel: 0,
     };
   };
 
@@ -94,6 +131,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
       reactionBonus: last.reactionBonus,
       results: last.results,
       attempted: last.attempted,
+      constellationLevel: last.constellationLevel,
     };
     setInstances(s => [...s, newInst]);
     setNextId(n => n + 1);
@@ -177,22 +215,30 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
       prev.map(inst => {
         if (inst.id !== instId) return inst;
         const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
-        const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits);
+        const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
         const validation = validate(config, raw, resolved);
         if (!validation.ok) {
           return { ...inst, attempted: true, results: null };
         }
         const s = resolveStats(raw);
+        // Apply constellation stat bonuses (e.g. C6 +100% CRIT Rate)
+        const effects = activeEffects(config, inst.constellationLevel);
+        const statBonuses = constellationStatBonuses(effects);
+        for (const [key, val] of Object.entries(statBonuses)) {
+          if (key in s) (s as unknown as Record<string, number>)[key] += val;
+        }
         const out: Record<string, HitResult> = {};
         config.talents.forEach((g, gi) =>
           g.hits.forEach((h, hi) => {
             const id = hitId(gi, hi);
+            const flatBonus = constellationFlatBonus(effects, h.key, s);
             out[id] = computeHit(s, {
               multiplier: resolved[id] ?? 0,
               scaling: h.scaling,
               element: config.element,
               reaction: inst.reaction,
               reactionBonusPct: Number(inst.reactionBonus || 0),
+              flatDmgBonus: flatBonus || undefined,
             });
           }),
         );
@@ -263,12 +309,34 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
         </div>
       ) : null}
 
+      {/* Wiki Talent Descriptions at page level */}
+      {showExtraInfo && config.wikiTalents?.length ? (
+        <div className="mb-6 shrink-0 border-b border-gray-200 dark:border-zinc-800 pb-6 text-xs max-w-4xl">
+          <h3 className="font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 text-[10px]">Wiki Talent Descriptions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/40 dark:bg-zinc-950/20 border border-gray-150 dark:border-zinc-850 p-5 rounded-xl shadow-2xs">
+            {config.wikiTalents.map(t => (
+              <div key={t.name} className="space-y-1">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                  <span>{t.name}</span>
+                  <span className="text-[9px] bg-zinc-200 dark:bg-zinc-300 text-black dark:text-zinc-950 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
+                    {t.type}
+                  </span>
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-xs">
+                  {t.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex-1 overflow-x-auto pb-4">
         <div className="flex gap-6 items-start">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
             const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
-            const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits);
+            const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
             const validation = validate(config, raw, resolved);
 
             const err = (id: string) => (inst.attempted ? validation.errors[id] : undefined);
@@ -304,6 +372,44 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                     </button>
                   )}
                 </div>
+
+                {/* Constellation selector */}
+                {config.constellations?.length ? (
+                  <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
+                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Constellation</h2>
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3, 4, 5, 6].map(lvl => {
+                        const active = inst.constellationLevel >= lvl;
+                        const isInfo = lvl > 0 && config.constellations!.find(c => c.level === lvl)?.effects.every(e => e.type === "informational");
+                        return (
+                          <button
+                            key={lvl}
+                            onClick={() => updateInstance(inst.id, () => ({ constellationLevel: inst.constellationLevel === lvl ? lvl - 1 : lvl }))}
+                            title={lvl === 0 ? "No constellation" : `C${lvl}: ${config.constellations!.find(c => c.level === lvl)?.name ?? ""}`}
+                            className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-all border ${
+                              active
+                                ? isInfo
+                                  ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500"
+                                  : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
+                                : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
+                            }`}
+                          >
+                            C{lvl}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {inst.constellationLevel > 0 && (
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 leading-snug">
+                        {config.constellations!.filter(c => c.level <= inst.constellationLevel).map(c =>
+                          <span key={c.level} className="block">
+                            <span className="font-semibold">C{c.level}</span>: {c.name} — {c.description}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                ) : null}
 
                 {GROUPS.map(group => {
                   const fields = config.stats.filter(f => f.group === group.key);

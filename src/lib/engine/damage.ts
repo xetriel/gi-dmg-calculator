@@ -25,6 +25,7 @@ export interface HitInput {
   element: Element;           // trigger element (for reaction base multiplier)
   reaction: ReactionType;
   reactionBonusPct: number;   // extra reaction bonus %, e.g. from artifacts/talents
+  flatDmgBonus?: number;      // additive flat DMG (e.g. C2 Blood Blossom: 10% Max HP)
 }
 
 export interface HitResult {
@@ -98,7 +99,8 @@ export function amplifyingMultiplier(
 }
 
 export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
-  const base = (hit.multiplier / 100) * scalingTotal(stats, hit.scaling);
+  const base = (hit.multiplier / 100) * scalingTotal(stats, hit.scaling)
+    + (hit.flatDmgBonus ?? 0);
   const nonCrit =
     base *
     dmgBonusMultiplier(stats) *

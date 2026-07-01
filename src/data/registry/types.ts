@@ -29,6 +29,47 @@ export interface StatField {
 export interface TalentHit { key: string; name: string; scaling: ScalingSource; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
+export interface WikiTalent {
+  name: string;
+  type: string;
+  description: string;
+}
+
+export interface ConstellationEffect {
+  /** Which stat or mechanic this constellation modifies */
+  type:
+    | "talent_level_bonus"   // C3/C5: +3 to skill or burst level
+    | "flat_dmg_bonus"       // C2: adds flat DMG based on a stat
+    | "stat_bonus"           // C6: adds to critRate, etc.
+    | "informational";       // C1/C4: no engine effect, display only
+
+  /** For talent_level_bonus: which talent type gets +3 */
+  talentType?: TalentType;
+
+  /** For flat_dmg_bonus: which hit keys receive the bonus */
+  affectedHitKeys?: string[];
+
+  /** For flat_dmg_bonus: the scaling source for the bonus (e.g. "hp") */
+  bonusScaling?: ScalingSource;
+
+  /** For flat_dmg_bonus: the percentage of the scaling stat (e.g. 10 for 10% Max HP) */
+  bonusPercent?: number;
+
+  /** For stat_bonus: which stat key and how much */
+  statKey?: string;
+  statValue?: number;
+
+  /** Human-readable condition (displayed in UI) */
+  condition?: string;
+}
+
+export interface Constellation {
+  level: number;          // 1–6
+  name: string;
+  description: string;
+  effects: ConstellationEffect[];
+}
+
 export interface CharacterConfig {
   id: string;
   name: string;
@@ -43,4 +84,7 @@ export interface CharacterConfig {
   mechanics?: string[];
   panels?: string[];
   notes?: string[];
+  wikiTalents?: WikiTalent[];
+  constellations?: Constellation[];
 }
+

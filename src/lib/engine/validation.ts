@@ -1,6 +1,4 @@
-// Input processing + validation for the calculator UI.
-// Works on raw string inputs so we can distinguish "empty" from "0".
-import type { CharacterConfig, ReactionType } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType, Constellation } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { DamageStats } from "./damage";
 
@@ -40,6 +38,25 @@ export function statInputIds(config: CharacterConfig): string[] {
 
 const LEVEL_FIELDS = ["levelChar", "levelEnemy"];
 
+// Compute the talent level bonus from active constellations.
+// Returns a map of TalentType -> bonus (e.g. { skill: 3, burst: 3 }).
+function talentLevelBonuses(
+  constellations: Constellation[] | undefined,
+  constellationLevel: number,
+): Record<string, number> {
+  const bonuses: Record<string, number> = {};
+  if (!constellations) return bonuses;
+  for (const c of constellations) {
+    if (c.level > constellationLevel) continue;
+    for (const e of c.effects) {
+      if (e.type === "talent_level_bonus" && e.talentType) {
+        bonuses[e.talentType] = (bonuses[e.talentType] ?? 0) + 3;
+      }
+    }
+  }
+  return bonuses;
+}
+
 // Resolve each hit's effective multiplier: the level-backed value if a talent level
 // is selected and the scaling table has a value for that hit, otherwise the manual input.
 // Returns null when neither is available (i.e. the hit is not yet filled).
@@ -48,14 +65,21 @@ export function resolveHitMultipliers(
   scaling: TalentScalingData,
   levels: Record<string, string>,
   manualHits: Record<string, string>,
+  constellationLevel: number = 0,
 ): Record<string, number | null> {
   const out: Record<string, number | null> = {};
+  const lvlBonuses = talentLevelBonuses(config.constellations, constellationLevel);
   config.talents.forEach((g, gi) => {
     const s = scaling[g.type];
-    const lvl = s ? Number(levels[g.type]) : NaN;
+    const baseLvl = s ? Number(levels[g.type]) : NaN;
+    const bonus = lvlBonuses[g.type] ?? 0;
+    const effectiveLvl = baseLvl ? baseLvl + bonus : NaN;
+    // Cap at the max level available in the scaling data.
+    const maxLvl = s ? Math.max(...s.levels) : 0;
+    const cappedLvl = effectiveLvl > maxLvl ? maxLvl : effectiveLvl;
     g.hits.forEach((h, hi) => {
       const id = hitId(gi, hi);
-      const levelVal = s && lvl ? s.byLevel[lvl]?.[h.key] : undefined;
+      const levelVal = s && cappedLvl ? s.byLevel[cappedLvl]?.[h.key] : undefined;
       out[id] = levelVal != null ? levelVal : toNum(manualHits[id] ?? "");
     });
   });
