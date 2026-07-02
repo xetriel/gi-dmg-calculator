@@ -9,6 +9,7 @@ import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
 import { saveBuildForCharacter } from "@/app/builds/actions";
+import { encodeBuild } from "@/lib/engine/share";
 
 // Excel-style stat panel wired to the pure damage engine.
 // Fill every field, pick a talent level (where data exists) or type a multiplier,
@@ -151,10 +152,12 @@ export function CharacterCalculator({
   config,
   scaling,
   initialBuild,
+  isSharedBuild = false,
 }: {
   config: CharacterConfig;
   scaling: TalentScalingData;
-  initialBuild?: { id: string; name: string; data: unknown } | null;
+  initialBuild?: { data: unknown } | null;
+  isSharedBuild?: boolean;
 }) {
   const createInitialInstance = (id: string): CalcInstance => {
     const initLevels: Record<string, string> = {};
@@ -324,6 +327,58 @@ export function CharacterCalculator({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const [showSharedBanner, setShowSharedBanner] = useState(isSharedBuild);
+
+  const shareBuild = () => {
+    const payload = { instances, rotations, activeRotationId };
+    const encoded = encodeBuild(payload);
+    if (!encoded) return;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encoded}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setSaveStatus("Copied share link!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    }).catch((err) => {
+      console.error(err);
+      setSaveStatus("Failed to copy link");
+      setTimeout(() => setSaveStatus(null), 3000);
+    });
+  };
+
+  const exportBuild = () => {
+    const payload = { instances, rotations, activeRotationId };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gi_calculator_${config.id}_build.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSaveStatus("Exported build!");
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const importBuild = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        const hydratedData = hydrateFromBuild(data);
+        setInstances(hydratedData.instances);
+        setRotations(hydratedData.rotations);
+        setActiveRotationId(hydratedData.activeRotationId);
+        setSaveStatus("Imported build!");
+        setTimeout(() => setSaveStatus(null), 3000);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to parse JSON file. Please make sure it's a valid calculator build export.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ""; // Clear input selection so same file can be re-imported
   };
 
   const addRotation = () => {
@@ -623,7 +678,7 @@ export function CharacterCalculator({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {saveStatus && (
-            <span className="text-xs text-gray-500 font-medium animate-pulse">
+            <span className="text-xs text-gray-500 font-medium animate-pulse mr-2">
               {saveStatus}
             </span>
           )}
@@ -637,6 +692,34 @@ export function CharacterCalculator({
                 {rotations.length}
               </span>
             )}
+          </button>
+          <button
+            onClick={shareBuild}
+            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
+            title="Copy shareable link containing current configuration to clipboard"
+          >
+            🔗 Share
+          </button>
+          <button
+            onClick={exportBuild}
+            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
+            title="Export configuration as local JSON file"
+          >
+            📤 Export
+          </button>
+          <input
+            id="json-import-input"
+            type="file"
+            accept=".json"
+            onChange={importBuild}
+            className="hidden"
+          />
+          <button
+            onClick={() => document.getElementById("json-import-input")?.click()}
+            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
+            title="Import configuration from local JSON file"
+          >
+            📥 Import
           </button>
           <button
             onClick={saveChanges}
@@ -658,6 +741,24 @@ export function CharacterCalculator({
           </button>
         </div>
       </header>
+
+      {/* Shared Build Banner */}
+      {showSharedBanner && (
+        <div className="mb-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-3.5 flex items-center justify-between text-xs font-semibold shrink-0">
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>You are viewing a shared build. Save Changes to save this configuration to your local character build list.</span>
+          </span>
+          <button
+            onClick={() => setShowSharedBanner(false)}
+            className="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 cursor-pointer px-2 py-0.5 rounded hover:bg-amber-500/10 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Special Mechanics, Panels, Notes at page level */}
       {showExtraInfo && (config.mechanics?.length || config.panels?.length || config.notes?.length) ? (
