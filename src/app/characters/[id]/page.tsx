@@ -40,7 +40,7 @@ export default async function Page({
   if (!config) return <p>Unknown character.</p>;
   const scaling = await loadScaling(id);
 
-  let initialBuildData: any = null;
+  let initialBuildData: unknown = null;
   let isShared = false;
 
   if (typeof sParams.share === "string") {

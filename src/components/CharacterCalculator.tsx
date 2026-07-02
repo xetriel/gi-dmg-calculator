@@ -948,6 +948,9 @@ export function CharacterCalculator({
           critDmgBonusPct: mods.critDmgBonusPct,
           critRateBonusPct: mods.critRateBonusPct,
           bonusDmgPct: mods.bonusDmgPct,
+          // Stellar-flagged hits always use the stellar branch; the resolver supplies
+          // the params (fallback: neutral coefficients).
+          stellar: h.stellar ? mods.stellar ?? { brc: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
         });
       }),
     );
@@ -981,7 +984,7 @@ export function CharacterCalculator({
           total += val;
           return val;
         } else {
-          let hitConfig: { key: string; scaling: ScalingSource } | null = null;
+          let hitConfig: { key: string; scaling: ScalingSource; stellar?: boolean } | null = null;
           for (let gi = 0; gi < config.talents.length; gi++) {
             for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
               if (hitId(gi, hi) === step.targetHitId) {
@@ -1005,6 +1008,7 @@ export function CharacterCalculator({
             critDmgBonusPct: mods.critDmgBonusPct,
             critRateBonusPct: mods.critRateBonusPct,
             bonusDmgPct: mods.bonusDmgPct,
+            stellar: hitConfig.stellar ? mods.stellar ?? { brc: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
           });
           total += res.avg;
           return res.avg;
@@ -1556,6 +1560,12 @@ export function CharacterCalculator({
                               <tr key={id} className={`border-t border-gray-100 dark:border-zinc-800/60 ${isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : ""}`}>
                                 <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
                                   {h.name} <span className="text-[10px] text-gray-400 dark:text-gray-500">({isHeal ? "HEAL" : h.scaling.toUpperCase()})</span>
+                                  {h.stellar ? (
+                                    <span className="ml-1 text-[9px] font-bold uppercase tracking-wider rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 px-1 py-0.5"
+                                      title="Stellar-Conduct reaction DMG: ignores DMG Bonus% and enemy DEF; EM bonus 6·EM/(EM+2000)">
+                                      Stellar
+                                    </span>
+                                  ) : null}
                                 </td>
                                 <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
                                   {levelVal != null ? (

@@ -4,8 +4,9 @@ import { huTaoSeed } from "./hu-tao";
 import { neuvilletteSeed } from "./neuvillette";
 import { arlecchinoSeed } from "./arlecchino";
 import { clorindeSeed } from "./clorinde";
+import { sandroneSeed } from "./sandrone";
 
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed];
 
 export interface TalentRow {
   characterId: string;

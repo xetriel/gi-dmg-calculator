@@ -1,7 +1,7 @@
 /**
  * Encodes object to a URL-safe Base64 string.
  */
-export function encodeBuild(data: any): string {
+export function encodeBuild(data: unknown): string {
   try {
     const jsonStr = JSON.stringify(data);
     // encodeURIComponent handles non-ASCII unicode chars correctly.
@@ -20,7 +20,7 @@ export function encodeBuild(data: any): string {
 /**
  * Decodes object from a URL-safe Base64 string.
  */
-export function decodeBuild(base64: string): any {
+export function decodeBuild(base64: string): unknown {
   if (!base64) return null;
   try {
     let str = base64.replace(/-/g, "+").replace(/_/g, "/");

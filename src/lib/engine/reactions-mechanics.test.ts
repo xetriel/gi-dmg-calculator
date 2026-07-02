@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { levelMultiplier } from "./level-multiplier";
-import { catalyzeAdditive, computeHit, type DamageStats } from "./damage";
+import { catalyzeAdditive, computeHit, stellarBRC, stellarEmBonus, type DamageStats } from "./damage";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT } from "./transformative";
 import { indirectLunarDamage, lunarEmBonus, LUNAR_BY_ELEMENT } from "./lunar";
 import { resolveMechanics, type MechanicsCtx } from "./mechanics";
 import { resolveHitMultipliers, hitId } from "./validation";
 import { flattenSeed, TALENT_SEED } from "../../data/talents";
-import { huTao, arlecchino, neuvillette, clorinde } from "../../data/registry/characters";
+import { huTao, arlecchino, neuvillette, clorinde, sandrone } from "../../data/registry/characters";
 import type { TalentScalingData } from "../talent-scaling";
 
 const LV90 = 1446.853458;
@@ -224,5 +224,87 @@ describe("seed data integrity", () => {
     const h5 = huTao.talents[ni].hits.findIndex(h => h.key === "5-hit");
     expect(ht[hitId(ni, h5)]).toBeCloseTo(59.36);
     expect(ht[hitId(ni, h5 + 1)]).toBeCloseTo(62.8);
+  });
+});
+
+describe("stellar-conduct helpers", () => {
+  it("BRC: 0 hits → 1; n≥1 → 1.4 + 0.05n; clamps at 10", () => {
+    expect(stellarBRC(0)).toBe(1);
+    expect(stellarBRC(1)).toBeCloseTo(1.45);
+    expect(stellarBRC(10)).toBeCloseTo(1.9);
+    expect(stellarBRC(15)).toBeCloseTo(1.9);
+    expect(stellarBRC(-3)).toBe(1);
+  });
+  it("EM bonus: 6·EM/(EM+2000)", () => {
+    expect(stellarEmBonus(0)).toBe(0);
+    expect(stellarEmBonus(2000)).toBeCloseTo(3);
+    expect(stellarEmBonus(1000)).toBeCloseTo(2);
+  });
+});
+
+describe("stellar-conduct computeHit branch", () => {
+  const s = { ...baseStats, critRate: 0, critDmg: 0 };
+  const stellarHit = {
+    multiplier: 100, scaling: "atk" as const, element: "Cryo" as const,
+    reaction: "none" as const, reactionBonusPct: 0,
+    stellar: { brc: 1.45, baseDmgBonusPct: 14, reactionBonusPct: 30 },
+  };
+  it("matches the wiki formula by hand", () => {
+    // 1.45 × 100% × 2000 × 1.14 × (1 + 0 + 0.30) × res(0)=1
+    expect(computeHit(s, stellarHit).nonCrit).toBeCloseTo(1.45 * 2000 * 1.14 * 1.3, 3);
+  });
+  it("ignores DMG Bonus%, DEF reduction, and enemy DEF (reaction damage)", () => {
+    const base = computeHit(s, stellarHit).nonCrit;
+    expect(computeHit({ ...s, dmgBonus: 100 }, stellarHit).nonCrit).toBeCloseTo(base, 6);
+    expect(computeHit({ ...s, defReduction: 90 }, stellarHit).nonCrit).toBeCloseTo(base, 6);
+    expect(computeHit({ ...s, levelEnemy: 1 }, stellarHit).nonCrit).toBeCloseTo(base, 6);
+  });
+  it("applies enemy RES and EM bonus", () => {
+    const base = computeHit(s, stellarHit).nonCrit;
+    expect(computeHit({ ...s, enemyRes: 10 }, stellarHit).nonCrit).toBeCloseTo(base * 0.9, 3);
+    // EM 1000 → (1 + 2 + 0.3) / (1 + 0.3) on the reaction-bonus term
+    expect(computeHit({ ...s, em: 1000 }, stellarHit).nonCrit).toBeCloseTo(base * (3.3 / 1.3), 3);
+  });
+  it("still crits normally", () => {
+    const r = computeHit({ ...s, critRate: 50, critDmg: 100 }, stellarHit);
+    expect(r.crit).toBeCloseTo(r.nonCrit * 2, 3);
+    expect(r.avg).toBeCloseTo(r.nonCrit * 1.5, 3);
+  });
+});
+
+describe("sandrone mechanics", () => {
+  it("Light of Rationalisme: 0.7% per 100 ATK, capped at 14%", () => {
+    const r1 = resolveMechanics(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 1000 } }));
+    expect(r1.perHit["prism-shot-stellar"]?.stellar?.baseDmgBonusPct).toBeCloseTo(7);
+    const r2 = resolveMechanics(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 2500 } }));
+    expect(r2.perHit["prism-shot-stellar"]?.stellar?.baseDmgBonusPct).toBe(14);
+  });
+  it("Polestar field: BRC + Cryo DMG bonus by hit count; off → neutral", () => {
+    const off = resolveMechanics(sandrone, ctxFor("sandrone"));
+    expect(off.perHit["condensed-beam-stellar"]?.stellar?.brc).toBe(1);
+    expect(off.statDeltas.dmgBonus ?? 0).toBe(0);
+    const zero = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 0 } }));
+    expect(zero.perHit["condensed-beam-stellar"]?.stellar?.brc).toBe(1);
+    expect(zero.statDeltas.dmgBonus).toBe(20);
+    const ten = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 10 } }));
+    expect(ten.perHit["condensed-beam-stellar"]?.stellar?.brc).toBeCloseTo(1.9);
+    expect(ten.statDeltas.dmgBonus).toBe(38);
+  });
+  it("C1 adds +30% stellar reaction bonus", () => {
+    const r = resolveMechanics(sandrone, ctxFor("sandrone", { constellationLevel: 1 }));
+    expect(r.perHit["convective-ray-stellar"]?.stellar?.reactionBonusPct).toBe(30);
+  });
+  it("A1: Decoding > 50 → 2nd Prism Shot ×4; Refined Tactics ×(1 + 0.1·stacks)", () => {
+    const r = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "decoding-over-50": 1, "refined-tactics": 10 } }));
+    expect(r.perHit["prism-shot-stellar"]?.baseDmgMultiplier).toBe(4);
+    expect(r.perHit["convective-ray-stellar"]?.baseDmgMultiplier).toBeCloseTo(2);
+  });
+  it("C2: condensed beams +40% CRIT DMG +20%/beam (max 3)", () => {
+    const r = resolveMechanics(sandrone, ctxFor("sandrone", { constellationLevel: 2, inputs: { "c2-beam-stacks": 3 } }));
+    expect(r.perHit["condensed-beam-stellar"]?.critDmgBonusPct).toBe(100);
+  });
+  it("seed rows: 10×14 normal + 2×10 skill + 3×13 burst = 199", () => {
+    const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "sandrone"));
+    expect(rows.length).toBe(199);
   });
 });

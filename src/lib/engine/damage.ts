@@ -23,6 +23,15 @@ export interface DamageStats {
   defIgnore: number;     // percent
 }
 
+// Per-hit Stellar-Conduct parameters. Stellar-Conduct is reaction DMG (wiki
+// "Stellar Reaction Damage"): it ignores DMG Bonus% and the enemy-DEF multiplier,
+// uses the Lunar/Stellar EM bonus 6·EM/(EM+2000), and can CRIT.
+export interface StellarParams {
+  brc: number;                // Base Reaction Coefficient (Polestar hits: 1, 1.45…1.9)
+  baseDmgBonusPct: number;    // %Stellar Reaction Base DMG Bonus (Light of Rationalisme, max 14)
+  reactionBonusPct: number;   // %Reaction Bonus (e.g. C1 +30, artifacts)
+}
+
 export interface HitInput {
   multiplier: number;         // talent multiplier, percent
   scaling: ScalingSource;
@@ -34,6 +43,7 @@ export interface HitInput {
   critDmgBonusPct?: number;   // per-hit CRIT DMG bonus (e.g. Neuvillette C2 on Equitable Judgment)
   critRateBonusPct?: number;  // per-hit CRIT Rate bonus (e.g. Arlecchino C6 on NA/Burst)
   bonusDmgPct?: number;       // per-hit DMG Bonus% addition (e.g. Clorinde C4 on Last Lightfall)
+  stellar?: StellarParams;    // present => compute through the Stellar-Conduct branch
 }
 
 export interface HitResult {
@@ -118,6 +128,18 @@ export function amplifyingMultiplier(
   return base * (1 + emBonus + reactionBonusPct / 100);
 }
 
+// Stellar/Lunar reaction EM bonus: 6·EM/(EM+2000) (as a fraction, not percent).
+export function stellarEmBonus(em: number): number {
+  return (6 * em) / (em + 2000);
+}
+
+// Stellar-Conduct Base Reaction Coefficient from Polestar recorded hits (0–10):
+// 0 hits => 1; n>=1 => 1.4 + 0.05·n (1.45 … 1.9).
+export function stellarBRC(hits: number): number {
+  const n = clamp(Math.floor(hits), 0, 10);
+  return n <= 0 ? 1 : 1.4 + 0.05 * n;
+}
+
 // Catalyze additive base DMG bonus (wiki "Additive Base DMG Bonus, Catalyze"):
 // ReactionMult × LevelMult(character) × (1 + 5·EM/(EM+1200) + reaction bonus).
 export function catalyzeAdditive(
@@ -134,18 +156,38 @@ export function catalyzeAdditive(
 }
 
 export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
-  const additive =
-    (hit.flatDmgBonus ?? 0) +
-    catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct);
-  const base =
-    (hit.multiplier / 100) * scalingTotal(stats, hit.scaling) * (hit.baseDmgMultiplier ?? 1) +
-    additive;
-  const nonCrit =
-    base *
-    dmgBonusMultiplier(stats, hit.bonusDmgPct ?? 0) *
-    defMultiplier(stats) *
-    resMultiplier(stats.enemyRes) *
-    amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct);
+  let nonCrit: number;
+
+  if (hit.stellar) {
+    // Stellar-Conduct branch (wiki "Stellar-Conduct Damage"):
+    //   (BRC × Mult% × Stat × BaseDMGMult × (1 + %StellarBaseDMGBonus)
+    //    × (1 + EMBonus_Stellar + %ReactionBonus) + additive) × RESMult × CRIT
+    // No enemy-DEF multiplier, no DMG Bonus%, no amplifying/catalyze;
+    // Elevation Multiplier treated as 1.
+    const s = hit.stellar;
+    const base =
+      s.brc *
+        (hit.multiplier / 100) *
+        scalingTotal(stats, hit.scaling) *
+        (hit.baseDmgMultiplier ?? 1) *
+        (1 + s.baseDmgBonusPct / 100) *
+        (1 + stellarEmBonus(stats.em) + s.reactionBonusPct / 100) +
+      (hit.flatDmgBonus ?? 0);
+    nonCrit = base * resMultiplier(stats.enemyRes);
+  } else {
+    const additive =
+      (hit.flatDmgBonus ?? 0) +
+      catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct);
+    const base =
+      (hit.multiplier / 100) * scalingTotal(stats, hit.scaling) * (hit.baseDmgMultiplier ?? 1) +
+      additive;
+    nonCrit =
+      base *
+      dmgBonusMultiplier(stats, hit.bonusDmgPct ?? 0) *
+      defMultiplier(stats) *
+      resMultiplier(stats.enemyRes) *
+      amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct);
+  }
 
   const cr = clamp(stats.critRate + (hit.critRateBonusPct ?? 0), 0, 100) / 100;
   const cd = (stats.critDmg + (hit.critDmgBonusPct ?? 0)) / 100;
