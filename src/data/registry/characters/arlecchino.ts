@@ -23,17 +23,17 @@ export const arlecchino: CharacterConfig = {
   ],
   mechanicDefs: [
     { id: "bond-of-life", label: "Bond of Life (% Max HP)", control: "percent", max: 200, defaultValue: 100,
-      hint: "Feeds the Masque flat DMG on Normal Attacks (and C6 Burst bonus)" },
+      hint: "Masque flat DMG on NA = Masque% × BoL% × ATK (and C6 Burst bonus)" },
     { id: "pyro-bonus", label: "In combat (Balemoon passive)", control: "toggle", defaultValue: 1,
       hint: "+40% Pyro DMG Bonus while in combat" },
   ],
-  mechanics: ["Bond of Life% (max 200) → Masque of the Red Death flat DMG on NA","Burst heal = 150% BoL + 150% ATK (only healing she can receive)"],
+  mechanics: ["Masque of the Red Death: NA base DMG = ATK × (Talent% + Masque% × BoL/MaxHP) — ATK-scaled, Max HP does not affect it","Burst heal = 150% BoL + 150% ATK (only healing she can receive)"],
   notes: ["Has ICD — amplifying (Vaporize/Melt) totals may be approximate."],
   wikiTalents: [
     {
       name: "Invitation to a Beheading",
       type: "Normal Attack",
-      description: "Normal Attack: Performs up to 6 attacks. Charged Attack: Consumes Stamina to dash and cleave; holding sustains high-speed movement at a Stamina cost. Plunging Attack: Plunges from mid-air, dealing AoE DMG on impact. Masque of the Red Death: once her Bond of Life reaches 30% of Max HP, her Normal/Charged/Plunging Attacks convert to Pyro DMG that cannot be overridden, and each Normal Attack hit deals additional DMG equal to the Masque Increase % of her current Bond of Life, consuming a little Bond of Life per hit."
+      description: "Normal Attack: Performs up to 6 attacks. Charged Attack: Consumes Stamina to dash and cleave; holding sustains high-speed movement at a Stamina cost. Plunging Attack: Plunges from mid-air, dealing AoE DMG on impact. Masque of the Red Death: once her Bond of Life reaches 30% of Max HP, her Normal/Charged/Plunging Attacks convert to Pyro DMG that cannot be overridden, and her Normal Attacks deal extra DMG scaling off her ATK multiplied by the Masque Increase ratio of her current Bond of Life percentage (base DMG = ATK × (Talent% + Masque% × BoL/Max HP)), consuming 7.5% of the Bond of Life per hit."
     },
     {
       name: "All Is Ash",

@@ -7,11 +7,12 @@ export interface RawInputs {
   hits: Record<string, string>;  // key: hitId(groupIndex, hitIndex) -> multiplier %
   reaction: ReactionType;
   reactionBonus: string;
+  mechanicInputs?: Record<string, string>; // MechanicDef.id -> raw value (percent controls validated)
 }
 
 export interface ValidationResult {
   ok: boolean;
-  errors: Record<string, string>; // keyed by stat input id, hitId, or "reactionBonus"
+  errors: Record<string, string>; // keyed by stat input id, hitId, "reactionBonus", or "mech.<id>"
   general: string[];
 }
 
@@ -133,6 +134,19 @@ export function validate(
   // Reaction bonus required only when a reaction is selected.
   if (raw.reaction !== "none" && toNum(raw.reactionBonus) === null) {
     errors["reactionBonus"] = "Required";
+  }
+
+  // Mechanic percent inputs (e.g. Bond of Life) must be a number within 0..max
+  // (Bond of Life: 0 ≤ BoL ≤ 200% of Max HP). Toggle/stacks controls are
+  // constrained by their UI and skipped here.
+  for (const m of config.mechanicDefs ?? []) {
+    if (m.control !== "percent") continue;
+    const v = toNum(raw.mechanicInputs?.[m.id]);
+    if (v === null) {
+      errors[`mech.${m.id}`] = "Required";
+    } else if (v < 0 || (m.max != null && v > m.max)) {
+      errors[`mech.${m.id}`] = `Must be 0 ≤ value ≤ ${m.max ?? "∞"}`;
+    }
   }
 
   // DEF floor is applied (not blocked) — surface a hint when it kicks in.

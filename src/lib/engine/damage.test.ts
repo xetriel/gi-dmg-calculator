@@ -110,14 +110,26 @@ describe("resolveStats", () => {
 });
 
 // Build a fully-filled, valid raw input for a config.
-function fullRaw(config: typeof arlecchino, overrides: Record<string, string> = {}): RawInputs {
+function fullRaw(
+  config: typeof arlecchino,
+  overrides: Record<string, string> = {},
+  mechanicOverrides: Record<string, string> = {},
+): RawInputs {
   const stats: Record<string, string> = {};
   for (const id of statInputIds(config)) stats[id] = "10";
   stats["levelChar"] = "90";
   stats["levelEnemy"] = "100";
   const hits: Record<string, string> = {};
   config.talents.forEach((g, gi) => g.hits.forEach((_h, hi) => { hits[hitId(gi, hi)] = "100"; }));
-  return { stats: { ...stats, ...overrides }, hits, reaction: "none", reactionBonus: "" };
+  const mechanicInputs: Record<string, string> = {};
+  for (const m of config.mechanicDefs ?? []) mechanicInputs[m.id] = String(m.defaultValue ?? 0);
+  return {
+    stats: { ...stats, ...overrides },
+    hits,
+    reaction: "none",
+    reactionBonus: "",
+    mechanicInputs: { ...mechanicInputs, ...mechanicOverrides },
+  };
 }
 
 describe("validate", () => {
@@ -152,6 +164,22 @@ describe("validate", () => {
     const raw = fullRaw(arlecchino, { defReduction: "80", defIgnore: "20" });
     const res = validate(arlecchino, raw, manualResolved(arlecchino, raw));
     expect(res.general.some(g => /90%/.test(g))).toBe(true);
+  });
+  it("validates Bond of Life range 0 ≤ BoL ≤ 200", () => {
+    const ok = (v: string) => {
+      const raw = fullRaw(arlecchino, {}, { "bond-of-life": v });
+      return validate(arlecchino, raw, manualResolved(arlecchino, raw));
+    };
+    expect(ok("0").ok).toBe(true);
+    expect(ok("200").ok).toBe(true);
+    expect(ok("250").errors["mech.bond-of-life"]).toMatch(/0 ≤ value ≤ 200/);
+    expect(ok("-5").errors["mech.bond-of-life"]).toMatch(/0 ≤ value ≤ 200/);
+    expect(ok("").errors["mech.bond-of-life"]).toBe("Required");
+  });
+  it("validates other percent mechanics against their max (Neuvillette current HP ≤ 100)", () => {
+    const raw = fullRaw(neuvillette, {}, { "current-hp": "150" });
+    const res = validate(neuvillette, raw, manualResolved(neuvillette, raw));
+    expect(res.errors["mech.current-hp"]).toMatch(/0 ≤ value ≤ 100/);
   });
 });
 

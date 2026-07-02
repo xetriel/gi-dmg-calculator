@@ -139,7 +139,7 @@ export function CharacterCalculator({
 }: {
   config: CharacterConfig;
   scaling: TalentScalingData;
-  initialBuild?: { id: string; name: string; data: any } | null;
+  initialBuild?: { id: string; name: string; data: unknown } | null;
 }) {
   const createInitialInstance = (id: string): CalcInstance => {
     const initLevels: Record<string, string> = {};
@@ -166,24 +166,28 @@ export function CharacterCalculator({
   };
 
   // Backward-compatible hydration: supports plain array (oldest), single rotation object (old), and multiple rotations (new).
-  function hydrateFromBuild(data: any): { instances: CalcInstance[]; rotations: SavedRotation[]; activeRotationId: string } {
+  function hydrateFromBuild(data: unknown): { instances: CalcInstance[]; rotations: SavedRotation[]; activeRotationId: string } {
     if (data && typeof data === "object" && !Array.isArray(data)) {
-      if (Array.isArray(data.rotations)) {
+      const d = data as {
+        rotations?: unknown; rotationSteps?: unknown; instances?: CalcInstance[];
+        activeRotationId?: string; description?: string;
+      };
+      if (Array.isArray(d.rotations)) {
         return {
-          instances: (data.instances ?? [createInitialInstance("1")]) as CalcInstance[],
-          rotations: data.rotations as SavedRotation[],
-          activeRotationId: (data.activeRotationId ?? (data.rotations[0]?.id || "")) as string,
+          instances: (d.instances ?? [createInitialInstance("1")]) as CalcInstance[],
+          rotations: d.rotations as SavedRotation[],
+          activeRotationId: (d.activeRotationId ?? ((d.rotations as SavedRotation[])[0]?.id || "")) as string,
         };
       }
-      if (Array.isArray(data.rotationSteps)) {
+      if (Array.isArray(d.rotationSteps)) {
         const legacyRot: SavedRotation = {
           id: "legacy-rotation",
           name: "Combo 1",
-          description: (data.description ?? "") as string,
-          steps: data.rotationSteps as RotationStep[],
+          description: (d.description ?? "") as string,
+          steps: d.rotationSteps as RotationStep[],
         };
         return {
-          instances: (data.instances ?? [createInitialInstance("1")]) as CalcInstance[],
+          instances: (d.instances ?? [createInitialInstance("1")]) as CalcInstance[],
           rotations: [legacyRot],
           activeRotationId: "legacy-rotation",
         };
@@ -227,7 +231,7 @@ export function CharacterCalculator({
   const [nextId, setNextId] = useState(() => {
     const insts = hydrated?.instances ?? [];
     if (insts.length > 0) {
-      const ids = insts.map((i: any) => Number(i.id) || 0);
+      const ids = insts.map(i => Number(i.id) || 0);
       return Math.max(...ids, 0) + 1;
     }
     return 2;
@@ -394,7 +398,7 @@ export function CharacterCalculator({
   // Derive all outputs from an instance's inputs — runs on every render, so results
   // update immediately on any change. Returns null results while inputs are invalid.
   function computeInstance(inst: CalcInstance): ComputedInstance {
-    const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
+    const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus, mechanicInputs: inst.mechanicInputs };
     const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
     const validation = validate(config, raw, resolved);
     if (!validation.ok) {
@@ -752,29 +756,34 @@ export function CharacterCalculator({
                       {config.mechanicDefs.map((m: MechanicDef) => {
                         const val = inst.mechanicInputs[m.id] ?? "0";
                         return (
-                          <div key={m.id} className="flex items-center justify-between gap-3" title={m.hint}>
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</span>
-                            {m.control === "toggle" ? (
-                              <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
-                                checked={Number(val) > 0}
-                                onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
-                            ) : m.control === "stacks" ? (
-                              <div className="flex gap-1">
-                                {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
-                                  <button key={i}
-                                    onClick={() => setMechanic(inst.id, m.id, String(i))}
-                                    className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${Number(val) === i
-                                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                                        : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
-                                      }`}>
-                                    {i}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <input className={inputCls(`mech.${m.id}`, "w-20")} type="number" min={0} max={m.max}
-                                value={val} onChange={e => setMechanic(inst.id, m.id, e.target.value)} />
-                            )}
+                          <div key={m.id} className="flex flex-col gap-1" title={m.hint}>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</span>
+                              {m.control === "toggle" ? (
+                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                                  checked={Number(val) > 0}
+                                  onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
+                              ) : m.control === "stacks" ? (
+                                <div className="flex gap-1">
+                                  {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
+                                    <button key={i}
+                                      onClick={() => setMechanic(inst.id, m.id, String(i))}
+                                      className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${Number(val) === i
+                                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
+                                          : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
+                                        }`}>
+                                      {i}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <input className={inputCls(`mech.${m.id}`, "w-20")} type="number" min={0} max={m.max}
+                                  value={val} onChange={e => setMechanic(inst.id, m.id, e.target.value)} />
+                              )}
+                            </div>
+                            {err(`mech.${m.id}`) ? (
+                              <span className="text-xs text-red-600 text-right">{err(`mech.${m.id}`)}</span>
+                            ) : null}
                           </div>
                         );
                       })}
@@ -1181,7 +1190,7 @@ export function CharacterCalculator({
                         <span>➕ Add Step</span>
                       </button>
                       <span className="text-[10px] text-gray-400 dark:text-zinc-500 italic">
-                        Click "+ Add Step" to choose from all attack instances for your character.
+                        Click &quot;+ Add Step&quot; to choose from all attack instances for your character.
                       </span>
                     </div>
 
@@ -1189,7 +1198,7 @@ export function CharacterCalculator({
                     {activeRot.steps.length === 0 ? (
                       <div className="flex-1 flex flex-col items-center justify-center py-12 border border-dashed border-gray-200 dark:border-zinc-800 rounded-xl">
                         <p className="text-sm text-gray-400 dark:text-zinc-500 mb-1 font-semibold">This rotation is empty</p>
-                        <p className="text-xs text-gray-400 dark:text-zinc-500">Pick an attack from the dropdown and click "+ Add Step" to build your combo.</p>
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">Pick an attack from the dropdown and click &quot;+ Add Step&quot; to build your combo.</p>
                       </div>
                     ) : (
                       <div className="flex-1 overflow-y-auto border border-gray-200/60 dark:border-zinc-850 rounded-xl min-h-[200px]">

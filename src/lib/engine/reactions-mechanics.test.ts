@@ -132,16 +132,22 @@ describe("mechanics: Hu Tao", () => {
 });
 
 describe("mechanics: Arlecchino", () => {
-  it("Masque additive = masque%[NA lvl] × BoL value on NA hits", () => {
-    // NA lv10 masque = 238 (%), BoL 200% × 20000 = 40000 -> 2.38 × 40000 = 95200
+  it("Masque additive = masque%[NA lvl] × BoL% × ATK on NA hits", () => {
+    // Wiki: base DMG = ATK × (Talent% + Masque% × BoL/MaxHP).
+    // NA lv10 masque = 238 (%), BoL 200%, ATK 2000 -> 2.38 × 2.0 × 2000 = 9520
     const r = resolveMechanics(arlecchino, ctxFor("arlecchino", { inputs: { "bond-of-life": 200 } }));
-    expect(r.perHit["1-hit"].flatDmgBonus).toBeCloseTo(95200, 0);
-    expect(r.perHit["high-plunge"].flatDmgBonus).toBeCloseTo(95200, 0);
+    expect(r.perHit["1-hit"].flatDmgBonus).toBeCloseTo(9520, 0);
+    expect(r.perHit["high-plunge"].flatDmgBonus).toBeCloseTo(9520, 0);
     expect(r.perHit["spike"]).toBeUndefined(); // skill hits unaffected
+  });
+  it("Masque does not scale with Max HP (only the Burst heal note does)", () => {
+    const lowHp = resolveMechanics(arlecchino, ctxFor("arlecchino", { stats: { ...baseStats, hp: 10000 }, inputs: { "bond-of-life": 100 } }));
+    const highHp = resolveMechanics(arlecchino, ctxFor("arlecchino", { stats: { ...baseStats, hp: 40000 }, inputs: { "bond-of-life": 100 } }));
+    expect(highHp.perHit["1-hit"].flatDmgBonus).toBe(lowHp.perHit["1-hit"].flatDmgBonus);
   });
   it("C1 adds +100pp to Masque", () => {
     const r = resolveMechanics(arlecchino, ctxFor("arlecchino", { constellationLevel: 1, inputs: { "bond-of-life": 200 } }));
-    expect(r.perHit["1-hit"].flatDmgBonus).toBeCloseTo((3.38) * 40000, 0);
+    expect(r.perHit["1-hit"].flatDmgBonus).toBeCloseTo(3.38 * 2.0 * 2000, 0); // 13520
   });
   it("C6: burst flat 700% ATK × BoL% and crit bonuses on NA+burst", () => {
     const r = resolveMechanics(arlecchino, ctxFor("arlecchino", { constellationLevel: 6, inputs: { "bond-of-life": 100 } }));
