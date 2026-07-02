@@ -742,21 +742,7 @@ export function CharacterCalculator({
                         </span>
                       )}
                     </div>
-                    {rotations.map(r => {
-                      if (r.steps.length === 0) return null;
-                      const isSelected = r.id === activeRotationId;
-                      return (
-                        <div
-                          key={r.id}
-                          className={`text-[10px] mt-1 flex items-center justify-between gap-4 font-semibold leading-tight ${
-                            isSelected ? "text-zinc-900 dark:text-zinc-100 font-extrabold" : "text-gray-400 dark:text-zinc-500"
-                          }`}
-                        >
-                          <span className="truncate max-w-[200px]">{r.name || "Combo"}:</span>
-                          <span className="tabular-nums">{fmt(rotationTotals[r.id] ?? 0)}</span>
-                        </div>
-                      );
-                    })}
+
                   </div>
                   {instances.length > 1 && (
                     <button
@@ -794,13 +780,19 @@ export function CharacterCalculator({
                       })}
                     </div>
                     {inst.constellationLevel > 0 && (
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 leading-snug">
-                        {config.constellations!.filter(c => c.level <= inst.constellationLevel).map(c =>
-                          <span key={c.level} className="block">
-                            <span className="font-semibold">C{c.level}</span>: {c.name} — {c.description}
-                          </span>
-                        )}
-                      </p>
+                      <details className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 group">
+                        <summary className="cursor-pointer font-semibold list-none flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-350 select-none">
+                          <span>Show Constellation Details</span>
+                          <span className="text-[8px] transform group-open:rotate-180 transition-transform duration-200">▼</span>
+                        </summary>
+                        <div className="mt-1.5 space-y-1 pl-1 border-l border-zinc-200 dark:border-zinc-800">
+                          {config.constellations!.filter(c => c.level <= inst.constellationLevel).map(c =>
+                            <span key={c.level} className="block leading-normal">
+                              <span className="font-bold text-zinc-700 dark:text-zinc-300">C{c.level} ({c.name})</span>: {c.description}
+                            </span>
+                          )}
+                        </div>
+                      </details>
                     )}
                   </div>
                 ) : null}
@@ -1154,6 +1146,33 @@ export function CharacterCalculator({
                     )}
                   </section>
                 ) : null}
+
+                {/* Combo Rotations Summary Section */}
+                <div className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3 select-none">
+                  <h3 className="font-semibold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Combo Rotations DMG</h3>
+                  <div className="space-y-1.5">
+                    {rotations.map(r => {
+                      if (r.steps.length === 0) return null;
+                      const isSelected = r.id === activeRotationId;
+                      return (
+                        <div
+                          key={r.id}
+                          className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${
+                            isSelected
+                              ? "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-extrabold"
+                              : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
+                          }`}
+                        >
+                          <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
+                          <span className="tabular-nums font-mono">{fmt(rotationTotals[r.id] ?? 0)}</span>
+                        </div>
+                      );
+                    })}
+                    {rotations.every(r => r.steps.length === 0) && (
+                      <p className="text-[10px] text-gray-400 dark:text-zinc-500 italic">No rotations built yet. Open the Rotation Builder above to get started.</p>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })}
