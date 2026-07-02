@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef, ScalingSource } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
@@ -266,6 +267,47 @@ export function CharacterCalculator({
 
   const currentPayload = () => JSON.stringify({ instances, rotations, activeRotationId });
   const isDirty = currentPayload() !== savedJson;
+
+  const router = useRouter();
+  const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = useState(false);
+  const [pendingNavigationHref, setPendingNavigationHref] = useState("");
+
+  // Warn before browser unload (reload/tab close)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Intercept client-side routing links click events on this page
+  useEffect(() => {
+    const handleAnchorClick = (e: MouseEvent) => {
+      if (!isDirty) return;
+
+      let target = e.target as HTMLElement | null;
+      while (target && target.tagName !== "A") {
+        target = target.parentElement;
+      }
+
+      if (target instanceof HTMLAnchorElement) {
+        const href = target.getAttribute("href");
+        if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !e.defaultPrevented) {
+          e.preventDefault();
+          e.stopPropagation();
+          setPendingNavigationHref(href);
+          setIsConfirmDiscardOpen(true);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleAnchorClick, true);
+    return () => document.removeEventListener("click", handleAnchorClick, true);
+  }, [isDirty]);
 
   const saveChanges = async () => {
     setIsSaving(true);
@@ -590,11 +632,11 @@ export function CharacterCalculator({
             className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
           >
             <span>📋 Rotation Builder</span>
-            {rotations.find(r => r.id === activeRotationId)?.steps.length ? (
+            {rotations.length > 0 && (
               <span className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {rotations.find(r => r.id === activeRotationId)?.steps.length}
+                {rotations.length}
               </span>
-            ) : null}
+            )}
           </button>
           <button
             onClick={saveChanges}
@@ -1454,6 +1496,56 @@ export function CharacterCalculator({
                 className="rounded-lg bg-zinc-200 dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Unsaved Progress Confirmation Modal overlay (z-50) ── */}
+      {isConfirmDiscardOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
+              <div className="flex items-center gap-2 text-amber-500">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">Unsaved Changes</h3>
+              </div>
+              <button
+                onClick={() => setIsConfirmDiscardOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-850 transition-colors cursor-pointer text-xs font-bold font-mono"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5">
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                You have unsaved work on the calculator page for <span className="font-bold text-gray-800 dark:text-zinc-200">{config.name}</span>. Moving to another page will discard all unsaved edits.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-end gap-2 bg-gray-50/50 dark:bg-zinc-900/10 rounded-b-2xl">
+              <button
+                onClick={() => setIsConfirmDiscardOpen(false)}
+                className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-3 py-1.5 text-xs font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
+              >
+                Keep Editing
+              </button>
+              <button
+                onClick={() => {
+                  setSavedJson(currentPayload()); // Sync savedJson so isDirty resolves to false
+                  setIsConfirmDiscardOpen(false);
+                  router.push(pendingNavigationHref);
+                }}
+                className="rounded-lg bg-red-650 hover:bg-red-650/90 text-white px-3 py-1.5 text-xs font-semibold transition-colors shadow-sm cursor-pointer"
+              >
+                Discard & Switch
               </button>
             </div>
           </div>
