@@ -329,6 +329,26 @@ export function CharacterCalculator({
     }
   };
 
+  const handleSaveAndSwitch = async () => {
+    setIsSaving(true);
+    setSaveStatus("Saving...");
+    try {
+      const payload = { instances, rotations, activeRotationId };
+      await saveBuildForCharacter(config.id, payload);
+      setSavedJson(JSON.stringify(payload));
+      setSaveStatus("Saved!");
+      setTimeout(() => setSaveStatus(null), 3000);
+      setIsConfirmDiscardOpen(false);
+      router.push(pendingNavigationHref);
+    } catch (e) {
+      console.error(e);
+      setSaveStatus("Failed to save");
+      alert("Failed to save changes. Please try again or discard edits.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const [showSharedBanner, setShowSharedBanner] = useState(isSharedBuild);
 
   const shareBuild = () => {
@@ -346,7 +366,22 @@ export function CharacterCalculator({
     });
   };
 
-  const exportBuild = () => {
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    if (!isExportDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".export-dropdown-container")) {
+        setIsExportDropdownOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isExportDropdownOpen]);
+
+  const exportAsJson = () => {
     const payload = { instances, rotations, activeRotationId };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -355,8 +390,350 @@ export function CharacterCalculator({
     a.download = `gi_calculator_${config.id}_build.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setSaveStatus("Exported build!");
+    setSaveStatus("Exported JSON!");
+    setIsExportDropdownOpen(false);
     setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const buildTxtReport = (): string => {
+    let text = "";
+    text += `==================================================\n`;
+    text += `GENSHIN IMPACT DAMAGE CALCULATOR BUILD REPORT\n`;
+    text += `Character: ${config.name} (${config.element})\n`;
+    text += `Generated on: ${new Date().toLocaleString("en-US")}\n`;
+    text += `==================================================\n\n`;
+
+    // Headers Row
+    const headers = ["Category / Stat", ...instances.map((_, idx) => `Setup ${idx + 1}`)];
+    text += headers.join("\t") + "\n";
+    text += "─".repeat(60) + "\n";
+
+    // Section: Input Stats
+    text += "INPUT STATS\n";
+    config.stats.forEach(s => {
+      if (s.hasBaseAndFlat) {
+        text += `  ${s.label} (Base)\t` + instances.map(inst => inst.stats[`${s.key}.base`] || "0").join("\t") + "\n";
+        text += `  ${s.label} (%)\t` + instances.map(inst => `${inst.stats[`${s.key}.percent`] || "0"}%`).join("\t") + "\n";
+        text += `  ${s.label} (Flat)\t` + instances.map(inst => inst.stats[`${s.key}.flat`] || "0").join("\t") + "\n";
+      } else {
+        text += `  ${s.label}\t` + instances.map(inst => {
+          const val = inst.stats[s.key] || "0";
+          return `${val}${s.unit === "percent" ? "%" : ""}`;
+        }).join("\t") + "\n";
+      }
+    });
+
+    // Section: Effective Stats
+    text += "\nEFFECTIVE COMPUTED STATS\n";
+    EFFECTIVE_ROWS.forEach(er => {
+      text += `  ${er.label}\t` + instances.map(inst => {
+        const eff = computedById.get(inst.id)?.effectiveStats?.[er.key] ?? 0;
+        return `${eff.toFixed(1)}${er.unit === "percent" ? "%" : ""}`;
+      }).join("\t") + "\n";
+    });
+
+    // Section: Talent Levels
+    text += "\nTALENT LEVELS\n";
+    config.talents.forEach(g => {
+      text += `  ${g.name} Lv.\t` + instances.map(inst => inst.levels[g.type] || "1").join("\t") + "\n";
+    });
+
+    // Section: Talent Hit Calculations (Avg)
+    text += "\nTALENT DMG CALCULATIONS (AVG)\n";
+    config.talents.forEach((g, gi) => {
+      g.hits.forEach((h, hi) => {
+        const key = hitId(gi, hi);
+        text += `  ${g.name}: ${h.name}\t` + instances.map(inst => {
+          const res = computedById.get(inst.id)?.results?.[key];
+          if (!res) return "—";
+          return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : Math.round(res.avg);
+        }).join("\t") + "\n";
+      });
+    });
+
+    // Section: Combo Rotations
+    text += "\nCOMBO ROTATIONS DMG\n";
+    rotations.forEach(r => {
+      if (r.steps.length === 0) return;
+      text += `  Combo: ${r.name}\t` + instances.map(inst => {
+        const total = computedById.get(inst.id)?.rotationTotals?.[r.id] ?? 0;
+        return Math.round(total);
+      }).join("\t") + "\n";
+    });
+
+    return text;
+  };
+
+  const exportAsTxt = () => {
+    const output = buildTxtReport();
+    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gi_calculator_${config.id}_report.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSaveStatus("Exported TXT report!");
+    setIsExportDropdownOpen(false);
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const copyAsText = () => {
+    const reportText = buildTxtReport();
+    navigator.clipboard.writeText(reportText).then(() => {
+      setSaveStatus("Copied report text!");
+      setIsExportDropdownOpen(false);
+      setTimeout(() => setSaveStatus(null), 3000);
+    }).catch((err) => {
+      console.error(err);
+      setSaveStatus("Copy failed");
+      setTimeout(() => setSaveStatus(null), 3000);
+    });
+  };
+
+  const exportAsCsv = () => {
+    let csvContent = "";
+    const headers = ["Stat / Output Column", ...instances.map((_, idx) => `Setup ${idx + 1}`)];
+    csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+
+    csvContent += `"INPUT STATS"\n`;
+    config.stats.forEach(s => {
+      if (s.hasBaseAndFlat) {
+        const baseRow = [
+          `${s.label} (Base)`,
+          ...instances.map(inst => inst.stats[`${s.key}.base`] || "0")
+        ];
+        csvContent += baseRow.map(r => `"${r}"`).join(",") + "\n";
+
+        const percentRow = [
+          `${s.label} (%)`,
+          ...instances.map(inst => `${inst.stats[`${s.key}.percent`] || "0"}%`)
+        ];
+        csvContent += percentRow.map(r => `"${r}"`).join(",") + "\n";
+
+        const flatRow = [
+          `${s.label} (Flat)`,
+          ...instances.map(inst => inst.stats[`${s.key}.flat`] || "0")
+        ];
+        csvContent += flatRow.map(r => `"${r}"`).join(",") + "\n";
+      } else {
+        const row = [
+          s.label,
+          ...instances.map(inst => {
+            const val = inst.stats[s.key] || "0";
+            return `${val}${s.unit === "percent" ? "%" : ""}`;
+          })
+        ];
+        csvContent += row.map(r => `"${r}"`).join(",") + "\n";
+      }
+    });
+
+    csvContent += `\n"EFFECTIVE COMPUTED STATS"\n`;
+    EFFECTIVE_ROWS.forEach(er => {
+      const row = [
+        er.label,
+        ...instances.map(inst => {
+          const eff = computedById.get(inst.id)?.effectiveStats?.[er.key] ?? 0;
+          return `${eff.toFixed(1)}${er.unit === "percent" ? "%" : ""}`;
+        })
+      ];
+      csvContent += row.map(r => `"${r}"`).join(",") + "\n";
+    });
+
+    csvContent += `\n"TALENT LEVELS"\n`;
+    config.talents.forEach(g => {
+      const row = [
+        `${g.name} Level`,
+        ...instances.map(inst => inst.levels[g.type] || "1")
+      ];
+      csvContent += row.map(r => `"${r}"`).join(",") + "\n";
+    });
+
+    csvContent += `\n"DAMAGE CALCULATIONS (AVG)"\n`;
+    config.talents.forEach((g, gi) => {
+      g.hits.forEach((h, hi) => {
+        const key = hitId(gi, hi);
+        const row = [
+          `${g.name}: ${h.name}`,
+          ...instances.map(inst => {
+            const res = computedById.get(inst.id)?.results?.[key];
+            if (!res) return "—";
+            return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : Math.round(res.avg);
+          })
+        ];
+        csvContent += row.map(r => `"${r}"`).join(",") + "\n";
+      });
+    });
+
+    csvContent += `\n"ROTATION COMBO DAMAGE"\n`;
+    rotations.forEach(r => {
+      if (r.steps.length === 0) return;
+      const row = [
+        `Combo: ${r.name}`,
+        ...instances.map(inst => {
+          const total = computedById.get(inst.id)?.rotationTotals?.[r.id] ?? 0;
+          return Math.round(total);
+        })
+      ];
+      csvContent += row.map(r => `"${r}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gi_calculator_${config.id}_spreadsheet.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSaveStatus("Exported CSV spreadsheet!");
+    setIsExportDropdownOpen(false);
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const exportAsPdf = () => {
+    const node = document.getElementById("calculator-setups-container");
+    if (!node) return;
+    setSaveStatus("Generating PDF...");
+    setIsExportDropdownOpen(false);
+
+    // Force dark class on setups container wrapper to force dark mode styles
+    const parent = node.parentElement;
+    const parentWasDark = parent?.classList.contains("dark");
+    if (parent && !parentWasDark) {
+      parent.classList.add("dark");
+    }
+    const nodeWasDark = node.classList.contains("dark");
+    if (!nodeWasDark) {
+      node.classList.add("dark");
+    }
+
+    import("html-to-image")
+      .then((htmlToImage) => {
+        return htmlToImage.toPng(node, {
+          backgroundColor: "#0a0a0a",
+          style: {
+            transform: "scale(1)",
+            transformOrigin: "top left",
+            width: `${node.scrollWidth}px`,
+            height: `${node.scrollHeight}px`,
+            overflow: "visible",
+          },
+          width: node.scrollWidth,
+          height: node.scrollHeight,
+        });
+      })
+      .then((dataUrl) => {
+        // Open a new print window with the image fitted to it
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) {
+          alert("Please allow popups to save as PDF.");
+          return;
+        }
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>gi_calculator_${config.id}_builds</title>
+              <style>
+                @page {
+                  size: landscape;
+                  margin: 0;
+                }
+                body {
+                  margin: 0;
+                  padding: 0;
+                  background-color: #0a0a0a;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                }
+                img {
+                  max-width: 100%;
+                  max-height: 100%;
+                  object-fit: contain;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${dataUrl}" onload="window.print(); window.close();" />
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        setSaveStatus("Exported PDF!");
+        setTimeout(() => setSaveStatus(null), 3000);
+      })
+      .catch((error) => {
+        console.error("Oops, something went wrong!", error);
+        setSaveStatus("PDF export failed");
+        setTimeout(() => setSaveStatus(null), 3000);
+      })
+      .finally(() => {
+        // Restore class configurations
+        if (parent && !parentWasDark) {
+          parent.classList.remove("dark");
+        }
+        if (!nodeWasDark) {
+          node.classList.remove("dark");
+        }
+      });
+  };
+
+  const exportAsPng = () => {
+    const node = document.getElementById("calculator-setups-container");
+    if (!node) return;
+    setSaveStatus("Generating PNG...");
+    setIsExportDropdownOpen(false);
+
+    // Force dark class on setups container wrapper to force dark mode styles
+    const parent = node.parentElement;
+    const parentWasDark = parent?.classList.contains("dark");
+    if (parent && !parentWasDark) {
+      parent.classList.add("dark");
+    }
+    const nodeWasDark = node.classList.contains("dark");
+    if (!nodeWasDark) {
+      node.classList.add("dark");
+    }
+
+    import("html-to-image")
+      .then((htmlToImage) => {
+        return htmlToImage.toPng(node, {
+          backgroundColor: "#0a0a0a",
+          style: {
+            transform: "scale(1)",
+            transformOrigin: "top left",
+            width: `${node.scrollWidth}px`,
+            height: `${node.scrollHeight}px`,
+            overflow: "visible",
+          },
+          width: node.scrollWidth,
+          height: node.scrollHeight,
+        });
+      })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = `gi_calculator_${config.id}_builds.png`;
+        link.href = dataUrl;
+        link.click();
+        setSaveStatus("Exported PNG!");
+        setTimeout(() => setSaveStatus(null), 3000);
+      })
+      .catch((error) => {
+        console.error("Oops, something went wrong!", error);
+        setSaveStatus("PNG export failed");
+        setTimeout(() => setSaveStatus(null), 3000);
+      })
+      .finally(() => {
+        // Restore class configurations
+        if (parent && !parentWasDark) {
+          parent.classList.remove("dark");
+        }
+        if (!nodeWasDark) {
+          node.classList.remove("dark");
+        }
+      });
   };
 
   const importBuild = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -700,13 +1077,57 @@ export function CharacterCalculator({
           >
             🔗 Share
           </button>
-          <button
-            onClick={exportBuild}
-            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
-            title="Export configuration as local JSON file"
-          >
-            📤 Export
-          </button>
+          {/* Export Dropdown Group */}
+          <div className="relative export-dropdown-container">
+            <button
+              onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1"
+              title="Export configuration or results in various formats"
+            >
+              <span>📤 Export</span>
+              <span className="text-[10px] text-gray-400 font-mono">▼</span>
+            </button>
+            {isExportDropdownOpen && (
+              <div className="absolute right-0 mt-1.5 w-56 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100">
+                <button
+                  onClick={exportAsJson}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">📥</span> JSON Configuration (.json)
+                </button>
+                <button
+                  onClick={exportAsCsv}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">📊</span> CSV Spreadsheet (.csv)
+                </button>
+                <button
+                  onClick={exportAsTxt}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">📄</span> Text Report Summary (.txt)
+                </button>
+                <button
+                  onClick={copyAsText}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">📋</span> Copy as text
+                </button>
+                <button
+                  onClick={exportAsPdf}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">🖨️</span> Save as PDF (.pdf)
+                </button>
+                <button
+                  onClick={exportAsPng}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">🖼️</span> Download PNG Image (.png)
+                </button>
+              </div>
+            )}
+          </div>
           <input
             id="json-import-input"
             type="file"
@@ -813,7 +1234,7 @@ export function CharacterCalculator({
       ) : null}
 
       <div className="flex-1 overflow-x-auto pb-4">
-        <div className="flex gap-6 items-start">
+        <div id="calculator-setups-container" className="flex gap-6 items-start p-1.5">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
             const { validation, results, extras, rotationTotals, inputStats, effectiveStats } = computedById.get(inst.id)!;
@@ -1653,7 +2074,8 @@ export function CharacterCalculator({
             <div className="px-5 py-3 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-end gap-2 bg-gray-50/50 dark:bg-zinc-900/10 rounded-b-2xl">
               <button
                 onClick={() => setIsConfirmDiscardOpen(false)}
-                className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-3 py-1.5 text-xs font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
+                disabled={isSaving}
+                className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-3 py-1.5 text-xs font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 Keep Editing
               </button>
@@ -1663,9 +2085,17 @@ export function CharacterCalculator({
                   setIsConfirmDiscardOpen(false);
                   router.push(pendingNavigationHref);
                 }}
-                className="rounded-lg bg-red-650 hover:bg-red-650/90 text-white px-3 py-1.5 text-xs font-semibold transition-colors shadow-sm cursor-pointer"
+                disabled={isSaving}
+                className="rounded-lg bg-red-650 hover:bg-red-650/90 text-white px-3 py-1.5 text-xs font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 Discard & Switch
+              </button>
+              <button
+                onClick={handleSaveAndSwitch}
+                disabled={isSaving}
+                className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save & Switch"}
               </button>
             </div>
           </div>
