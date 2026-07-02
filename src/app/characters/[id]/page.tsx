@@ -7,8 +7,11 @@ import type { TalentScalingData } from "@/lib/talent-scaling";
 export const dynamic = "force-dynamic";
 
 async function loadScaling(characterId: string): Promise<TalentScalingData> {
+  // Load ALL kinds: damage rows drive the hit multipliers, heal rows display healing,
+  // and buff rows (Masque, ATK-Increase) feed the mechanics resolver. Hit keys are
+  // distinct across kinds, so one byLevel map holds them all.
   const rows = await prisma.talentScaling.findMany({
-    where: { characterId, kind: "damage" },
+    where: { characterId },
     select: { talentType: true, hitKey: true, level: true, value: true },
   });
   const out: TalentScalingData = {};

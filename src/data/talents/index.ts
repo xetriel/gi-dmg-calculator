@@ -3,10 +3,9 @@ import type { CharacterTalentSeed, HitKind } from "./types";
 import { huTaoSeed } from "./hu-tao";
 import { neuvilletteSeed } from "./neuvillette";
 import { arlecchinoSeed } from "./arlecchino";
+import { clorindeSeed } from "./clorinde";
 
-// Characters/talents without captured data (Clorinde, Arlecchino Skill/Burst,
-// Neuvillette Burst) are simply absent here — those hits fall back to manual entry.
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed];
 
 export interface TalentRow {
   characterId: string;

@@ -5,3 +5,5 @@ import type { TalentHit } from "../types";
 // because a character's hits are not always uniform (e.g. Neuvillette mixes ATK/HP).
 export const atk = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk" });
 export const hp = (key: string, name: string): TalentHit => ({ key, name, scaling: "hp" });
+// Healing row (% Max HP): displayed as a heal amount, no crit columns.
+export const healHp = (key: string, name: string): TalentHit => ({ key, name, scaling: "hp", kind: "heal" });

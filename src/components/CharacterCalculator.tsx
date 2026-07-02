@@ -1,13 +1,17 @@
 "use client";
 import { useState } from "react";
-import type { CharacterConfig, ReactionType, StatField, ConstellationEffect } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
-import { validate, resolveStats, resolveHitMultipliers, hitId, type RawInputs } from "@/lib/engine/validation";
+import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, type RawInputs } from "@/lib/engine/validation";
+import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
+import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
+import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
 
 // Excel-style stat panel wired to the pure damage engine.
 // Fill every field, pick a talent level (where data exists) or type a multiplier,
-// choose a reaction, then Calculate to see each hit's Non-Crit / CRIT / Average damage.
+// choose a reaction — every hit's Non-Crit / CRIT / Average damage recomputes live
+// on each change (no Calculate button).
 const GROUPS: { key: StatField["group"]; label: string }[] = [
   { key: "base", label: "Base Stats" },
   { key: "combat", label: "Combat Stats" },
@@ -19,21 +23,38 @@ const REACTION_LABEL: Record<ReactionType, string> = {
   none: "None",
   vaporize: "Vaporize",
   melt: "Melt",
+  aggravate: "Aggravate",
 };
 
-const fmt = (n: number) => Math.round(n).toLocaleString();
+// Fixed locale: results now render during SSR too, and the server's locale can
+// differ from the browser's (e.g. "2.047" vs "2,047" → hydration mismatch).
+const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all";
+
+interface ReactionExtras {
+  transformative: { type: TransformativeType; dmg: number }[];
+  lunar: { type: LunarType; res: LunarResult }[];
+  notes: string[]; // computed mechanic lines (Paramita ATK, Masque flat DMG, heals, …)
+}
 
 interface CalcInstance {
   id: string;
   stats: Record<string, string>;
   hits: Record<string, string>;
   levels: Record<string, string>;
+  mechanicInputs: Record<string, string>; // MechanicDef.id -> raw value ("1"/"0" for toggles)
   reaction: ReactionType;
   reactionBonus: string;
-  results: Record<string, HitResult> | null;
-  attempted: boolean;
+  reactionPanelBonus: string; // Reaction Bonus % applied to the transformative/lunar panel
+  lunarBaseBonus: string;     // Lunar Reaction Base DMG Bonus % (Moonsign passives)
   constellationLevel: number;
+}
+
+// Results derived from an instance's inputs on every render (no stored results).
+interface ComputedInstance {
+  validation: ReturnType<typeof validate>;
+  results: Record<string, HitResult> | null; // null while inputs are invalid
+  extras: ReactionExtras | null;
 }
 
 // Collect all active constellation effects up to the given level.
@@ -102,15 +123,20 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
       const s = scaling[g.type];
       if (s && s.levels.length) initLevels[g.type] = String(s.levels[s.levels.length - 1]);
     }
+    const initMechanics: Record<string, string> = {};
+    for (const m of config.mechanicDefs ?? []) {
+      initMechanics[m.id] = String(m.defaultValue ?? 0);
+    }
     return {
       id,
       stats: { ...initialStats },
       hits: {},
       levels: initLevels,
+      mechanicInputs: initMechanics,
       reaction: "none",
       reactionBonus: "",
-      results: null,
-      attempted: false,
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
       constellationLevel: 0,
     };
   };
@@ -130,10 +156,11 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
       stats: { ...last.stats },
       hits: { ...last.hits },
       levels: { ...last.levels },
+      mechanicInputs: { ...last.mechanicInputs },
       reaction: last.reaction,
       reactionBonus: last.reactionBonus,
-      results: last.results,
-      attempted: last.attempted,
+      reactionPanelBonus: last.reactionPanelBonus,
+      lunarBaseBonus: last.lunarBaseBonus,
       constellationLevel: last.constellationLevel,
     };
     setInstances(s => [...s, newInst]);
@@ -155,10 +182,15 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
         return {
           ...inst,
           ...updater(inst),
-          results: null,
         };
       })
     );
+  };
+
+  const setMechanic = (instId: string, mechId: string, v: string) => {
+    updateInstance(instId, inst => ({
+      mechanicInputs: { ...inst.mechanicInputs, [mechId]: v },
+    }));
   };
 
   const setStat = (instId: string, statId: string, v: string) => {
@@ -180,19 +212,18 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
   };
 
   const setReaction = (instId: string, r: ReactionType) => {
-    updateInstance(instId, inst => ({
+    updateInstance(instId, () => ({
       reaction: r,
     }));
   };
 
   const setReactionBonus = (instId: string, v: string) => {
-    updateInstance(instId, inst => ({
+    updateInstance(instId, () => ({
       reactionBonus: v,
     }));
   };
 
   const activeBenchmarkId = benchmarkId || instances[0]?.id;
-  const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
 
   const renderPct = (currentVal: number, benchmarkVal: number | undefined) => {
     if (instances.length < 2) return null;
@@ -213,46 +244,91 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
     );
   };
 
-  function onCalculate(instId: string) {
-    setInstances(prev =>
-      prev.map(inst => {
-        if (inst.id !== instId) return inst;
-        const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
-        const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
-        const validation = validate(config, raw, resolved);
-        if (!validation.ok) {
-          return { ...inst, attempted: true, results: null };
+  // Derive all outputs from an instance's inputs — runs on every render, so results
+  // update immediately on any change. Returns null results while inputs are invalid.
+  function computeInstance(inst: CalcInstance): ComputedInstance {
+    const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
+    const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
+    const validation = validate(config, raw, resolved);
+    if (!validation.ok) {
+      return { validation, results: null, extras: null };
+    }
+    const s = resolveStats(raw);
+
+    // Character mechanics (Masque/BoL, Paramita, Draconic stacks, Dark-Shattering, …)
+    // computed from the pre-delta stats, then merged with constellation effects.
+    const mechInputs: Record<string, number> = {};
+    for (const m of config.mechanicDefs ?? []) {
+      mechInputs[m.id] = toNum(inst.mechanicInputs[m.id]) ?? 0;
+    }
+    const mech = resolveMechanics(config, {
+      stats: s,
+      baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
+      constellationLevel: inst.constellationLevel,
+      talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
+      scaling,
+      inputs: mechInputs,
+    });
+
+    // Apply stat deltas: mechanics first, then generic constellation stat bonuses.
+    for (const [key, val] of Object.entries(mech.statDeltas)) {
+      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
+    }
+    const effects = activeEffects(config, inst.constellationLevel);
+    const statBonuses = constellationStatBonuses(effects);
+    for (const [key, val] of Object.entries(statBonuses)) {
+      if (key in s) (s as unknown as Record<string, number>)[key] += val;
+    }
+
+    const healingBonus = toNum(inst.stats["healingBonus"]) ?? 0;
+    const out: Record<string, HitResult> = {};
+    config.talents.forEach((g, gi) =>
+      g.hits.forEach((h, hi) => {
+        const id = hitId(gi, hi);
+        const mult = resolved[id] ?? 0;
+        if (h.kind === "heal") {
+          // Healing rows: mult% × stat × (1 + Healing Bonus). No crit.
+          const heal = (mult / 100) * scalingTotal(s, h.scaling) * (1 + healingBonus / 100);
+          out[id] = { nonCrit: heal, crit: heal, avg: heal };
+          return;
         }
-        const s = resolveStats(raw);
-        // Apply constellation stat bonuses (e.g. C6 +100% CRIT Rate)
-        const effects = activeEffects(config, inst.constellationLevel);
-        const statBonuses = constellationStatBonuses(effects);
-        for (const [key, val] of Object.entries(statBonuses)) {
-          if (key in s) (s as unknown as Record<string, number>)[key] += val;
-        }
-        const out: Record<string, HitResult> = {};
-        config.talents.forEach((g, gi) =>
-          g.hits.forEach((h, hi) => {
-            const id = hitId(gi, hi);
-            const flatBonus = constellationFlatBonus(effects, h.key, s);
-            out[id] = computeHit(s, {
-              multiplier: resolved[id] ?? 0,
-              scaling: h.scaling,
-              element: config.element,
-              reaction: inst.reaction,
-              reactionBonusPct: Number(inst.reactionBonus || 0),
-              flatDmgBonus: flatBonus || undefined,
-            });
-          }),
-        );
-        return {
-          ...inst,
-          attempted: true,
-          results: out,
-        };
-      })
+        const mods: PerHitMods = mech.perHit[h.key] ?? {};
+        const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
+        out[id] = computeHit(s, {
+          multiplier: mult,
+          scaling: h.scaling,
+          element: config.element,
+          reaction: inst.reaction,
+          reactionBonusPct: Number(inst.reactionBonus || 0),
+          flatDmgBonus: flatBonus || undefined,
+          baseDmgMultiplier: mods.baseDmgMultiplier,
+          critDmgBonusPct: mods.critDmgBonusPct,
+          critRateBonusPct: mods.critRateBonusPct,
+          bonusDmgPct: mods.bonusDmgPct,
+        });
+      }),
     );
+
+    // Standalone reaction outputs (transformative + indirect lunar) from final stats.
+    const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
+    const lunarBase = toNum(inst.lunarBaseBonus) ?? 0;
+    const extras: ReactionExtras = {
+      transformative: TRANSFORMATIVE_BY_ELEMENT[config.element].map(type => ({
+        type,
+        dmg: transformativeDamage(type, s.levelChar, s.em, s.enemyRes, panelBonus),
+      })),
+      lunar: LUNAR_BY_ELEMENT[config.element].map(type => ({
+        type,
+        res: indirectLunarDamage(type, s, lunarBase, panelBonus),
+      })),
+      notes: mech.notes,
+    };
+
+    return { validation, results: out, extras };
   }
+
+  // Computed once per render for all setups (benchmark comparisons read from here too).
+  const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -338,11 +414,10 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
         <div className="flex gap-6 items-start">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
-            const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus };
-            const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
-            const validation = validate(config, raw, resolved);
+            const { validation, results, extras } = computedById.get(inst.id)!;
+            const benchmarkResults = computedById.get(activeBenchmarkId)?.results;
 
-            const err = (id: string) => (inst.attempted ? validation.errors[id] : undefined);
+            const err = (id: string) => validation.errors[id];
             const inputCls = (id: string, w: string) =>
               `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""}`;
 
@@ -411,6 +486,45 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                         )}
                       </p>
                     )}
+                  </div>
+                ) : null}
+
+                {/* Character mechanics (registry-driven controls; math in engine/mechanics.ts) */}
+                {config.mechanicDefs?.length ? (
+                  <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
+                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Mechanics</h2>
+                    <div className="space-y-2">
+                      {config.mechanicDefs.map((m: MechanicDef) => {
+                        const val = inst.mechanicInputs[m.id] ?? "0";
+                        return (
+                          <div key={m.id} className="flex items-center justify-between gap-3" title={m.hint}>
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</span>
+                            {m.control === "toggle" ? (
+                              <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                                checked={Number(val) > 0}
+                                onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
+                            ) : m.control === "stacks" ? (
+                              <div className="flex gap-1">
+                                {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
+                                  <button key={i}
+                                    onClick={() => setMechanic(inst.id, m.id, String(i))}
+                                    className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${
+                                      Number(val) === i
+                                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
+                                        : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
+                                    }`}>
+                                    {i}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <input className={inputCls(`mech.${m.id}`, "w-20")} type="number" min={0} max={m.max}
+                                value={val} onChange={e => setMechanic(inst.id, m.id, e.target.value)} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : null}
 
@@ -498,37 +612,39 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                       ) : null}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400">No amplifying reaction available for {config.element}.</p>
+                    <p className="text-xs text-gray-400">No hit-attached reaction available for {config.element}.</p>
                   )}
                 </section>
 
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => onCalculate(inst.id)}
-                    className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer"
-                  >
-                    Calculate
-                  </button>
+                {instances.length > 1 && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => setBenchmarkId(inst.id)}
+                      disabled={baseBenchmarkInst}
+                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${
+                        baseBenchmarkInst
+                          ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
+                          : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                      }`}
+                    >
+                      Compare This
+                    </button>
+                  </div>
+                )}
 
-                  <button
-                    onClick={() => setBenchmarkId(inst.id)}
-                    disabled={instances.length < 2 || baseBenchmarkInst}
-                    className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${
-                      instances.length < 2 || baseBenchmarkInst
-                        ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
-                        : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                    }`}
-                  >
-                    Compare This
-                  </button>
-                </div>
-
-                {inst.attempted && !validation.ok && (
+                {!validation.ok && (
                   <span className="text-xs text-red-600 block mb-3">
                     {Object.keys(validation.errors).length} field(s) need attention.
                   </span>
                 )}
-                {inst.results && <span className="text-xs text-green-700 dark:text-green-400 block mb-3 font-semibold">Calculated.</span>}
+
+                {extras?.notes.length ? (
+                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
+                    {extras.notes.map(n => (
+                      <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {n}</p>
+                    ))}
+                  </div>
+                ) : null}
 
                 {validation.general.map(g => (
                   <p key={g} className="mb-2 text-xs text-amber-600">{g}</p>
@@ -556,7 +672,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                           <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400">
                             <th className="py-1.5 font-normal">Hit</th>
                             <th className="py-1.5 font-normal text-right">Mult %</th>
-                            {inst.results ? (
+                            {results ? (
                               <>
                                 <th className="py-1.5 pr-1 text-right font-normal">Non-Crit</th>
                                 <th className="py-1.5 pr-1 text-right font-normal">CRIT</th>
@@ -568,12 +684,13 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                         <tbody>
                           {g.hits.map((h, hi) => {
                             const id = hitId(gi, hi);
-                            const res = inst.results?.[id];
+                            const res = results?.[id];
                             const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
+                            const isHeal = h.kind === "heal";
                             return (
-                              <tr key={id} className="border-t border-gray-100 dark:border-zinc-800/60">
+                              <tr key={id} className={`border-t border-gray-100 dark:border-zinc-800/60 ${isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : ""}`}>
                                 <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
-                                  {h.name} <span className="text-[10px] text-gray-400 dark:text-gray-500">({h.scaling.toUpperCase()})</span>
+                                  {h.name} <span className="text-[10px] text-gray-400 dark:text-gray-500">({isHeal ? "HEAL" : h.scaling.toUpperCase()})</span>
                                 </td>
                                 <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
                                   {levelVal != null ? (
@@ -583,13 +700,23 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                                       value={inst.hits[id] ?? ""} onChange={e => setHit(inst.id, id, e.target.value)} />
                                   )}
                                 </td>
-                                {inst.results ? (
+                                {results ? (
+                                  isHeal ? (
+                                    <td colSpan={3} className="py-1.5 text-right tabular-nums font-semibold text-emerald-700 dark:text-emerald-400">
+                                      {res ? (
+                                        <div className="flex flex-col items-end">
+                                          <span>+{fmt(res.nonCrit)} HP</span>
+                                          {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
+                                        </div>
+                                      ) : "—"}
+                                    </td>
+                                  ) : (
                                   <>
                                     <td className="py-1.5 pr-1 text-right tabular-nums">
                                       {res ? (
                                         <div className="flex flex-col items-end">
                                           <span>{fmt(res.nonCrit)}</span>
-                                          {renderPct(res.nonCrit, benchmarkInst?.results?.[id]?.nonCrit)}
+                                          {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
                                         </div>
                                       ) : "—"}
                                     </td>
@@ -597,7 +724,7 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                                       {res ? (
                                         <div className="flex flex-col items-end">
                                           <span>{fmt(res.crit)}</span>
-                                          {renderPct(res.crit, benchmarkInst?.results?.[id]?.crit)}
+                                          {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
                                         </div>
                                       ) : "—"}
                                     </td>
@@ -605,11 +732,12 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                                       {res ? (
                                         <div className="flex flex-col items-end">
                                           <span>{fmt(res.avg)}</span>
-                                          {renderPct(res.avg, benchmarkInst?.results?.[id]?.avg)}
+                                          {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
                                         </div>
                                       ) : "—"}
                                     </td>
                                   </>
+                                  )
                                 ) : null}
                               </tr>
                             );
@@ -619,6 +747,65 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
                     </section>
                   );
                 })}
+
+                {/* Standalone reaction outputs: transformative + indirect Lunar.
+                    These don't scale with talents — only level, EM, and enemy RES. */}
+                {(TRANSFORMATIVE_BY_ELEMENT[config.element].length || LUNAR_BY_ELEMENT[config.element].length) ? (
+                  <section className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-semibold text-sm">Reaction DMG ({config.element}-triggered)</h3>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                        <label className="flex items-center gap-1">
+                          Bonus %
+                          <input className={inputCls("reactionPanelBonus", "w-14")} type="number"
+                            value={inst.reactionPanelBonus}
+                            onChange={e => updateInstance(inst.id, () => ({ reactionPanelBonus: e.target.value }))} />
+                        </label>
+                        {LUNAR_BY_ELEMENT[config.element].length ? (
+                          <label className="flex items-center gap-1" title="Lunar Reaction Base DMG Bonus (Moonsign Benediction passives)">
+                            Lunar Base %
+                            <input className={inputCls("lunarBaseBonus", "w-14")} type="number"
+                              value={inst.lunarBaseBonus}
+                              onChange={e => updateInstance(inst.id, () => ({ lunarBaseBonus: e.target.value }))} />
+                          </label>
+                        ) : null}
+                      </div>
+                    </div>
+                    {extras ? (
+                      <table className="mt-1 w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400">
+                            <th className="py-1.5 font-normal">Reaction</th>
+                            <th className="py-1.5 pr-1 text-right font-normal">Non-Crit</th>
+                            <th className="py-1.5 pr-1 text-right font-normal">CRIT</th>
+                            <th className="py-1.5 text-right font-normal">Avg</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {extras.transformative.map(t => (
+                            <tr key={t.type} className="border-t border-gray-100 dark:border-zinc-800/60">
+                              <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">{TRANSFORMATIVE_LABEL[t.type]}</td>
+                              <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
+                                <span className="font-semibold">{fmt(t.dmg)}</span>
+                                <span className="ml-1 text-[10px] text-gray-400">(no crit)</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {extras.lunar.map(l => (
+                            <tr key={l.type} className="border-t border-gray-100 dark:border-zinc-800/60">
+                              <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">{LUNAR_LABEL[l.type]}</td>
+                              <td className="py-1.5 pr-1 text-right tabular-nums">{fmt(l.res.nonCrit)}</td>
+                              <td className="py-1.5 pr-1 text-right tabular-nums">{fmt(l.res.crit)}</td>
+                              <td className="py-1.5 text-right tabular-nums font-semibold">{fmt(l.res.avg)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="mt-1 text-[10px] text-gray-400">Fill the remaining fields to compute (scales with character level, EM, and enemy RES).</p>
+                    )}
+                  </section>
+                ) : null}
               </div>
             );
           })}

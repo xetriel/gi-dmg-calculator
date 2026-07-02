@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk } from "./hit-helpers";
+import { atk, healHp } from "./hit-helpers";
 
 // Hits scale on ATK; her skill converts Max HP into bonus ATK, so enter the
 // in-Paramita total ATK. (scalingSource stays "hp" as the conceptual source.)
@@ -13,16 +13,24 @@ export const huTao: CharacterConfig = {
   talents: [
     { type: "normal", name: "Normal Attack", hits: [
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit", "3-Hit"),
-      atk("4-hit", "4-Hit"), atk("5-hit", "5-Hit"), atk("6-hit", "6-Hit"),
+      atk("4-hit", "4-Hit"), atk("5-hit", "5-Hit"), atk("5-hit-2", "5-Hit 2"),
+      atk("6-hit", "6-Hit"),
       atk("charged", "Charged Attack"), atk("plunge", "Plunge"),
       atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — Blood Blossom", hits: [atk("blood-blossom", "Blood Blossom")] },
     { type: "burst", name: "Elemental Burst — Spirit Soother", hits: [
       atk("skill-dmg", "Skill DMG"), atk("low-hp-skill-dmg", "Low-HP Skill DMG"),
+      healHp("skill-hp-regen", "HP Regen (% Max HP)"), healHp("low-hp-hp-regen", "Low-HP HP Regen (% Max HP)"),
     ] },
   ],
-  panels: ["Party panel (Xianyun / Furina / Yelan)","Signature Weapon + Refinement","HP ≤ 50% Paramita state toggle"],
+  panels: ["Party panel (Xianyun / Furina / Yelan)","Signature Weapon + Refinement"],
+  mechanicDefs: [
+    { id: "paramita", label: "Paramita Papilio (Skill active)", control: "toggle", defaultValue: 1,
+      hint: "ATK + skill's % of Max HP, capped at 400% Base ATK" },
+    { id: "low-hp", label: "HP ≤ 50% (Sanguine Rouge)", control: "toggle",
+      hint: "+33% Pyro DMG Bonus; pair with the Low-HP Burst rows" },
+  ],
   wikiTalents: [
     {
       name: "Secret Spear of Wangsheng",

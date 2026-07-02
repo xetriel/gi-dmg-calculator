@@ -66,9 +66,10 @@ describe("amplifyingMultiplier + availableReactions", () => {
     expect(amplifyingMultiplier("Hydro", "vaporize", 0, 0)).toBeCloseTo(2.0);
     expect(amplifyingMultiplier("Hydro", "vaporize", 0, 20)).toBeCloseTo(2.0 * 1.2);
   });
-  it("Electro has no amplifying reaction", () => {
-    expect(availableReactions("Electro")).toEqual(["none"]);
+  it("Electro has aggravate but no amplifying reaction", () => {
+    expect(availableReactions("Electro")).toEqual(["none", "aggravate"]);
     expect(amplifyingMultiplier("Electro", "vaporize", 500, 0)).toBe(1);
+    expect(amplifyingMultiplier("Electro", "aggravate", 500, 0)).toBe(1); // additive, not amplifying
   });
   it("reaction options per element", () => {
     expect(availableReactions("Pyro")).toEqual(["none", "vaporize", "melt"]);

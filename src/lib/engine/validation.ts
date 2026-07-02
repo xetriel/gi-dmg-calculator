@@ -57,6 +57,27 @@ function talentLevelBonuses(
   return bonuses;
 }
 
+// Effective talent level per talent type: the selected level plus any C3/C5 +3
+// bonus, capped at the max level available in the scaling data. NaN when the
+// talent has no scaling data / no selected level.
+export function effectiveTalentLevels(
+  config: CharacterConfig,
+  scaling: TalentScalingData,
+  levels: Record<string, string>,
+  constellationLevel: number = 0,
+): Record<string, number> {
+  const lvlBonuses = talentLevelBonuses(config.constellations, constellationLevel);
+  const out: Record<string, number> = {};
+  for (const g of config.talents) {
+    const s = scaling[g.type];
+    const baseLvl = s ? Number(levels[g.type]) : NaN;
+    const effectiveLvl = baseLvl ? baseLvl + (lvlBonuses[g.type] ?? 0) : NaN;
+    const maxLvl = s ? Math.max(...s.levels) : 0;
+    out[g.type] = effectiveLvl > maxLvl ? maxLvl : effectiveLvl;
+  }
+  return out;
+}
+
 // Resolve each hit's effective multiplier: the level-backed value if a talent level
 // is selected and the scaling table has a value for that hit, otherwise the manual input.
 // Returns null when neither is available (i.e. the hit is not yet filled).
@@ -68,15 +89,10 @@ export function resolveHitMultipliers(
   constellationLevel: number = 0,
 ): Record<string, number | null> {
   const out: Record<string, number | null> = {};
-  const lvlBonuses = talentLevelBonuses(config.constellations, constellationLevel);
+  const effLevels = effectiveTalentLevels(config, scaling, levels, constellationLevel);
   config.talents.forEach((g, gi) => {
     const s = scaling[g.type];
-    const baseLvl = s ? Number(levels[g.type]) : NaN;
-    const bonus = lvlBonuses[g.type] ?? 0;
-    const effectiveLvl = baseLvl ? baseLvl + bonus : NaN;
-    // Cap at the max level available in the scaling data.
-    const maxLvl = s ? Math.max(...s.levels) : 0;
-    const cappedLvl = effectiveLvl > maxLvl ? maxLvl : effectiveLvl;
+    const cappedLvl = effLevels[g.type];
     g.hits.forEach((h, hi) => {
       const id = hitId(gi, hi);
       const levelVal = s && cappedLvl ? s.byLevel[cappedLvl]?.[h.key] : undefined;

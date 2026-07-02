@@ -1,8 +1,9 @@
 import type { CharacterTalentSeed } from "./types";
 
-// Source: Arlecchino_Talents.md (wiki). NA levels 1–14.
-// Skill has no per-level table (fixed values only) and Burst was not captured —
-// both stay manual until fetched.
+// Source: saved wiki page "Arlecchino _ Genshin Impact Wiki _ Fandom.html" (extracted
+// via scripts/extract-wiki.ts). NA levels 1–14; Skill levels 1–10; Burst levels 1–13.
+// 4-Hit is two equal hits per level ("37.15 + 37.15") → 4-hit-a / 4-hit-b.
+// Burst healing is a fixed formula (150% Bond of Life + 150% ATK), handled as a mechanic.
 export const arlecchinoSeed: CharacterTalentSeed = {
   characterId: "arlecchino",
   hits: [
@@ -18,6 +19,13 @@ export const arlecchinoSeed: CharacterTalentSeed = {
     { hitKey: "plunge", talentType: "normal", values: [63.93, 69.14, 74.34, 81.77, 86.98, 92.92, 101.10, 109.28, 117.46, 126.38, 135.30, 144.22, 153.14, 162.06] },
     { hitKey: "low-plunge", talentType: "normal", values: [127.84, 138.24, 148.65, 163.51, 173.92, 185.81, 202.16, 218.51, 234.86, 252.70, 270.54, 288.38, 306.22, 324.05] },
     { hitKey: "high-plunge", talentType: "normal", values: [159.68, 172.67, 185.67, 204.24, 217.23, 232.09, 252.51, 272.93, 293.36, 315.64, 337.92, 360.20, 382.48, 404.76] },
+    // Masque of the Red Death: bonus-DMG coefficient per NA talent level (× Bond of Life).
     { hitKey: "masque-increase", talentType: "normal", kind: "buff", values: [120.4, 130.2, 140.0, 154.0, 163.8, 175.0, 190.4, 205.8, 221.2, 238.0, 254.8, 271.6, 288.4, 305.2] },
+    // Elemental Skill — All Is Ash
+    { hitKey: "spike", talentType: "skill", values: [14.84, 15.95, 17.07, 18.55, 19.66, 20.78, 22.26, 23.74, 25.23, 26.71] },
+    { hitKey: "cleave", talentType: "skill", values: [133.56, 143.58, 153.59, 166.95, 176.97, 186.98, 200.34, 213.70, 227.05, 240.41] },
+    { hitKey: "blood-debt-directive", talentType: "skill", values: [31.80, 34.19, 36.57, 39.75, 42.13, 44.52, 47.70, 50.88, 54.06, 57.24] },
+    // Elemental Burst — Balemoon Rising
+    { hitKey: "skill-dmg", talentType: "burst", values: [370.40, 398.18, 425.96, 463.00, 490.78, 518.56, 555.60, 592.64, 629.68, 666.72, 703.76, 740.80, 787.10] },
   ],
 };

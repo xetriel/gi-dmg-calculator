@@ -1,7 +1,7 @@
 import type { CharacterTalentSeed } from "./types";
 
-// Source: Neuvillette_Talents.md (wiki). NA levels 1–13, Skill levels 1–11.
-// Burst per-level table was not captured — stays manual until fetched.
+// Source: saved wiki page "Neuvillette _ Genshin Impact Wiki _ Fandom.html" (extracted
+// via scripts/extract-wiki.ts). NA levels 1–13; Skill levels 1–11; Burst levels 1–13.
 export const neuvilletteSeed: CharacterTalentSeed = {
   characterId: "neuvillette",
   hits: [
@@ -14,8 +14,11 @@ export const neuvilletteSeed: CharacterTalentSeed = {
     { hitKey: "plunge", talentType: "normal", values: [56.83, 61.45, 66.08, 72.69, 77.31, 82.60, 89.87, 97.14, 104.41, 112.34, 120.27, 128.20, 136.12] },
     { hitKey: "low-plunge", talentType: "normal", values: [113.63, 122.88, 132.13, 145.35, 154.59, 165.16, 179.70, 194.23, 208.77, 224.62, 240.48, 256.34, 272.19] },
     { hitKey: "high-plunge", talentType: "normal", values: [141.93, 153.49, 165.04, 181.54, 193.10, 206.30, 224.45, 242.61, 260.76, 280.57, 300.37, 320.18, 339.98] },
-    // Elemental Skill (Max HP-scaled)
+    // Elemental Skill — O Tears, I Shall Repay (Max HP-scaled main hit)
     { hitKey: "skill-dmg", talentType: "skill", values: [12.86, 13.83, 14.79, 16.08, 17.04, 18.01, 19.30, 20.58, 21.87, 23.16, 24.44] },
     { hitKey: "spiritbreath-thorn", talentType: "skill", values: [20.80, 22.36, 23.92, 26.00, 27.56, 29.12, 31.20, 33.28, 35.36, 37.44, 39.50] },
+    // Elemental Burst — O Tides, I Have Returned (Max HP-scaled)
+    { hitKey: "skill-dmg", talentType: "burst", values: [22.26, 23.93, 25.60, 27.82, 29.49, 31.16, 33.39, 35.61, 37.84, 40.06, 42.29, 44.52, 47.30] },
+    { hitKey: "waterfall", talentType: "burst", values: [9.11, 9.79, 10.47, 11.38, 12.06, 12.75, 13.66, 14.57, 15.48, 16.39, 17.30, 18.21, 19.35] },
   ],
 };

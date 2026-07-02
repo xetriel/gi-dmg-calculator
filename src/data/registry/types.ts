@@ -2,8 +2,10 @@ export type ScalingSource = "atk" | "hp" | "def" | "em";
 export type Element = "Pyro" | "Hydro" | "Electro" | "Cryo" | "Anemo" | "Geo" | "Dendro";
 export type Weapon = "Sword" | "Claymore" | "Polearm" | "Catalyst" | "Bow";
 
-// Amplifying reactions supported by the engine (v1). "none" = no reaction.
-export type ReactionType = "none" | "vaporize" | "melt";
+// Hit-attached reactions supported by the engine: amplifying (vaporize/melt multiply
+// the whole hit) and catalyze (aggravate adds a level/EM-scaled additive base DMG).
+// "none" = no reaction. Transformative and Lunar reactions are standalone outputs.
+export type ReactionType = "none" | "vaporize" | "melt" | "aggravate";
 
 // The three talent categories; each has one selectable level in the UI.
 export type TalentType = "normal" | "skill" | "burst";
@@ -26,8 +28,21 @@ export interface StatField {
 // multiplier applies to — it is per-hit because a character's hits can scale off
 // different stats (e.g. Neuvillette's basic NA scale on ATK, his HP hits on Max HP).
 // `key` is a stable id used to join per-level multipliers in the TalentScaling table.
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; }
+// `kind: "heal"` rows display a healing amount (mult% × stat × (1 + Healing Bonus)),
+// no crit columns.
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal"; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
+
+// Declarative per-character mechanic control rendered by the UI. The math lives in
+// src/lib/engine/mechanics.ts (resolveMechanics), keyed by character id + mechanic id.
+export interface MechanicDef {
+  id: string;                                  // e.g. "bond-of-life", "paramita", "draconic-stacks"
+  label: string;
+  control: "toggle" | "percent" | "stacks";
+  max?: number;                                // percent cap (e.g. 200) or max stacks (e.g. 3)
+  defaultValue?: number;                       // toggle: 1 = on; percent/stacks initial value
+  hint?: string;                               // short explanation shown next to the control
+}
 
 export interface WikiTalent {
   name: string;
@@ -86,5 +101,6 @@ export interface CharacterConfig {
   notes?: string[];
   wikiTalents?: WikiTalent[];
   constellations?: Constellation[];
+  mechanicDefs?: MechanicDef[];
 }
 

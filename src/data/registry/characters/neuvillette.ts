@@ -20,12 +20,16 @@ export const neuvillette: CharacterConfig = {
     { type: "skill", name: "Elemental Skill", hits: [
       hp("skill-dmg", "Skill DMG (% Max HP)"), hp("spiritbreath-thorn", "Spiritbreath Thorn"),
     ] },
-    // Burst per-level table not yet captured — stays manual until fetched.
     { type: "burst", name: "Elemental Burst", hits: [
       hp("skill-dmg", "Skill DMG (% Max HP)"), hp("waterfall", "Waterfall (% Max HP)"),
     ] },
   ],
-  mechanics: ["Past Draconic Glories Stacks (0–3)","Max HP% buff"],
+  mechanicDefs: [
+    { id: "draconic-stacks", label: "Past Draconic Glories stacks", control: "stacks", max: 3,
+      hint: "Equitable Judgment ×1.1 / ×1.25 / ×1.6 (C1 adds +1 stack, C2 adds CRIT DMG)" },
+    { id: "current-hp", label: "Current HP (% of Max)", control: "percent", max: 100, defaultValue: 100,
+      hint: "A4: +0.6% Hydro DMG per 1% above 30% (max +30%)" },
+  ],
   panels: ["Active / Inactive + Refinement panel"],
   wikiTalents: [
     {
@@ -58,5 +62,39 @@ export const neuvillette: CharacterConfig = {
       type: "Passive Talent",
       description: "Increases underwater sprint SPD for your own party members by 15%. Not stackable with other Passive Talents that provide the exact same effect."
     }
-  ]
+  ],
+  // Numeric constellation effects (C1 +1 stack, C2 +14% CRIT DMG per stack on Equitable
+  // Judgment) are applied by the mechanics resolver using the selected C-level.
+  constellations: [
+    {
+      level: 1, name: "Venerable Institution",
+      description: "When Neuvillette takes the field, he obtains 1 stack of Past Draconic Glories. Interruption resistance up during the charge and Equitable Judgment.",
+      effects: [{ type: "informational" }]
+    },
+    {
+      level: 2, name: "Juridical Exhortation",
+      description: "Each stack of Past Draconic Glories increases the CRIT DMG of Charged Attack: Equitable Judgment by 14% (max 42%).",
+      effects: [{ type: "informational" }]
+    },
+    {
+      level: 3, name: "Ancient Postulation",
+      description: "Increases the Level of Normal Attack: As Water Seeks Equilibrium by 3. Maximum upgrade level is 15.",
+      effects: [{ type: "talent_level_bonus", talentType: "normal" }]
+    },
+    {
+      level: 4, name: "Crown of Commiseration",
+      description: "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet is generated (once every 4s).",
+      effects: [{ type: "informational" }]
+    },
+    {
+      level: 5, name: "Axiomatic Judgment",
+      description: "Increases the Level of O Tides, I Have Returned by 3. Maximum upgrade level is 15.",
+      effects: [{ type: "talent_level_bonus", talentType: "burst" }]
+    },
+    {
+      level: 6, name: "Wrathful Recompense",
+      description: "Equitable Judgment can absorb nearby Sourcewater Droplets (+1s duration each), and on hit fires 2 additional currents every 2s, each dealing 10% of Max HP as Hydro DMG (counted as Equitable Judgment DMG).",
+      effects: [{ type: "informational" }]
+    },
+  ],
 };
