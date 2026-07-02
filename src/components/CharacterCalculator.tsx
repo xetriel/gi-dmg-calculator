@@ -32,6 +32,18 @@ const REACTION_LABEL: Record<ReactionType, string> = {
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all";
 
+// Attributes shown in the "Effective Stats" panel — the values actually used to
+// compute damage after talent toggles + constellations (e.g. Hu Tao's Paramita ATK).
+const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "percent" }[] = [
+  { key: "atk", label: "ATK", unit: "flat" },
+  { key: "hp", label: "Max HP", unit: "flat" },
+  { key: "def", label: "DEF", unit: "flat" },
+  { key: "em", label: "EM", unit: "flat" },
+  { key: "critRate", label: "CRIT Rate", unit: "percent" },
+  { key: "critDmg", label: "CRIT DMG", unit: "percent" },
+  { key: "dmgBonus", label: "DMG Bonus", unit: "percent" },
+];
+
 interface ReactionExtras {
   transformative: { type: TransformativeType; dmg: number }[];
   lunar: { type: LunarType; res: LunarResult }[];
@@ -69,6 +81,8 @@ interface ComputedInstance {
   validation: ReturnType<typeof validate>;
   results: Record<string, HitResult> | null; // null while inputs are invalid
   extras: ReactionExtras | null;
+  inputStats: DamageStats | null;             // stats as entered (before mechanic/constellation deltas)
+  effectiveStats: DamageStats | null;         // stats actually used for damage (after deltas)
   rotationTotals: Record<string, number>;      // rotationId -> total damage
   rotationStepsDmg: Record<string, number[]>;  // rotationId -> step damage array
 }
@@ -402,9 +416,10 @@ export function CharacterCalculator({
     const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
     const validation = validate(config, raw, resolved);
     if (!validation.ok) {
-      return { validation, results: null, extras: null, rotationTotals: {}, rotationStepsDmg: {} };
+      return { validation, results: null, extras: null, inputStats: null, effectiveStats: null, rotationTotals: {}, rotationStepsDmg: {} };
     }
     const s = resolveStats(raw);
+    const inputStats = { ...s }; // snapshot before mechanic + constellation stat deltas
 
     // Character mechanics (Masque/BoL, Paramita, Draconic stacks, Dark-Shattering, …)
     // computed from the pre-delta stats, then merged with constellation effects.
@@ -522,7 +537,7 @@ export function CharacterCalculator({
       rotationStepsDmg[r.id] = stepDmgs;
     }
 
-    return { validation, results: out, extras, rotationTotals, rotationStepsDmg };
+    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg };
   }
 
   // Computed once per render for all setups (benchmark comparisons read from here too).
@@ -658,7 +673,7 @@ export function CharacterCalculator({
         <div className="flex gap-6 items-start">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
-            const { validation, results, extras, rotationTotals } = computedById.get(inst.id)!;
+            const { validation, results, extras, rotationTotals, inputStats, effectiveStats } = computedById.get(inst.id)!;
             const benchmarkResults = computedById.get(activeBenchmarkId)?.results;
 
             const err = (id: string) => validation.errors[id];
@@ -899,6 +914,35 @@ export function CharacterCalculator({
                     {Object.keys(validation.errors).length} field(s) need attention.
                   </span>
                 )}
+
+                {/* Effective stats — the values actually used for damage after talent
+                    toggles + constellations (Paramita ATK, Sanguine Rouge DMG Bonus, …). */}
+                {effectiveStats && inputStats ? (
+                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
+                    <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                      {EFFECTIVE_ROWS.map(row => {
+                        const eff = effectiveStats[row.key];
+                        const delta = eff - inputStats[row.key];
+                        const changed = Math.abs(delta) > 0.05;
+                        const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
+                        return (
+                          <div key={row.key} className="flex items-center justify-between gap-2">
+                            <span className="text-gray-500 dark:text-gray-400">{row.label}</span>
+                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                              {show(eff)}
+                              {changed ? (
+                                <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                  {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
+                                </span>
+                              ) : null}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
 
                 {extras?.notes.length ? (
                   <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
