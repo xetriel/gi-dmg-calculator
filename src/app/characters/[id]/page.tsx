@@ -31,5 +31,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const config = byId(id);
   if (!config) return <p>Unknown character.</p>;
   const scaling = await loadScaling(id);
-  return <CharacterCalculator config={config} scaling={scaling} />;
+  const initialBuild = await prisma.build.findFirst({
+    where: { characterId: id },
+  });
+  return <CharacterCalculator config={config} scaling={scaling} initialBuild={initialBuild} />;
 }

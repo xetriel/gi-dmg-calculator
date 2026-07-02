@@ -7,6 +7,7 @@ import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, h
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
+import { saveBuildForCharacter } from "@/app/builds/actions";
 
 // Excel-style stat panel wired to the pure damage engine.
 // Fill every field, pick a talent level (where data exists) or type a multiplier,
@@ -116,7 +117,15 @@ const initialStats = {
   "defIgnore": "0",
 };
 
-export function CharacterCalculator({ config, scaling }: { config: CharacterConfig; scaling: TalentScalingData }) {
+export function CharacterCalculator({
+  config,
+  scaling,
+  initialBuild,
+}: {
+  config: CharacterConfig;
+  scaling: TalentScalingData;
+  initialBuild?: { id: string; name: string; data: any } | null;
+}) {
   const createInitialInstance = (id: string): CalcInstance => {
     const initLevels: Record<string, string> = {};
     for (const g of config.talents) {
@@ -141,12 +150,52 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
     };
   };
 
-  const [instances, setInstances] = useState<CalcInstance[]>(() => [
-    createInitialInstance("1")
-  ]);
+  const [instances, setInstances] = useState<CalcInstance[]>(() => {
+    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
+      return initialBuild.data as CalcInstance[];
+    }
+    return [createInitialInstance("1")];
+  });
+  const [savedInstancesJson, setSavedInstancesJson] = useState<string>(() => {
+    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
+      return JSON.stringify(initialBuild.data);
+    }
+    return JSON.stringify([createInitialInstance("1")]);
+  });
   const [benchmarkId, setBenchmarkId] = useState<string | null>(null);
-  const [nextId, setNextId] = useState(2);
+  const [nextId, setNextId] = useState(() => {
+    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
+      const ids = initialBuild.data.map((i: any) => Number(i.id) || 0);
+      return Math.max(...ids, 0) + 1;
+    }
+    return 2;
+  });
   const [showExtraInfo, setShowExtraInfo] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  const isDirty = JSON.stringify(instances) !== savedInstancesJson;
+
+  const saveChanges = async () => {
+    setIsSaving(true);
+    setSaveStatus("Saving...");
+    try {
+      // Remove runtime computed results/extras when saving to keep JSON clean, or save as is
+      const cleanInstances = instances.map(inst => ({
+        ...inst,
+        // we can save as is
+      }));
+      await saveBuildForCharacter(config.id, cleanInstances);
+      setSavedInstancesJson(JSON.stringify(cleanInstances));
+      setSaveStatus("Saved!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (e) {
+      console.error(e);
+      setSaveStatus("Failed to save");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const addInstance = () => {
     if (instances.length >= 3) return;
@@ -349,14 +398,32 @@ export function CharacterCalculator({ config, scaling }: { config: CharacterConf
             </span>
           </p>
         </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {saveStatus && (
+          <span className="text-xs text-gray-500 font-medium animate-pulse">
+            {saveStatus}
+          </span>
+        )}
+        <button
+          onClick={saveChanges}
+          disabled={isSaving}
+          className={
+            isDirty
+              ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+          }
+        >
+          Save Changes
+        </button>
         <button
           onClick={addInstance}
           disabled={instances.length >= 3}
-          className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+          className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           + Add Setup ({instances.length}/3)
         </button>
-      </header>
+      </div>
+    </header>
 
       {/* Special Mechanics, Panels, Notes at page level */}
       {showExtraInfo && (config.mechanics?.length || config.panels?.length || config.notes?.length) ? (

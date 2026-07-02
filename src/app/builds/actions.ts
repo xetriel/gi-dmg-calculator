@@ -10,3 +10,28 @@ export async function createDemoBuild() {
 export async function countBuilds() {
   return prisma.build.count();
 }
+
+export async function saveBuildForCharacter(characterId: string, instances: any) {
+  const existing = await prisma.build.findFirst({
+    where: { characterId },
+  });
+
+  if (existing) {
+    return prisma.build.update({
+      where: { id: existing.id },
+      data: {
+        data: instances,
+        updatedAt: new Date(),
+      },
+    });
+  } else {
+    return prisma.build.create({
+      data: {
+        name: `${characterId} Saved Build`,
+        characterId,
+        data: instances,
+        enemy: {},
+      },
+    });
+  }
+}
