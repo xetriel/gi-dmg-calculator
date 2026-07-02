@@ -299,6 +299,9 @@ export function CharacterCalculator({
 
       if (target instanceof HTMLAnchorElement) {
         const href = target.getAttribute("href");
+        const targetAttr = target.getAttribute("target");
+        if (targetAttr === "_blank") return; // Natively open new tabs without warning
+
         if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !e.defaultPrevented) {
           e.preventDefault();
           e.stopPropagation();
