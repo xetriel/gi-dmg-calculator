@@ -13,9 +13,9 @@ export default function Home() {
         {CHARACTERS.map(c => (
           <li key={c.id}>
             <Link href={`/characters/${c.id}`}
-              className="flex items-center justify-between rounded border p-3 hover:bg-gray-100">
-              <span className="font-medium">{c.name}</span>
-              <span className="text-xs text-gray-400">{c.element} · {c.weapon}</span>
+              className="group flex items-center justify-between rounded-lg border border-gray-200 dark:border-zinc-800 p-3 bg-white/50 dark:bg-zinc-900/30 hover:bg-gray-100 hover:text-black dark:hover:bg-zinc-800 dark:hover:text-white transition-all duration-200 shadow-xs">
+              <span className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-black dark:group-hover:text-white">{c.name}</span>
+              <span className="text-xs text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-200">{c.element} · {c.weapon}</span>
             </Link>
           </li>
         ))}

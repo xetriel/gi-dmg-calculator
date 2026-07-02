@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Build {
@@ -35,4 +36,20 @@ model Rotation {
   updatedAt DateTime @updatedAt
 
   @@index([buildId])
+}
+
+// Per-talent-level multiplier tables. One row per (character, talent, hit, level).
+// Seeded from src/data/talents/*.ts; the calculator looks these up when a level is
+// selected so the user picks a level instead of typing the multiplier.
+model TalentScaling {
+  id          String @id @default(cuid())
+  characterId String // e.g. "neuvillette"
+  talentType  String // "normal" | "skill" | "burst"
+  hitKey      String // stable id joined to registry TalentHit.key
+  level       Int // 1..N
+  value       Float // multiplier percent, e.g. 98.24
+  kind        String @default("damage") // "damage" | "buff" | "heal"
+
+  @@unique([characterId, talentType, hitKey, level])
+  @@index([characterId])
 }
