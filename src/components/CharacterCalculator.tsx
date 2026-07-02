@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef, ScalingSource } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, type RawInputs } from "@/lib/engine/validation";
@@ -51,11 +51,26 @@ interface CalcInstance {
   constellationLevel: number;
 }
 
+interface RotationStep {
+  id: string;
+  targetHitId: string;                    // hitId(gi, hi) e.g. "0:0"
+  reactionOverride: ReactionType | "default";
+}
+
+interface SavedRotation {
+  id: string;
+  name: string;
+  description: string;
+  steps: RotationStep[];
+}
+
 // Results derived from an instance's inputs on every render (no stored results).
 interface ComputedInstance {
   validation: ReturnType<typeof validate>;
   results: Record<string, HitResult> | null; // null while inputs are invalid
   extras: ReactionExtras | null;
+  rotationTotals: Record<string, number>;      // rotationId -> total damage
+  rotationStepsDmg: Record<string, number[]>;  // rotationId -> step damage array
 }
 
 // Collect all active constellation effects up to the given level.
@@ -150,22 +165,69 @@ export function CharacterCalculator({
     };
   };
 
-  const [instances, setInstances] = useState<CalcInstance[]>(() => {
-    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
-      return initialBuild.data as CalcInstance[];
+  // Backward-compatible hydration: supports plain array (oldest), single rotation object (old), and multiple rotations (new).
+  function hydrateFromBuild(data: any): { instances: CalcInstance[]; rotations: SavedRotation[]; activeRotationId: string } {
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      if (Array.isArray(data.rotations)) {
+        return {
+          instances: (data.instances ?? [createInitialInstance("1")]) as CalcInstance[],
+          rotations: data.rotations as SavedRotation[],
+          activeRotationId: (data.activeRotationId ?? (data.rotations[0]?.id || "")) as string,
+        };
+      }
+      if (Array.isArray(data.rotationSteps)) {
+        const legacyRot: SavedRotation = {
+          id: "legacy-rotation",
+          name: "Combo 1",
+          description: (data.description ?? "") as string,
+          steps: data.rotationSteps as RotationStep[],
+        };
+        return {
+          instances: (data.instances ?? [createInitialInstance("1")]) as CalcInstance[],
+          rotations: [legacyRot],
+          activeRotationId: "legacy-rotation",
+        };
+      }
     }
-    return [createInitialInstance("1")];
-  });
-  const [savedInstancesJson, setSavedInstancesJson] = useState<string>(() => {
-    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
-      return JSON.stringify(initialBuild.data);
+    if (Array.isArray(data) && data.length > 0) {
+      return {
+        instances: data as CalcInstance[],
+        rotations: [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
+        activeRotationId: "combo-1",
+      };
     }
-    return JSON.stringify([createInitialInstance("1")]);
+    return {
+      instances: [createInitialInstance("1")],
+      rotations: [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
+      activeRotationId: "combo-1",
+    };
+  }
+
+  const hydrated = initialBuild?.data ? hydrateFromBuild(initialBuild.data) : null;
+
+  const [instances, setInstances] = useState<CalcInstance[]>(
+    () => hydrated?.instances ?? [createInitialInstance("1")]
+  );
+  const [rotations, setRotations] = useState<SavedRotation[]>(
+    () => hydrated?.rotations ?? [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }]
+  );
+  const [activeRotationId, setActiveRotationId] = useState<string>(
+    () => hydrated?.activeRotationId ?? (hydrated?.rotations?.[0]?.id ?? "combo-1")
+  );
+  
+  const [savedJson, setSavedJson] = useState<string>(() => {
+    const payload = {
+      instances: hydrated?.instances ?? [createInitialInstance("1")],
+      rotations: hydrated?.rotations ?? [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
+      activeRotationId: hydrated?.activeRotationId ?? "combo-1",
+    };
+    return JSON.stringify(payload);
   });
   const [benchmarkId, setBenchmarkId] = useState<string | null>(null);
   const [nextId, setNextId] = useState(() => {
-    if (initialBuild?.data && Array.isArray(initialBuild.data) && initialBuild.data.length > 0) {
-      const ids = initialBuild.data.map((i: any) => Number(i.id) || 0);
+    const insts = hydrated?.instances ?? [];
+    if (insts.length > 0) {
+      const ids = insts.map((i: any) => Number(i.id) || 0);
       return Math.max(...ids, 0) + 1;
     }
     return 2;
@@ -173,20 +235,27 @@ export function CharacterCalculator({
   const [showExtraInfo, setShowExtraInfo] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [isRotationOpen, setIsRotationOpen] = useState(false);
+  const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
+  const [rotationNextId, setRotationNextId] = useState(() => {
+    const allSteps = (hydrated?.rotations ?? []).flatMap(r => r.steps);
+    if (allSteps.length > 0) {
+      const ids = allSteps.map(s => Number(s.id) || 0);
+      return Math.max(...ids, 0) + 1;
+    }
+    return 1;
+  });
 
-  const isDirty = JSON.stringify(instances) !== savedInstancesJson;
+  const currentPayload = () => JSON.stringify({ instances, rotations, activeRotationId });
+  const isDirty = currentPayload() !== savedJson;
 
   const saveChanges = async () => {
     setIsSaving(true);
     setSaveStatus("Saving...");
     try {
-      // Remove runtime computed results/extras when saving to keep JSON clean, or save as is
-      const cleanInstances = instances.map(inst => ({
-        ...inst,
-        // we can save as is
-      }));
-      await saveBuildForCharacter(config.id, cleanInstances);
-      setSavedInstancesJson(JSON.stringify(cleanInstances));
+      const payload = { instances, rotations, activeRotationId };
+      await saveBuildForCharacter(config.id, payload);
+      setSavedJson(JSON.stringify(payload));
       setSaveStatus("Saved!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (e) {
@@ -196,6 +265,35 @@ export function CharacterCalculator({
       setIsSaving(false);
     }
   };
+
+  const addRotation = () => {
+    const newId = `rot-${Date.now()}`;
+    const newRot: SavedRotation = {
+      id: newId,
+      name: `Combo ${rotations.length + 1}`,
+      description: "Custom rotation sequence",
+      steps: [],
+    };
+    setRotations(prev => [...prev, newRot]);
+    setActiveRotationId(newId);
+  };
+
+  const deleteRotation = (idToDelete: string) => {
+    if (rotations.length <= 1) return;
+    const index = rotations.findIndex(r => r.id === idToDelete);
+    const newRotations = rotations.filter(r => r.id !== idToDelete);
+    setRotations(newRotations);
+    if (activeRotationId === idToDelete) {
+      const nextActiveIndex = index === 0 ? 0 : index - 1;
+      setActiveRotationId(newRotations[nextActiveIndex].id);
+    }
+  };
+
+  const updateActiveRotation = (updater: (rot: SavedRotation) => Partial<SavedRotation>) => {
+    setRotations(prev => prev.map(r => r.id === activeRotationId ? { ...r, ...updater(r) } : r));
+  };
+
+
 
   const addInstance = () => {
     if (instances.length >= 3) return;
@@ -278,14 +376,14 @@ export function CharacterCalculator({
     if (instances.length < 2) return null;
     if (benchmarkVal === undefined || benchmarkVal === 0) return null;
     const pct = (currentVal / benchmarkVal) * 100;
-    
+
     let colorClass = "text-gray-400 dark:text-zinc-500";
     if (pct < 99.95) {
       colorClass = "text-red-500 dark:text-red-400 font-semibold";
     } else if (pct > 100.05) {
       colorClass = "text-green-500 dark:text-green-400 font-semibold";
     }
-    
+
     return (
       <span className={`text-[10px] leading-none ${colorClass}`}>
         {pct.toFixed(1)}%
@@ -300,7 +398,7 @@ export function CharacterCalculator({
     const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
     const validation = validate(config, raw, resolved);
     if (!validation.ok) {
-      return { validation, results: null, extras: null };
+      return { validation, results: null, extras: null, rotationTotals: {}, rotationStepsDmg: {} };
     }
     const s = resolveStats(raw);
 
@@ -373,20 +471,84 @@ export function CharacterCalculator({
       notes: mech.notes,
     };
 
-    return { validation, results: out, extras };
+    // Calculate rotation damage for all rotations
+    const rotationTotals: Record<string, number> = {};
+    const rotationStepsDmg: Record<string, number[]> = {};
+
+    for (const r of rotations) {
+      let total = 0;
+      const stepDmgs = r.steps.map(step => {
+        const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
+        if (effectiveReaction === inst.reaction) {
+          const res = out[step.targetHitId];
+          const val = res ? res.avg : 0;
+          total += val;
+          return val;
+        } else {
+          let hitConfig: { key: string; scaling: ScalingSource } | null = null;
+          for (let gi = 0; gi < config.talents.length; gi++) {
+            for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
+              if (hitId(gi, hi) === step.targetHitId) {
+                hitConfig = config.talents[gi].hits[hi];
+                break;
+              }
+            }
+            if (hitConfig) break;
+          }
+          if (!hitConfig) return 0;
+          const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
+          const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
+          const res = computeHit(s, {
+            multiplier: resolved[step.targetHitId] ?? 0,
+            scaling: hitConfig.scaling,
+            element: config.element,
+            reaction: effectiveReaction,
+            reactionBonusPct: Number(inst.reactionBonus || 0),
+            flatDmgBonus: flatBonus || undefined,
+            baseDmgMultiplier: mods.baseDmgMultiplier,
+            critDmgBonusPct: mods.critDmgBonusPct,
+            critRateBonusPct: mods.critRateBonusPct,
+            bonusDmgPct: mods.bonusDmgPct,
+          });
+          total += res.avg;
+          return res.avg;
+        }
+      });
+      rotationTotals[r.id] = total;
+      rotationStepsDmg[r.id] = stepDmgs;
+    }
+
+    return { validation, results: out, extras, rotationTotals, rotationStepsDmg };
   }
 
   // Computed once per render for all setups (benchmark comparisons read from here too).
   const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
+  const activeRot = rotations.find(r => r.id === activeRotationId) || rotations[0];
 
   return (
     <div className="flex flex-col h-full w-full">
       <header className="mb-6 shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-4">
         <div>
-          <h1 className="text-2xl font-semibold">{config.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold">{config.name}</h1>
+            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg px-2 py-0.5">
+              <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500">Combo:</span>
+              <select
+                className="bg-transparent border-none text-xs font-semibold py-0.5 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
+                value={activeRotationId}
+                onChange={e => setActiveRotationId(e.target.value)}
+              >
+                {rotations.map(r => (
+                  <option key={r.id} value={r.id} className="bg-white dark:bg-zinc-950 text-black dark:text-white">
+                    {r.name || "Untitled"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <p
             onClick={() => setShowExtraInfo(!showExtraInfo)}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer select-none transition-colors"
+            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer select-none transition-colors mt-1"
             title="Click to toggle special mechanics, panels, and notes"
           >
             <span>
@@ -398,32 +560,43 @@ export function CharacterCalculator({
             </span>
           </p>
         </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {saveStatus && (
-          <span className="text-xs text-gray-500 font-medium animate-pulse">
-            {saveStatus}
-          </span>
-        )}
-        <button
-          onClick={saveChanges}
-          disabled={isSaving}
-          className={
-            isDirty
-              ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-              : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-          }
-        >
-          Save Changes
-        </button>
-        <button
-          onClick={addInstance}
-          disabled={instances.length >= 3}
-          className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          + Add Setup ({instances.length}/3)
-        </button>
-      </div>
-    </header>
+        <div className="flex items-center gap-2 shrink-0">
+          {saveStatus && (
+            <span className="text-xs text-gray-500 font-medium animate-pulse">
+              {saveStatus}
+            </span>
+          )}
+          <button
+            onClick={() => setIsRotationOpen(true)}
+            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+          >
+            <span>📋 Rotation Builder</span>
+            {rotations.find(r => r.id === activeRotationId)?.steps.length ? (
+              <span className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {rotations.find(r => r.id === activeRotationId)?.steps.length}
+              </span>
+            ) : null}
+          </button>
+          <button
+            onClick={saveChanges}
+            disabled={isSaving}
+            className={
+              isDirty
+                ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+                : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            }
+          >
+            Save Changes
+          </button>
+          <button
+            onClick={addInstance}
+            disabled={instances.length >= 3}
+            className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            + Add Setup ({instances.length}/3)
+          </button>
+        </div>
+      </header>
 
       {/* Special Mechanics, Panels, Notes at page level */}
       {showExtraInfo && (config.mechanics?.length || config.panels?.length || config.notes?.length) ? (
@@ -481,7 +654,7 @@ export function CharacterCalculator({
         <div className="flex gap-6 items-start">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
-            const { validation, results, extras } = computedById.get(inst.id)!;
+            const { validation, results, extras, rotationTotals } = computedById.get(inst.id)!;
             const benchmarkResults = computedById.get(activeBenchmarkId)?.results;
 
             const err = (id: string) => validation.errors[id];
@@ -493,20 +666,36 @@ export function CharacterCalculator({
             return (
               <div
                 key={inst.id}
-                className={`w-[420px] shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 ${
-                  baseBenchmarkInst
+                className={`w-[420px] shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 ${baseBenchmarkInst
                     ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
                     : "border-gray-200 dark:border-zinc-800"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm">Setup {index + 1}</span>
-                    {baseBenchmarkInst && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded">
-                        Benchmark
-                      </span>
-                    )}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm">Setup {index + 1}</span>
+                      {baseBenchmarkInst && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded">
+                          Benchmark
+                        </span>
+                      )}
+                    </div>
+                    {rotations.map(r => {
+                      if (r.steps.length === 0) return null;
+                      const isSelected = r.id === activeRotationId;
+                      return (
+                        <div
+                          key={r.id}
+                          className={`text-[10px] mt-1 flex items-center justify-between gap-4 font-semibold leading-tight ${
+                            isSelected ? "text-zinc-900 dark:text-zinc-100 font-extrabold" : "text-gray-400 dark:text-zinc-500"
+                          }`}
+                        >
+                          <span className="truncate max-w-[200px]">{r.name || "Combo"}:</span>
+                          <span className="tabular-nums">{fmt(rotationTotals[r.id] ?? 0)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                   {instances.length > 1 && (
                     <button
@@ -531,13 +720,12 @@ export function CharacterCalculator({
                             key={lvl}
                             onClick={() => updateInstance(inst.id, () => ({ constellationLevel: inst.constellationLevel === lvl ? lvl - 1 : lvl }))}
                             title={lvl === 0 ? "No constellation" : `C${lvl}: ${config.constellations!.find(c => c.level === lvl)?.name ?? ""}`}
-                            className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-all border ${
-                              active
+                            className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-all border ${active
                                 ? isInfo
                                   ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500"
                                   : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
                                 : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
-                            }`}
+                              }`}
                           >
                             C{lvl}
                           </button>
@@ -575,11 +763,10 @@ export function CharacterCalculator({
                                 {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
                                   <button key={i}
                                     onClick={() => setMechanic(inst.id, m.id, String(i))}
-                                    className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${
-                                      Number(val) === i
+                                    className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${Number(val) === i
                                         ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
                                         : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
-                                    }`}>
+                                      }`}>
                                     {i}
                                   </button>
                                 ))}
@@ -688,11 +875,10 @@ export function CharacterCalculator({
                     <button
                       onClick={() => setBenchmarkId(inst.id)}
                       disabled={baseBenchmarkInst}
-                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${
-                        baseBenchmarkInst
+                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${baseBenchmarkInst
                           ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
                           : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                      }`}
+                        }`}
                     >
                       Compare This
                     </button>
@@ -778,32 +964,32 @@ export function CharacterCalculator({
                                       ) : "—"}
                                     </td>
                                   ) : (
-                                  <>
-                                    <td className="py-1.5 pr-1 text-right tabular-nums">
-                                      {res ? (
-                                        <div className="flex flex-col items-end">
-                                          <span>{fmt(res.nonCrit)}</span>
-                                          {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
-                                        </div>
-                                      ) : "—"}
-                                    </td>
-                                    <td className="py-1.5 pr-1 text-right tabular-nums">
-                                      {res ? (
-                                        <div className="flex flex-col items-end">
-                                          <span>{fmt(res.crit)}</span>
-                                          {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
-                                        </div>
-                                      ) : "—"}
-                                    </td>
-                                    <td className="py-1.5 text-right tabular-nums font-semibold">
-                                      {res ? (
-                                        <div className="flex flex-col items-end">
-                                          <span>{fmt(res.avg)}</span>
-                                          {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
-                                        </div>
-                                      ) : "—"}
-                                    </td>
-                                  </>
+                                    <>
+                                      <td className="py-1.5 pr-1 text-right tabular-nums">
+                                        {res ? (
+                                          <div className="flex flex-col items-end">
+                                            <span>{fmt(res.nonCrit)}</span>
+                                            {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
+                                          </div>
+                                        ) : "—"}
+                                      </td>
+                                      <td className="py-1.5 pr-1 text-right tabular-nums">
+                                        {res ? (
+                                          <div className="flex flex-col items-end">
+                                            <span>{fmt(res.crit)}</span>
+                                            {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
+                                          </div>
+                                        ) : "—"}
+                                      </td>
+                                      <td className="py-1.5 text-right tabular-nums font-semibold">
+                                        {res ? (
+                                          <div className="flex flex-col items-end">
+                                            <span>{fmt(res.avg)}</span>
+                                            {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
+                                          </div>
+                                        ) : "—"}
+                                      </td>
+                                    </>
                                   )
                                 ) : null}
                               </tr>
@@ -878,6 +1064,348 @@ export function CharacterCalculator({
           })}
         </div>
       </div>
+
+      {/* ── Rotation Builder Modal Popup ── */}
+      {isRotationOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 animate-out fade-out">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
+              <div>
+                <h2 className="text-lg font-bold">Rotation Builder</h2>
+                <p className="text-xs text-gray-400 dark:text-zinc-500">Configure your combo sequence and compare setups</p>
+              </div>
+              <button
+                onClick={() => setIsRotationOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content (Split Screen) */}
+            <div className="flex-1 flex overflow-hidden">
+              {/* Left Sidebar - Rotations list */}
+              <div className="w-64 border-r border-gray-150 dark:border-zinc-850 p-4 overflow-y-auto flex flex-col bg-gray-50/30 dark:bg-zinc-950/20 shrink-0">
+                <div className="flex items-center justify-between mb-3 shrink-0">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 tracking-wider">Rotations</span>
+                  <button
+                    onClick={addRotation}
+                    className="rounded bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-2 py-1 text-[10px] font-bold text-white dark:text-zinc-950 transition-colors cursor-pointer"
+                  >
+                    + Add New
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 flex-1 overflow-y-auto">
+                  {rotations.map(r => {
+                    const isSelected = r.id === activeRotationId;
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => setActiveRotationId(r.id)}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer group ${
+                          isSelected
+                            ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950"
+                            : "bg-white border-gray-200 hover:border-gray-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        <div className="flex flex-col min-w-0 pr-2">
+                          <span className="text-xs font-bold truncate leading-tight">
+                            {r.name || "Untitled Rotation"}
+                          </span>
+                          <span className={`text-[10px] truncate leading-normal mt-0.5 ${
+                            isSelected ? "text-gray-300 dark:text-zinc-500" : "text-gray-400"
+                          }`}>
+                            {r.description || "No description"}
+                          </span>
+                        </div>
+                        {rotations.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteRotation(r.id);
+                            }}
+                            className={`p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-650 dark:hover:bg-red-950/20 dark:hover:text-red-300 transition-all cursor-pointer ${
+                              isSelected ? "text-white hover:text-red-400" : "text-gray-400"
+                            }`}
+                            title="Delete rotation"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Panel - Active Rotation Details */}
+              <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
+                {activeRot ? (
+                  <>
+                    {/* Metadata Editors */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-gray-50 dark:bg-zinc-900/40 p-4 rounded-xl border border-gray-200/50 dark:border-zinc-800/50 shrink-0">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 mb-1.5">Rotation Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Vaporize E Combo..."
+                          className="w-full border px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all font-semibold"
+                          value={activeRot.name}
+                          onChange={e => updateActiveRotation(() => ({ name: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 mb-1.5">Rotation Description</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Kaeya melt support sequence..."
+                          className="w-full border px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all"
+                          value={activeRot.description}
+                          onChange={e => updateActiveRotation(() => ({ description: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Step Builder Controls */}
+                    <div className="flex items-center gap-2 mb-4 shrink-0">
+                      <button
+                        className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-xs font-bold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5 border border-gray-300 dark:border-zinc-700 font-semibold"
+                        onClick={() => {
+                          setIsSelectAttackOpen(true);
+                        }}
+                      >
+                        <span>➕ Add Step</span>
+                      </button>
+                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 italic">
+                        Click "+ Add Step" to choose from all attack instances for your character.
+                      </span>
+                    </div>
+
+                    {/* Steps Table */}
+                    {activeRot.steps.length === 0 ? (
+                      <div className="flex-1 flex flex-col items-center justify-center py-12 border border-dashed border-gray-200 dark:border-zinc-800 rounded-xl">
+                        <p className="text-sm text-gray-400 dark:text-zinc-500 mb-1 font-semibold">This rotation is empty</p>
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">Pick an attack from the dropdown and click "+ Add Step" to build your combo.</p>
+                      </div>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto border border-gray-200/60 dark:border-zinc-850 rounded-xl min-h-[200px]">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400 bg-gray-50/50 dark:bg-zinc-900/30">
+                              <th className="py-2.5 px-3 font-normal w-8">#</th>
+                              <th className="py-2.5 px-3 font-normal">Hit</th>
+                              <th className="py-2.5 px-3 font-normal w-28">Reaction</th>
+                              {instances.map((inst, idx) => {
+                                const baseBenchmarkInst = activeBenchmarkId === inst.id;
+                                return (
+                                  <th key={inst.id} className="py-2.5 px-3 text-right font-normal">
+                                    <div className="flex flex-col items-end gap-1">
+                                      <span className="font-semibold text-gray-800 dark:text-gray-250">Setup {idx + 1} Avg</span>
+                                      <button
+                                        onClick={() => setBenchmarkId(inst.id)}
+                                        disabled={baseBenchmarkInst}
+                                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold transition-all ${baseBenchmarkInst
+                                          ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 cursor-not-allowed border border-gray-300 dark:border-zinc-700"
+                                          : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                                        }`}
+                                      >
+                                        {baseBenchmarkInst ? "Benchmark" : "Compare"}
+                                      </button>
+                                    </div>
+                                  </th>
+                                );
+                              })}
+                              <th className="py-2.5 px-3 w-16"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeRot.steps.map((step, stepIdx) => {
+                              let hitName = step.targetHitId;
+                              for (let gi = 0; gi < config.talents.length; gi++) {
+                                for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
+                                  if (hitId(gi, hi) === step.targetHitId) {
+                                    hitName = `${config.talents[gi].name}: ${config.talents[gi].hits[hi].name}`;
+                                  }
+                                }
+                              }
+                              
+                              // Find benchmark hit value
+                              const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
+                              let benchmarkDmg = 0;
+                              if (benchmarkInst) {
+                                const benchmarkComputed = computedById.get(benchmarkInst.id);
+                                if (benchmarkComputed && benchmarkComputed.rotationStepsDmg) {
+                                  benchmarkDmg = benchmarkComputed.rotationStepsDmg[activeRotationId]?.[stepIdx] ?? 0;
+                                }
+                              }
+
+                              return (
+                                <tr key={step.id} className="border-t border-gray-100 dark:border-zinc-900/80 hover:bg-gray-50/20 dark:hover:bg-zinc-900/10">
+                                  <td className="py-2.5 px-3 text-gray-400 dark:text-zinc-500 tabular-nums">{stepIdx + 1}</td>
+                                  <td className="py-2.5 px-3 text-gray-700 dark:text-gray-300 font-medium">{hitName}</td>
+                                  <td className="py-2.5 px-3">
+                                    <select
+                                      className={selectCls + " text-[10px] py-0.5 w-24"}
+                                      value={step.reactionOverride}
+                                      onChange={e => {
+                                        const newSteps = [...activeRot.steps];
+                                        newSteps[stepIdx] = { ...step, reactionOverride: e.target.value as ReactionType | "default" };
+                                        updateActiveRotation(() => ({ steps: newSteps }));
+                                      }}
+                                    >
+                                      <option value="default">Default</option>
+                                      {Object.entries(REACTION_LABEL).map(([k, v]) => (
+                                        <option key={k} value={k}>{v}</option>
+                                      ))}
+                                    </select>
+                                  </td>
+                                  {instances.map(inst => {
+                                    const computed = computedById.get(inst.id);
+                                    const stepsDmg = computed?.rotationStepsDmg[activeRotationId];
+                                    const dmg = stepsDmg ? stepsDmg[stepIdx] : 0;
+                                    return (
+                                      <td key={inst.id} className="py-2.5 px-3 text-right tabular-nums font-semibold">
+                                        <div className="flex flex-col items-end">
+                                          <span>{fmt(dmg)}</span>
+                                          {renderPct(dmg, benchmarkDmg)}
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                  <td className="py-2.5 px-3 text-center">
+                                    <button
+                                      className="text-red-400 hover:text-red-650 dark:hover:text-red-300 cursor-pointer text-xs p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-all ml-4"
+                                      onClick={() => {
+                                        updateActiveRotation(r => ({
+                                          steps: r.steps.filter(s => s.id !== step.id)
+                                        }));
+                                      }}
+                                      title="Remove step"
+                                    >
+                                      ✕
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t border-gray-250 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-900/20">
+                              <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-200" colSpan={3}>Total Average DMG</td>
+                              {instances.map(inst => {
+                                const computed = computedById.get(inst.id);
+                                const total = computed?.rotationTotals[activeRotationId] ?? 0;
+                                const benchmarkComputed = computedById.get(activeBenchmarkId);
+                                const benchmarkTotal = benchmarkComputed?.rotationTotals[activeRotationId] ?? 0;
+                                return (
+                                  <td key={inst.id} className="py-3 px-3 text-right tabular-nums font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                                    <div className="flex flex-col items-end">
+                                      <span>{fmt(total)}</span>
+                                      {renderPct(total, benchmarkTotal)}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                              <td></td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                    Select or create a rotation on the sidebar to get started
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-900/10">
+              <span className="text-[11px] text-gray-400 dark:text-zinc-500">Changes will be saved automatically along with your setup builds.</span>
+              <button
+                onClick={() => setIsRotationOpen(false)}
+                className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Attack Selector Popup Modal overlay (z-60) ── */}
+      {isSelectAttackOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg max-h-[75vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0">
+              <div>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">Select Attack Instance</h3>
+                <p className="text-[10px] text-gray-400 dark:text-zinc-500">Choose an attack to append to your combo</p>
+              </div>
+              <button
+                onClick={() => setIsSelectAttackOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-850 transition-colors cursor-pointer text-xs font-bold font-mono"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* List of attacks grouped by talent */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {config.talents.map((g, gi) => (
+                <div key={g.name} className="space-y-1.5">
+                  <h4 className="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-zinc-500">{g.name}</h4>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {g.hits.map((h, hi) => {
+                      if (h.kind === "heal") return null;
+                      const hitIdValue = hitId(gi, hi);
+                      return (
+                        <button
+                          key={hitIdValue}
+                          onClick={() => {
+                            updateActiveRotation(r => ({
+                              steps: [...r.steps, {
+                                id: String(rotationNextId),
+                                targetHitId: hitIdValue,
+                                reactionOverride: "default",
+                              }]
+                            }));
+                            setRotationNextId(prev => prev + 1);
+                            setIsSelectAttackOpen(false);
+                          }}
+                          className="w-full text-left p-2.5 rounded-lg border border-gray-200/60 dark:border-zinc-850 hover:border-zinc-900 dark:hover:border-zinc-100 bg-white hover:bg-zinc-50 dark:bg-zinc-900/40 dark:hover:bg-zinc-900 text-xs text-gray-700 dark:text-zinc-300 font-semibold transition-all cursor-pointer flex items-center justify-between group"
+                        >
+                          <span>{h.name}</span>
+                          <span className="text-[9px] text-gray-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 uppercase tracking-wider font-bold">
+                            {h.scaling}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex justify-end bg-gray-50/50 dark:bg-zinc-900/10">
+              <button
+                onClick={() => setIsSelectAttackOpen(false)}
+                className="rounded-lg bg-zinc-200 dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

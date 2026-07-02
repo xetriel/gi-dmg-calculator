@@ -54,6 +54,8 @@ const addMods = (perHit: Record<string, PerHitMods>, key: string, mods: PerHitMo
   if (mods.bonusDmgPct) m.bonusDmgPct = (m.bonusDmgPct ?? 0) + mods.bonusDmgPct;
 };
 
+const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+
 export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
   const res: MechanicsResult = { statDeltas: {}, perHit: {}, notes: [] };
   const { stats, inputs, constellationLevel: cons } = ctx;
@@ -71,7 +73,7 @@ export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): Me
         const bonus = Math.min(raw, cap);
         res.statDeltas.atk = (res.statDeltas.atk ?? 0) + bonus;
         res.notes.push(
-          `Paramita: +${Math.round(bonus).toLocaleString()} ATK (${pct}% of Max HP${raw > cap ? ", capped at 400% Base ATK" : ""})`,
+          `Paramita: +${fmt(bonus)} ATK (${pct}% of Max HP${raw > cap ? ", capped at 400% Base ATK" : ""})`,
         );
       }
       // Sanguine Rouge (A4): ≤50% HP → +33% Pyro DMG Bonus.
@@ -95,11 +97,11 @@ export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): Me
           addMods(res.perHit, key, { flatDmgBonus: additive });
         }
         res.notes.push(
-          `Masque: +${Math.round(additive).toLocaleString()} flat DMG on Normal Attacks (${masquePct}% × Bond of Life${cons >= 1 ? ", C1" : ""})`,
+          `Masque: +${fmt(additive)} flat DMG on Normal Attacks (${masquePct}% × Bond of Life${cons >= 1 ? ", C1" : ""})`,
         );
         // Burst heal (fixed formula): 150% Bond of Life + 150% ATK.
         const heal = 1.5 * bolValue + 1.5 * stats.atk;
-        res.notes.push(`Balemoon Rising heal: ${Math.round(heal).toLocaleString()} HP (150% BoL + 150% ATK)`);
+        res.notes.push(`Balemoon Rising heal: ${fmt(heal)} HP (150% BoL + 150% ATK)`);
       }
       // Utility passive "The Balemoon Alone May Know": +40% Pyro DMG Bonus in combat.
       if (on("pyro-bonus")) {
@@ -153,7 +155,7 @@ export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): Me
         const keys = [...hitKeysOf(config, "normal"), "swift-hunt-1", "swift-hunt-2", "skill-dmg-x5"];
         for (const key of keys) addMods(res.perHit, key, { flatDmgBonus: additive });
         res.notes.push(
-          `Dark-Shattering Flame: +${Math.round(additive).toLocaleString()} flat DMG on NA & Burst (${stacks} × ${perStack}% ATK${additive >= cap ? ", capped" : ""}${cons >= 2 ? ", C2" : ""})`,
+          `Dark-Shattering Flame: +${fmt(additive)} flat DMG on NA & Burst (${stacks} × ${perStack}% ATK${additive >= cap ? ", capped" : ""}${cons >= 2 ? ", C2" : ""})`,
         );
       }
       // A4 Lawful Remuneration: +10% CRIT Rate per Bond of Life change (max 2 stacks).
