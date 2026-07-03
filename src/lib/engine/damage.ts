@@ -23,13 +23,14 @@ export interface DamageStats {
   defIgnore: number;     // percent
 }
 
-// Per-hit Stellar-Conduct parameters. Stellar-Conduct is reaction DMG (wiki
-// "Stellar Reaction Damage"): it ignores DMG Bonus% and the enemy-DEF multiplier,
-// uses the Lunar/Stellar EM bonus 6·EM/(EM+2000), and can CRIT.
-export interface StellarParams {
-  brc: number;                // Base Reaction Coefficient (Polestar hits: 1, 1.45…1.9)
-  baseDmgBonusPct: number;    // %Stellar Reaction Base DMG Bonus (Light of Rationalisme, max 14)
-  reactionBonusPct: number;   // %Reaction Bonus (e.g. C1 +30, artifacts)
+// Per-hit direct-reaction parameters, shared by Stellar-Conduct and Direct Lunar
+// hits (wiki "Stellar Reaction Damage" / "Direct Lunar Damage" — identical shape):
+// reaction DMG that ignores DMG Bonus% and the enemy-DEF multiplier, uses the
+// Lunar/Stellar EM bonus 6·EM/(EM+2000), and can CRIT.
+export interface DirectReactionParams {
+  coefficient: number;        // Base Reaction Coefficient (Polestar hits 1/1.45…1.9; Lunar-Crystallize 1.6)
+  baseDmgBonusPct: number;    // %Reaction Base DMG Bonus (Light of Rationalisme / Moonsign passives, max 14)
+  reactionBonusPct: number;   // %Reaction Bonus (e.g. constellation +30, artifacts)
 }
 
 export interface HitInput {
@@ -43,7 +44,7 @@ export interface HitInput {
   critDmgBonusPct?: number;   // per-hit CRIT DMG bonus (e.g. Neuvillette C2 on Equitable Judgment)
   critRateBonusPct?: number;  // per-hit CRIT Rate bonus (e.g. Arlecchino C6 on NA/Burst)
   bonusDmgPct?: number;       // per-hit DMG Bonus% addition (e.g. Clorinde C4 on Last Lightfall)
-  stellar?: StellarParams;    // present => compute through the Stellar-Conduct branch
+  directReaction?: DirectReactionParams; // present => compute through the direct-reaction branch
 }
 
 export interface HitResult {
@@ -158,15 +159,15 @@ export function catalyzeAdditive(
 export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
   let nonCrit: number;
 
-  if (hit.stellar) {
-    // Stellar-Conduct branch (wiki "Stellar-Conduct Damage"):
-    //   (BRC × Mult% × Stat × BaseDMGMult × (1 + %StellarBaseDMGBonus)
-    //    × (1 + EMBonus_Stellar + %ReactionBonus) + additive) × RESMult × CRIT
+  if (hit.directReaction) {
+    // Direct-reaction branch (wiki "Stellar-Conduct Damage" / "Direct Lunar Damage"):
+    //   (Coefficient × Mult% × Stat × BaseDMGMult × (1 + %ReactionBaseDMGBonus)
+    //    × (1 + EMBonus + %ReactionBonus) + additive) × RESMult × CRIT
     // No enemy-DEF multiplier, no DMG Bonus%, no amplifying/catalyze;
     // Elevation Multiplier treated as 1.
-    const s = hit.stellar;
+    const s = hit.directReaction;
     const base =
-      s.brc *
+      s.coefficient *
         (hit.multiplier / 100) *
         scalingTotal(stats, hit.scaling) *
         (hit.baseDmgMultiplier ?? 1) *

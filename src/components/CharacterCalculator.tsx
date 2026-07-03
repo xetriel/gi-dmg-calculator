@@ -30,6 +30,20 @@ const REACTION_LABEL: Record<ReactionType, string> = {
   aggravate: "Aggravate",
 };
 
+// Tag styling for direct-reaction hits (Stellar-Conduct / Lunar-Crystallize rows).
+const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; title: string }> = {
+  stellar: {
+    label: "Stellar",
+    cls: "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300",
+    title: "Stellar-Conduct reaction DMG: ignores DMG Bonus% and enemy DEF; EM bonus 6·EM/(EM+2000)",
+  },
+  lunar: {
+    label: "Lunar",
+    cls: "bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300",
+    title: "Lunar-Crystallize reaction DMG: ignores DMG Bonus% and enemy DEF; EM bonus 6·EM/(EM+2000)",
+  },
+};
+
 // Fixed locale: results now render during SSR too, and the server's locale can
 // differ from the browser's (e.g. "2.047" vs "2,047" → hydration mismatch).
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -1166,6 +1180,7 @@ export function CharacterCalculator({
     const mech = resolveMechanics(config, {
       stats: s,
       baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
+      baseDef: toNum(inst.stats["def.base"]) ?? 0,
       constellationLevel: inst.constellationLevel,
       talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
       scaling,
@@ -1207,9 +1222,9 @@ export function CharacterCalculator({
           critDmgBonusPct: mods.critDmgBonusPct,
           critRateBonusPct: mods.critRateBonusPct,
           bonusDmgPct: mods.bonusDmgPct,
-          // Stellar-flagged hits always use the stellar branch; the resolver supplies
-          // the params (fallback: neutral coefficients).
-          stellar: h.stellar ? mods.stellar ?? { brc: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+          // Direct-reaction hits (Stellar/Lunar) always use the direct branch; the
+          // resolver supplies the params (fallback: neutral coefficients).
+          directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
         });
       }),
     );
@@ -1224,7 +1239,8 @@ export function CharacterCalculator({
       })),
       lunar: LUNAR_BY_ELEMENT[config.element].map(type => ({
         type,
-        res: indirectLunarDamage(type, s, lunarBase, panelBonus),
+        // Manual input + any auto Moonsign bonus from the character's own kit (e.g. Zibai).
+        res: indirectLunarDamage(type, s, lunarBase + (mech.lunarBaseBonusPct ?? 0), panelBonus),
       })),
       notes: mech.notes,
     };
@@ -1247,7 +1263,7 @@ export function CharacterCalculator({
           total += val;
           return val;
         } else {
-          let hitConfig: { key: string; scaling: ScalingSource; stellar?: boolean } | null = null;
+          let hitConfig: { key: string; scaling: ScalingSource; direct?: "stellar" | "lunar" } | null = null;
           for (let gi = 0; gi < config.talents.length; gi++) {
             for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
               if (hitId(gi, hi) === step.targetHitId) {
@@ -1271,7 +1287,7 @@ export function CharacterCalculator({
             critDmgBonusPct: mods.critDmgBonusPct,
             critRateBonusPct: mods.critRateBonusPct,
             bonusDmgPct: mods.bonusDmgPct,
-            stellar: hitConfig.stellar ? mods.stellar ?? { brc: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+            directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
           });
           const val = res[typeKey] * qty;
           total += val;
@@ -1903,10 +1919,10 @@ export function CharacterCalculator({
                               <tr key={id} className={`border-t border-gray-100 dark:border-zinc-800/60 ${isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : ""}`}>
                                 <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
                                   {h.name} <span className="text-[10px] text-gray-400 dark:text-gray-500">({isHeal ? "HEAL" : h.scaling.toUpperCase()})</span>
-                                  {h.stellar ? (
-                                    <span className="ml-1 text-[9px] font-bold uppercase tracking-wider rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 px-1 py-0.5"
-                                      title="Stellar-Conduct reaction DMG: ignores DMG Bonus% and enemy DEF; EM bonus 6·EM/(EM+2000)">
-                                      Stellar
+                                  {h.direct ? (
+                                    <span className={`ml-1 text-[9px] font-bold uppercase tracking-wider rounded px-1 py-0.5 ${DIRECT_TAG[h.direct].cls}`}
+                                      title={DIRECT_TAG[h.direct].title}>
+                                      {DIRECT_TAG[h.direct].label}
                                     </span>
                                   ) : null}
                                 </td>

@@ -17,6 +17,7 @@ const FILES: Record<string, string> = {
   "hu-tao": "Hu Tao _ Genshin Impact Wiki _ Fandom.html",
   "neuvillette": "Neuvillette _ Genshin Impact Wiki _ Fandom.html",
   "sandrone": "Sandrone_Cleaned _ Genshin Impact Wiki _ Fandom.html",
+  "zibai": "Zibai_Cleaned _ Genshin Impact Wiki _ Fandom.html",
 };
 const DAMAGE_FILE = "Damage _ Genshin Impact Wiki _ Fandom.html";
 

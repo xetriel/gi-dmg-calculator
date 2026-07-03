@@ -4,9 +4,10 @@ import { huTao } from "./hu-tao";
 import { neuvillette } from "./neuvillette";
 import { clorinde } from "./clorinde";
 import { sandrone } from "./sandrone";
+import { zibai } from "./zibai";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
-export { arlecchino, huTao, neuvillette, clorinde, sandrone };
-export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone];
+export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai };
+export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai];
 export const byId = (id: string) => CHARACTERS.find(c => c.id === id);

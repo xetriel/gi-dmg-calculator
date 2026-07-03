@@ -7,5 +7,9 @@ export const atk = (key: string, name: string): TalentHit => ({ key, name, scali
 export const hp = (key: string, name: string): TalentHit => ({ key, name, scaling: "hp" });
 // Healing row (% Max HP): displayed as a heal amount, no crit columns.
 export const healHp = (key: string, name: string): TalentHit => ({ key, name, scaling: "hp", kind: "heal" });
-// Stellar-Conduct reaction hit (ATK-scaled): computed via the stellar formula branch.
-export const stellarAtk = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", stellar: true });
+// DEF-scaled hit (e.g. Zibai's Lunar Phase Shift rows).
+export const def = (key: string, name: string): TalentHit => ({ key, name, scaling: "def" });
+// Direct-reaction hits: Stellar-Conduct (ATK) and Lunar-Crystallize (DEF), computed
+// via the direct-reaction formula branch.
+export const stellarAtk = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", direct: "stellar" });
+export const lunarDef = (key: string, name: string): TalentHit => ({ key, name, scaling: "def", direct: "lunar" });

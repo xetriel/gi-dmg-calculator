@@ -6,7 +6,7 @@ import { indirectLunarDamage, lunarEmBonus, LUNAR_BY_ELEMENT } from "./lunar";
 import { resolveMechanics, type MechanicsCtx } from "./mechanics";
 import { resolveHitMultipliers, hitId } from "./validation";
 import { flattenSeed, TALENT_SEED } from "../../data/talents";
-import { huTao, arlecchino, neuvillette, clorinde, sandrone } from "../../data/registry/characters";
+import { huTao, arlecchino, neuvillette, clorinde, sandrone, zibai } from "../../data/registry/characters";
 import type { TalentScalingData } from "../talent-scaling";
 
 const LV90 = 1446.853458;
@@ -35,6 +35,7 @@ function ctxFor(characterId: string, overrides: Partial<MechanicsCtx> = {}): Mec
   return {
     stats: baseStats,
     baseAtk: 800,
+    baseDef: 500,
     constellationLevel: 0,
     talentLevels: { normal: 10, skill: 10, burst: 10 },
     scaling: scalingFor(characterId),
@@ -247,7 +248,7 @@ describe("stellar-conduct computeHit branch", () => {
   const stellarHit = {
     multiplier: 100, scaling: "atk" as const, element: "Cryo" as const,
     reaction: "none" as const, reactionBonusPct: 0,
-    stellar: { brc: 1.45, baseDmgBonusPct: 14, reactionBonusPct: 30 },
+    directReaction: { coefficient: 1.45, baseDmgBonusPct: 14, reactionBonusPct: 30 },
   };
   it("matches the wiki formula by hand", () => {
     // 1.45 × 100% × 2000 × 1.14 × (1 + 0 + 0.30) × res(0)=1
@@ -275,24 +276,24 @@ describe("stellar-conduct computeHit branch", () => {
 describe("sandrone mechanics", () => {
   it("Light of Rationalisme: 0.7% per 100 ATK, capped at 14%", () => {
     const r1 = resolveMechanics(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 1000 } }));
-    expect(r1.perHit["prism-shot-stellar"]?.stellar?.baseDmgBonusPct).toBeCloseTo(7);
+    expect(r1.perHit["prism-shot-stellar"]?.directReaction?.baseDmgBonusPct).toBeCloseTo(7);
     const r2 = resolveMechanics(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 2500 } }));
-    expect(r2.perHit["prism-shot-stellar"]?.stellar?.baseDmgBonusPct).toBe(14);
+    expect(r2.perHit["prism-shot-stellar"]?.directReaction?.baseDmgBonusPct).toBe(14);
   });
   it("Polestar field: BRC + Cryo DMG bonus by hit count; off → neutral", () => {
     const off = resolveMechanics(sandrone, ctxFor("sandrone"));
-    expect(off.perHit["condensed-beam-stellar"]?.stellar?.brc).toBe(1);
+    expect(off.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBe(1);
     expect(off.statDeltas.dmgBonus ?? 0).toBe(0);
     const zero = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 0 } }));
-    expect(zero.perHit["condensed-beam-stellar"]?.stellar?.brc).toBe(1);
+    expect(zero.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBe(1);
     expect(zero.statDeltas.dmgBonus).toBe(20);
     const ten = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 10 } }));
-    expect(ten.perHit["condensed-beam-stellar"]?.stellar?.brc).toBeCloseTo(1.9);
+    expect(ten.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBeCloseTo(1.9);
     expect(ten.statDeltas.dmgBonus).toBe(38);
   });
   it("C1 adds +30% stellar reaction bonus", () => {
     const r = resolveMechanics(sandrone, ctxFor("sandrone", { constellationLevel: 1 }));
-    expect(r.perHit["convective-ray-stellar"]?.stellar?.reactionBonusPct).toBe(30);
+    expect(r.perHit["convective-ray-stellar"]?.directReaction?.reactionBonusPct).toBe(30);
   });
   it("A1: Decoding > 50 → 2nd Prism Shot ×4; Refined Tactics ×(1 + 0.1·stacks)", () => {
     const r = resolveMechanics(sandrone, ctxFor("sandrone", { inputs: { "decoding-over-50": 1, "refined-tactics": 10 } }));
@@ -306,5 +307,73 @@ describe("sandrone mechanics", () => {
   it("seed rows: 10×14 normal + 2×10 skill + 3×13 burst = 199", () => {
     const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "sandrone"));
     expect(rows.length).toBe(199);
+  });
+});
+
+describe("direct lunar computeHit branch (Lunar-Crystallize, DEF-scaled)", () => {
+  const s = { ...baseStats, def: 1500, critRate: 0, critDmg: 0 };
+  const lunarHit = {
+    multiplier: 100, scaling: "def" as const, element: "Geo" as const,
+    reaction: "none" as const, reactionBonusPct: 0,
+    directReaction: { coefficient: 1.6, baseDmgBonusPct: 14, reactionBonusPct: 0 },
+  };
+  it("matches the wiki Direct Lunar formula by hand", () => {
+    // 1.6 × 100% × 1500 × 1.14 × (1 + 0 + 0) × res(0)=1
+    expect(computeHit(s, lunarHit).nonCrit).toBeCloseTo(1.6 * 1500 * 1.14, 3);
+  });
+  it("ignores DMG Bonus% and enemy DEF; scales with DEF stat", () => {
+    const base = computeHit(s, lunarHit).nonCrit;
+    expect(computeHit({ ...s, dmgBonus: 100 }, lunarHit).nonCrit).toBeCloseTo(base, 6);
+    expect(computeHit({ ...s, defReduction: 90 }, lunarHit).nonCrit).toBeCloseTo(base, 6);
+    expect(computeHit({ ...s, def: 3000 }, lunarHit).nonCrit).toBeCloseTo(base * 2, 3);
+  });
+});
+
+describe("zibai mechanics", () => {
+  it("A4: +15% Base DEF per Geo ally, +60 EM per Hydro ally", () => {
+    const r = resolveMechanics(zibai, ctxFor("zibai", { baseDef: 1000, inputs: { "geo-allies": 2, "hydro-allies": 1 } }));
+    expect(r.statDeltas.def).toBeCloseTo(300); // 2 × 15% × 1000
+    expect(r.statDeltas.em).toBe(60);
+  });
+  it("Moonsign: 0.7%/100 DEF (after A4), capped at 14%, exposed for the indirect panel", () => {
+    const r1 = resolveMechanics(zibai, ctxFor("zibai", { stats: { ...baseStats, def: 1000 } }));
+    expect(r1.lunarBaseBonusPct).toBeCloseTo(7);
+    expect(r1.perHit["skill-2"]?.directReaction?.baseDmgBonusPct).toBeCloseTo(7);
+    // A4 first: def 1000 + 2×15%×1000 = 1300 → 9.1%
+    const r2 = resolveMechanics(zibai, ctxFor("zibai", { stats: { ...baseStats, def: 1000 }, baseDef: 1000, inputs: { "geo-allies": 2 } }));
+    expect(r2.lunarBaseBonusPct).toBeCloseTo(9.1);
+    const r3 = resolveMechanics(zibai, ctxFor("zibai", { stats: { ...baseStats, def: 2500 } }));
+    expect(r3.lunarBaseBonusPct).toBe(14);
+  });
+  it("all three lunar hits get coefficient 1.6", () => {
+    const r = resolveMechanics(zibai, ctxFor("zibai"));
+    for (const key of ["spirit-steed-2", "4-hit-additional", "skill-2"]) {
+      expect(r.perHit[key]?.directReaction?.coefficient).toBeCloseTo(1.6);
+    }
+  });
+  it("A1 Moonfall: +60% DEF flat on Spirit Steed 2nd hit", () => {
+    const r = resolveMechanics(zibai, ctxFor("zibai", { stats: { ...baseStats, def: 1000 }, inputs: { moonfall: 1 } }));
+    expect(r.perHit["spirit-steed-2"]?.flatDmgBonus).toBeCloseTo(600);
+  });
+  it("C2: +30 reaction bonus on lunar hits and +550% DEF flat on Stride 2nd hit", () => {
+    const r = resolveMechanics(zibai, ctxFor("zibai", { stats: { ...baseStats, def: 1000 }, constellationLevel: 2 }));
+    expect(r.perHit["skill-2"]?.directReaction?.reactionBonusPct).toBe(30);
+    expect(r.perHit["spirit-steed-2"]?.flatDmgBonus).toBeCloseTo(5500);
+  });
+  it("C1 first-Stride toggle ×3.2; C4 Scattermoon ×2.5", () => {
+    const r = resolveMechanics(zibai, ctxFor("zibai", { constellationLevel: 4, inputs: { "c1-first-stride": 1, "c4-scattermoon": 1 } }));
+    expect(r.perHit["spirit-steed-2"]?.baseDmgMultiplier).toBeCloseTo(3.2);
+    expect(r.perHit["4-hit-additional"]?.baseDmgMultiplier).toBeCloseTo(2.5);
+  });
+  it("C6: +1.6%/point above 70 (100 → ×1.48; 70 → no multiplier)", () => {
+    const full = resolveMechanics(zibai, ctxFor("zibai", { constellationLevel: 6, inputs: { "c6-radiance": 100 } }));
+    expect(full.perHit["spirit-steed-1"]?.baseDmgMultiplier).toBeCloseTo(1.48);
+    expect(full.perHit["skill-2"]?.baseDmgMultiplier).toBeCloseTo(1.48);
+    const min = resolveMechanics(zibai, ctxFor("zibai", { constellationLevel: 6, inputs: { "c6-radiance": 70 } }));
+    expect(min.perHit["spirit-steed-1"]?.baseDmgMultiplier).toBeUndefined();
+  });
+  it("seed rows: 8×11 normal + 8×13 skill + 2×13 burst = 218", () => {
+    const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "zibai"));
+    expect(rows.length).toBe(218);
   });
 });
