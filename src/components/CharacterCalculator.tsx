@@ -241,7 +241,20 @@ export function CharacterCalculator({
 
   const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
   const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
-  const [savedBuildsList, setSavedBuildsList] = useState<any[]>(() => savedBuilds);
+  const [savedBuildsList, setSavedBuildsList] = useState<any[]>(() => {
+    let offlineList: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`gi_calc_offline_builds_${config.id}`);
+        if (stored) {
+          offlineList = JSON.parse(stored).map((b: any) => ({ ...b, isOffline: true }));
+        }
+      } catch (err) {
+        console.error("Failed to parse offline builds:", err);
+      }
+    }
+    return [...offlineList, ...savedBuilds];
+  });
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [newBuildName, setNewBuildName] = useState("");
   const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
@@ -337,6 +350,49 @@ export function CharacterCalculator({
     return () => document.removeEventListener("click", handleAnchorClick, true);
   }, [isDirty]);
 
+  const saveBuildLocally = (id: string | null, name: string, payload: any) => {
+    const storedKey = `gi_calc_offline_builds_${config.id}`;
+    let offlineList: any[] = [];
+    try {
+      const stored = localStorage.getItem(storedKey);
+      if (stored) offlineList = JSON.parse(stored);
+    } catch (e) {
+      console.error(e);
+    }
+
+    let targetId = id;
+    let updatedList = [...offlineList];
+
+    if (id && id.startsWith("offline-")) {
+      updatedList = offlineList.map(b => b.id === id ? { ...b, name, data: payload, updatedAt: new Date() } : b);
+    } else {
+      targetId = `offline-${Date.now()}`;
+      const newOfflineBuild = {
+        id: targetId,
+        name,
+        characterId: config.id,
+        data: payload,
+        updatedAt: new Date(),
+        isOffline: true,
+      };
+      updatedList = [newOfflineBuild, ...updatedList];
+    }
+
+    localStorage.setItem(storedKey, JSON.stringify(updatedList));
+
+    // Update UI list. Keep database builds, overwrite/insert offline builds.
+    setSavedBuildsList(prev => {
+      const dbBuilds = prev.filter(b => !b.id.startsWith("offline-"));
+      return [...updatedList.map(b => ({ ...b, isOffline: true })), ...dbBuilds];
+    });
+
+    setActiveBuildId(targetId);
+    setActiveBuildName(name);
+    setSavedJson(JSON.stringify(payload));
+    setSaveStatus("Saved locally!");
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
   const saveChanges = async () => {
     if (!activeBuildId) {
       setNewBuildName(`${config.name} Setup ${savedBuildsList.length + 1}`);
@@ -346,18 +402,23 @@ export function CharacterCalculator({
 
     setIsSaving(true);
     setSaveStatus("Saving...");
-    try {
-      const payload = { instances, rotations, activeRotationId };
-      const updated = await saveBuild(activeBuildId, activeBuildName, config.id, payload);
-      setSavedJson(JSON.stringify(payload));
+    const payload = { instances, rotations, activeRotationId };
 
-      // Update local builds list metadata
-      setSavedBuildsList(prev => prev.map(b => b.id === activeBuildId ? { ...b, name: activeBuildName, data: payload } : b));
-      setSaveStatus("Saved!");
-      setTimeout(() => setSaveStatus(null), 3000);
+    try {
+      if (activeBuildId.startsWith("offline-")) {
+        // Force offline save
+        saveBuildLocally(activeBuildId, activeBuildName, payload);
+      } else {
+        // Attempt database write
+        await saveBuild(activeBuildId, activeBuildName, config.id, payload);
+        setSavedJson(JSON.stringify(payload));
+        setSavedBuildsList(prev => prev.map(b => b.id === activeBuildId ? { ...b, name: activeBuildName, data: payload } : b));
+        setSaveStatus("Saved to Cloud!");
+        setTimeout(() => setSaveStatus(null), 3000);
+      }
     } catch (e) {
-      console.error(e);
-      setSaveStatus("Failed to save");
+      console.warn("Database connection failed, saving build locally:", e);
+      saveBuildLocally(activeBuildId, activeBuildName, payload);
     } finally {
       setIsSaving(false);
     }
@@ -367,21 +428,21 @@ export function CharacterCalculator({
     if (!name.trim()) return;
     setIsSaving(true);
     setSaveStatus("Saving new...");
-    try {
-      const payload = { instances, rotations, activeRotationId };
-      const created = await saveBuild(null, name.trim(), config.id, payload);
+    const payload = { instances, rotations, activeRotationId };
 
+    try {
+      const created = await saveBuild(null, name.trim(), config.id, payload);
       setSavedJson(JSON.stringify(payload));
       setActiveBuildId(created.id);
       setActiveBuildName(created.name);
       setSavedBuildsList(prev => [created, ...prev]);
       setIsSaveModalOpen(false);
-      setSaveStatus("Saved as new!");
+      setSaveStatus("Saved to Cloud!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (e) {
-      console.error(e);
-      setSaveStatus("Failed to save");
-      alert("Failed to save new build.");
+      console.warn("Database connection failed, saving new build locally:", e);
+      saveBuildLocally(null, name.trim(), payload);
+      setIsSaveModalOpen(false);
     } finally {
       setIsSaving(false);
     }
@@ -394,7 +455,6 @@ export function CharacterCalculator({
       setRotations(hydratedData.rotations);
       setActiveRotationId(hydratedData.activeRotationId);
 
-      // Sync active state
       setActiveBuildId(b.id);
       setActiveBuildName(b.name);
       setSavedJson(JSON.stringify(b.data));
@@ -408,8 +468,31 @@ export function CharacterCalculator({
   };
 
   const handleDeleteBuild = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Avoid triggering loadBuild on item click
+    e.stopPropagation();
     if (!confirm("Are you sure you want to delete this saved build?")) return;
+
+    if (id.startsWith("offline-")) {
+      const storedKey = `gi_calc_offline_builds_${config.id}`;
+      let offlineList: any[] = [];
+      try {
+        const stored = localStorage.getItem(storedKey);
+        if (stored) offlineList = JSON.parse(stored);
+      } catch (err) {
+        console.error(err);
+      }
+      
+      const updated = offlineList.filter(b => b.id !== id);
+      localStorage.setItem(storedKey, JSON.stringify(updated));
+      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
+      
+      if (activeBuildId === id) {
+        setActiveBuildId(null);
+        setActiveBuildName("Scratchpad");
+      }
+      setSaveStatus("Deleted local build!");
+      setTimeout(() => setSaveStatus(null), 3000);
+      return;
+    }
 
     try {
       await deleteBuild(id);
@@ -421,8 +504,15 @@ export function CharacterCalculator({
       setSaveStatus("Deleted build!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
-      console.error(err);
-      alert("Failed to delete build.");
+      console.error("Database connection failed, removing database build from UI list:", err);
+      // Even if database fails, filter it locally to make UI responsive
+      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
+      if (activeBuildId === id) {
+        setActiveBuildId(null);
+        setActiveBuildName("Scratchpad");
+      }
+      setSaveStatus("Deleted build locally!");
+      setTimeout(() => setSaveStatus(null), 3000);
     }
   };
 
@@ -430,7 +520,7 @@ export function CharacterCalculator({
     let name = activeBuildName;
     if (!activeBuildId) {
       const promptVal = prompt("Enter a name for this new build configuration:", `${config.name} Setup`);
-      if (promptVal === null) return; // User cancelled navigation
+      if (promptVal === null) return;
       if (!promptVal.trim()) {
         alert("Build name is required to save.");
         return;
@@ -440,20 +530,22 @@ export function CharacterCalculator({
 
     setIsSaving(true);
     setSaveStatus("Saving...");
+    const payload = { instances, rotations, activeRotationId };
+
     try {
-      const payload = { instances, rotations, activeRotationId };
-      await saveBuild(activeBuildId, name, config.id, payload);
+      if (activeBuildId && activeBuildId.startsWith("offline-")) {
+        saveBuildLocally(activeBuildId, name, payload);
+      } else {
+        await saveBuild(activeBuildId, name, config.id, payload);
+      }
       setSavedJson(JSON.stringify(payload));
-      setSaveStatus("Saved!");
-      setTimeout(() => setSaveStatus(null), 3000);
-      setIsConfirmDiscardOpen(false);
-      router.push(pendingNavigationHref);
     } catch (e) {
-      console.error(e);
-      setSaveStatus("Failed to save");
-      alert("Failed to save changes. Please try again or discard edits.");
+      console.warn("Database connection failed, saving build locally before switch:", e);
+      saveBuildLocally(activeBuildId, name, payload);
     } finally {
       setIsSaving(false);
+      setIsConfirmDiscardOpen(false);
+      router.push(pendingNavigationHref);
     }
   };
 
@@ -1220,7 +1312,14 @@ export function CharacterCalculator({
                       onClick={() => loadBuild(b)}
                       className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${activeBuildId === b.id ? "text-amber-600 dark:text-amber-400 bg-amber-500/5 font-bold" : "text-gray-700 dark:text-zinc-300"}`}
                     >
-                      <span className="truncate max-w-[170px]" title={b.name}>{b.name}</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate max-w-[125px]" title={b.name}>{b.name}</span>
+                        {b.isOffline ? (
+                          <span className="text-[8px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1 py-0.5 border border-zinc-200 dark:border-zinc-700/60 rounded font-mono">Local</span>
+                        ) : (
+                          <span className="text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 border border-emerald-500/15 rounded font-mono">Cloud</span>
+                        )}
+                      </div>
                       <button
                         onClick={(e) => handleDeleteBuild(e, b.id)}
                         className="text-zinc-400 hover:text-red-500 p-0.5 rounded transition-colors"
