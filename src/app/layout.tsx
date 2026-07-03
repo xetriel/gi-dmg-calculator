@@ -25,7 +25,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const buildsCount = await prisma.build.count();
+  let buildsCount = 0;
+  try {
+    buildsCount = await prisma.build.count();
+  } catch (err) {
+    console.error("Database connection failed in layout:", err);
+  }
 
   return (
     <html

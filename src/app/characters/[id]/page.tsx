@@ -48,20 +48,42 @@ export default async function Page({
     isShared = !!initialBuildData;
   }
 
-  if (!initialBuildData) {
-    const initialBuild = await prisma.build.findFirst({
+  let savedBuilds: any[] = [];
+  let initialBuildId: string | null = null;
+  let initialBuildName: string | null = null;
+
+  try {
+    const list = await prisma.build.findMany({
       where: { characterId: id },
+      orderBy: { updatedAt: "desc" },
     });
-    initialBuildData = initialBuild?.data;
+    savedBuilds = list.map(b => ({
+      id: b.id,
+      name: b.name,
+      characterId: b.characterId,
+      data: b.data,
+      updatedAt: b.updatedAt,
+    }));
+  } catch (err) {
+    console.error("Failed to query builds from database:", err);
   }
 
-  const initialBuildProp = initialBuildData ? { data: initialBuildData } : null;
+  if (!initialBuildData && savedBuilds.length > 0) {
+    initialBuildData = savedBuilds[0].data;
+    initialBuildId = savedBuilds[0].id;
+    initialBuildName = savedBuilds[0].name;
+  }
+
+  const initialBuildProp = initialBuildData
+    ? { id: initialBuildId, name: initialBuildName, data: initialBuildData }
+    : null;
 
   return (
     <CharacterCalculator
       config={config}
       scaling={scaling}
       initialBuild={initialBuildProp}
+      savedBuilds={savedBuilds}
       isSharedBuild={isShared}
     />
   );

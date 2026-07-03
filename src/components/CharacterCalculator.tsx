@@ -8,7 +8,7 @@ import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, h
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
-import { saveBuildForCharacter } from "@/app/builds/actions";
+import { saveBuild, deleteBuild } from "@/app/builds/actions";
 import { encodeBuild } from "@/lib/engine/share";
 
 // Excel-style stat panel wired to the pure damage engine.
@@ -152,11 +152,13 @@ export function CharacterCalculator({
   config,
   scaling,
   initialBuild,
+  savedBuilds = [],
   isSharedBuild = false,
 }: {
   config: CharacterConfig;
   scaling: TalentScalingData;
-  initialBuild?: { data: unknown } | null;
+  initialBuild?: { id: string | null; name: string | null; data: unknown } | null;
+  savedBuilds?: any[];
   isSharedBuild?: boolean;
 }) {
   const createInitialInstance = (id: string): CalcInstance => {
@@ -236,7 +238,27 @@ export function CharacterCalculator({
   const [activeRotationId, setActiveRotationId] = useState<string>(
     () => hydrated?.activeRotationId ?? (hydrated?.rotations?.[0]?.id ?? "combo-1")
   );
-  
+
+  const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
+  const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
+  const [savedBuildsList, setSavedBuildsList] = useState<any[]>(() => savedBuilds);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [newBuildName, setNewBuildName] = useState("");
+  const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
+
+  // Close load dropdown when clicking outside
+  useEffect(() => {
+    if (!isLoadDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".load-dropdown-container")) {
+        setIsLoadDropdownOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [isLoadDropdownOpen]);
+
   const [savedJson, setSavedJson] = useState<string>(() => {
     const payload = {
       instances: hydrated?.instances ?? [createInitialInstance("1")],
@@ -316,12 +338,21 @@ export function CharacterCalculator({
   }, [isDirty]);
 
   const saveChanges = async () => {
+    if (!activeBuildId) {
+      setNewBuildName(`${config.name} Setup ${savedBuildsList.length + 1}`);
+      setIsSaveModalOpen(true);
+      return;
+    }
+
     setIsSaving(true);
     setSaveStatus("Saving...");
     try {
       const payload = { instances, rotations, activeRotationId };
-      await saveBuildForCharacter(config.id, payload);
+      const updated = await saveBuild(activeBuildId, activeBuildName, config.id, payload);
       setSavedJson(JSON.stringify(payload));
+
+      // Update local builds list metadata
+      setSavedBuildsList(prev => prev.map(b => b.id === activeBuildId ? { ...b, name: activeBuildName, data: payload } : b));
       setSaveStatus("Saved!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (e) {
@@ -332,12 +363,86 @@ export function CharacterCalculator({
     }
   };
 
+  const handleSaveAsNew = async (name: string) => {
+    if (!name.trim()) return;
+    setIsSaving(true);
+    setSaveStatus("Saving new...");
+    try {
+      const payload = { instances, rotations, activeRotationId };
+      const created = await saveBuild(null, name.trim(), config.id, payload);
+
+      setSavedJson(JSON.stringify(payload));
+      setActiveBuildId(created.id);
+      setActiveBuildName(created.name);
+      setSavedBuildsList(prev => [created, ...prev]);
+      setIsSaveModalOpen(false);
+      setSaveStatus("Saved as new!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (e) {
+      console.error(e);
+      setSaveStatus("Failed to save");
+      alert("Failed to save new build.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const loadBuild = (b: any) => {
+    try {
+      const hydratedData = hydrateFromBuild(b.data);
+      setInstances(hydratedData.instances);
+      setRotations(hydratedData.rotations);
+      setActiveRotationId(hydratedData.activeRotationId);
+
+      // Sync active state
+      setActiveBuildId(b.id);
+      setActiveBuildName(b.name);
+      setSavedJson(JSON.stringify(b.data));
+      setIsLoadDropdownOpen(false);
+      setSaveStatus("Loaded configuration!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load build data.");
+    }
+  };
+
+  const handleDeleteBuild = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Avoid triggering loadBuild on item click
+    if (!confirm("Are you sure you want to delete this saved build?")) return;
+
+    try {
+      await deleteBuild(id);
+      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
+      if (activeBuildId === id) {
+        setActiveBuildId(null);
+        setActiveBuildName("Scratchpad");
+      }
+      setSaveStatus("Deleted build!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete build.");
+    }
+  };
+
   const handleSaveAndSwitch = async () => {
+    let name = activeBuildName;
+    if (!activeBuildId) {
+      const promptVal = prompt("Enter a name for this new build configuration:", `${config.name} Setup`);
+      if (promptVal === null) return; // User cancelled navigation
+      if (!promptVal.trim()) {
+        alert("Build name is required to save.");
+        return;
+      }
+      name = promptVal.trim();
+    }
+
     setIsSaving(true);
     setSaveStatus("Saving...");
     try {
       const payload = { instances, rotations, activeRotationId };
-      await saveBuildForCharacter(config.id, payload);
+      await saveBuild(activeBuildId, name, config.id, payload);
       setSavedJson(JSON.stringify(payload));
       setSaveStatus("Saved!");
       setTimeout(() => setSaveStatus(null), 3000);
@@ -1077,42 +1182,138 @@ export function CharacterCalculator({
               </span>
             )}
           </button>
+
+          {/* Load Build Dropdown */}
+          <div className="relative load-dropdown-container">
+            <button
+              onClick={() => setIsLoadDropdownOpen(!isLoadDropdownOpen)}
+              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+              title="Load a saved build from database"
+            >
+              <span>📂 {activeBuildName}</span>
+              <span className="text-[10px] text-gray-400 font-mono">▼</span>
+            </button>
+            {isLoadDropdownOpen && (
+              <div className="absolute right-0 mt-1.5 w-64 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100 max-h-60 overflow-y-auto">
+                <div className="text-[10px] font-bold text-gray-450 dark:text-zinc-500 px-3 py-1.5 border-b border-gray-100 dark:border-zinc-900 mb-1">
+                  SELECT SAVED BUILD
+                </div>
+                {/* New / Scratchpad option */}
+                <button
+                  onClick={() => {
+                    setActiveBuildId(null);
+                    setActiveBuildName("Scratchpad");
+                    setIsLoadDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${!activeBuildId ? "text-amber-600 dark:text-amber-400 bg-amber-500/5" : "text-gray-700 dark:text-zinc-300"}`}
+                >
+                  <span>📝 New Scratchpad Setup</span>
+                </button>
+                {savedBuildsList.length === 0 ? (
+                  <div className="text-xs text-gray-400 dark:text-zinc-650 px-3 py-2 italic text-center">
+                    No saved builds yet
+                  </div>
+                ) : (
+                  savedBuildsList.map(b => (
+                    <div
+                      key={b.id}
+                      onClick={() => loadBuild(b)}
+                      className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${activeBuildId === b.id ? "text-amber-600 dark:text-amber-400 bg-amber-500/5 font-bold" : "text-gray-700 dark:text-zinc-300"}`}
+                    >
+                      <span className="truncate max-w-[170px]" title={b.name}>{b.name}</span>
+                      <button
+                        onClick={(e) => handleDeleteBuild(e, b.id)}
+                        className="text-zinc-400 hover:text-red-500 p-0.5 rounded transition-colors"
+                        title="Delete this build configuration"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={shareBuild}
-            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
-            title="Copy shareable link containing current configuration to clipboard"
+            onClick={saveChanges}
+            disabled={isSaving}
+            className={
+              isDirty
+                ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+                : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            }
+            title="Save changes to active build"
           >
-            🔗 Share
+            {activeBuildId ? "Save Changes" : "Save Setup"}
           </button>
-          {/* Export Dropdown Group */}
+
+          {/* Unified Actions Dropdown Group */}
           <div className="relative export-dropdown-container">
             <button
               onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
               className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1"
-              title="Export configuration or results in various formats"
+              title="Actions & Export options"
             >
-              <span>📤 Export</span>
+              <span>⚙️ More Actions</span>
               <span className="text-[10px] text-gray-400 font-mono">▼</span>
             </button>
             {isExportDropdownOpen && (
               <div className="absolute right-0 mt-1.5 w-56 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100">
+                {/* Configuration Operations */}
+                <button
+                  onClick={() => {
+                    setIsExportDropdownOpen(false);
+                    document.getElementById("json-import-input")?.click();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">📥</span> Import JSON Setup
+                </button>
+                <button
+                  onClick={() => {
+                    setIsExportDropdownOpen(false);
+                    shareBuild();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                >
+                  <span className="text-zinc-400">🔗</span> Share Build Link
+                </button>
+                {activeBuildId && (
+                  <button
+                    onClick={() => {
+                      setIsExportDropdownOpen(false);
+                      setNewBuildName(`${activeBuildName} Copy`);
+                      setIsSaveModalOpen(true);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
+                    title="Save current configuration as a new separate database entry"
+                  >
+                    <span className="text-zinc-400">💾</span> Save As New Setup
+                  </button>
+                )}
+
+                {/* Divider */}
+                <div className="border-t border-gray-150 dark:border-zinc-850 my-1.5"></div>
+
+                {/* File Exports */}
                 <button
                   onClick={exportAsJson}
                   className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
                 >
-                  <span className="text-zinc-400">📥</span> JSON Configuration (.json)
+                  <span className="text-zinc-400">📥</span> Export JSON (.json)
                 </button>
                 <button
                   onClick={exportAsCsv}
                   className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
                 >
-                  <span className="text-zinc-400">📊</span> CSV Spreadsheet (.csv)
+                  <span className="text-zinc-400">📊</span> Export CSV (.csv)
                 </button>
                 <button
                   onClick={exportAsTxt}
                   className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
                 >
-                  <span className="text-zinc-400">📄</span> Text Report Summary (.txt)
+                  <span className="text-zinc-400">📄</span> Export TXT (.txt)
                 </button>
                 <button
                   onClick={copyAsText}
@@ -1130,11 +1331,12 @@ export function CharacterCalculator({
                   onClick={exportAsPng}
                   className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
                 >
-                  <span className="text-zinc-400">🖼️</span> Download PNG Image (.png)
+                  <span className="text-zinc-400">🖼️</span> Download PNG (.png)
                 </button>
               </div>
             )}
           </div>
+
           <input
             id="json-import-input"
             type="file"
@@ -1142,31 +1344,6 @@ export function CharacterCalculator({
             onChange={importBuild}
             className="hidden"
           />
-          <button
-            onClick={() => document.getElementById("json-import-input")?.click()}
-            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer"
-            title="Import configuration from local JSON file"
-          >
-            📥 Import
-          </button>
-          <button
-            onClick={saveChanges}
-            disabled={isSaving}
-            className={
-              isDirty
-                ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-                : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-            }
-          >
-            Save Changes
-          </button>
-          <button
-            onClick={addInstance}
-            disabled={instances.length >= 3}
-            className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            + Add Setup ({instances.length}/3)
-          </button>
         </div>
       </header>
 
@@ -1257,8 +1434,8 @@ export function CharacterCalculator({
               <div
                 key={inst.id}
                 className={`w-[420px] shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 ${baseBenchmarkInst
-                    ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
-                    : "border-gray-200 dark:border-zinc-800"
+                  ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
+                  : "border-gray-200 dark:border-zinc-800"
                   }`}
               >
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4">
@@ -1297,10 +1474,10 @@ export function CharacterCalculator({
                             onClick={() => updateInstance(inst.id, () => ({ constellationLevel: inst.constellationLevel === lvl ? lvl - 1 : lvl }))}
                             title={lvl === 0 ? "No constellation" : `C${lvl}: ${config.constellations!.find(c => c.level === lvl)?.name ?? ""}`}
                             className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-all border ${active
-                                ? isInfo
-                                  ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500"
-                                  : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                                : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
+                              ? isInfo
+                                ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500"
+                                : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
+                              : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
                               }`}
                           >
                             C{lvl}
@@ -1347,8 +1524,8 @@ export function CharacterCalculator({
                                     <button key={i}
                                       onClick={() => setMechanic(inst.id, m.id, String(i))}
                                       className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${Number(val) === i
-                                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                                          : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
+                                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
+                                        : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
                                         }`}>
                                       {i}
                                     </button>
@@ -1463,8 +1640,8 @@ export function CharacterCalculator({
                       onClick={() => setBenchmarkId(inst.id)}
                       disabled={baseBenchmarkInst}
                       className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${baseBenchmarkInst
-                          ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
-                          : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                        ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
+                        : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
                         }`}
                     >
                       Compare This
@@ -1692,11 +1869,10 @@ export function CharacterCalculator({
                       return (
                         <div
                           key={r.id}
-                          className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${
-                            isSelected
+                          className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${isSelected
                               ? "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-extrabold"
                               : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
-                          }`}
+                            }`}
                         >
                           <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
                           <span className="tabular-nums font-mono">{fmt(rotationTotals[r.id] ?? 0)}</span>
@@ -1711,6 +1887,20 @@ export function CharacterCalculator({
               </div>
             );
           })}
+
+          {instances.length < 3 && (
+            <div
+              onClick={addInstance}
+              className="w-[420px] shrink-0 border-2 border-dashed border-gray-300 dark:border-zinc-800 hover:border-amber-500/60 dark:hover:border-amber-500/40 rounded-xl p-5 flex flex-col items-center justify-center self-stretch min-h-[400px] hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 cursor-pointer group transition-all duration-200 select-none no-print"
+              title="Add a new setup column to compare stats"
+            >
+              <div className="flex flex-col items-center gap-2.5 text-center">
+                <span className="text-3xl text-gray-400 dark:text-zinc-500 group-hover:text-amber-500 transition-colors">➕</span>
+                <span className="font-bold text-sm text-gray-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">Add New Setup</span>
+                <span className="text-xs text-gray-400 dark:text-zinc-500">Compare up to 3 setups side-by-side</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1755,19 +1945,17 @@ export function CharacterCalculator({
                       <div
                         key={r.id}
                         onClick={() => setActiveRotationId(r.id)}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer group ${
-                          isSelected
+                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer group ${isSelected
                             ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950"
                             : "bg-white border-gray-200 hover:border-gray-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 text-gray-700 dark:text-gray-300"
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col min-w-0 pr-2">
                           <span className="text-xs font-bold truncate leading-tight">
                             {r.name || "Untitled Rotation"}
                           </span>
-                          <span className={`text-[10px] truncate leading-normal mt-0.5 ${
-                            isSelected ? "text-gray-300 dark:text-zinc-500" : "text-gray-400"
-                          }`}>
+                          <span className={`text-[10px] truncate leading-normal mt-0.5 ${isSelected ? "text-gray-300 dark:text-zinc-500" : "text-gray-400"
+                            }`}>
                             {r.description || "No description"}
                           </span>
                         </div>
@@ -1777,9 +1965,8 @@ export function CharacterCalculator({
                               e.stopPropagation();
                               deleteRotation(r.id);
                             }}
-                            className={`p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-650 dark:hover:bg-red-950/20 dark:hover:text-red-300 transition-all cursor-pointer ${
-                              isSelected ? "text-white hover:text-red-400" : "text-gray-400"
-                            }`}
+                            className={`p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-650 dark:hover:bg-red-950/20 dark:hover:text-red-300 transition-all cursor-pointer ${isSelected ? "text-white hover:text-red-400" : "text-gray-400"
+                              }`}
                             title="Delete rotation"
                           >
                             ✕
@@ -1860,7 +2047,7 @@ export function CharacterCalculator({
                                         className={`text-[9px] px-1.5 py-0.5 rounded font-bold transition-all ${baseBenchmarkInst
                                           ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 cursor-not-allowed border border-gray-300 dark:border-zinc-700"
                                           : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                                        }`}
+                                          }`}
                                       >
                                         {baseBenchmarkInst ? "Benchmark" : "Compare"}
                                       </button>
@@ -1881,7 +2068,7 @@ export function CharacterCalculator({
                                   }
                                 }
                               }
-                              
+
                               // Find benchmark hit value
                               const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
                               let benchmarkDmg = 0;
@@ -2109,6 +2296,44 @@ export function CharacterCalculator({
                 className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Save & Switch"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Build Name Modal Popup */}
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-base font-bold text-black dark:text-white mb-2">Save Build Configuration</h3>
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-4">
+              Enter a name for this build setup to save it to the database library.
+            </p>
+            <input
+              type="text"
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500 mb-5"
+              placeholder="e.g. Hu Tao Vaporize Shimenawa"
+              value={newBuildName}
+              onChange={e => setNewBuildName(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") handleSaveAsNew(newBuildName);
+              }}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2 text-xs font-semibold">
+              <button
+                onClick={() => setIsSaveModalOpen(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900 text-black dark:text-white cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSaveAsNew(newBuildName)}
+                disabled={!newBuildName.trim()}
+                className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white cursor-pointer"
+              >
+                Save Configuration
               </button>
             </div>
           </div>
