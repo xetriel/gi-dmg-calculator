@@ -69,6 +69,8 @@ interface RotationStep {
   id: string;
   targetHitId: string;                    // hitId(gi, hi) e.g. "0:0"
   reactionOverride: ReactionType | "default";
+  hitType?: "avg" | "crit" | "non-crit";
+  quantity?: number;
 }
 
 interface SavedRotation {
@@ -258,6 +260,7 @@ export function CharacterCalculator({
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [newBuildName, setNewBuildName] = useState("");
   const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Close load dropdown when clicking outside
   useEffect(() => {
@@ -480,11 +483,11 @@ export function CharacterCalculator({
       } catch (err) {
         console.error(err);
       }
-      
+
       const updated = offlineList.filter(b => b.id !== id);
       localStorage.setItem(storedKey, JSON.stringify(updated));
       setSavedBuildsList(prev => prev.filter(b => b.id !== id));
-      
+
       if (activeBuildId === id) {
         setActiveBuildId(null);
         setActiveBuildName("Scratchpad");
@@ -985,6 +988,20 @@ export function CharacterCalculator({
     setRotations(prev => prev.map(r => r.id === activeRotationId ? { ...r, ...updater(r) } : r));
   };
 
+  const moveStep = (index: number, direction: "up" | "down") => {
+    const activeRot = rotations.find(r => r.id === activeRotationId) || rotations[0];
+    if (!activeRot) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= activeRot.steps.length) return;
+
+    const newSteps = [...activeRot.steps];
+    const temp = newSteps[index];
+    newSteps[index] = newSteps[newIndex];
+    newSteps[newIndex] = temp;
+
+    updateActiveRotation(() => ({ steps: newSteps }));
+  };
+
 
 
   const addInstance = () => {
@@ -1175,9 +1192,13 @@ export function CharacterCalculator({
       let total = 0;
       const stepDmgs = r.steps.map(step => {
         const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
+        const rawType = step.hitType || "avg";
+        const typeKey = rawType === "non-crit" ? "nonCrit" : rawType;
+        const qty = step.quantity ?? 1;
+
         if (effectiveReaction === inst.reaction) {
           const res = out[step.targetHitId];
-          const val = res ? res.avg : 0;
+          const val = (res ? res[typeKey] : 0) * qty;
           total += val;
           return val;
         } else {
@@ -1207,8 +1228,9 @@ export function CharacterCalculator({
             bonusDmgPct: mods.bonusDmgPct,
             stellar: hitConfig.stellar ? mods.stellar ?? { brc: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
           });
-          total += res.avg;
-          return res.avg;
+          const val = res[typeKey] * qty;
+          total += val;
+          return val;
         }
       });
       rotationTotals[r.id] = total;
@@ -1969,8 +1991,8 @@ export function CharacterCalculator({
                         <div
                           key={r.id}
                           className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${isSelected
-                              ? "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-extrabold"
-                              : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
+                            ? "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-extrabold"
+                            : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
                             }`}
                         >
                           <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
@@ -2006,7 +2028,7 @@ export function CharacterCalculator({
       {/* ── Rotation Builder Modal Popup ── */}
       {isRotationOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 animate-out fade-out">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-6xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 animate-out fade-out">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
               <div>
@@ -2023,62 +2045,50 @@ export function CharacterCalculator({
               </button>
             </div>
 
-            {/* Modal Content (Split Screen) */}
-            <div className="flex-1 flex overflow-hidden">
-              {/* Left Sidebar - Rotations list */}
-              <div className="w-64 border-r border-gray-150 dark:border-zinc-850 p-4 overflow-y-auto flex flex-col bg-gray-50/30 dark:bg-zinc-950/20 shrink-0">
-                <div className="flex items-center justify-between mb-3 shrink-0">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 tracking-wider">Rotations</span>
-                  <button
-                    onClick={addRotation}
-                    className="rounded bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-2 py-1 text-[10px] font-bold text-white dark:text-zinc-950 transition-colors cursor-pointer"
-                  >
-                    + Add New
-                  </button>
-                </div>
-
-                <div className="space-y-1.5 flex-1 overflow-y-auto">
-                  {rotations.map(r => {
-                    const isSelected = r.id === activeRotationId;
-                    return (
-                      <div
-                        key={r.id}
-                        onClick={() => setActiveRotationId(r.id)}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer group ${isSelected
-                            ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950"
-                            : "bg-white border-gray-200 hover:border-gray-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 text-gray-700 dark:text-gray-300"
+            {/* Horizontal Rotations Tab Bar */}
+            <div className="px-6 py-2.5 border-b border-gray-150 dark:border-zinc-850 bg-gray-50/30 dark:bg-zinc-950/20 flex flex-wrap items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2 overflow-x-auto select-none py-1 scrollbar-none">
+                {rotations.map(r => {
+                  const isSelected = r.id === activeRotationId;
+                  return (
+                    <div
+                      key={r.id}
+                      onClick={() => setActiveRotationId(r.id)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                        isSelected
+                          ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 shadow-xs font-bold"
+                          : "bg-white border-gray-200 hover:border-gray-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 text-gray-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      <span>{r.name || "Untitled Rotation"}</span>
+                      {rotations.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteRotation(r.id);
+                          }}
+                          className={`hover:bg-red-500/10 hover:text-red-500 rounded p-0.5 transition-colors cursor-pointer text-[10px] ${
+                            isSelected ? "text-gray-300 hover:text-red-400" : "text-gray-400"
                           }`}
-                      >
-                        <div className="flex flex-col min-w-0 pr-2">
-                          <span className="text-xs font-bold truncate leading-tight">
-                            {r.name || "Untitled Rotation"}
-                          </span>
-                          <span className={`text-[10px] truncate leading-normal mt-0.5 ${isSelected ? "text-gray-300 dark:text-zinc-500" : "text-gray-400"
-                            }`}>
-                            {r.description || "No description"}
-                          </span>
-                        </div>
-                        {rotations.length > 1 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteRotation(r.id);
-                            }}
-                            className={`p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-650 dark:hover:bg-red-950/20 dark:hover:text-red-300 transition-all cursor-pointer ${isSelected ? "text-white hover:text-red-400" : "text-gray-400"
-                              }`}
-                            title="Delete rotation"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                          title="Delete rotation"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+              <button
+                onClick={addRotation}
+                className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-3 py-1.5 text-xs font-bold text-white dark:text-zinc-950 transition-colors cursor-pointer shrink-0"
+              >
+                + Add New Rotation
+              </button>
+            </div>
 
-              {/* Right Panel - Active Rotation Details */}
-              <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
+            {/* Modal Content (Full Width viewport) */}
+            <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
                 {activeRot ? (
                   <>
                     {/* Metadata Editors */}
@@ -2133,7 +2143,9 @@ export function CharacterCalculator({
                             <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400 bg-gray-50/50 dark:bg-zinc-900/30">
                               <th className="py-2.5 px-3 font-normal w-8">#</th>
                               <th className="py-2.5 px-3 font-normal">Hit</th>
+                              <th className="py-2.5 px-3 font-normal w-16 text-center">Qty</th>
                               <th className="py-2.5 px-3 font-normal w-28">Reaction</th>
+                              <th className="py-2.5 px-3 font-normal w-28">Hit Type</th>
                               {instances.map((inst, idx) => {
                                 const baseBenchmarkInst = activeBenchmarkId === inst.id;
                                 return (
@@ -2154,7 +2166,7 @@ export function CharacterCalculator({
                                   </th>
                                 );
                               })}
-                              <th className="py-2.5 px-3 w-16"></th>
+                              <th className="py-2.5 px-3 w-20"></th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2169,7 +2181,7 @@ export function CharacterCalculator({
                               }
 
                               // Find benchmark hit value
-                              const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
+                      const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
                               let benchmarkDmg = 0;
                               if (benchmarkInst) {
                                 const benchmarkComputed = computedById.get(benchmarkInst.id);
@@ -2179,9 +2191,77 @@ export function CharacterCalculator({
                               }
 
                               return (
-                                <tr key={step.id} className="border-t border-gray-100 dark:border-zinc-900/80 hover:bg-gray-50/20 dark:hover:bg-zinc-900/10">
-                                  <td className="py-2.5 px-3 text-gray-400 dark:text-zinc-500 tabular-nums">{stepIdx + 1}</td>
+                                <tr
+                                  key={step.id}
+                                  draggable="true"
+                                  onDragStart={(e) => {
+                                    setDraggedIndex(stepIdx);
+                                    e.dataTransfer.effectAllowed = "move";
+                                  }}
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    if (draggedIndex === null || draggedIndex === stepIdx) return;
+                                    
+                                    const newSteps = [...activeRot.steps];
+                                    const draggedItem = newSteps[draggedIndex];
+                                    newSteps.splice(draggedIndex, 1);
+                                    newSteps.splice(stepIdx, 0, draggedItem);
+                                    
+                                    setDraggedIndex(stepIdx);
+                                    updateActiveRotation(() => ({ steps: newSteps }));
+                                  }}
+                                  onDragEnd={() => setDraggedIndex(null)}
+                                  className={`border-t border-gray-100 dark:border-zinc-900/80 hover:bg-gray-50/20 dark:hover:bg-zinc-900/10 transition-all select-none ${
+                                    draggedIndex === stepIdx ? "opacity-40 bg-zinc-50 dark:bg-zinc-900/40" : ""
+                                  }`}
+                                >
+                                  <td className="py-2.5 px-3 text-gray-400 dark:text-zinc-500 tabular-nums flex items-center justify-between gap-1 group/idx">
+                                    <div className="flex items-center gap-1.5">
+                                      <span
+                                        className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors font-bold select-none text-[11px] pr-0.5"
+                                        title="Drag to reorder"
+                                      >
+                                        ⋮⋮
+                                      </span>
+                                      <span>{stepIdx + 1}</span>
+                                    </div>
+                                    <div className="flex flex-col opacity-0 group-hover/idx:opacity-100 transition-opacity">
+                                      <button
+                                        type="button"
+                                        disabled={stepIdx === 0}
+                                        onClick={() => moveStep(stepIdx, "up")}
+                                        className="text-[8px] hover:text-amber-500 dark:hover:text-amber-400 leading-none py-0.5 cursor-pointer disabled:opacity-30 disabled:hover:text-inherit"
+                                        title="Move step up"
+                                      >
+                                        ▲
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={stepIdx === activeRot.steps.length - 1}
+                                        onClick={() => moveStep(stepIdx, "down")}
+                                        className="text-[8px] hover:text-amber-500 dark:hover:text-amber-400 leading-none py-0.5 cursor-pointer disabled:opacity-30 disabled:hover:text-inherit"
+                                        title="Move step down"
+                                      >
+                                        ▼
+                                      </button>
+                                    </div>
+                                  </td>
                                   <td className="py-2.5 px-3 text-gray-700 dark:text-gray-300 font-medium">{hitName}</td>
+                                  <td className="py-2.5 px-3 text-center">
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max="99"
+                                      className="w-12 border rounded px-1.5 py-0.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-350 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all text-center font-bold"
+                                      value={step.quantity ?? 1}
+                                      onChange={e => {
+                                        const val = Math.max(1, parseInt(e.target.value) || 1);
+                                        const newSteps = [...activeRot.steps];
+                                        newSteps[stepIdx] = { ...step, quantity: val };
+                                        updateActiveRotation(() => ({ steps: newSteps }));
+                                      }}
+                                    />
+                                  </td>
                                   <td className="py-2.5 px-3">
                                     <select
                                       className={selectCls + " text-[10px] py-0.5 w-24"}
@@ -2198,6 +2278,21 @@ export function CharacterCalculator({
                                       ))}
                                     </select>
                                   </td>
+                                  <td className="py-2.5 px-3">
+                                    <select
+                                      className={selectCls + " text-[10px] py-0.5 w-24"}
+                                      value={step.hitType || "avg"}
+                                      onChange={e => {
+                                        const newSteps = [...activeRot.steps];
+                                        newSteps[stepIdx] = { ...step, hitType: e.target.value as "avg" | "crit" | "non-crit" };
+                                        updateActiveRotation(() => ({ steps: newSteps }));
+                                      }}
+                                    >
+                                      <option value="avg">Average</option>
+                                      <option value="crit">CRIT</option>
+                                      <option value="non-crit">Non-Crit</option>
+                                    </select>
+                                  </td>
                                   {instances.map(inst => {
                                     const computed = computedById.get(inst.id);
                                     const stepsDmg = computed?.rotationStepsDmg[activeRotationId];
@@ -2212,17 +2307,34 @@ export function CharacterCalculator({
                                     );
                                   })}
                                   <td className="py-2.5 px-3 text-center">
-                                    <button
-                                      className="text-red-400 hover:text-red-650 dark:hover:text-red-300 cursor-pointer text-xs p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-all ml-4"
-                                      onClick={() => {
-                                        updateActiveRotation(r => ({
-                                          steps: r.steps.filter(s => s.id !== step.id)
-                                        }));
-                                      }}
-                                      title="Remove step"
-                                    >
-                                      ✕
-                                    </button>
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button
+                                        onClick={() => {
+                                          const newStep: RotationStep = {
+                                            ...step,
+                                            id: `step-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                                          };
+                                          const newSteps = [...activeRot.steps];
+                                          newSteps.splice(stepIdx + 1, 0, newStep);
+                                          updateActiveRotation(() => ({ steps: newSteps }));
+                                        }}
+                                        className="text-zinc-400 hover:text-amber-500 cursor-pointer text-xs p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
+                                        title="Duplicate step"
+                                      >
+                                        📑
+                                      </button>
+                                      <button
+                                        className="text-red-400 hover:text-red-650 dark:hover:text-red-300 cursor-pointer text-xs p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                                        onClick={() => {
+                                          updateActiveRotation(r => ({
+                                            steps: r.steps.filter(s => s.id !== step.id)
+                                          }));
+                                        }}
+                                        title="Remove step"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -2230,7 +2342,7 @@ export function CharacterCalculator({
                           </tbody>
                           <tfoot>
                             <tr className="border-t border-gray-250 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-900/20">
-                              <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-200" colSpan={3}>Total Average DMG</td>
+                              <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-200" colSpan={5}>Total Average DMG</td>
                               {instances.map(inst => {
                                 const computed = computedById.get(inst.id);
                                 const total = computed?.rotationTotals[activeRotationId] ?? 0;
@@ -2258,7 +2370,6 @@ export function CharacterCalculator({
                   </div>
                 )}
               </div>
-            </div>
 
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-900/10">
