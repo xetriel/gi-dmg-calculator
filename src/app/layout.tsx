@@ -59,6 +59,10 @@ export default async function RootLayout({
 
             {/* Right Meta Section */}
             <div className="flex items-center gap-4 text-[11px] font-semibold text-gray-500 dark:text-zinc-400">
+              <Link href="/history" className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" title="Export history">
+                <span>🕑</span>
+                <span>History</span>
+              </Link>
               <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-250/60 dark:border-zinc-800 px-2.5 py-1 rounded-lg">
                 <span>📂</span>
                 <span>{buildsCount} Saved Builds</span>

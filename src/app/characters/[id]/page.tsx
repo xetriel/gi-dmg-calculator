@@ -48,7 +48,7 @@ export default async function Page({
     isShared = !!initialBuildData;
   }
 
-  let savedBuilds: any[] = [];
+  let savedBuilds: { id: string; name: string; characterId: string; data: unknown; updatedAt: Date }[] = [];
   let initialBuildId: string | null = null;
   let initialBuildName: string | null = null;
 

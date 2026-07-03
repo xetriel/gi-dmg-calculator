@@ -9,6 +9,7 @@ import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
 import { saveBuild, deleteBuild } from "@/app/builds/actions";
+import { logExport, type ExportFormat, type ExportSummary } from "@/app/history/actions";
 import { encodeBuild } from "@/lib/engine/share";
 
 // Excel-style stat panel wired to the pure damage engine.
@@ -45,6 +46,17 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "critDmg", label: "CRIT DMG", unit: "percent" },
   { key: "dmgBonus", label: "DMG Bonus", unit: "percent" },
 ];
+
+// A saved build row (from the DB via getBuildsForCharacter, or from localStorage offline).
+interface SavedBuild {
+  id: string;
+  name: string;
+  characterId?: string;
+  data: unknown;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  isOffline?: boolean;
+}
 
 interface ReactionExtras {
   transformative: { type: TransformativeType; dmg: number }[];
@@ -160,7 +172,7 @@ export function CharacterCalculator({
   config: CharacterConfig;
   scaling: TalentScalingData;
   initialBuild?: { id: string | null; name: string | null; data: unknown } | null;
-  savedBuilds?: any[];
+  savedBuilds?: SavedBuild[];
   isSharedBuild?: boolean;
 }) {
   const createInitialInstance = (id: string): CalcInstance => {
@@ -243,13 +255,13 @@ export function CharacterCalculator({
 
   const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
   const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
-  const [savedBuildsList, setSavedBuildsList] = useState<any[]>(() => {
-    let offlineList: any[] = [];
+  const [savedBuildsList, setSavedBuildsList] = useState<SavedBuild[]>(() => {
+    let offlineList: SavedBuild[] = [];
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem(`gi_calc_offline_builds_${config.id}`);
         if (stored) {
-          offlineList = JSON.parse(stored).map((b: any) => ({ ...b, isOffline: true }));
+          offlineList = JSON.parse(stored).map((b: SavedBuild) => ({ ...b, isOffline: true }));
         }
       } catch (err) {
         console.error("Failed to parse offline builds:", err);
@@ -353,9 +365,9 @@ export function CharacterCalculator({
     return () => document.removeEventListener("click", handleAnchorClick, true);
   }, [isDirty]);
 
-  const saveBuildLocally = (id: string | null, name: string, payload: any) => {
+  const saveBuildLocally = (id: string | null, name: string, payload: unknown) => {
     const storedKey = `gi_calc_offline_builds_${config.id}`;
-    let offlineList: any[] = [];
+    let offlineList: SavedBuild[] = [];
     try {
       const stored = localStorage.getItem(storedKey);
       if (stored) offlineList = JSON.parse(stored);
@@ -451,7 +463,7 @@ export function CharacterCalculator({
     }
   };
 
-  const loadBuild = (b: any) => {
+  const loadBuild = (b: SavedBuild) => {
     try {
       const hydratedData = hydrateFromBuild(b.data);
       setInstances(hydratedData.instances);
@@ -476,7 +488,7 @@ export function CharacterCalculator({
 
     if (id.startsWith("offline-")) {
       const storedKey = `gi_calc_offline_builds_${config.id}`;
-      let offlineList: any[] = [];
+      let offlineList: SavedBuild[] = [];
       try {
         const stored = localStorage.getItem(storedKey);
         if (stored) offlineList = JSON.parse(stored);
@@ -584,6 +596,34 @@ export function CharacterCalculator({
     return () => document.removeEventListener("click", handleOutsideClick);
   }, [isExportDropdownOpen]);
 
+  // Headline damage per setup (max rotation total, else max non-heal hit avg) — stored
+  // with each export so the /history page can compare configs without re-running the engine.
+  const buildExportSummary = (): ExportSummary => {
+    const setups = instances.map((inst, i) => {
+      const c = computedById.get(inst.id);
+      let headline = 0;
+      if (c?.results) {
+        config.talents.forEach((g, gi) =>
+          g.hits.forEach((h, hi) => {
+            if (h.kind === "heal") return;
+            const r = c.results![hitId(gi, hi)];
+            if (r) headline = Math.max(headline, r.avg);
+          }),
+        );
+        for (const total of Object.values(c.rotationTotals)) headline = Math.max(headline, total);
+      }
+      return { label: `Setup ${i + 1}`, headline: Math.round(headline) };
+    });
+    const topHeadline = setups.reduce((m, s) => Math.max(m, s.headline), 0);
+    return { setupCount: instances.length, topHeadline, setups };
+  };
+
+  // Record an export/download event (best-effort, fire-and-forget — never blocks the download).
+  const logExportEvent = (format: ExportFormat) => {
+    const snapshot = { instances, rotations, activeRotationId };
+    logExport(config.id, format, activeBuildName, snapshot, buildExportSummary()).catch(() => {});
+  };
+
   const exportAsJson = () => {
     const payload = { instances, rotations, activeRotationId };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -593,6 +633,7 @@ export function CharacterCalculator({
     a.download = `gi_calculator_${config.id}_build.json`;
     a.click();
     URL.revokeObjectURL(url);
+    logExportEvent("json");
     setSaveStatus("Exported JSON!");
     setIsExportDropdownOpen(false);
     setTimeout(() => setSaveStatus(null), 3000);
@@ -676,6 +717,7 @@ export function CharacterCalculator({
     a.download = `gi_calculator_${config.id}_report.txt`;
     a.click();
     URL.revokeObjectURL(url);
+    logExportEvent("txt");
     setSaveStatus("Exported TXT report!");
     setIsExportDropdownOpen(false);
     setTimeout(() => setSaveStatus(null), 3000);
@@ -788,6 +830,7 @@ export function CharacterCalculator({
     a.download = `gi_calculator_${config.id}_spreadsheet.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    logExportEvent("csv");
     setSaveStatus("Exported CSV spreadsheet!");
     setIsExportDropdownOpen(false);
     setTimeout(() => setSaveStatus(null), 3000);
@@ -864,6 +907,7 @@ export function CharacterCalculator({
           </html>
         `);
         printWindow.document.close();
+        logExportEvent("pdf");
         setSaveStatus("Exported PDF!");
         setTimeout(() => setSaveStatus(null), 3000);
       })
@@ -920,6 +964,7 @@ export function CharacterCalculator({
         link.download = `gi_calculator_${config.id}_builds.png`;
         link.href = dataUrl;
         link.click();
+        logExportEvent("png");
         setSaveStatus("Exported PNG!");
         setTimeout(() => setSaveStatus(null), 3000);
       })

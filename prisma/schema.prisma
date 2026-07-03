@@ -8,7 +8,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  // Connection URL lives in prisma.config.ts (datasource.url) per Prisma 7 —
+  // it must NOT be set here or CLI schema ops (validate/migrate) error P1012.
 }
 
 model Build {
@@ -36,6 +37,22 @@ model Rotation {
   updatedAt DateTime @updatedAt
 
   @@index([buildId])
+}
+
+// One row per export/download event. Powers the /history page (review past
+// downloads, compare how outputs evolved). `snapshot` is the reloadable calculator
+// payload; `summary` holds precomputed headline numbers so the page never re-runs
+// the engine. The format column also serves later usage-analytics aggregation.
+model ExportLog {
+  id          String   @id @default(cuid())
+  characterId String // registry id, e.g. "arlecchino"
+  format      String // "json" | "csv" | "txt" | "pdf" | "png"
+  label       String // active build name (default "Scratchpad")
+  snapshot    Json // { instances, rotations, activeRotationId }
+  summary     Json // { setupCount, topHeadline, setups: [{ label, headline }] }
+  createdAt   DateTime @default(now())
+
+  @@index([characterId, createdAt])
 }
 
 // Per-talent-level multiplier tables. One row per (character, talent, hit, level).
