@@ -2,18 +2,22 @@
 // Parses talent scaling tables, constellations, and the Damage page's level
 // multiplier table, then writes JSON for manual review/transcription.
 // Run: npx tsx scripts/extract-wiki.ts "<dir-with-saved-html>" "<out.json>"
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join, isAbsolute } from "node:path";
 
 const dir = process.argv[2];
 const outPath = process.argv[3] ?? "extracted-wiki.json";
 if (!dir) { console.error("usage: tsx scripts/extract-wiki.ts <dir> [out.json]"); process.exit(1); }
 
+// Values may be filenames (resolved against <dir>) or absolute paths.
+// Missing files are skipped so the script works against partial snapshots.
 const FILES: Record<string, string> = {
   "arlecchino": "Arlecchino _ Genshin Impact Wiki _ Fandom.html",
   "clorinde": "Clorinde _ Genshin Impact Wiki _ Fandom.html",
   "hu-tao": "Hu Tao _ Genshin Impact Wiki _ Fandom.html",
   "neuvillette": "Neuvillette _ Genshin Impact Wiki _ Fandom.html",
+  "sandrone": "Sandrone_Cleaned _ Genshin Impact Wiki _ Fandom.html",
+  "zibai": "Zibai_Cleaned _ Genshin Impact Wiki _ Fandom.html",
 };
 const DAMAGE_FILE = "Damage _ Genshin Impact Wiki _ Fandom.html";
 
@@ -119,27 +123,40 @@ function extractLevelMultipliers(html: string): Record<number, number> {
   return out;
 }
 
+const resolve = (file: string) => (isAbsolute(file) ? file : join(dir, file));
+
 const result: Record<string, unknown> = {};
+const found: string[] = [];
 for (const [id, file] of Object.entries(FILES)) {
-  const html = readFileSync(join(dir, file), "utf8");
+  const path = resolve(file);
+  if (!existsSync(path)) { console.log(`skip ${id}: ${path} not found`); continue; }
+  const html = readFileSync(path, "utf8");
   result[id] = {
     scalingTables: extractScalingTables(html),
     constellations: extractConstellations(html),
   };
+  found.push(id);
 }
-const dmgHtml = readFileSync(join(dir, DAMAGE_FILE), "utf8");
-const levelMult = extractLevelMultipliers(dmgHtml);
-result["levelMultipliers"] = levelMult;
+const dmgPath = resolve(DAMAGE_FILE);
+let levelMult: Record<number, number> = {};
+if (existsSync(dmgPath)) {
+  levelMult = extractLevelMultipliers(readFileSync(dmgPath, "utf8"));
+  result["levelMultipliers"] = levelMult;
+} else {
+  console.log(`skip levelMultipliers: ${dmgPath} not found`);
+}
 
 writeFileSync(outPath, JSON.stringify(result, null, 2));
 
 // Summary to stdout for review.
-for (const [id] of Object.entries(FILES)) {
+for (const id of found) {
   const r = result[id] as { scalingTables: ScalingTable[]; constellations: unknown[] };
   console.log(`\n=== ${id} — ${r.scalingTables.length} scaling tables, ${r.constellations.length} constellations`);
   r.scalingTables.forEach((t, i) => {
     console.log(`  [${i}] levels=${t.levels} rows: ${t.rows.map(x => x.label).join(" | ")}`);
   });
 }
-console.log(`\nlevel multipliers extracted: ${Object.keys(levelMult).length} (lv90=${levelMult[90]}, lv100=${levelMult[100]})`);
+if (Object.keys(levelMult).length) {
+  console.log(`\nlevel multipliers extracted: ${Object.keys(levelMult).length} (lv90=${levelMult[90]}, lv100=${levelMult[100]})`);
+}
 console.log(`written: ${outPath}`);

@@ -30,7 +30,11 @@ export interface StatField {
 // `key` is a stable id used to join per-level multipliers in the TalentScaling table.
 // `kind: "heal"` rows display a healing amount (mult% × stat × (1 + Healing Bonus)),
 // no crit columns.
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal"; }
+// `direct` marks a direct-reaction hit — "stellar" (Stellar-Conduct) or "lunar"
+// (Lunar-Crystallize etc.). Both compute through the same direct-reaction formula
+// branch (no enemy-DEF multiplier, no DMG Bonus%, EM bonus 6·EM/(EM+2000));
+// the mechanics resolver supplies the per-hit coefficient/bonus params.
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal"; direct?: "stellar" | "lunar"; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in

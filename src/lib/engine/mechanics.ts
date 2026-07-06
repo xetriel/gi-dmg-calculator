@@ -6,7 +6,9 @@
 // All formulas are from the saved wiki pages (see scripts/extract-wiki.ts).
 import type { CharacterConfig } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
-import type { DamageStats } from "./damage";
+import type { DamageStats, DirectReactionParams } from "./damage";
+import { stellarBRC, stellarEmBonus, resMultiplier } from "./damage";
+import { LUNAR_DIRECT_MULTIPLIER } from "./lunar";
 
 export interface PerHitMods {
   flatDmgBonus?: number;
@@ -14,17 +16,20 @@ export interface PerHitMods {
   critDmgBonusPct?: number;
   critRateBonusPct?: number;
   bonusDmgPct?: number;
+  directReaction?: DirectReactionParams; // Stellar-Conduct / Direct-Lunar hits: routes computeHit into the direct-reaction branch
 }
 
 export interface MechanicsResult {
   statDeltas: Partial<DamageStats>; // added onto the resolved stats before computing hits
   perHit: Record<string, PerHitMods>; // keyed by TalentHit.key
   notes: string[]; // computed info lines shown in the UI (e.g. heal amounts, caps hit)
+  lunarBaseBonusPct?: number; // auto Lunar Base DMG Bonus (Moonsign passives, e.g. Zibai) — also fed to the indirect lunar panel
 }
 
 export interface MechanicsCtx {
   stats: DamageStats;                   // resolved stats, before deltas
   baseAtk: number;                      // the "Base" ATK input (Paramita cap: 400% of it)
+  baseDef: number;                      // the "Base" DEF input (Zibai A4: +15% of it per Geo ally)
   constellationLevel: number;           // 0–6
   talentLevels: Record<string, number>; // effective level per talent type (incl. C3/C5 +3)
   scaling: TalentScalingData;           // per-level values incl. buff/heal rows
@@ -52,6 +57,7 @@ const addMods = (perHit: Record<string, PerHitMods>, key: string, mods: PerHitMo
   if (mods.critDmgBonusPct) m.critDmgBonusPct = (m.critDmgBonusPct ?? 0) + mods.critDmgBonusPct;
   if (mods.critRateBonusPct) m.critRateBonusPct = (m.critRateBonusPct ?? 0) + mods.critRateBonusPct;
   if (mods.bonusDmgPct) m.bonusDmgPct = (m.bonusDmgPct ?? 0) + mods.bonusDmgPct;
+  if (mods.directReaction) m.directReaction = mods.directReaction; // set once per hit, not accumulated
 };
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -141,6 +147,132 @@ export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): Me
       if (a4 > 0) {
         res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + a4;
         res.notes.push(`A4: +${a4.toFixed(1)}% Hydro DMG Bonus (current HP ${hpPct}%)`);
+      }
+      break;
+    }
+
+    case "sandrone": {
+      // Stellar-Conduct params shared by her three stellar hits.
+      // Light of Rationalisme: Base Stellar-Conduct DMG +0.7% per 100 ATK, cap 14%.
+      const baseDmgBonusPct = Math.min(0.7 * (stats.atk / 100), 14);
+      // C1: all party members deal 30% increased Stellar-Conduct DMG (Reaction Bonus slot).
+      const reactionBonusPct = cons >= 1 ? 30 : 0;
+      const fieldOn = on("polestar-field");
+      const hits = Math.min(val("polestar-hits"), 10);
+      const brc = fieldOn ? stellarBRC(hits) : 1;
+      const direct: DirectReactionParams = { coefficient: brc, baseDmgBonusPct, reactionBonusPct };
+
+      const stellarKeys = ["condensed-beam-stellar", "prism-shot-stellar", "convective-ray-stellar"];
+      for (const key of stellarKeys) addMods(res.perHit, key, { directReaction: direct });
+      res.notes.push(
+        `Light of Rationalisme: +${baseDmgBonusPct.toFixed(1)}% Base Stellar-Conduct DMG (0.7%/100 ATK${baseDmgBonusPct >= 14 ? ", capped" : ""})`,
+      );
+      if (fieldOn) {
+        // Polestar Field: Cryo/Electro DMG Bonus +20% (0 hits) or +(28+n)% (n≥1).
+        // Only non-stellar hits benefit — the stellar branch ignores DMG Bonus%.
+        const fieldBonus = hits >= 1 ? 28 + hits : 20;
+        res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + fieldBonus;
+        res.notes.push(
+          `Polestar Field: BRC ×${brc.toFixed(2)} on Stellar hits (${hits} hit${hits === 1 ? "" : "s"}); +${fieldBonus}% Cryo DMG Bonus on non-Stellar hits`,
+        );
+      }
+      if (cons >= 1) res.notes.push("C1: +30% Stellar-Conduct DMG (Reaction Bonus)");
+
+      // A1 Eternal Speculation Engine: Decoding Power > 50 → 2nd Prism Shot ×4.
+      if (on("decoding-over-50")) {
+        addMods(res.perHit, "prism-shot-stellar", { baseDmgMultiplier: 4 });
+        res.notes.push("A1: 2nd Prism Shot deals 400% of original DMG (Decoding Power > 50)");
+      }
+      // A1: Burst in Radiance clears Refined Tactics stacks → Ray deals 100% + 10%/stack.
+      const tactics = Math.min(val("refined-tactics"), 10);
+      if (tactics > 0) {
+        addMods(res.perHit, "convective-ray-stellar", { baseDmgMultiplier: 1 + 0.1 * tactics });
+        res.notes.push(`A1: Convective Ray ×${(1 + 0.1 * tactics).toFixed(1)} (${tactics} Refined Tactics stack${tactics > 1 ? "s" : ""} cleared)`);
+      }
+      // C2: condensed beams +40% CRIT DMG, +20% per beam fired this Decoding (max 3).
+      if (cons >= 2) {
+        const beamStacks = Math.min(val("c2-beam-stacks"), 3);
+        const critDmg = 40 + 20 * beamStacks;
+        addMods(res.perHit, "condensed-beam-stellar", { critDmgBonusPct: critDmg });
+        res.notes.push(`C2: +${critDmg}% CRIT DMG on Condensed Beams (${beamStacks} beam stack${beamStacks === 1 ? "" : "s"})`);
+      }
+      // C4 Extra Cannon / C6 Cluster Beam: fixed-% stellar side hits, shown as notes.
+      const stellarNonCrit = (multPct: number) =>
+        brc * (multPct / 100) * stats.atk * (1 + baseDmgBonusPct / 100) *
+        (1 + stellarEmBonus(stats.em) + reactionBonusPct / 100) *
+        resMultiplier(stats.enemyRes);
+      if (cons >= 4) {
+        res.notes.push(`C4 Extra Cannon: ${fmt(stellarNonCrit(125))} Stellar-Conduct DMG per proc (125% ATK, every 4s)`);
+      }
+      if (cons >= 6) {
+        res.notes.push(`C6 Cluster Beam: 4 × ${fmt(stellarNonCrit(80))} Stellar-Conduct DMG (80% ATK each)`);
+      }
+      break;
+    }
+
+    case "zibai": {
+      // A4 Layered Peaks: +15% of Base DEF per other Geo member; +60 EM per Hydro member.
+      const geoAllies = Math.min(val("geo-allies"), 3);
+      const hydroAllies = Math.min(val("hydro-allies"), 3);
+      const defDelta = 0.15 * ctx.baseDef * geoAllies;
+      if (defDelta > 0) {
+        res.statDeltas.def = (res.statDeltas.def ?? 0) + defDelta;
+        res.notes.push(`A4: +${fmt(defDelta)} DEF (${geoAllies} Geo all${geoAllies > 1 ? "ies" : "y"} × 15% Base DEF)`);
+      }
+      if (hydroAllies > 0) {
+        res.statDeltas.em = (res.statDeltas.em ?? 0) + 60 * hydroAllies;
+        res.notes.push(`A4: +${60 * hydroAllies} Elemental Mastery (${hydroAllies} Hydro all${hydroAllies > 1 ? "ies" : "y"})`);
+      }
+      const defEff = stats.def + defDelta;
+
+      // Moonsign Benediction: +0.7% Lunar-Crystallize Base DMG per 100 DEF, cap 14%.
+      const lunarBase = Math.min(0.7 * (defEff / 100), 14);
+      res.lunarBaseBonusPct = lunarBase;
+      res.notes.push(
+        `Moonsign: +${lunarBase.toFixed(1)}% Lunar-Crystallize Base DMG (0.7%/100 DEF${lunarBase >= 14 ? ", capped" : ""})`,
+      );
+
+      // C2: party Lunar-Crystallize Reaction DMG +30% while in Lunar Phase Shift.
+      const reactionBonusPct = cons >= 2 ? 30 : 0;
+      const direct: DirectReactionParams = {
+        coefficient: LUNAR_DIRECT_MULTIPLIER["lunar-crystallize"], // 1.6
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct,
+      };
+      const lunarKeys = ["spirit-steed-2", "4-hit-additional", "skill-2"];
+      for (const key of lunarKeys) addMods(res.perHit, key, { directReaction: direct });
+      if (cons >= 2) res.notes.push("C2: +30% Lunar-Crystallize DMG (Reaction Bonus, in Phase Shift)");
+
+      // A1 Moonfall: Spirit Steed's Stride 2nd hit +60% of DEF (flat).
+      if (on("moonfall")) {
+        addMods(res.perHit, "spirit-steed-2", { flatDmgBonus: 0.6 * defEff });
+        res.notes.push(`A1 Moonfall: +${fmt(0.6 * defEff)} flat DMG on Spirit Steed 2nd hit (60% DEF)`);
+      }
+      // C2 Ascendant Gleam: Stride 2nd hit additional DMG = 550% of DEF (flat).
+      if (cons >= 2) {
+        addMods(res.perHit, "spirit-steed-2", { flatDmgBonus: 5.5 * defEff });
+        res.notes.push(`C2: +${fmt(5.5 * defEff)} flat DMG on Spirit Steed 2nd hit (550% DEF, Ascendant Gleam)`);
+      }
+      // C1: first Stride of the phase — 2nd-hit Lunar DMG +220%.
+      if (cons >= 1 && on("c1-first-stride")) {
+        addMods(res.perHit, "spirit-steed-2", { baseDmgMultiplier: 3.2 });
+        res.notes.push("C1: first Stride 2nd-hit ×3.2 (+220%)");
+      }
+      // C4 Scattermoon Splendor: next Phase Shift 4-Hit Additional deals 250% of original.
+      if (cons >= 4 && on("c4-scattermoon")) {
+        addMods(res.perHit, "4-hit-additional", { baseDmgMultiplier: 2.5 });
+        res.notes.push("C4 Scattermoon: Phase Shift 4-Hit Additional ×2.5");
+      }
+      // C6: Stride consumes all Radiance; +1.6%/point above 70 on Stride + her Lunar hits.
+      if (cons >= 6) {
+        const radiance = Math.min(Math.max(val("c6-radiance"), 70), 100);
+        const bonusPct = (radiance - 70) * 1.6;
+        if (bonusPct > 0) {
+          for (const key of ["spirit-steed-1", ...lunarKeys]) {
+            addMods(res.perHit, key, { baseDmgMultiplier: 1 + bonusPct / 100 });
+          }
+          res.notes.push(`C6: +${bonusPct.toFixed(1)}% on Spirit Steed & Lunar hits (${radiance} Radiance consumed)`);
+        }
       }
       break;
     }

@@ -10,7 +10,7 @@
 // Elevation multiplier defaults to 1 (regional mechanic, out of scope).
 import type { Element } from "@/data/registry/types";
 import { levelMultiplier } from "./level-multiplier";
-import { resMultiplier, type DamageStats } from "./damage";
+import { resMultiplier, stellarEmBonus, type DamageStats } from "./damage";
 
 export type LunarType = "lunar-charged" | "lunar-crystallize" | "lunar-bloom";
 
@@ -53,9 +53,8 @@ function withCrit(nonCrit: number, stats: DamageStats): LunarResult {
   return { nonCrit, crit: nonCrit * (1 + cd), avg: nonCrit * (1 + cr * cd) };
 }
 
-export function lunarEmBonus(em: number): number {
-  return (6 * em) / (em + 2000);
-}
+// Same 6·EM/(EM+2000) term the Stellar/direct-reaction branch uses.
+export const lunarEmBonus = stellarEmBonus;
 
 // Indirect lunar reaction DMG for one contributor (the calculator's character).
 export function indirectLunarDamage(
