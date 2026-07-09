@@ -321,6 +321,135 @@ export function CharacterCalculator({
   const [showExtraInfo, setShowExtraInfo] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  // Screenshot OCR Scanner States
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerTargetId, setScannerTargetId] = useState<string | null>(null);
+  const [scanImage, setScanImage] = useState<string | null>(null);
+  const [isScanningImage, setIsScanningImage] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanResult, setScanResult] = useState<any | null>(null);
+
+  const runScan = async (file: File, setupId: string) => {
+    setIsScanningImage(true);
+    setScanError(null);
+    setScanResult(null);
+
+    try {
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
+
+      const base64Data = await base64Promise;
+
+      const response = await fetch("/api/scan-stats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: base64Data }),
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json();
+        if (errJson.error === "API_KEY_MISSING") {
+          throw new Error("GEMINI_API_KEY is not configured in your .env file.");
+        } else {
+          throw new Error(errJson.message || `API error: ${response.statusText}`);
+        }
+      }
+
+      const res = await response.json();
+      if (res.success && res.data) {
+        setScanResult(res.data);
+      } else {
+        throw new Error(res.message || "Failed to scan screenshot.");
+      }
+    } catch (e: any) {
+      console.error(e);
+      setScanError(e.message || "An error occurred during screenshot scanning.");
+    } finally {
+      setIsScanningImage(false);
+    }
+  };
+
+  const applyScanToSetup = (setupId: string, data: any) => {
+    updateInstance(setupId, inst => {
+      const updatedStats = { ...inst.stats };
+
+      if (data.levelChar) updatedStats["levelChar"] = data.levelChar;
+      
+      if (data.hpBase) updatedStats["hp.base"] = data.hpBase;
+      if (data.hpFlat) updatedStats["hp.flat"] = data.hpFlat;
+      if (data.hpPercent) updatedStats["hp.percent"] = data.hpPercent;
+
+      if (data.atkBase) updatedStats["atk.base"] = data.atkBase;
+      if (data.atkFlat) updatedStats["atk.flat"] = data.atkFlat;
+      if (data.atkPercent) updatedStats["atk.percent"] = data.atkPercent;
+
+      if (data.defBase) updatedStats["def.base"] = data.defBase;
+      if (data.defFlat) updatedStats["def.flat"] = data.defFlat;
+      if (data.defPercent) updatedStats["def.percent"] = data.defPercent;
+
+      if (data.em) updatedStats["em"] = data.em;
+      if (data.critRate) updatedStats["critRate"] = data.critRate;
+      if (data.critDmg) updatedStats["critDmg"] = data.critDmg;
+      if (data.energyRecharge) updatedStats["energyRecharge"] = data.energyRecharge;
+      if (data.dmgBonus) updatedStats["dmgBonus"] = data.dmgBonus;
+
+      return {
+        stats: updatedStats,
+      };
+    });
+
+    setIsScannerOpen(false);
+    setScanImage(null);
+    setScanResult(null);
+    setScanError(null);
+
+    setSaveStatus("Stats updated from screenshot!");
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const handleScanDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleScanDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScanImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      if (scannerTargetId) {
+        runScan(file, scannerTargetId);
+      }
+    }
+  };
+
+  const handleScanFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScanImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      if (scannerTargetId) {
+        runScan(file, scannerTargetId);
+      }
+    }
+  };
+
+
   const [isRotationOpen, setIsRotationOpen] = useState(false);
   const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
   const [rotationNextId, setRotationNextId] = useState(() => {
@@ -378,6 +507,48 @@ export function CharacterCalculator({
     document.addEventListener("click", handleAnchorClick, true);
     return () => document.removeEventListener("click", handleAnchorClick, true);
   }, [isDirty]);
+
+  // Intercept global paste events to scan screenshots directly
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
+        return;
+      }
+      
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault();
+            // Target the first setup instance
+            const targetId = instances[0]?.id;
+            if (targetId) {
+              setScannerTargetId(targetId);
+              setIsScannerOpen(true);
+              
+              // Load the preview
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setScanImage(reader.result as string);
+              };
+              reader.readAsDataURL(file);
+              
+              // Run scan
+              runScan(file, targetId);
+            }
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("paste", handleGlobalPaste);
+    return () => window.removeEventListener("paste", handleGlobalPaste);
+  }, [instances]);
+
 
   const saveBuildLocally = (id: string | null, name: string, payload: unknown) => {
     const storedKey = `gi_calc_offline_builds_${config.id}`;
@@ -1632,14 +1803,30 @@ export function CharacterCalculator({
                     </div>
 
                   </div>
-                  {instances.length > 1 && (
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => removeInstance(inst.id)}
-                      className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold cursor-pointer"
+                      onClick={() => {
+                        setScannerTargetId(inst.id);
+                        setIsScannerOpen(true);
+                        setScanImage(null);
+                        setScanResult(null);
+                        setScanError(null);
+                      }}
+                      className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-250 font-semibold cursor-pointer flex items-center gap-0.5"
+                      title="Scan stats from screenshot"
                     >
-                      Remove
+                      <span>📷 Scan</span>
                     </button>
-                  )}
+                    {instances.length > 1 && (
+                      <button
+                        onClick={() => removeInstance(inst.id)}
+                        className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold cursor-pointer border-l border-gray-250 dark:border-zinc-800 pl-2"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
                 </div>
 
                 {/* Constellation selector */}
@@ -2610,6 +2797,341 @@ export function CharacterCalculator({
           </div>
         </div>
       )}
+
+      {/* ── Screenshot Scanner Modal overlay (z-50) ── */}
+      <input
+        id="screenshot-file-input"
+        type="file"
+        accept="image/*"
+        onChange={handleScanFileInputChange}
+        className="hidden"
+      />
+
+      {isScannerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
+              <div>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
+                  Scan Stats from Screenshot - Setup {instances.findIndex(i => i.id === scannerTargetId) + 1}
+                </h3>
+                <p className="text-[10px] text-gray-400 dark:text-zinc-500">
+                  Auto-fill stat inputs by uploading a screenshot of the in-game Attributes or Enka.network details card
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsScannerOpen(false);
+                  setScanImage(null);
+                  setScanResult(null);
+                  setScanError(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-850 transition-colors cursor-pointer text-xs font-bold font-mono"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 max-h-[70vh]">
+              {/* Dropzone screen when no image is loaded */}
+              {!scanImage && (
+                <div
+                  onClick={() => document.getElementById("screenshot-file-input")?.click()}
+                  onDragOver={handleScanDragOver}
+                  onDrop={handleScanDrop}
+                  className="border-2 border-dashed border-gray-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-650 rounded-xl p-10 text-center cursor-pointer transition-colors flex flex-col items-center justify-center min-h-[260px] bg-gray-50/25 dark:bg-zinc-900/10 group"
+                >
+                  <span className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-200">📸</span>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-1">
+                    Drag & drop a screenshot here, or click to upload
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500 mb-4 max-w-sm leading-relaxed">
+                    You can also copy a screenshot image directly to your clipboard and press <kbd className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-gray-250 dark:border-zinc-700 font-mono text-[10px]">Ctrl+V</kbd> (or <kbd className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-gray-250 dark:border-zinc-700 font-mono text-[10px]">Cmd+V</kbd>) on this page.
+                  </p>
+                  <span className="text-[10px] bg-zinc-150 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded font-bold uppercase tracking-wider">
+                    Supports Mavuika & other character detail sheets
+                  </span>
+                </div>
+              )}
+
+              {/* Processing screen or review screen when image is loaded */}
+              {scanImage && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Image Preview + Scan Progress */}
+                  <div className="md:col-span-5 flex flex-col items-center gap-4">
+                    <div className="relative border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-zinc-950 flex items-center justify-center min-h-[220px] w-full shadow-inner">
+                      <img
+                        src={scanImage}
+                        alt="Pasted screenshot preview"
+                        className="max-h-[280px] object-contain rounded"
+                      />
+                      
+                      {/* Scanning overlay effect */}
+                      {isScanningImage && (
+                        <div className="absolute inset-0 bg-emerald-500/10 animate-pulse border-y-2 border-emerald-500 flex flex-col items-center justify-center">
+                          <span className="bg-emerald-600 text-white text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-lg">
+                            Analyzing image...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {isScanningImage && (
+                      <div className="w-full space-y-1.5 text-center">
+                        <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-350 animate-pulse">
+                          Gemini is reading the screen stats...
+                        </p>
+                        <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full w-2/3 animate-[loading_1.5s_ease-in-out_infinite]" />
+                        </div>
+                      </div>
+                    )}
+
+                    {!isScanningImage && (
+                      <button
+                        onClick={() => {
+                          setScanImage(null);
+                          setScanResult(null);
+                          setScanError(null);
+                        }}
+                        className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>🔄 Try another screenshot</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Right Column: Results Table or Errors */}
+                  <div className="md:col-span-7 space-y-4">
+                    {scanError && (
+                      <div className="bg-red-550/10 border border-red-500/20 text-red-500 dark:text-red-400 p-4 rounded-xl space-y-2">
+                        <h4 className="text-xs font-extrabold uppercase tracking-wider">Scan Error</h4>
+                        <p className="text-xs leading-relaxed">{scanError}</p>
+                        {scanError.includes("GEMINI_API_KEY") && (
+                          <div className="text-[10px] text-gray-500 dark:text-zinc-500 leading-normal border-t border-red-500/10 pt-2">
+                            To fix this, edit the <code className="font-mono bg-red-500/5 px-1 py-0.5 rounded">.env</code> file in your project root, add your Google AI Gemini API Key, then restart the Next.js development server.
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {scanResult && (() => {
+                      const targetInst = instances.find(i => i.id === scannerTargetId);
+                      if (!targetInst) return null;
+                      
+                      const showDiff = (scanned: string | number, current: string | number) => {
+                        const sc = String(scanned).trim();
+                        const cu = String(current).trim();
+                        return sc !== "0" && sc !== "" && sc !== cu;
+                      };
+
+                      return (
+                        <div className="space-y-3 animate-in fade-in duration-350">
+                          <div className="bg-emerald-500/10 border border-emerald-500/15 text-emerald-600 dark:text-emerald-400 p-3 rounded-xl flex items-center justify-between text-xs font-semibold">
+                            <span className="flex items-center gap-1.5">
+                              <span>✨</span>
+                              <span>Detected: <strong className="font-bold">{scanResult.characterName || "Character"}</strong> (Lv. {scanResult.levelChar || "90"})</span>
+                            </span>
+                          </div>
+
+                          <div className="border border-gray-200/60 dark:border-zinc-850 rounded-xl overflow-hidden shadow-2xs">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400 bg-gray-50/50 dark:bg-zinc-900/30 border-b border-gray-150 dark:border-zinc-850">
+                                  <th className="py-2 px-3 font-normal">Stat Name</th>
+                                  <th className="py-2 px-3 font-normal">Current</th>
+                                  <th className="py-2 px-3 font-normal">Scanned Value</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-150 dark:divide-zinc-850/60">
+                                {/* Level */}
+                                {scanResult.levelChar && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Character Level</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.levelChar}</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.levelChar}</span>
+                                        {showDiff(scanResult.levelChar, targetInst.stats.levelChar) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* HP */}
+                                {(scanResult.hpBase || scanResult.hpFlat) && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">HP (Base + Flat)</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">
+                                      {targetInst.stats["hp.base"]} + {targetInst.stats["hp.flat"]}
+                                    </td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.hpBase} + {scanResult.hpFlat}</span>
+                                        {(showDiff(scanResult.hpBase, targetInst.stats["hp.base"]) || showDiff(scanResult.hpFlat, targetInst.stats["hp.flat"])) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* ATK */}
+                                {(scanResult.atkBase || scanResult.atkFlat) && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">ATK (Base + Flat)</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">
+                                      {targetInst.stats["atk.base"]} + {targetInst.stats["atk.flat"]}
+                                    </td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.atkBase} + {scanResult.atkFlat}</span>
+                                        {(showDiff(scanResult.atkBase, targetInst.stats["atk.base"]) || showDiff(scanResult.atkFlat, targetInst.stats["atk.flat"])) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* DEF */}
+                                {(scanResult.defBase || scanResult.defFlat) && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">DEF (Base + Flat)</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">
+                                      {targetInst.stats["def.base"]} + {targetInst.stats["def.flat"]}
+                                    </td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.defBase} + {scanResult.defFlat}</span>
+                                        {(showDiff(scanResult.defBase, targetInst.stats["def.base"]) || showDiff(scanResult.defFlat, targetInst.stats["def.flat"])) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* EM */}
+                                {scanResult.em && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Elemental Mastery</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.em}</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.em}</span>
+                                        {showDiff(scanResult.em, targetInst.stats.em) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* CRIT Rate */}
+                                {scanResult.critRate && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">CRIT Rate %</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.critRate}%</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.critRate}%</span>
+                                        {showDiff(scanResult.critRate, targetInst.stats.critRate) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* CRIT DMG */}
+                                {scanResult.critDmg && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">CRIT DMG %</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.critDmg}%</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.critDmg}%</span>
+                                        {showDiff(scanResult.critDmg, targetInst.stats.critDmg) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* Energy Recharge */}
+                                {scanResult.energyRecharge && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Energy Recharge %</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.energyRecharge}%</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.energyRecharge}%</span>
+                                        {showDiff(scanResult.energyRecharge, targetInst.stats.energyRecharge) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {/* DMG Bonus */}
+                                {scanResult.dmgBonus && (
+                                  <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">{config.dmgBonusLabel}</td>
+                                    <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.dmgBonus}%</td>
+                                    <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                                      <div className="flex items-center justify-between">
+                                        <span>{scanResult.dmgBonus}%</span>
+                                        {showDiff(scanResult.dmgBonus, targetInst.stats.dmgBonus) && (
+                                          <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3.5 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-end gap-2 bg-gray-50/50 dark:bg-zinc-900/10">
+              <button
+                onClick={() => {
+                  setIsScannerOpen(false);
+                  setScanImage(null);
+                  setScanResult(null);
+                  setScanError(null);
+                }}
+                className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-xs font-semibold text-black dark:text-white transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              {scanResult && scannerTargetId && (
+                <button
+                  onClick={() => applyScanToSetup(scannerTargetId, scanResult)}
+                  className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-xs font-semibold text-white dark:text-zinc-950 transition-colors cursor-pointer shadow-sm"
+                >
+                  Apply Stats to Setup {instances.findIndex(i => i.id === scannerTargetId) + 1}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
