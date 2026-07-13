@@ -30,23 +30,41 @@ npm install
 ```
 
 ### 4. Database Setup & Initialization
-You must create the database structure and generate the Prisma Client. Choose **one** of the two approaches below:
+You must create the database structure and generate the Prisma Client. Choose **one** of the three approaches below:
 
-#### Approach A: Run SQL Script (Recommended)
-1. Open your database management tool (e.g., MySQL Workbench, DBeaver, phpMyAdmin, or SQL CLI).
-2. Open and run the [gi_stat_db.sql](file:///c:/Users/Henry Budiana/Documents/GitHub/gi-dmg-calculator/gi_stat_db.sql) script located in the root directory. This script automatically creates the database `gi_calc`, the `Build` and `Rotation` tables, and inserts a sample seed build.
-3. Generate the Prisma Client locally:
+#### Option A: Prisma Schema Direct Push (Recommended & Simplest)
+This approach automatically creates all tables defined in the schema (including `Build`, `Rotation`, `TalentScaling`, and `ExportLog`) without running manual SQL scripts.
+1. Create an empty database in your MySQL/MariaDB server (e.g., named `gi_calc`).
+2. Run Prisma DB push to create all tables:
+   ```bash
+   npx prisma db push
+   ```
+3. Generate the Prisma Client:
    ```bash
    npx prisma generate
    ```
 
-#### Approach B: Prisma Migrations
+#### Option B: Manual SQL Import + Schema Sync
+Use this if you want to import initial sample seed builds from the SQL dump first.
+1. Open your database management tool (e.g., MySQL Workbench, DBeaver, phpMyAdmin, or SQL CLI).
+2. Open and run the [gi_stat_db.sql](file:///c:/Users/Henry Budiana/Documents/GitHub/gi-dmg-calculator/gi_stat_db.sql) script in the root directory. This script creates the database `gi_calc`, the `Build` and `Rotation` tables, and inserts a sample seed build.
+3. Sync the remaining schema tables (like `TalentScaling` and `ExportLog` which are not in the SQL script) and update primary keys to match the Prisma schema:
+   ```bash
+   npx prisma db push --accept-data-loss
+   ```
+4. Generate the Prisma Client:
+   ```bash
+   npx prisma generate
+   ```
+
+#### Option C: Prisma Migrations
+If you want to apply the formal migration history sequentially:
 1. Create an empty database named `gi_calc` in your local MySQL/MariaDB server.
-2. Run Prisma migrations to deploy the schema to your database:
+2. Deploy the migrations to create the tables:
    ```bash
    npx prisma migrate deploy
    ```
-3. Generate the Prisma Client locally:
+3. Generate the Prisma Client:
    ```bash
    npx prisma generate
    ```
