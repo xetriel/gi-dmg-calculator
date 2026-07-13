@@ -1,5 +1,66 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Setup
+
+Before running the development server, you need to configure your database and initialize the Prisma client. Follow these steps:
+
+### 1. Prerequisites
+- **Node.js**: Make sure Node.js (v20+ recommended) is installed.
+- **Database**: Make sure a **MySQL** or **MariaDB** server is running locally (e.g., via XAMPP).
+
+### 2. Configure Environment Variables
+1. Duplicate the `.env.example` file in the root directory and rename it to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Open the `.env` file and replace the `DATABASE_URL` with your local database connection details:
+   - **If your MySQL has a password** (replace `username`, `password`, and `3306` with your credentials/port):
+     ```env
+     DATABASE_URL="mysql://username:password@localhost:3306/gi_calc"
+     ```
+   - **If your MySQL has NO password** (e.g., standard XAMPP setup):
+     ```env
+     DATABASE_URL="mysql://root@localhost:3306/gi_calc"
+     ```
+
+### 3. Install Dependencies
+Install all required Node.js packages by running:
+```bash
+npm install
+```
+
+### 4. Database Setup & Initialization
+You must create the database structure and generate the Prisma Client. Choose **one** of the two approaches below:
+
+#### Approach A: Run SQL Script (Recommended)
+1. Open your database management tool (e.g., MySQL Workbench, DBeaver, phpMyAdmin, or SQL CLI).
+2. Open and run the [gi_stat_db.sql](file:///c:/Users/Henry Budiana/Documents/GitHub/gi-dmg-calculator/gi_stat_db.sql) script located in the root directory. This script automatically creates the database `gi_calc`, the `Build` and `Rotation` tables, and inserts a sample seed build.
+3. Generate the Prisma Client locally:
+   ```bash
+   npx prisma generate
+   ```
+
+#### Approach B: Prisma Migrations
+1. Create an empty database named `gi_calc` in your local MySQL/MariaDB server.
+2. Run Prisma migrations to deploy the schema to your database:
+   ```bash
+   npx prisma migrate deploy
+   ```
+3. Generate the Prisma Client locally:
+   ```bash
+   npx prisma generate
+   ```
+
+---
+
+### 5. Seed the Talent Scaling Data
+The damage calculator requires character talent multiplier tables to be seeded in the database. Run the database seed script:
+```bash
+npm run db:seed
+```
+
+Once completed, you are ready to launch the web server!
+
 ## Getting Started
 
 First, run the development server:
