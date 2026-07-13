@@ -1,6 +1,9 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk, def, lunarDef } from "./hit-helpers";
+import { atk, atkCharged, atkPlunge, def, defPlunge, lunarDef } from "./hit-helpers";
+import type { TalentHit } from "../types";
+// DEF-scaled charged attack helper
+const defCharged = (key: string, name: string): TalentHit => ({ key, name, scaling: "def", hitCategory: "charged" });
 
 // DEF-scaler: regular NA rows scale ATK, but everything in Lunar Phase Shift
 // (skill) and the Burst scales %DEF. The three `lunarDef` rows are "considered
@@ -16,13 +19,13 @@ export const zibai: CharacterConfig = {
   talents: [
     { type: "normal", name: "Normal Attack — Golden Blade's Petaled Touch", hits: [
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit-x2", "3-Hit ×2 (each)"),
-      atk("4-hit", "4-Hit"), atk("charged-x2", "Charged Attack ×2 (each)"),
-      atk("plunge", "Plunge"), atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
+      atk("4-hit", "4-Hit"), atkCharged("charged-x2", "Charged Attack ×2 (each)"),
+      atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — Heaven and Earth Made Manifest", hits: [
       def("ps-1-hit", "Phase Shift 1-Hit"), def("ps-2-hit", "Phase Shift 2-Hit"),
       def("ps-3-hit-x2", "Phase Shift 3-Hit ×2 (each)"), def("ps-4-hit", "Phase Shift 4-Hit"),
-      def("ps-charged-x2", "Phase Shift Charged ×2 (each)"),
+      defCharged("ps-charged-x2", "Phase Shift Charged ×2 (each)"),
       def("spirit-steed-1", "Spirit Steed's Stride 1-Hit"),
       lunarDef("spirit-steed-2", "Spirit Steed's Stride 2-Hit"),
       lunarDef("4-hit-additional", "Phase Shift 4-Hit Additional"),

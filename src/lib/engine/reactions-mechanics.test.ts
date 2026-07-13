@@ -14,7 +14,12 @@ const LV90 = 1446.853458;
 const baseStats: DamageStats = {
   atk: 2000, hp: 20000, def: 0, em: 0,
   critRate: 50, critDmg: 100,
-  dmgBonus: 0, dmgReduction: 0,
+  dmgBonus: 0,
+  normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
+  skillDmgBonus: 0, burstDmgBonus: 0,
+  pyroDmgBonus: 0, hydroDmgBonus: 0, dendroDmgBonus: 0, electroDmgBonus: 0,
+  anemoDmgBonus: 0, cryoDmgBonus: 0, geoDmgBonus: 0, physicalDmgBonus: 0,
+  dmgReduction: 0,
   enemyRes: 0,
   levelChar: 90, levelEnemy: 100,
   defReduction: 0, defIgnore: 0,
