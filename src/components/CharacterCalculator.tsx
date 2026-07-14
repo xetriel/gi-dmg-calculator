@@ -1386,6 +1386,7 @@ export function CharacterCalculator({
       stats: s,
       baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
       baseDef: toNum(inst.stats["def.base"]) ?? 0,
+      baseHp: toNum(inst.stats["hp.base"]) ?? 0,
       constellationLevel: inst.constellationLevel,
       talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
       scaling,
