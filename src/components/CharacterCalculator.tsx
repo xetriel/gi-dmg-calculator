@@ -3315,7 +3315,7 @@ export function CharacterCalculator({
                                 {/* DMG Bonus */}
                                 {scanResult.dmgBonus && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
-                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">{config.dmgBonusLabel}</td>
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">All DMG Bonus%</td>
                                     <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.dmgBonus}%</td>
                                     <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                                       <div className="flex items-center justify-between">

@@ -8,7 +8,7 @@ export const coreStats = (dmgBonusLabel: string): StatField[] => [
   { key: "critRate",       label: "CRIT Rate%",         unit: "percent", group: "combat" },
   { key: "critDmg",        label: "CRIT DMG%",          unit: "percent", group: "combat" },
   { key: "energyRecharge", label: "Energy Recharge%",   unit: "percent", group: "advanced" },
-  { key: "dmgBonus",       label: dmgBonusLabel,        unit: "percent", group: "combat" },
+  { key: "dmgBonus",       label: "All DMG Bonus%",        unit: "percent", group: "combat" },
   { key: "normalDmgBonus", label: "Normal ATK DMG Bonus%",  unit: "percent", group: "combat" },
   { key: "chargedDmgBonus",label: "Charged ATK DMG Bonus%", unit: "percent", group: "combat" },
   { key: "plungeDmgBonus", label: "Plunging ATK DMG Bonus%",unit: "percent", group: "combat" },
