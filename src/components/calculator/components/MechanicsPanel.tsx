@@ -159,7 +159,7 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
                         }
                       />
                     ) : m.control === "stacks" ? (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 max-w-[160px] xs:max-w-[200px] sm:max-w-[240px] overflow-x-auto scrollbar-thin py-0.5 px-0.5">
                         {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
                           <button
                             key={i}
