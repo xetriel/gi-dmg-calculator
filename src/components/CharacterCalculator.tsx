@@ -1308,9 +1308,30 @@ export function CharacterCalculator({
   };
 
   const setMechanic = (instId: string, mechId: string, v: string) => {
-    updateInstance(instId, inst => ({
-      mechanicInputs: { ...inst.mechanicInputs, [mechId]: v },
-    }));
+    updateInstance(instId, inst => {
+      let nextInputs = { ...inst.mechanicInputs, [mechId]: v };
+      if (config.id === "varka") {
+        const isPyro = (nextInputs["party-has-pyro"] ?? "1") === "1";
+        const isHydro = (nextInputs["party-has-hydro"] ?? "0") === "1";
+        const isElectro = (nextInputs["party-has-electro"] ?? "0") === "1";
+        const isCryo = (nextInputs["party-has-cryo"] ?? "0") === "1";
+        const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
+
+        if (numChecked >= 2) {
+          nextInputs["a1-resonance-tier2"] = "0";
+        }
+        if (numChecked >= 3) {
+          nextInputs["a1-resonance-tier1"] = "0";
+        }
+
+        if (mechId === "a1-resonance-tier1" && v === "1") {
+          nextInputs["a1-resonance-tier2"] = "0";
+        } else if (mechId === "a1-resonance-tier2" && v === "1") {
+          nextInputs["a1-resonance-tier1"] = "0";
+        }
+      }
+      return { mechanicInputs: nextInputs };
+    });
   };
 
   const setStat = (instId: string, statId: string, v: string) => {
@@ -1423,7 +1444,7 @@ export function CharacterCalculator({
         out[id] = computeHit(s, {
           multiplier: mult,
           scaling: h.scaling,
-          element: config.element,
+          element: mods.element ?? config.element,
           reaction: inst.reaction,
           reactionBonusPct: Number(inst.reactionBonus || 0),
           flatDmgBonus: flatBonus || undefined,
@@ -1494,7 +1515,7 @@ export function CharacterCalculator({
           const res = computeHit(s, {
             multiplier: resolved[step.targetHitId] ?? 0,
             scaling: hitConfig.scaling,
-            element: config.element,
+            element: mods.element ?? config.element,
             reaction: effectiveReaction,
             reactionBonusPct: Number(inst.reactionBonus || 0),
             flatDmgBonus: flatBonus || undefined,
@@ -1926,13 +1947,36 @@ export function CharacterCalculator({
                     <div className="space-y-2">
                       {config.mechanicDefs.map((m: MechanicDef) => {
                         const val = inst.mechanicInputs[m.id] ?? "0";
+                        let isDisabled = false;
+                        if (config.id === "varka") {
+                          const isPyro = (inst.mechanicInputs["party-has-pyro"] ?? "1") === "1";
+                          const isHydro = (inst.mechanicInputs["party-has-hydro"] ?? "0") === "1";
+                          const isElectro = (inst.mechanicInputs["party-has-electro"] ?? "0") === "1";
+                          const isCryo = (inst.mechanicInputs["party-has-cryo"] ?? "0") === "1";
+                          const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
+
+                          const isElementField = ["party-has-pyro", "party-has-hydro", "party-has-electro", "party-has-cryo"].includes(m.id);
+                          const isChecked = val === "1";
+
+                          if (isElementField && !isChecked && numChecked >= 3) {
+                            isDisabled = true;
+                          }
+                          if (m.id === "a1-resonance-tier2" && numChecked >= 2) {
+                            isDisabled = true;
+                          }
+                          if (m.id === "a1-resonance-tier1" && numChecked >= 3) {
+                            isDisabled = true;
+                          }
+                        }
+
                         return (
                           <div key={m.id} className="flex flex-col gap-1" title={m.hint}>
                             <div className="flex items-center justify-between gap-3">
-                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</span>
+                              <span className={`text-xs font-medium ${isDisabled ? "text-gray-400 dark:text-gray-600" : "text-gray-700 dark:text-gray-300"}`}>{m.label}</span>
                               {m.control === "toggle" ? (
-                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                   checked={Number(val) > 0}
+                                  disabled={isDisabled}
                                   onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
                               ) : m.control === "stacks" ? (
                                 <div className="flex gap-1">

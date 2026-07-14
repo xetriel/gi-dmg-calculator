@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { resolveMechanics } from "./mechanics";
 import { columbina } from "../../data/registry/characters/columbina";
 import { columbinaSeed } from "../../data/talents/columbina";
-import type { DamageStats, TalentScalingData } from "@/lib/engine/damage";
+import type { DamageStats } from "@/lib/engine/damage";
+import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { MechanicsCtx } from "./mechanics";
 
 const baseStats: DamageStats = {
@@ -68,7 +69,17 @@ columbinaSeed.hits.forEach(h => {
   });
 });
 
-function createCtx(overrides: Partial<MechanicsCtx>): MechanicsCtx {
+interface MockCtxOverride {
+  stats?: Partial<DamageStats>;
+  baseAtk?: number;
+  baseDef?: number;
+  baseHp?: number;
+  constellationLevel?: number;
+  talentLevels?: Record<string, number>;
+  inputs?: Record<string, number>;
+}
+
+function createCtx(overrides: MockCtxOverride): MechanicsCtx {
   const inputs = {
     "lunar-domain": 1,
     "lunacy-stacks": 3,
@@ -77,7 +88,7 @@ function createCtx(overrides: Partial<MechanicsCtx>): MechanicsCtx {
     ...overrides.inputs,
   };
   return {
-    stats: { ...baseStats, ...overrides.stats },
+    stats: { ...baseStats, ...overrides.stats } as DamageStats,
     baseAtk: overrides.baseAtk ?? 1000,
     baseDef: overrides.baseDef ?? 800,
     baseHp: overrides.baseHp ?? 15000,
