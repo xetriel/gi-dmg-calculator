@@ -281,12 +281,13 @@ export function CharacterCalculator({
       g.hits.forEach((h, hi) => {
         const id = hitId(gi, hi);
         const mult = resolved[id] ?? 0;
+        const mods: PerHitMods = mech.perHit[h.key] ?? {};
         if (h.kind === "heal") {
-          const heal = (mult / 100) * scalingTotal(s, h.scaling) * (1 + healingBonus / 100);
+          const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
+          const heal = ((mult / 100) * scalingTotal(s, h.scaling) + flatBonus) * (1 + healingBonus / 100);
           out[id] = { nonCrit: heal, crit: heal, avg: heal };
           return;
         }
-        const mods: PerHitMods = mech.perHit[h.key] ?? {};
         const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
         const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
         out[id] = computeHit(s, {
