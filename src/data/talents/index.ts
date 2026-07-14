@@ -8,8 +8,9 @@ import { sandroneSeed } from "./sandrone";
 import { zibaiSeed } from "./zibai";
 import { neferSeed } from "./nefer";
 import { flinsSeed } from "./flins";
+import { columbinaSeed } from "./columbina";
 
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed];
 
 export interface TalentRow {
   characterId: string;
