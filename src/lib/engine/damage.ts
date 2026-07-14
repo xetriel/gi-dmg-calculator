@@ -49,7 +49,7 @@ export interface DirectReactionParams {
 export interface HitInput {
   multiplier: number;         // talent multiplier, percent
   scaling: ScalingSource;
-  element: Element;           // trigger element (for reaction multipliers)
+  element: Element | "Physical";           // trigger element (for reaction multipliers)
   reaction: ReactionType;
   reactionBonusPct: number;   // extra reaction bonus %, e.g. from artifacts/talents
   flatDmgBonus?: number;      // additive base DMG (e.g. Masque, Dark-Shattering Flame, C2 Blood Blossom)
@@ -235,7 +235,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
   } else {
     const additive =
       (hit.flatDmgBonus ?? 0) +
-      catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct);
+      (hit.element === "Physical" ? 0 : catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct));
     const base =
       (hit.multiplier / 100) * scalingTotal(stats, hit.scaling) * (hit.baseDmgMultiplier ?? 1) +
       additive;
@@ -251,7 +251,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
       ) *
       defMultiplier(stats) *
       resMultiplier(stats.enemyRes) *
-      amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct);
+      (hit.element === "Physical" ? 1 : amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct));
   }
 
   const cr = clamp(stats.critRate + (hit.critRateBonusPct ?? 0), 0, 100) / 100;
