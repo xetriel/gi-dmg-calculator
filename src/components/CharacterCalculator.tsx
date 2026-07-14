@@ -1,28 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef, ScalingSource, TalentHit } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, type RawInputs } from "@/lib/engine/validation";
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
-import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
-import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarResult } from "@/lib/engine/lunar";
-import { saveBuild, deleteBuild } from "@/app/builds/actions";
-import { logExport, type ExportFormat, type ExportSummary } from "@/app/history/actions";
-import { encodeBuild } from "@/lib/engine/share";
+import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
+import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine/lunar";
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
 
-// Excel-style stat panel wired to the pure damage engine.
-// Fill every field, pick a talent level (where data exists) or type a multiplier,
-// choose a reaction — every hit's Non-Crit / CRIT / Average damage recomputes live
-// on each change (no Calculate button).
-const GROUPS: { key: StatField["group"]; label: string }[] = [
-  { key: "base", label: "Base Stats" },
-  { key: "combat", label: "Combat Stats" },
-  { key: "advanced", label: "Advanced Stats" },
-  { key: "defense", label: "Target Stats" },
-];
+// Import custom hooks and components
+import { useRotation } from "./calculator/hooks/useRotation";
+import { useCalculatorState, initialStats } from "./calculator/hooks/useCalculatorState";
+import { hydrateFromBuild } from "./calculator/hooks/useCalculatorState";
+import type { SavedBuild, CalcInstance, ComputedInstance, RotationStep } from "./calculator/types";
+import { StatsGrid } from "./calculator/components/StatsGrid";
+import { MechanicsPanel } from "./calculator/components/MechanicsPanel";
+import { DamageTable } from "./calculator/components/DamageTable";
+import { TransformativePanel } from "./calculator/components/TransformativePanel";
+import { RotationModal } from "./calculator/components/RotationModal";
 
 const REACTION_LABEL: Record<ReactionType, string> = {
   none: "None",
@@ -31,7 +28,6 @@ const REACTION_LABEL: Record<ReactionType, string> = {
   aggravate: "Aggravate",
 };
 
-// Tag styling for direct-reaction hits (Stellar-Conduct / Lunar-Crystallize rows).
 const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; title: string }> = {
   stellar: {
     label: "Stellar",
@@ -45,14 +41,9 @@ const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; titl
   },
 };
 
-// Fixed locale: results now render during SSR too, and the server's locale can
-// differ from the browser's (e.g. "2.047" vs "2,047" → hydration mismatch).
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all";
 
-// Attributes shown in the "Effective Stats" panel — the values actually used to
-// compute damage after talent toggles + constellations (e.g. Hu Tao's Paramita ATK).
-// hideIfZero: sub-rows only appear when the value is non-zero (keeps UI clean).
 const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "percent"; hideIfZero?: boolean }[] = [
   { key: "atk", label: "ATK", unit: "flat" },
   { key: "hp", label: "Max HP", unit: "flat" },
@@ -68,76 +59,14 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "burstDmgBonus", label: "  └ Elemental Burst", unit: "percent", hideIfZero: true },
 ];
 
-// A saved build row (from the DB via getBuildsForCharacter, or from localStorage offline).
-interface SavedBuild {
-  id: string;
-  name: string;
-  characterId?: string;
-  data: unknown;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  isOffline?: boolean;
-}
-
-interface ReactionExtras {
-  transformative: { type: TransformativeType; dmg: number }[];
-  lunar: { type: LunarType; res: LunarResult }[];
-  notes: string[]; // computed mechanic lines (Paramita ATK, Masque flat DMG, heals, …)
-}
-
-interface CalcInstance {
-  id: string;
-  stats: Record<string, string>;
-  hits: Record<string, string>;
-  levels: Record<string, string>;
-  mechanicInputs: Record<string, string>; // MechanicDef.id -> raw value ("1"/"0" for toggles)
-  reaction: ReactionType;
-  reactionBonus: string;
-  reactionPanelBonus: string; // Reaction Bonus % applied to the transformative/lunar panel
-  lunarBaseBonus: string;     // Lunar Reaction Base DMG Bonus % (Moonsign passives)
-  constellationLevel: number;
-}
-
-interface RotationStep {
-  id: string;
-  targetHitId: string;                    // hitId(gi, hi) e.g. "0:0"
-  reactionOverride: ReactionType | "default";
-  hitType?: "avg" | "crit" | "non-crit";
-  quantity?: number;
-}
-
-interface SavedRotation {
-  id: string;
-  name: string;
-  description: string;
-  steps: RotationStep[];
-}
-
-// Results derived from an instance's inputs on every render (no stored results).
-interface ComputedInstance {
-  validation: ReturnType<typeof validate>;
-  results: Record<string, HitResult> | null; // null while inputs are invalid
-  extras: ReactionExtras | null;
-  inputStats: DamageStats | null;             // stats as entered (before mechanic/constellation deltas)
-  effectiveStats: DamageStats | null;         // stats actually used for damage (after deltas)
-  rotationTotals: Record<string, number>;      // rotationId -> total damage
-  rotationStepsDmg: Record<string, number[]>;  // rotationId -> step damage array
-}
-
-// Collect all active constellation effects up to the given level.
-function activeEffects(config: CharacterConfig, level: number): ConstellationEffect[] {
+function activeEffects(config: CharacterConfig, level: number) {
   if (!config.constellations) return [];
   return config.constellations
     .filter(c => c.level <= level)
     .flatMap(c => c.effects);
 }
 
-// Compute flat DMG bonus for a specific hit key from constellation effects.
-function constellationFlatBonus(
-  effects: ConstellationEffect[],
-  hitKey: string,
-  stats: DamageStats,
-): number {
+function constellationFlatBonus(effects: any[], hitKey: string, stats: DamageStats): number {
   let bonus = 0;
   for (const e of effects) {
     if (e.type === "flat_dmg_bonus" && e.affectedHitKeys?.includes(hitKey)) {
@@ -148,8 +77,7 @@ function constellationFlatBonus(
   return bonus;
 }
 
-// Compute stat bonuses from constellation effects.
-function constellationStatBonuses(effects: ConstellationEffect[]): Record<string, number> {
+function constellationStatBonuses(effects: any[]): Record<string, number> {
   const bonuses: Record<string, number> = {};
   for (const e of effects) {
     if (e.type === "stat_bonus" && e.statKey) {
@@ -158,43 +86,6 @@ function constellationStatBonuses(effects: ConstellationEffect[]): Record<string
   }
   return bonuses;
 }
-
-const initialStats = {
-  "hp.base": "0",
-  "hp.percent": "0",
-  "hp.flat": "15000",
-  "atk.base": "0",
-  "atk.percent": "0",
-  "atk.flat": "1500",
-  "def.base": "0",
-  "def.percent": "0",
-  "def.flat": "800",
-  "critRate": "70",
-  "critDmg": "140",
-  "dmgBonus": "46.6",
-  "normalDmgBonus": "0",
-  "chargedDmgBonus": "0",
-  "plungeDmgBonus": "0",
-  "skillDmgBonus": "0",
-  "burstDmgBonus": "0",
-  "pyroDmgBonus": "0",
-  "hydroDmgBonus": "0",
-  "dendroDmgBonus": "0",
-  "electroDmgBonus": "0",
-  "anemoDmgBonus": "0",
-  "cryoDmgBonus": "0",
-  "geoDmgBonus": "0",
-  "physicalDmgBonus": "0",
-  "em": "0",
-  "energyRecharge": "100",
-  "healingBonus": "0",
-  "dmgReduction": "0",
-  "enemyRes": "10",
-  "levelChar": "90",
-  "levelEnemy": "100",
-  "defReduction": "0",
-  "defIgnore": "0",
-};
 
 export function CharacterCalculator({
   config,
@@ -209,6 +100,9 @@ export function CharacterCalculator({
   savedBuilds?: SavedBuild[];
   isSharedBuild?: boolean;
 }) {
+  const router = useRouter();
+
+  // Create initial instance helper for hydration function
   const createInitialInstance = (id: string): CalcInstance => {
     const initLevels: Record<string, string> = {};
     for (const g of config.talents) {
@@ -233,577 +127,266 @@ export function CharacterCalculator({
     };
   };
 
-  // Backward-compatible hydration: supports plain array (oldest), single rotation object (old), and multiple rotations (new).
-  function hydrateFromBuild(data: unknown): { instances: CalcInstance[]; rotations: SavedRotation[]; activeRotationId: string } {
-    if (data && typeof data === "object" && !Array.isArray(data)) {
-      const d = data as {
-        rotations?: unknown; rotationSteps?: unknown; instances?: CalcInstance[];
-        activeRotationId?: string; description?: string;
-      };
-      if (Array.isArray(d.rotations)) {
-        return {
-          instances: (d.instances ?? [createInitialInstance("1")]) as CalcInstance[],
-          rotations: d.rotations as SavedRotation[],
-          activeRotationId: (d.activeRotationId ?? ((d.rotations as SavedRotation[])[0]?.id || "")) as string,
-        };
-      }
-      if (Array.isArray(d.rotationSteps)) {
-        const legacyRot: SavedRotation = {
-          id: "legacy-rotation",
-          name: "Combo 1",
-          description: (d.description ?? "") as string,
-          steps: d.rotationSteps as RotationStep[],
-        };
-        return {
-          instances: (d.instances ?? [createInitialInstance("1")]) as CalcInstance[],
-          rotations: [legacyRot],
-          activeRotationId: "legacy-rotation",
-        };
-      }
-    }
-    if (Array.isArray(data) && data.length > 0) {
-      return {
-        instances: data as CalcInstance[],
-        rotations: [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
-        activeRotationId: "combo-1",
-      };
-    }
-    return {
-      instances: [createInitialInstance("1")],
-      rotations: [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
-      activeRotationId: "combo-1",
-    };
-  }
+  const hydrated = initialBuild?.data ? hydrateFromBuild(initialBuild.data, createInitialInstance) : null;
 
-  const hydrated = initialBuild?.data ? hydrateFromBuild(initialBuild.data) : null;
-
-  const [instances, setInstances] = useState<CalcInstance[]>(
-    () => hydrated?.instances ?? [createInitialInstance("1")]
-  );
-  const [rotations, setRotations] = useState<SavedRotation[]>(
-    () => hydrated?.rotations ?? [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }]
-  );
-  const [activeRotationId, setActiveRotationId] = useState<string>(
-    () => hydrated?.activeRotationId ?? (hydrated?.rotations?.[0]?.id ?? "combo-1")
-  );
-
-  const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
-  const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
-  const [savedBuildsList, setSavedBuildsList] = useState<SavedBuild[]>(() => {
-    let offlineList: SavedBuild[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(`gi_calc_offline_builds_${config.id}`);
-        if (stored) {
-          offlineList = JSON.parse(stored).map((b: SavedBuild) => ({ ...b, isOffline: true }));
-        }
-      } catch (err) {
-        console.error("Failed to parse offline builds:", err);
-      }
-    }
-    return [...offlineList, ...savedBuilds];
-  });
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-  const [newBuildName, setNewBuildName] = useState("");
-  const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-
-  // Close load dropdown when clicking outside
-  useEffect(() => {
-    if (!isLoadDropdownOpen) return;
-    const handleOutsideClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".load-dropdown-container")) {
-        setIsLoadDropdownOpen(false);
-      }
-    };
-    document.addEventListener("click", handleOutsideClick);
-    return () => document.removeEventListener("click", handleOutsideClick);
-  }, [isLoadDropdownOpen]);
-
-  const [savedJson, setSavedJson] = useState<string>(() => {
-    const payload = {
-      instances: hydrated?.instances ?? [createInitialInstance("1")],
-      rotations: hydrated?.rotations ?? [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
-      activeRotationId: hydrated?.activeRotationId ?? "combo-1",
-    };
-    return JSON.stringify(payload);
-  });
-  const [benchmarkId, setBenchmarkId] = useState<string | null>(null);
-  const [nextId, setNextId] = useState(() => {
-    const insts = hydrated?.instances ?? [];
-    if (insts.length > 0) {
-      const ids = insts.map(i => Number(i.id) || 0);
-      return Math.max(...ids, 0) + 1;
-    }
-    return 2;
-  });
-  const [showExtraInfo, setShowExtraInfo] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<string | null>(null);
-
-  // Screenshot OCR Scanner States
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [scannerTargetId, setScannerTargetId] = useState<string | null>(null);
-  const [scanImage, setScanImage] = useState<string | null>(null);
-  const [isScanningImage, setIsScanningImage] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const [scanResult, setScanResult] = useState<any | null>(null);
-
-  const runScan = async (file: File, setupId: string) => {
-    setIsScanningImage(true);
-    setScanError(null);
-    setScanResult(null);
-
-    try {
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-      });
-
-      const base64Data = await base64Promise;
-
-      const response = await fetch("/api/scan-stats", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ image: base64Data }),
-      });
-
-      if (!response.ok) {
-        const errJson = await response.json();
-        if (errJson.error === "API_KEY_MISSING") {
-          throw new Error("GEMINI_API_KEY is not configured in your .env file.");
-        } else {
-          throw new Error(errJson.message || `API error: ${response.statusText}`);
-        }
-      }
-
-      const res = await response.json();
-      if (res.success && res.data) {
-        setScanResult(res.data);
-      } else {
-        throw new Error(res.message || "Failed to scan screenshot.");
-      }
-    } catch (e: any) {
-      console.error(e);
-      setScanError(e.message || "An error occurred during screenshot scanning.");
-    } finally {
-      setIsScanningImage(false);
-    }
-  };
-
-  const applyScanToSetup = (setupId: string, data: any) => {
-    updateInstance(setupId, inst => {
-      const updatedStats = { ...inst.stats };
-
-      if (data.levelChar) updatedStats["levelChar"] = data.levelChar;
-      
-      if (data.hpBase) updatedStats["hp.base"] = data.hpBase;
-      if (data.hpFlat) updatedStats["hp.flat"] = data.hpFlat;
-      if (data.hpPercent) updatedStats["hp.percent"] = data.hpPercent;
-
-      if (data.atkBase) updatedStats["atk.base"] = data.atkBase;
-      if (data.atkFlat) updatedStats["atk.flat"] = data.atkFlat;
-      if (data.atkPercent) updatedStats["atk.percent"] = data.atkPercent;
-
-      if (data.defBase) updatedStats["def.base"] = data.defBase;
-      if (data.defFlat) updatedStats["def.flat"] = data.defFlat;
-      if (data.defPercent) updatedStats["def.percent"] = data.defPercent;
-
-      if (data.em) updatedStats["em"] = data.em;
-      if (data.critRate) updatedStats["critRate"] = data.critRate;
-      if (data.critDmg) updatedStats["critDmg"] = data.critDmg;
-      if (data.energyRecharge) updatedStats["energyRecharge"] = data.energyRecharge;
-      if (data.dmgBonus) updatedStats["dmgBonus"] = data.dmgBonus;
-
-      return {
-        stats: updatedStats,
-      };
-    });
-
-    setIsScannerOpen(false);
-    setScanImage(null);
-    setScanResult(null);
-    setScanError(null);
-
-    setSaveStatus("Stats updated from screenshot!");
-    setTimeout(() => setSaveStatus(null), 3000);
-  };
-
-  const handleScanDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleScanDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setScanImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      if (scannerTargetId) {
-        runScan(file, scannerTargetId);
-      }
-    }
-  };
-
-  const handleScanFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setScanImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      if (scannerTargetId) {
-        runScan(file, scannerTargetId);
-      }
-    }
-  };
-
-
-  const [isRotationOpen, setIsRotationOpen] = useState(false);
-  const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
-  const [rotationNextId, setRotationNextId] = useState(() => {
-    const allSteps = (hydrated?.rotations ?? []).flatMap(r => r.steps);
-    if (allSteps.length > 0) {
-      const ids = allSteps.map(s => Number(s.id) || 0);
-      return Math.max(...ids, 0) + 1;
-    }
-    return 1;
+  // Initialize hooks
+  const rotationState = useRotation(hydrated);
+  const calcState = useCalculatorState({
+    config,
+    scaling,
+    initialBuild,
+    savedBuilds,
+    rotations: rotationState.rotations,
+    activeRotationId: rotationState.activeRotationId,
+    setRotations: rotationState.setRotations,
+    setActiveRotationId: rotationState.setActiveRotationId,
+    hydrated,
   });
 
-  const currentPayload = () => JSON.stringify({ instances, rotations, activeRotationId });
-  const isDirty = currentPayload() !== savedJson;
+  const {
+    instances,
+    activeBuildId,
+    activeBuildName,
+    savedBuildsList,
+    isSaveModalOpen,
+    setIsSaveModalOpen,
+    newBuildName,
+    setNewBuildName,
+    isLoadDropdownOpen,
+    setIsLoadDropdownOpen,
+    benchmarkId,
+    setBenchmarkId,
+    showExtraInfo,
+    setShowExtraInfo,
+    isSaving,
+    saveStatus,
+    setSaveStatus,
+    isScannerOpen,
+    setIsScannerOpen,
+    scannerTargetId,
+    setScannerTargetId,
+    scanImage,
+    isScanningImage,
+    scanError,
+    scanResult,
+    isConfirmDiscardOpen,
+    setIsConfirmDiscardOpen,
+    isExportDropdownOpen,
+    setIsExportDropdownOpen,
+    isDirty,
+    
+    // Scan handlers
+    applyScanToSetup,
+    handleScanDragOver,
+    handleScanDrop,
+    handleScanFileInputChange,
 
-  const router = useRouter();
-  const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = useState(false);
-  const [pendingNavigationHref, setPendingNavigationHref] = useState("");
+    // Persistence handlers
+    saveChanges,
+    handleSaveAsNew,
+    loadBuild,
+    handleDeleteBuild,
+    handleSaveAndSwitch,
+    shareBuild,
+    importBuild,
 
-  // Warn before browser unload (reload/tab close)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
-
-  // Intercept client-side routing links click events on this page
-  useEffect(() => {
-    const handleAnchorClick = (e: MouseEvent) => {
-      if (!isDirty) return;
-
-      let target = e.target as HTMLElement | null;
-      while (target && target.tagName !== "A") {
-        target = target.parentElement;
-      }
-
-      if (target instanceof HTMLAnchorElement) {
-        const href = target.getAttribute("href");
-        const targetAttr = target.getAttribute("target");
-        if (targetAttr === "_blank") return; // Natively open new tabs without warning
-
-        if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !e.defaultPrevented) {
-          e.preventDefault();
-          e.stopPropagation();
-          setPendingNavigationHref(href);
-          setIsConfirmDiscardOpen(true);
-        }
-      }
-    };
-
-    document.addEventListener("click", handleAnchorClick, true);
-    return () => document.removeEventListener("click", handleAnchorClick, true);
-  }, [isDirty]);
-
-  // Intercept global paste events to scan screenshots directly
-  useEffect(() => {
-    const handleGlobalPaste = (e: ClipboardEvent) => {
-      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
-        return;
-      }
-      
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
-            e.preventDefault();
-            // Target the first setup instance
-            const targetId = instances[0]?.id;
-            if (targetId) {
-              setScannerTargetId(targetId);
-              setIsScannerOpen(true);
-              
-              // Load the preview
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setScanImage(reader.result as string);
-              };
-              reader.readAsDataURL(file);
-              
-              // Run scan
-              runScan(file, targetId);
-            }
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener("paste", handleGlobalPaste);
-    return () => window.removeEventListener("paste", handleGlobalPaste);
-  }, [instances]);
-
-
-  const saveBuildLocally = (id: string | null, name: string, payload: unknown) => {
-    const storedKey = `gi_calc_offline_builds_${config.id}`;
-    let offlineList: SavedBuild[] = [];
-    try {
-      const stored = localStorage.getItem(storedKey);
-      if (stored) offlineList = JSON.parse(stored);
-    } catch (e) {
-      console.error(e);
-    }
-
-    let targetId = id;
-    let updatedList = [...offlineList];
-
-    if (id && id.startsWith("offline-")) {
-      updatedList = offlineList.map(b => b.id === id ? { ...b, name, data: payload, updatedAt: new Date() } : b);
-    } else {
-      targetId = `offline-${Date.now()}`;
-      const newOfflineBuild = {
-        id: targetId,
-        name,
-        characterId: config.id,
-        data: payload,
-        updatedAt: new Date(),
-        isOffline: true,
-      };
-      updatedList = [newOfflineBuild, ...updatedList];
-    }
-
-    localStorage.setItem(storedKey, JSON.stringify(updatedList));
-
-    // Update UI list. Keep database builds, overwrite/insert offline builds.
-    setSavedBuildsList(prev => {
-      const dbBuilds = prev.filter(b => !b.id.startsWith("offline-"));
-      return [...updatedList.map(b => ({ ...b, isOffline: true })), ...dbBuilds];
-    });
-
-    setActiveBuildId(targetId);
-    setActiveBuildName(name);
-    setSavedJson(JSON.stringify(payload));
-    setSaveStatus("Saved locally!");
-    setTimeout(() => setSaveStatus(null), 3000);
-  };
-
-  const saveChanges = async () => {
-    if (!activeBuildId) {
-      setNewBuildName(`${config.name} Setup ${savedBuildsList.length + 1}`);
-      setIsSaveModalOpen(true);
-      return;
-    }
-
-    setIsSaving(true);
-    setSaveStatus("Saving...");
-    const payload = { instances, rotations, activeRotationId };
-
-    try {
-      if (activeBuildId.startsWith("offline-")) {
-        // Force offline save
-        saveBuildLocally(activeBuildId, activeBuildName, payload);
-      } else {
-        // Attempt database write
-        await saveBuild(activeBuildId, activeBuildName, config.id, payload);
-        setSavedJson(JSON.stringify(payload));
-        setSavedBuildsList(prev => prev.map(b => b.id === activeBuildId ? { ...b, name: activeBuildName, data: payload } : b));
-        setSaveStatus("Saved to Cloud!");
-        setTimeout(() => setSaveStatus(null), 3000);
-      }
-    } catch (e) {
-      console.warn("Database connection failed, saving build locally:", e);
-      saveBuildLocally(activeBuildId, activeBuildName, payload);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSaveAsNew = async (name: string) => {
-    if (!name.trim()) return;
-    setIsSaving(true);
-    setSaveStatus("Saving new...");
-    const payload = { instances, rotations, activeRotationId };
-
-    try {
-      const created = await saveBuild(null, name.trim(), config.id, payload);
-      setSavedJson(JSON.stringify(payload));
-      setActiveBuildId(created.id);
-      setActiveBuildName(created.name);
-      setSavedBuildsList(prev => [created, ...prev]);
-      setIsSaveModalOpen(false);
-      setSaveStatus("Saved to Cloud!");
-      setTimeout(() => setSaveStatus(null), 3000);
-    } catch (e) {
-      console.warn("Database connection failed, saving new build locally:", e);
-      saveBuildLocally(null, name.trim(), payload);
-      setIsSaveModalOpen(false);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const loadBuild = (b: SavedBuild) => {
-    try {
-      const hydratedData = hydrateFromBuild(b.data);
-      setInstances(hydratedData.instances);
-      setRotations(hydratedData.rotations);
-      setActiveRotationId(hydratedData.activeRotationId);
-
-      setActiveBuildId(b.id);
-      setActiveBuildName(b.name);
-      setSavedJson(JSON.stringify(b.data));
-      setIsLoadDropdownOpen(false);
-      setSaveStatus("Loaded configuration!");
-      setTimeout(() => setSaveStatus(null), 3000);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load build data.");
-    }
-  };
-
-  const handleDeleteBuild = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this saved build?")) return;
-
-    if (id.startsWith("offline-")) {
-      const storedKey = `gi_calc_offline_builds_${config.id}`;
-      let offlineList: SavedBuild[] = [];
-      try {
-        const stored = localStorage.getItem(storedKey);
-        if (stored) offlineList = JSON.parse(stored);
-      } catch (err) {
-        console.error(err);
-      }
-
-      const updated = offlineList.filter(b => b.id !== id);
-      localStorage.setItem(storedKey, JSON.stringify(updated));
-      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
-
-      if (activeBuildId === id) {
-        setActiveBuildId(null);
-        setActiveBuildName("Scratchpad");
-      }
-      setSaveStatus("Deleted local build!");
-      setTimeout(() => setSaveStatus(null), 3000);
-      return;
-    }
-
-    try {
-      await deleteBuild(id);
-      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
-      if (activeBuildId === id) {
-        setActiveBuildId(null);
-        setActiveBuildName("Scratchpad");
-      }
-      setSaveStatus("Deleted build!");
-      setTimeout(() => setSaveStatus(null), 3000);
-    } catch (err) {
-      console.error("Database connection failed, removing database build from UI list:", err);
-      // Even if database fails, filter it locally to make UI responsive
-      setSavedBuildsList(prev => prev.filter(b => b.id !== id));
-      if (activeBuildId === id) {
-        setActiveBuildId(null);
-        setActiveBuildName("Scratchpad");
-      }
-      setSaveStatus("Deleted build locally!");
-      setTimeout(() => setSaveStatus(null), 3000);
-    }
-  };
-
-  const handleSaveAndSwitch = async () => {
-    let name = activeBuildName;
-    if (!activeBuildId) {
-      const promptVal = prompt("Enter a name for this new build configuration:", `${config.name} Setup`);
-      if (promptVal === null) return;
-      if (!promptVal.trim()) {
-        alert("Build name is required to save.");
-        return;
-      }
-      name = promptVal.trim();
-    }
-
-    setIsSaving(true);
-    setSaveStatus("Saving...");
-    const payload = { instances, rotations, activeRotationId };
-
-    try {
-      if (activeBuildId && activeBuildId.startsWith("offline-")) {
-        saveBuildLocally(activeBuildId, name, payload);
-      } else {
-        await saveBuild(activeBuildId, name, config.id, payload);
-      }
-      setSavedJson(JSON.stringify(payload));
-    } catch (e) {
-      console.warn("Database connection failed, saving build locally before switch:", e);
-      saveBuildLocally(activeBuildId, name, payload);
-    } finally {
-      setIsSaving(false);
-      setIsConfirmDiscardOpen(false);
-      router.push(pendingNavigationHref);
-    }
-  };
+    // Modifiers
+    addInstance,
+    removeInstance,
+    updateInstance,
+    setMechanic,
+    setStat,
+    setHit,
+    setLevel,
+    setReaction,
+    setReactionBonus,
+  } = calcState;
 
   const [showSharedBanner, setShowSharedBanner] = useState(isSharedBuild);
+  const [isRotationOpen, setIsRotationOpen] = useState(false);
+  const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
 
-  const shareBuild = () => {
-    const payload = { instances, rotations, activeRotationId };
-    const encoded = encodeBuild(payload);
-    if (!encoded) return;
-    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encoded}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      setSaveStatus("Copied share link!");
-      setTimeout(() => setSaveStatus(null), 3000);
-    }).catch((err) => {
-      console.error(err);
-      setSaveStatus("Failed to copy link");
-      setTimeout(() => setSaveStatus(null), 3000);
-    });
+  const activeBenchmarkId = benchmarkId || instances[0]?.id;
+
+  const renderPct = (currentVal: number, benchmarkVal: number | undefined) => {
+    if (instances.length < 2 || benchmarkVal === undefined || benchmarkVal === 0) return null;
+    const pct = (currentVal / benchmarkVal) * 100;
+
+    let colorClass = "text-gray-400 dark:text-zinc-500";
+    if (pct < 99.95) {
+      colorClass = "text-red-500 dark:text-red-400 font-semibold";
+    } else if (pct > 100.05) {
+      colorClass = "text-green-500 dark:text-green-400 font-semibold";
+    }
+
+    return (
+      <span className={`text-[10px] leading-none ${colorClass}`}>
+        {pct.toFixed(1)}%
+      </span>
+    );
   };
 
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-
-  // Close export dropdown when clicking outside
-  useEffect(() => {
-    if (!isExportDropdownOpen) return;
-    const handleOutsideClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".export-dropdown-container")) {
-        setIsExportDropdownOpen(false);
-      }
+  // Derive all outputs from an instance's inputs
+  function computeInstance(inst: CalcInstance): ComputedInstance {
+    const raw: RawInputs = {
+      stats: inst.stats,
+      hits: inst.hits,
+      reaction: inst.reaction,
+      reactionBonus: inst.reactionBonus,
+      mechanicInputs: inst.mechanicInputs,
     };
-    document.addEventListener("click", handleOutsideClick);
-    return () => document.removeEventListener("click", handleOutsideClick);
-  }, [isExportDropdownOpen]);
+    const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
+    const validation = validate(config, raw, resolved);
+    if (!validation.ok) {
+      return {
+        validation,
+        results: null,
+        extras: null,
+        inputStats: null,
+        effectiveStats: null,
+        rotationTotals: {},
+        rotationStepsDmg: {},
+      };
+    }
+    const s = resolveStats(raw);
+    const inputStats = { ...s };
 
-  // Headline damage per setup (max rotation total, else max non-heal hit avg) — stored
-  // with each export so the /history page can compare configs without re-running the engine.
-  const buildExportSummary = (): ExportSummary => {
+    const mechInputs: Record<string, number> = {};
+    for (const m of config.mechanicDefs ?? []) {
+      mechInputs[m.id] = toNum(inst.mechanicInputs[m.id]) ?? 0;
+    }
+    const mech = resolveMechanics(config, {
+      stats: s,
+      baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
+      baseDef: toNum(inst.stats["def.base"]) ?? 0,
+      baseHp: toNum(inst.stats["hp.base"]) ?? 0,
+      constellationLevel: inst.constellationLevel,
+      talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
+      scaling,
+      inputs: mechInputs,
+    });
+
+    for (const [key, val] of Object.entries(mech.statDeltas)) {
+      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
+    }
+    const effects = activeEffects(config, inst.constellationLevel);
+    const statBonuses = constellationStatBonuses(effects);
+    for (const [key, val] of Object.entries(statBonuses)) {
+      if (key in s) (s as unknown as Record<string, number>)[key] += val;
+    }
+
+    const healingBonus = toNum(inst.stats["healingBonus"]) ?? 0;
+    const out: Record<string, HitResult> = {};
+    config.talents.forEach((g, gi) =>
+      g.hits.forEach((h, hi) => {
+        const id = hitId(gi, hi);
+        const mult = resolved[id] ?? 0;
+        if (h.kind === "heal") {
+          const heal = (mult / 100) * scalingTotal(s, h.scaling) * (1 + healingBonus / 100);
+          out[id] = { nonCrit: heal, crit: heal, avg: heal };
+          return;
+        }
+        const mods: PerHitMods = mech.perHit[h.key] ?? {};
+        const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
+        const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
+        out[id] = computeHit(s, {
+          multiplier: mult,
+          scaling: h.scaling,
+          element: mods.element ?? config.element,
+          reaction: inst.reaction,
+          reactionBonusPct: Number(inst.reactionBonus || 0),
+          flatDmgBonus: flatBonus || undefined,
+          baseDmgMultiplier: mods.baseDmgMultiplier,
+          critDmgBonusPct: mods.critDmgBonusPct,
+          critRateBonusPct: mods.critRateBonusPct,
+          bonusDmgPct: mods.bonusDmgPct,
+          hitCategory: hitCat,
+          charElement: config.element,
+          dmgBonusLabel: config.dmgBonusLabel,
+          directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+        });
+      }),
+    );
+
+    const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
+    const lunarBase = toNum(inst.lunarBaseBonus) ?? 0;
+    const extras = {
+      transformative: (TRANSFORMATIVE_BY_ELEMENT[config.element] ?? []).map(type => ({
+        type,
+        dmg: transformativeDamage(type, s.levelChar, s.em, s.enemyRes, panelBonus),
+      })),
+      lunar: (LUNAR_BY_ELEMENT[config.element] ?? []).map(type => ({
+        type,
+        res: indirectLunarDamage(type, s, lunarBase + (mech.lunarBaseBonusPct ?? 0), panelBonus),
+      })),
+      notes: mech.notes,
+    };
+
+    const rotationTotals: Record<string, number> = {};
+    const rotationStepsDmg: Record<string, number[]> = {};
+
+    for (const r of rotationState.rotations) {
+      let total = 0;
+      const stepDmgs = r.steps.map((step: RotationStep) => {
+        const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
+        const rawType = step.hitType || "avg";
+        const typeKey = (rawType === "non-crit" ? "nonCrit" : rawType) as keyof HitResult;
+        const qty = step.quantity ?? 1;
+
+        if (effectiveReaction === inst.reaction) {
+          const res = out[step.targetHitId];
+          const val = (res ? res[typeKey] : 0) * qty;
+          total += val;
+          return val;
+        } else {
+          let hitConfig = null;
+          let groupType = "normal";
+          for (let gi = 0; gi < config.talents.length; gi++) {
+            for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
+              if (hitId(gi, hi) === step.targetHitId) {
+                hitConfig = config.talents[gi].hits[hi];
+                groupType = config.talents[gi].type;
+                break;
+              }
+            }
+            if (hitConfig) break;
+          }
+          if (!hitConfig) return 0;
+          const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
+          const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
+          const hitCat = hitConfig.hitCategory ?? (groupType as "normal" | "skill" | "burst");
+          const res = computeHit(s, {
+            multiplier: resolved[step.targetHitId] ?? 0,
+            scaling: hitConfig.scaling,
+            element: mods.element ?? config.element,
+            reaction: effectiveReaction,
+            reactionBonusPct: Number(inst.reactionBonus || 0),
+            flatDmgBonus: flatBonus || undefined,
+            baseDmgMultiplier: mods.baseDmgMultiplier,
+            critDmgBonusPct: mods.critDmgBonusPct,
+            critRateBonusPct: mods.critRateBonusPct,
+            bonusDmgPct: mods.bonusDmgPct,
+            hitCategory: hitCat,
+            charElement: config.element,
+            dmgBonusLabel: config.dmgBonusLabel,
+            directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+          });
+          const val = res[typeKey] * qty;
+          total += val;
+          return val;
+        }
+      });
+      rotationTotals[r.id] = total;
+      rotationStepsDmg[r.id] = stepDmgs;
+    }
+
+    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg };
+  }
+
+  const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
+  const activeRot = rotationState.rotations.find(r => r.id === rotationState.activeRotationId) || rotationState.rotations[0];
+
+  const buildExportSummary = () => {
     const setups = instances.map((inst, i) => {
       const c = computedById.get(inst.id);
       let headline = 0;
@@ -823,14 +406,16 @@ export function CharacterCalculator({
     return { setupCount: instances.length, topHeadline, setups };
   };
 
-  // Record an export/download event (best-effort, fire-and-forget — never blocks the download).
-  const logExportEvent = (format: ExportFormat) => {
-    const snapshot = { instances, rotations, activeRotationId };
-    logExport(config.id, format, activeBuildName, snapshot, buildExportSummary()).catch(() => {});
+  const logExportEvent = (format: string) => {
+    // best-effort event logging import/call
+    import("@/app/history/actions").then(({ logExport }) => {
+      const snapshot = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
+      logExport(config.id, format as any, activeBuildName, snapshot, buildExportSummary()).catch(() => {});
+    });
   };
 
   const exportAsJson = () => {
-    const payload = { instances, rotations, activeRotationId };
+    const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -852,12 +437,10 @@ export function CharacterCalculator({
     text += `Generated on: ${new Date().toLocaleString("en-US")}\n`;
     text += `==================================================\n\n`;
 
-    // Headers Row
     const headers = ["Category / Stat", ...instances.map((_, idx) => `Setup ${idx + 1}`)];
     text += headers.join("\t") + "\n";
     text += "─".repeat(60) + "\n";
 
-    // Section: Input Stats
     text += "INPUT STATS\n";
     config.stats.forEach(s => {
       if (s.hasBaseAndFlat) {
@@ -872,7 +455,6 @@ export function CharacterCalculator({
       }
     });
 
-    // Section: Effective Stats
     text += "\nEFFECTIVE COMPUTED STATS\n";
     EFFECTIVE_ROWS.forEach(er => {
       if (er.hideIfZero) {
@@ -888,13 +470,11 @@ export function CharacterCalculator({
       }).join("\t") + "\n";
     });
 
-    // Section: Talent Levels
     text += "\nTALENT LEVELS\n";
     config.talents.forEach(g => {
       text += `  ${g.name} Lv.\t` + instances.map(inst => inst.levels[g.type] || "1").join("\t") + "\n";
     });
 
-    // Section: Talent Hit Calculations (Avg)
     text += "\nTALENT DMG CALCULATIONS (AVG)\n";
     config.talents.forEach((g, gi) => {
       g.hits.forEach((h, hi) => {
@@ -907,9 +487,8 @@ export function CharacterCalculator({
       });
     });
 
-    // Section: Combo Rotations
     text += "\nCOMBO ROTATIONS DMG\n";
-    rotations.forEach(r => {
+    rotationState.rotations.forEach(r => {
       if (r.steps.length === 0) return;
       text += `  Combo: ${r.name}\t` + instances.map(inst => {
         const total = computedById.get(inst.id)?.rotationTotals?.[r.id] ?? 0;
@@ -1030,7 +609,7 @@ export function CharacterCalculator({
     });
 
     csvContent += `\n"ROTATION COMBO DAMAGE"\n`;
-    rotations.forEach(r => {
+    rotationState.rotations.forEach(r => {
       if (r.steps.length === 0) return;
       const row = [
         `Combo: ${r.name}`,
@@ -1061,7 +640,6 @@ export function CharacterCalculator({
     setSaveStatus("Generating PDF...");
     setIsExportDropdownOpen(false);
 
-    // Force dark class on setups container wrapper to force dark mode styles
     const parent = node.parentElement;
     const parentWasDark = parent?.classList.contains("dark");
     if (parent && !parentWasDark) {
@@ -1088,7 +666,6 @@ export function CharacterCalculator({
         });
       })
       .then((dataUrl) => {
-        // Open a new print window with the image fitted to it
         const printWindow = window.open("", "_blank");
         if (!printWindow) {
           alert("Please allow popups to save as PDF.");
@@ -1136,7 +713,6 @@ export function CharacterCalculator({
         setTimeout(() => setSaveStatus(null), 3000);
       })
       .finally(() => {
-        // Restore class configurations
         if (parent && !parentWasDark) {
           parent.classList.remove("dark");
         }
@@ -1152,7 +728,6 @@ export function CharacterCalculator({
     setSaveStatus("Generating PNG...");
     setIsExportDropdownOpen(false);
 
-    // Force dark class on setups container wrapper to force dark mode styles
     const parent = node.parentElement;
     const parentWasDark = parent?.classList.contains("dark");
     if (parent && !parentWasDark) {
@@ -1193,7 +768,6 @@ export function CharacterCalculator({
         setTimeout(() => setSaveStatus(null), 3000);
       })
       .finally(() => {
-        // Restore class configurations
         if (parent && !parentWasDark) {
           parent.classList.remove("dark");
         }
@@ -1202,347 +776,6 @@ export function CharacterCalculator({
         }
       });
   };
-
-  const importBuild = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-        const hydratedData = hydrateFromBuild(data);
-        setInstances(hydratedData.instances);
-        setRotations(hydratedData.rotations);
-        setActiveRotationId(hydratedData.activeRotationId);
-        setSaveStatus("Imported build!");
-        setTimeout(() => setSaveStatus(null), 3000);
-      } catch (err) {
-        console.error(err);
-        alert("Failed to parse JSON file. Please make sure it's a valid calculator build export.");
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = ""; // Clear input selection so same file can be re-imported
-  };
-
-  const addRotation = () => {
-    const newId = `rot-${Date.now()}`;
-    const newRot: SavedRotation = {
-      id: newId,
-      name: `Combo ${rotations.length + 1}`,
-      description: "Custom rotation sequence",
-      steps: [],
-    };
-    setRotations(prev => [...prev, newRot]);
-    setActiveRotationId(newId);
-  };
-
-  const deleteRotation = (idToDelete: string) => {
-    if (rotations.length <= 1) return;
-    const index = rotations.findIndex(r => r.id === idToDelete);
-    const newRotations = rotations.filter(r => r.id !== idToDelete);
-    setRotations(newRotations);
-    if (activeRotationId === idToDelete) {
-      const nextActiveIndex = index === 0 ? 0 : index - 1;
-      setActiveRotationId(newRotations[nextActiveIndex].id);
-    }
-  };
-
-  const updateActiveRotation = (updater: (rot: SavedRotation) => Partial<SavedRotation>) => {
-    setRotations(prev => prev.map(r => r.id === activeRotationId ? { ...r, ...updater(r) } : r));
-  };
-
-  const moveStep = (index: number, direction: "up" | "down") => {
-    const activeRot = rotations.find(r => r.id === activeRotationId) || rotations[0];
-    if (!activeRot) return;
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= activeRot.steps.length) return;
-
-    const newSteps = [...activeRot.steps];
-    const temp = newSteps[index];
-    newSteps[index] = newSteps[newIndex];
-    newSteps[newIndex] = temp;
-
-    updateActiveRotation(() => ({ steps: newSteps }));
-  };
-
-
-
-  const addInstance = () => {
-    if (instances.length >= 3) return;
-    const last = instances[instances.length - 1];
-    const newInst: CalcInstance = {
-      id: String(nextId),
-      stats: { ...last.stats },
-      hits: { ...last.hits },
-      levels: { ...last.levels },
-      mechanicInputs: { ...last.mechanicInputs },
-      reaction: last.reaction,
-      reactionBonus: last.reactionBonus,
-      reactionPanelBonus: last.reactionPanelBonus,
-      lunarBaseBonus: last.lunarBaseBonus,
-      constellationLevel: last.constellationLevel,
-    };
-    setInstances(s => [...s, newInst]);
-    setNextId(n => n + 1);
-  };
-
-  const removeInstance = (id: string) => {
-    if (instances.length <= 1) return;
-    setInstances(s => s.filter(inst => inst.id !== id));
-    if (benchmarkId === id) {
-      setBenchmarkId(null);
-    }
-  };
-
-  const updateInstance = (id: string, updater: (inst: CalcInstance) => Partial<CalcInstance>) => {
-    setInstances(prev =>
-      prev.map(inst => {
-        if (inst.id !== id) return inst;
-        return {
-          ...inst,
-          ...updater(inst),
-        };
-      })
-    );
-  };
-
-  const setMechanic = (instId: string, mechId: string, v: string) => {
-    updateInstance(instId, inst => {
-      let nextInputs = { ...inst.mechanicInputs, [mechId]: v };
-      if (config.id === "varka") {
-        const isPyro = (nextInputs["party-has-pyro"] ?? "1") === "1";
-        const isHydro = (nextInputs["party-has-hydro"] ?? "0") === "1";
-        const isElectro = (nextInputs["party-has-electro"] ?? "0") === "1";
-        const isCryo = (nextInputs["party-has-cryo"] ?? "0") === "1";
-        const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
-
-        if (numChecked >= 2) {
-          nextInputs["a1-resonance-tier2"] = "0";
-        }
-        if (numChecked >= 3) {
-          nextInputs["a1-resonance-tier1"] = "0";
-        }
-
-        if (mechId === "a1-resonance-tier1" && v === "1") {
-          nextInputs["a1-resonance-tier2"] = "0";
-        } else if (mechId === "a1-resonance-tier2" && v === "1") {
-          nextInputs["a1-resonance-tier1"] = "0";
-        }
-      }
-      return { mechanicInputs: nextInputs };
-    });
-  };
-
-  const setStat = (instId: string, statId: string, v: string) => {
-    updateInstance(instId, inst => ({
-      stats: { ...inst.stats, [statId]: v },
-    }));
-  };
-
-  const setHit = (instId: string, hitId: string, v: string) => {
-    updateInstance(instId, inst => ({
-      hits: { ...inst.hits, [hitId]: v },
-    }));
-  };
-
-  const setLevel = (instId: string, type: string, v: string) => {
-    updateInstance(instId, inst => ({
-      levels: { ...inst.levels, [type]: v },
-    }));
-  };
-
-  const setReaction = (instId: string, r: ReactionType) => {
-    updateInstance(instId, () => ({
-      reaction: r,
-    }));
-  };
-
-  const setReactionBonus = (instId: string, v: string) => {
-    updateInstance(instId, () => ({
-      reactionBonus: v,
-    }));
-  };
-
-  const activeBenchmarkId = benchmarkId || instances[0]?.id;
-
-  const renderPct = (currentVal: number, benchmarkVal: number | undefined) => {
-    if (instances.length < 2) return null;
-    if (benchmarkVal === undefined || benchmarkVal === 0) return null;
-    const pct = (currentVal / benchmarkVal) * 100;
-
-    let colorClass = "text-gray-400 dark:text-zinc-500";
-    if (pct < 99.95) {
-      colorClass = "text-red-500 dark:text-red-400 font-semibold";
-    } else if (pct > 100.05) {
-      colorClass = "text-green-500 dark:text-green-400 font-semibold";
-    }
-
-    return (
-      <span className={`text-[10px] leading-none ${colorClass}`}>
-        {pct.toFixed(1)}%
-      </span>
-    );
-  };
-
-  // Derive all outputs from an instance's inputs — runs on every render, so results
-  // update immediately on any change. Returns null results while inputs are invalid.
-  function computeInstance(inst: CalcInstance): ComputedInstance {
-    const raw: RawInputs = { stats: inst.stats, hits: inst.hits, reaction: inst.reaction, reactionBonus: inst.reactionBonus, mechanicInputs: inst.mechanicInputs };
-    const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
-    const validation = validate(config, raw, resolved);
-    if (!validation.ok) {
-      return { validation, results: null, extras: null, inputStats: null, effectiveStats: null, rotationTotals: {}, rotationStepsDmg: {} };
-    }
-    const s = resolveStats(raw);
-    const inputStats = { ...s }; // snapshot before mechanic + constellation stat deltas
-
-    // Character mechanics (Masque/BoL, Paramita, Draconic stacks, Dark-Shattering, …)
-    // computed from the pre-delta stats, then merged with constellation effects.
-    const mechInputs: Record<string, number> = {};
-    for (const m of config.mechanicDefs ?? []) {
-      mechInputs[m.id] = toNum(inst.mechanicInputs[m.id]) ?? 0;
-    }
-    const mech = resolveMechanics(config, {
-      stats: s,
-      baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
-      baseDef: toNum(inst.stats["def.base"]) ?? 0,
-      baseHp: toNum(inst.stats["hp.base"]) ?? 0,
-      constellationLevel: inst.constellationLevel,
-      talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
-      scaling,
-      inputs: mechInputs,
-    });
-
-    // Apply stat deltas: mechanics first, then generic constellation stat bonuses.
-    for (const [key, val] of Object.entries(mech.statDeltas)) {
-      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-    }
-    const effects = activeEffects(config, inst.constellationLevel);
-    const statBonuses = constellationStatBonuses(effects);
-    for (const [key, val] of Object.entries(statBonuses)) {
-      if (key in s) (s as unknown as Record<string, number>)[key] += val;
-    }
-
-    const healingBonus = toNum(inst.stats["healingBonus"]) ?? 0;
-    const out: Record<string, HitResult> = {};
-    config.talents.forEach((g, gi) =>
-      g.hits.forEach((h, hi) => {
-        const id = hitId(gi, hi);
-        const mult = resolved[id] ?? 0;
-        if (h.kind === "heal") {
-          // Healing rows: mult% × stat × (1 + Healing Bonus). No crit.
-          const heal = (mult / 100) * scalingTotal(s, h.scaling) * (1 + healingBonus / 100);
-          out[id] = { nonCrit: heal, crit: heal, avg: heal };
-          return;
-        }
-        const mods: PerHitMods = mech.perHit[h.key] ?? {};
-        const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
-        // Resolve hitCategory: use the hit's explicit category (charged/plunge) if set,
-        // otherwise infer from the talent group type (normal/skill/burst).
-        const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
-        out[id] = computeHit(s, {
-          multiplier: mult,
-          scaling: h.scaling,
-          element: mods.element ?? config.element,
-          reaction: inst.reaction,
-          reactionBonusPct: Number(inst.reactionBonus || 0),
-          flatDmgBonus: flatBonus || undefined,
-          baseDmgMultiplier: mods.baseDmgMultiplier,
-          critDmgBonusPct: mods.critDmgBonusPct,
-          critRateBonusPct: mods.critRateBonusPct,
-          bonusDmgPct: mods.bonusDmgPct,
-          hitCategory: hitCat,
-          charElement: config.element,
-          dmgBonusLabel: config.dmgBonusLabel,
-          // Direct-reaction hits (Stellar/Lunar) always use the direct branch; the
-          // resolver supplies the params (fallback: neutral coefficients).
-          directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
-        });
-      }),
-    );
-
-    // Standalone reaction outputs (transformative + indirect lunar) from final stats.
-    const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
-    const lunarBase = toNum(inst.lunarBaseBonus) ?? 0;
-    const extras: ReactionExtras = {
-      transformative: TRANSFORMATIVE_BY_ELEMENT[config.element].map(type => ({
-        type,
-        dmg: transformativeDamage(type, s.levelChar, s.em, s.enemyRes, panelBonus),
-      })),
-      lunar: LUNAR_BY_ELEMENT[config.element].map(type => ({
-        type,
-        // Manual input + any auto Moonsign bonus from the character's own kit (e.g. Zibai).
-        res: indirectLunarDamage(type, s, lunarBase + (mech.lunarBaseBonusPct ?? 0), panelBonus),
-      })),
-      notes: mech.notes,
-    };
-
-    // Calculate rotation damage for all rotations
-    const rotationTotals: Record<string, number> = {};
-    const rotationStepsDmg: Record<string, number[]> = {};
-
-    for (const r of rotations) {
-      let total = 0;
-      const stepDmgs = r.steps.map(step => {
-        const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
-        const rawType = step.hitType || "avg";
-        const typeKey = rawType === "non-crit" ? "nonCrit" : rawType;
-        const qty = step.quantity ?? 1;
-
-        if (effectiveReaction === inst.reaction) {
-          const res = out[step.targetHitId];
-          const val = (res ? res[typeKey] : 0) * qty;
-          total += val;
-          return val;
-        } else {
-          let hitConfig: TalentHit | null = null;
-          let groupType = "normal";
-          for (let gi = 0; gi < config.talents.length; gi++) {
-            for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
-              if (hitId(gi, hi) === step.targetHitId) {
-                hitConfig = config.talents[gi].hits[hi];
-                groupType = config.talents[gi].type;
-                break;
-              }
-            }
-            if (hitConfig) break;
-          }
-          if (!hitConfig) return 0;
-          const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
-          const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
-          const hitCat = hitConfig.hitCategory ?? (groupType as "normal" | "skill" | "burst");
-          const res = computeHit(s, {
-            multiplier: resolved[step.targetHitId] ?? 0,
-            scaling: hitConfig.scaling,
-            element: mods.element ?? config.element,
-            reaction: effectiveReaction,
-            reactionBonusPct: Number(inst.reactionBonus || 0),
-            flatDmgBonus: flatBonus || undefined,
-            baseDmgMultiplier: mods.baseDmgMultiplier,
-            critDmgBonusPct: mods.critDmgBonusPct,
-            critRateBonusPct: mods.critRateBonusPct,
-            bonusDmgPct: mods.bonusDmgPct,
-            hitCategory: hitCat,
-            charElement: config.element,
-            dmgBonusLabel: config.dmgBonusLabel,
-            directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
-          });
-          const val = res[typeKey] * qty;
-          total += val;
-          return val;
-        }
-      });
-      rotationTotals[r.id] = total;
-      rotationStepsDmg[r.id] = stepDmgs;
-    }
-
-    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg };
-  }
-
-  // Computed once per render for all setups (benchmark comparisons read from here too).
-  const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
-  const activeRot = rotations.find(r => r.id === activeRotationId) || rotations[0];
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -1554,10 +787,10 @@ export function CharacterCalculator({
               <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500">Combo:</span>
               <select
                 className="bg-transparent border-none text-xs font-semibold py-0.5 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
-                value={activeRotationId}
-                onChange={e => setActiveRotationId(e.target.value)}
+                value={rotationState.activeRotationId}
+                onChange={e => rotationState.setActiveRotationId(e.target.value)}
               >
-                {rotations.map(r => (
+                {rotationState.rotations.map(r => (
                   <option key={r.id} value={r.id} className="bg-white dark:bg-zinc-950 text-black dark:text-white">
                     {r.name || "Untitled"}
                   </option>
@@ -1590,9 +823,9 @@ export function CharacterCalculator({
             className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
           >
             <span>📋 Rotation Builder</span>
-            {rotations.length > 0 && (
+            {rotationState.rotations.length > 0 && (
               <span className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {rotations.length}
+                {rotationState.rotations.length}
               </span>
             )}
           </button>
@@ -1612,11 +845,10 @@ export function CharacterCalculator({
                 <div className="text-[10px] font-bold text-gray-450 dark:text-zinc-500 px-3 py-1.5 border-b border-gray-100 dark:border-zinc-900 mb-1">
                   SELECT SAVED BUILD
                 </div>
-                {/* New / Scratchpad option */}
                 <button
                   onClick={() => {
-                    setActiveBuildId(null);
-                    setActiveBuildName("Scratchpad");
+                    calcState.setActiveBuildId(null);
+                    calcState.setActiveBuildName("Scratchpad");
                     setIsLoadDropdownOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${!activeBuildId ? "text-amber-600 dark:text-amber-400 bg-amber-500/5" : "text-gray-700 dark:text-zinc-300"}`}
@@ -1657,7 +889,7 @@ export function CharacterCalculator({
           </div>
 
           <button
-            onClick={saveChanges}
+            onClick={calcState.saveChanges}
             disabled={isSaving}
             className={
               isDirty
@@ -1681,7 +913,6 @@ export function CharacterCalculator({
             </button>
             {isExportDropdownOpen && (
               <div className="absolute right-0 mt-1.5 w-56 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100">
-                {/* Configuration Operations */}
                 <button
                   onClick={() => {
                     setIsExportDropdownOpen(false);
@@ -1717,7 +948,6 @@ export function CharacterCalculator({
                 {/* Divider */}
                 <div className="border-t border-gray-150 dark:border-zinc-850 my-1.5"></div>
 
-                {/* File Exports */}
                 <button
                   onClick={exportAsJson}
                   className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
@@ -1808,7 +1038,7 @@ export function CharacterCalculator({
           {config.notes?.length ? (
             <div>
               <h3 className="font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 text-[10px]">Notes</h3>
-              <ul className="list-disc pl-4 text-gray-500 dark:text-gray-400 space-y-0.5">
+              <ul className="list-disc pl-4 text-gray-505 dark:text-gray-400 space-y-0.5">
                 {config.notes.map(n => <li key={n}>{n}</li>)}
               </ul>
             </div>
@@ -1842,7 +1072,8 @@ export function CharacterCalculator({
         <div id="calculator-setups-container" className="flex gap-6 items-start p-1.5">
           {instances.map((inst, index) => {
             const reactionOptions = availableReactions(config.element);
-            const { validation, results, extras, rotationTotals, inputStats, effectiveStats } = computedById.get(inst.id)!;
+            const computed = computedById.get(inst.id)!;
+            const { validation, results, extras, rotationTotals, inputStats, effectiveStats } = computed;
             const benchmarkResults = computedById.get(activeBenchmarkId)?.results;
 
             const err = (id: string) => validation.errors[id];
@@ -1869,16 +1100,15 @@ export function CharacterCalculator({
                         </span>
                       )}
                     </div>
-
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        setScannerTargetId(inst.id);
-                        setIsScannerOpen(true);
-                        setScanImage(null);
-                        setScanResult(null);
-                        setScanError(null);
+                        calcState.setScannerTargetId(inst.id);
+                        calcState.setIsScannerOpen(true);
+                        calcState.setScanImage(null);
+                        calcState.setScanResult(null);
+                        calcState.setScanError(null);
                       }}
                       className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-250 font-semibold cursor-pointer flex items-center gap-0.5"
                       title="Scan stats from screenshot"
@@ -1894,178 +1124,24 @@ export function CharacterCalculator({
                       </button>
                     )}
                   </div>
-
                 </div>
 
-                {/* Constellation selector */}
-                {config.constellations?.length ? (
-                  <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
-                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Constellation</h2>
-                    <div className="flex gap-1">
-                      {[0, 1, 2, 3, 4, 5, 6].map(lvl => {
-                        const active = inst.constellationLevel >= lvl;
-                        const isInfo = lvl > 0 && config.constellations!.find(c => c.level === lvl)?.effects.every(e => e.type === "informational");
-                        return (
-                          <button
-                            key={lvl}
-                            onClick={() => updateInstance(inst.id, () => ({ constellationLevel: inst.constellationLevel === lvl ? lvl - 1 : lvl }))}
-                            title={lvl === 0 ? "No constellation" : `C${lvl}: ${config.constellations!.find(c => c.level === lvl)?.name ?? ""}`}
-                            className={`px-2 py-1 text-xs font-semibold rounded cursor-pointer transition-all border ${active
-                              ? isInfo
-                                ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-600 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500"
-                                : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                              : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
-                              }`}
-                          >
-                            C{lvl}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {inst.constellationLevel > 0 && (
-                      <details className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 group">
-                        <summary className="cursor-pointer font-semibold list-none flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-350 select-none">
-                          <span>Show Constellation Details</span>
-                          <span className="text-[8px] transform group-open:rotate-180 transition-transform duration-200">▼</span>
-                        </summary>
-                        <div className="mt-1.5 space-y-1 pl-1 border-l border-zinc-200 dark:border-zinc-800">
-                          {config.constellations!.filter(c => c.level <= inst.constellationLevel).map(c =>
-                            <span key={c.level} className="block leading-normal">
-                              <span className="font-bold text-zinc-700 dark:text-zinc-300">C{c.level} ({c.name})</span>: {c.description}
-                            </span>
-                          )}
-                        </div>
-                      </details>
-                    )}
-                  </div>
-                ) : null}
+                {/* Constellation & Mechanics selectors */}
+                <MechanicsPanel
+                  inst={inst}
+                  config={config}
+                  validation={validation}
+                  updateInstance={updateInstance}
+                  setMechanic={setMechanic}
+                />
 
-                {/* Character mechanics (registry-driven controls; math in engine/mechanics.ts) */}
-                {config.mechanicDefs?.length ? (
-                  <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
-                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Mechanics</h2>
-                    <div className="space-y-2">
-                      {config.mechanicDefs.map((m: MechanicDef) => {
-                        const val = inst.mechanicInputs[m.id] ?? "0";
-                        let isDisabled = false;
-                        if (config.id === "varka") {
-                          const isPyro = (inst.mechanicInputs["party-has-pyro"] ?? "1") === "1";
-                          const isHydro = (inst.mechanicInputs["party-has-hydro"] ?? "0") === "1";
-                          const isElectro = (inst.mechanicInputs["party-has-electro"] ?? "0") === "1";
-                          const isCryo = (inst.mechanicInputs["party-has-cryo"] ?? "0") === "1";
-                          const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
-
-                          const isElementField = ["party-has-pyro", "party-has-hydro", "party-has-electro", "party-has-cryo"].includes(m.id);
-                          const isChecked = val === "1";
-
-                          if (isElementField && !isChecked && numChecked >= 3) {
-                            isDisabled = true;
-                          }
-                          if (m.id === "a1-resonance-tier2" && numChecked >= 2) {
-                            isDisabled = true;
-                          }
-                          if (m.id === "a1-resonance-tier1" && numChecked >= 3) {
-                            isDisabled = true;
-                          }
-                        }
-
-                        return (
-                          <div key={m.id} className="flex flex-col gap-1" title={m.hint}>
-                            <div className="flex items-center justify-between gap-3">
-                              <span className={`text-xs font-medium ${isDisabled ? "text-gray-400 dark:text-gray-600" : "text-gray-700 dark:text-gray-300"}`}>{m.label}</span>
-                              {m.control === "toggle" ? (
-                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                  checked={Number(val) > 0}
-                                  disabled={isDisabled}
-                                  onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
-                              ) : m.control === "stacks" ? (
-                                <div className="flex gap-1">
-                                  {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
-                                    <button key={i}
-                                      onClick={() => setMechanic(inst.id, m.id, String(i))}
-                                      className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${Number(val) === i
-                                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                                        : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
-                                        }`}>
-                                      {i}
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : (
-                                <input className={inputCls(`mech.${m.id}`, "w-20")} type="number" min={0} max={m.max}
-                                  value={val} onChange={e => setMechanic(inst.id, m.id, e.target.value)} />
-                              )}
-                            </div>
-                            {err(`mech.${m.id}`) ? (
-                              <span className="text-xs text-red-600 text-right">{err(`mech.${m.id}`)}</span>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-
-                {GROUPS.map(group => {
-                  const fields = config.stats.filter(f => f.group === group.key);
-                  if (fields.length === 0) return null;
-                  return (
-                    <section key={group.key} className="mb-4">
-                      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{group.label}</h2>
-                      <div className="grid grid-cols-1 gap-2">
-                        {fields.map(f => {
-                          const baseErr = err(`${f.key}.base`) || err(`${f.key}.flat`) || err(`${f.key}.percent`);
-                          const singleErr = err(f.key);
-                          return (
-                            <label key={f.key} className="flex flex-col gap-1 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5 shadow-2xs transition-colors">
-                              <span className="flex items-center justify-between gap-3">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{f.label}</span>
-                                {f.hasBaseAndFlat ? (
-                                  <span className="flex items-center gap-1">
-                                    <input className={inputCls(`${f.key}.base`, "w-16")} type="number" placeholder="Base"
-                                      value={inst.stats[`${f.key}.base`] ?? ""}
-                                      onChange={e => setStat(inst.id, `${f.key}.base`, e.target.value)} />
-                                    <span className="text-gray-400 dark:text-gray-500">+</span>
-                                    <div className="relative">
-                                      <input className={inputCls(`${f.key}.percent`, "w-16 pr-4")} type="number" placeholder="%"
-                                        value={inst.stats[`${f.key}.percent`] ?? ""}
-                                        onChange={e => setStat(inst.id, `${f.key}.percent`, e.target.value)} />
-                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] pointer-events-none">%</span>
-                                    </div>
-                                    <span className="text-gray-400 dark:text-gray-500">+</span>
-                                    <input className={inputCls(`${f.key}.flat`, "w-16")} type="number" placeholder="Flat"
-                                      value={inst.stats[`${f.key}.flat`] ?? ""}
-                                      onChange={e => setStat(inst.id, `${f.key}.flat`, e.target.value)} />
-                                  </span>
-                                ) : (
-                                  <input className={inputCls(f.key, "w-24")} type="number"
-                                    value={inst.stats[f.key] ?? ""}
-                                    onChange={e => setStat(inst.id, f.key, e.target.value)} />
-                                )}
-                              </span>
-                              {f.hasBaseAndFlat ? (() => {
-                                const base = Number(inst.stats[`${f.key}.base`]) || 0;
-                                const pct = Number(inst.stats[`${f.key}.percent`]) || 0;
-                                const flat = Number(inst.stats[`${f.key}.flat`]) || 0;
-                                const increment = Math.round(base * (pct / 100));
-                                const total = base + increment + flat;
-                                return (
-                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800/50 p-1.5 rounded border border-gray-200 dark:border-zinc-700/50 mt-1 select-none flex justify-between">
-                                    <span>{base} (Base) + {increment} ({pct}%) + {flat} (Flat)</span>
-                                    <span className="font-semibold text-gray-700 dark:text-gray-300">= {total} (Total)</span>
-                                  </div>
-                                );
-                              })() : null}
-                              {(f.hasBaseAndFlat ? baseErr : singleErr) ? (
-                                <span className="text-xs text-red-600">{f.hasBaseAndFlat ? baseErr : singleErr}</span>
-                              ) : null}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  );
-                })}
+                {/* Core attribute tables */}
+                <StatsGrid
+                  inst={inst}
+                  config={config}
+                  validation={validation}
+                  setStat={setStat}
+                />
 
                 <section className="mb-4">
                   <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction</h2>
@@ -2115,11 +1191,9 @@ export function CharacterCalculator({
                   </span>
                 )}
 
-                {/* Effective stats — the values actually used for damage after talent
-                    toggles + constellations (Paramita ATK, Sanguine Rouge DMG Bonus, …). */}
+                {/* Effective stats panel box */}
                 {effectiveStats && inputStats ? (() => {
                   if (!extras) return null;
-                  // 1. Calculate effective elemental/physical bonuses
                   const isAllDmg = config.dmgBonusLabel.includes("All") || config.dmgBonusLabel.includes("DMG Bonus%");
                   const getEffectiveBonus = (elem: string, specificBonus: number) => {
                     let base = specificBonus;
@@ -2142,25 +1216,21 @@ export function CharacterCalculator({
                     { label: "Physical DMG Bonus%", val: getEffectiveBonus("Physical", effectiveStats.physicalDmgBonus) },
                   ];
 
-                  // 2. Transformative reaction calculations
-                  const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
+                  const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
                   const emTransformative = (16 * effectiveStats.em) / (effectiveStats.em + 2000) * 100;
-                  const totalTransformativeBonus = emTransformative + panelBonus;
+                  const totalTransformativeBonus = emTransformative + reactionBonusPct;
 
-                  // 3. Amplifying multipliers
                   const showAmplifying = ["Pyro", "Hydro", "Cryo"].includes(config.element);
-                  const reactionBonusPct = Number(inst.reactionBonus || 0);
+                  const instReactionBonusPct = Number(inst.reactionBonus || 0);
                   const emAmplifyingBonus = (2.78 * effectiveStats.em) / (effectiveStats.em + 1400);
-                  const getAmpMult = (base: number) => base * (1 + emAmplifyingBonus + reactionBonusPct / 100);
+                  const getAmpMult = (base: number) => base * (1 + emAmplifyingBonus + instReactionBonusPct / 100);
 
-                  // 4. Catalyze (Aggravate)
                   const showCatalyze = config.element === "Electro";
                   const emCatalyzeBonus = (5 * effectiveStats.em) / (effectiveStats.em + 1200);
                   const aggravateFlat = showCatalyze
-                    ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + reactionBonusPct / 100)
+                    ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                     : 0;
 
-                  // 5. Lunar and Stellar reactions
                   const directLunarHits = config.talents.flatMap((g, gi) =>
                     g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
                   ).filter(x => x.hit.direct === "lunar");
@@ -2173,7 +1243,6 @@ export function CharacterCalculator({
                     <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
                       <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
                       
-                      {/* Core attributes */}
                       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
                         {EFFECTIVE_ROWS.map(row => {
                           const eff = effectiveStats[row.key];
@@ -2197,7 +1266,6 @@ export function CharacterCalculator({
                         })}
                       </div>
 
-                      {/* Elemental & Physical DMG Bonuses */}
                       <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80">
                         <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Elemental & Physical DMG</h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
@@ -2210,7 +1278,6 @@ export function CharacterCalculator({
                         </div>
                       </div>
 
-                      {/* Reaction DMG Bonuses */}
                       <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
                         <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
                         <div className="grid grid-cols-1 gap-y-0.5">
@@ -2219,7 +1286,7 @@ export function CharacterCalculator({
                             <span className="font-medium text-gray-800 dark:text-gray-200">
                               {totalTransformativeBonus.toFixed(1)}%
                               <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">
-                                (EM: {emTransformative.toFixed(1)}% + Panel: {panelBonus.toFixed(1)}%)
+                                (EM: {emTransformative.toFixed(1)}% + Panel: {reactionBonusPct.toFixed(1)}%)
                               </span>
                             </span>
                           </div>
@@ -2262,8 +1329,7 @@ export function CharacterCalculator({
                         </div>
                       </div>
 
-                      {/* Transformative Reaction Damage */}
-                      {extras.transformative && extras.transformative.length > 0 && (
+                      {extras && extras.transformative && extras.transformative.length > 0 && (
                         <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
                           <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transformative Reaction DMG</h3>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
@@ -2277,8 +1343,7 @@ export function CharacterCalculator({
                         </div>
                       )}
 
-                      {/* Lunar reaction damage details */}
-                      {((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
+                      {extras && ((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
                         <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
                           <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Lunar Reaction DMG</h3>
                           <div className="grid grid-cols-1 gap-y-0.5">
@@ -2306,7 +1371,6 @@ export function CharacterCalculator({
                         </div>
                       )}
 
-                      {/* Stellar reaction damage details */}
                       {results && directStellarHits.length > 0 && (
                         <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
                           <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Stellar Reaction DMG</h3>
@@ -2342,181 +1406,40 @@ export function CharacterCalculator({
                   <p key={g} className="mb-2 text-xs text-amber-600">{g}</p>
                 ))}
 
-                {config.talents.map((g, gi) => {
-                  const s = scaling[g.type];
-                  const selLevel = s ? Number(inst.levels[g.type]) : NaN;
-                  return (
-                    <section key={g.name} className="mt-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-1">
-                        <h3 className="font-semibold text-sm">{g.name}</h3>
-                        {s && s.levels.length ? (
-                          <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                            Lv.
-                            <select className="border border-gray-250 dark:border-zinc-700 rounded px-1.5 py-0.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white" value={inst.levels[g.type] ?? ""}
-                              onChange={e => setLevel(inst.id, g.type, e.target.value)}>
-                              {s.levels.map(l => <option key={l} value={l}>{l}</option>)}
-                            </select>
-                          </label>
-                        ) : null}
-                      </div>
-                      <table className="mt-1 w-full text-xs">
-                        <thead>
-                          <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400">
-                            <th className="py-1.5 font-normal">Hit</th>
-                            <th className="py-1.5 font-normal text-right">Mult %</th>
-                            {results ? (
-                              <>
-                                <th className="py-1.5 pr-1 text-right font-normal">Non-Crit</th>
-                                <th className="py-1.5 pr-1 text-right font-normal">CRIT</th>
-                                <th className="py-1.5 text-right font-normal">Avg</th>
-                              </>
-                            ) : null}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {g.hits.map((h, hi) => {
-                            const id = hitId(gi, hi);
-                            const res = results?.[id];
-                            const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
-                            const isHeal = h.kind === "heal";
-                            return (
-                              <tr key={id} className={`border-t border-gray-100 dark:border-zinc-800/60 ${isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : ""}`}>
-                                <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
-                                  {h.name} <span className="text-[10px] text-gray-400 dark:text-gray-500">({isHeal ? "HEAL" : h.scaling.toUpperCase()})</span>
-                                  {h.direct ? (
-                                    <span className={`ml-1 text-[9px] font-bold uppercase tracking-wider rounded px-1 py-0.5 ${DIRECT_TAG[h.direct].cls}`}
-                                      title={DIRECT_TAG[h.direct].title}>
-                                      {DIRECT_TAG[h.direct].label}
-                                    </span>
-                                  ) : null}
-                                </td>
-                                <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
-                                  {levelVal != null ? (
-                                    <span title={`Talent Lv. ${selLevel}`}>{levelVal}</span>
-                                  ) : (
-                                    <input className={inputCls(id, "w-16 text-right")} type="number" placeholder="%"
-                                      value={inst.hits[id] ?? ""} onChange={e => setHit(inst.id, id, e.target.value)} />
-                                  )}
-                                </td>
-                                {results ? (
-                                  isHeal ? (
-                                    <td colSpan={3} className="py-1.5 text-right tabular-nums font-semibold text-emerald-700 dark:text-emerald-400">
-                                      {res ? (
-                                        <div className="flex flex-col items-end">
-                                          <span>+{fmt(res.nonCrit)} HP</span>
-                                          {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
-                                        </div>
-                                      ) : "—"}
-                                    </td>
-                                  ) : (
-                                    <>
-                                      <td className="py-1.5 pr-1 text-right tabular-nums">
-                                        {res ? (
-                                          <div className="flex flex-col items-end">
-                                            <span>{fmt(res.nonCrit)}</span>
-                                            {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
-                                          </div>
-                                        ) : "—"}
-                                      </td>
-                                      <td className="py-1.5 pr-1 text-right tabular-nums">
-                                        {res ? (
-                                          <div className="flex flex-col items-end">
-                                            <span>{fmt(res.crit)}</span>
-                                            {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
-                                          </div>
-                                        ) : "—"}
-                                      </td>
-                                      <td className="py-1.5 text-right tabular-nums font-semibold">
-                                        {res ? (
-                                          <div className="flex flex-col items-end">
-                                            <span>{fmt(res.avg)}</span>
-                                            {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
-                                          </div>
-                                        ) : "—"}
-                                      </td>
-                                    </>
-                                  )
-                                ) : null}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </section>
-                  );
-                })}
+                {/* Talent table list rendering */}
+                <DamageTable
+                  inst={inst}
+                  config={config}
+                  scaling={scaling}
+                  results={results}
+                  benchmarkResults={benchmarkResults}
+                  showPct={instances.length > 1}
+                  validation={validation}
+                  setLevel={setLevel}
+                  setHit={setHit}
+                />
 
-                {/* Standalone reaction outputs: transformative + indirect Lunar.
-                    These don't scale with talents — only level, EM, and enemy RES. */}
-                {(TRANSFORMATIVE_BY_ELEMENT[config.element].length || LUNAR_BY_ELEMENT[config.element].length) ? (
-                  <section className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="font-semibold text-sm">Reaction DMG ({config.element}-triggered)</h3>
-                      <div className="flex items-center gap-2 text-[10px] text-gray-500">
-                        <label className="flex items-center gap-1">
-                          Bonus %
-                          <input className={inputCls("reactionPanelBonus", "w-14")} type="number"
-                            value={inst.reactionPanelBonus}
-                            onChange={e => updateInstance(inst.id, () => ({ reactionPanelBonus: e.target.value }))} />
-                        </label>
-                        {LUNAR_BY_ELEMENT[config.element].length ? (
-                          <label className="flex items-center gap-1" title="Lunar Reaction Base DMG Bonus (Moonsign Benediction passives)">
-                            Lunar Base %
-                            <input className={inputCls("lunarBaseBonus", "w-14")} type="number"
-                              value={inst.lunarBaseBonus}
-                              onChange={e => updateInstance(inst.id, () => ({ lunarBaseBonus: e.target.value }))} />
-                          </label>
-                        ) : null}
-                      </div>
-                    </div>
-                    {extras ? (
-                      <table className="mt-1 w-full text-xs">
-                        <thead>
-                          <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400">
-                            <th className="py-1.5 font-normal">Reaction</th>
-                            <th className="py-1.5 pr-1 text-right font-normal">Non-Crit</th>
-                            <th className="py-1.5 pr-1 text-right font-normal">CRIT</th>
-                            <th className="py-1.5 text-right font-normal">Avg</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {extras.transformative.map(t => (
-                            <tr key={t.type} className="border-t border-gray-100 dark:border-zinc-800/60">
-                              <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">{TRANSFORMATIVE_LABEL[t.type]}</td>
-                              <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
-                                <span className="font-semibold">{fmt(t.dmg)}</span>
-                                <span className="ml-1 text-[10px] text-gray-400">(no crit)</span>
-                              </td>
-                            </tr>
-                          ))}
-                          {extras.lunar.map(l => (
-                            <tr key={l.type} className="border-t border-gray-100 dark:border-zinc-800/60">
-                              <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">{LUNAR_LABEL[l.type]}</td>
-                              <td className="py-1.5 pr-1 text-right tabular-nums">{fmt(l.res.nonCrit)}</td>
-                              <td className="py-1.5 pr-1 text-right tabular-nums">{fmt(l.res.crit)}</td>
-                              <td className="py-1.5 text-right tabular-nums font-semibold">{fmt(l.res.avg)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <p className="mt-1 text-[10px] text-gray-400">Fill the remaining fields to compute (scales with character level, EM, and enemy RES).</p>
-                    )}
-                  </section>
-                ) : null}
+                {/* Transformative Reaction lists */}
+                <TransformativePanel
+                  inst={inst}
+                  config={config}
+                  extras={extras}
+                  validation={validation}
+                  updateInstance={updateInstance}
+                />
 
-                {/* Combo Rotations Summary Section */}
+                {/* Rotation Average summaries */}
                 <div className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3 select-none">
                   <h3 className="font-semibold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Combo Rotations DMG</h3>
                   <div className="space-y-1.5">
-                    {rotations.map(r => {
+                    {rotationState.rotations.map(r => {
                       if (r.steps.length === 0) return null;
-                      const isSelected = r.id === activeRotationId;
+                      const isSelected = r.id === rotationState.activeRotationId;
                       return (
                         <div
                           key={r.id}
                           className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${isSelected
-                            ? "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-extrabold"
+                            ? "bg-zinc-105 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-105 font-extrabold"
                             : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
                             }`}
                         >
@@ -2525,7 +1448,7 @@ export function CharacterCalculator({
                         </div>
                       );
                     })}
-                    {rotations.every(r => r.steps.length === 0) && (
+                    {rotationState.rotations.every(r => r.steps.length === 0) && (
                       <p className="text-[10px] text-gray-400 dark:text-zinc-500 italic">No rotations built yet. Open the Rotation Builder above to get started.</p>
                     )}
                   </div>
@@ -2550,439 +1473,34 @@ export function CharacterCalculator({
         </div>
       </div>
 
-      {/* ── Rotation Builder Modal Popup ── */}
-      {isRotationOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-6xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 animate-out fade-out">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
-              <div>
-                <h2 className="text-lg font-bold">Rotation Builder</h2>
-                <p className="text-xs text-gray-400 dark:text-zinc-500">Configure your combo sequence and compare setups</p>
-              </div>
-              <button
-                onClick={() => setIsRotationOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+      {/* Rotation Builder Dialog Overlay popup */}
+      <RotationModal
+        isRotationOpen={isRotationOpen}
+        setIsRotationOpen={setIsRotationOpen}
+        isSelectAttackOpen={isSelectAttackOpen}
+        setIsSelectAttackOpen={setIsSelectAttackOpen}
+        instances={instances}
+        activeBenchmarkId={activeBenchmarkId}
+        setBenchmarkId={setBenchmarkId}
+        rotations={rotationState.rotations}
+        activeRotationId={rotationState.activeRotationId}
+        setActiveRotationId={(id) => rotationState.setActiveRotationId(id)}
+        addRotation={rotationState.addRotation}
+        deleteRotation={rotationState.deleteRotation}
+        updateActiveRotation={rotationState.updateActiveRotation}
+        moveStep={rotationState.moveStep}
+        rotationNextId={rotationState.rotationNextId}
+        setRotationNextId={rotationState.setRotationNextId}
+        draggedIndex={rotationState.draggedIndex}
+        setDraggedIndex={(idx) => rotationState.setDraggedIndex(idx)}
+        config={config}
+        computedById={computedById}
+      />
 
-            {/* Horizontal Rotations Tab Bar */}
-            <div className="px-6 py-2.5 border-b border-gray-150 dark:border-zinc-850 bg-gray-50/30 dark:bg-zinc-950/20 flex flex-wrap items-center justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-2 overflow-x-auto select-none py-1 scrollbar-none">
-                {rotations.map(r => {
-                  const isSelected = r.id === activeRotationId;
-                  return (
-                    <div
-                      key={r.id}
-                      onClick={() => setActiveRotationId(r.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                        isSelected
-                          ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 shadow-xs font-bold"
-                          : "bg-white border-gray-200 hover:border-gray-300 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700 text-gray-700 dark:text-zinc-300"
-                      }`}
-                    >
-                      <span>{r.name || "Untitled Rotation"}</span>
-                      {rotations.length > 1 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteRotation(r.id);
-                          }}
-                          className={`hover:bg-red-500/10 hover:text-red-500 rounded p-0.5 transition-colors cursor-pointer text-[10px] ${
-                            isSelected ? "text-gray-300 hover:text-red-400" : "text-gray-400"
-                          }`}
-                          title="Delete rotation"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <button
-                onClick={addRotation}
-                className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-3 py-1.5 text-xs font-bold text-white dark:text-zinc-950 transition-colors cursor-pointer shrink-0"
-              >
-                + Add New Rotation
-              </button>
-            </div>
-
-            {/* Modal Content (Full Width viewport) */}
-            <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
-                {activeRot ? (
-                  <>
-                    {/* Metadata Editors */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-gray-50 dark:bg-zinc-900/40 p-4 rounded-xl border border-gray-200/50 dark:border-zinc-800/50 shrink-0">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 mb-1.5">Rotation Name</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Vaporize E Combo..."
-                          className="w-full border px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all font-semibold"
-                          value={activeRot.name}
-                          onChange={e => updateActiveRotation(() => ({ name: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500 mb-1.5">Rotation Description</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Kaeya melt support sequence..."
-                          className="w-full border px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all"
-                          value={activeRot.description}
-                          onChange={e => updateActiveRotation(() => ({ description: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Step Builder Controls */}
-                    <div className="flex items-center gap-2 mb-4 shrink-0">
-                      <button
-                        className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-xs font-bold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5 border border-gray-300 dark:border-zinc-700 font-semibold"
-                        onClick={() => {
-                          setIsSelectAttackOpen(true);
-                        }}
-                      >
-                        <span>➕ Add Step</span>
-                      </button>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 italic">
-                        Click &quot;+ Add Step&quot; to choose from all attack instances for your character.
-                      </span>
-                    </div>
-
-                    {/* Steps Table */}
-                    {activeRot.steps.length === 0 ? (
-                      <div className="flex-1 flex flex-col items-center justify-center py-12 border border-dashed border-gray-200 dark:border-zinc-800 rounded-xl">
-                        <p className="text-sm text-gray-400 dark:text-zinc-500 mb-1 font-semibold">This rotation is empty</p>
-                        <p className="text-xs text-gray-400 dark:text-zinc-500">Pick an attack from the dropdown and click &quot;+ Add Step&quot; to build your combo.</p>
-                      </div>
-                    ) : (
-                      <div className="flex-1 overflow-y-auto border border-gray-200/60 dark:border-zinc-850 rounded-xl min-h-[200px]">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-[10px] uppercase tracking-wider text-gray-400 bg-gray-50/50 dark:bg-zinc-900/30">
-                              <th className="py-2.5 px-3 font-normal w-8">#</th>
-                              <th className="py-2.5 px-3 font-normal">Hit</th>
-                              <th className="py-2.5 px-3 font-normal w-16 text-center">Qty</th>
-                              <th className="py-2.5 px-3 font-normal w-28">Reaction</th>
-                              <th className="py-2.5 px-3 font-normal w-28">Hit Type</th>
-                              {instances.map((inst, idx) => {
-                                const baseBenchmarkInst = activeBenchmarkId === inst.id;
-                                return (
-                                  <th key={inst.id} className="py-2.5 px-3 text-right font-normal">
-                                    <div className="flex flex-col items-end gap-1">
-                                      <span className="font-semibold text-gray-800 dark:text-gray-250">Setup {idx + 1} Avg</span>
-                                      <button
-                                        onClick={() => setBenchmarkId(inst.id)}
-                                        disabled={baseBenchmarkInst}
-                                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold transition-all ${baseBenchmarkInst
-                                          ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 cursor-not-allowed border border-gray-300 dark:border-zinc-700"
-                                          : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                                          }`}
-                                      >
-                                        {baseBenchmarkInst ? "Benchmark" : "Compare"}
-                                      </button>
-                                    </div>
-                                  </th>
-                                );
-                              })}
-                              <th className="py-2.5 px-3 w-20"></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activeRot.steps.map((step, stepIdx) => {
-                              let hitName = step.targetHitId;
-                              for (let gi = 0; gi < config.talents.length; gi++) {
-                                for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
-                                  if (hitId(gi, hi) === step.targetHitId) {
-                                    hitName = `${config.talents[gi].name}: ${config.talents[gi].hits[hi].name}`;
-                                  }
-                                }
-                              }
-
-                              // Find benchmark hit value
-                      const benchmarkInst = instances.find(i => i.id === activeBenchmarkId);
-                              let benchmarkDmg = 0;
-                              if (benchmarkInst) {
-                                const benchmarkComputed = computedById.get(benchmarkInst.id);
-                                if (benchmarkComputed && benchmarkComputed.rotationStepsDmg) {
-                                  benchmarkDmg = benchmarkComputed.rotationStepsDmg[activeRotationId]?.[stepIdx] ?? 0;
-                                }
-                              }
-
-                              return (
-                                <tr
-                                  key={step.id}
-                                  draggable="true"
-                                  onDragStart={(e) => {
-                                    setDraggedIndex(stepIdx);
-                                    e.dataTransfer.effectAllowed = "move";
-                                  }}
-                                  onDragOver={(e) => {
-                                    e.preventDefault();
-                                    if (draggedIndex === null || draggedIndex === stepIdx) return;
-                                    
-                                    const newSteps = [...activeRot.steps];
-                                    const draggedItem = newSteps[draggedIndex];
-                                    newSteps.splice(draggedIndex, 1);
-                                    newSteps.splice(stepIdx, 0, draggedItem);
-                                    
-                                    setDraggedIndex(stepIdx);
-                                    updateActiveRotation(() => ({ steps: newSteps }));
-                                  }}
-                                  onDragEnd={() => setDraggedIndex(null)}
-                                  className={`border-t border-gray-100 dark:border-zinc-900/80 hover:bg-gray-50/20 dark:hover:bg-zinc-900/10 transition-all select-none ${
-                                    draggedIndex === stepIdx ? "opacity-40 bg-zinc-50 dark:bg-zinc-900/40" : ""
-                                  }`}
-                                >
-                                  <td className="py-2.5 px-3 text-gray-400 dark:text-zinc-500 tabular-nums flex items-center justify-between gap-1 group/idx">
-                                    <div className="flex items-center gap-1.5">
-                                      <span
-                                        className="cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors font-bold select-none text-[11px] pr-0.5"
-                                        title="Drag to reorder"
-                                      >
-                                        ⋮⋮
-                                      </span>
-                                      <span>{stepIdx + 1}</span>
-                                    </div>
-                                    <div className="flex flex-col opacity-0 group-hover/idx:opacity-100 transition-opacity">
-                                      <button
-                                        type="button"
-                                        disabled={stepIdx === 0}
-                                        onClick={() => moveStep(stepIdx, "up")}
-                                        className="text-[8px] hover:text-amber-500 dark:hover:text-amber-400 leading-none py-0.5 cursor-pointer disabled:opacity-30 disabled:hover:text-inherit"
-                                        title="Move step up"
-                                      >
-                                        ▲
-                                      </button>
-                                      <button
-                                        type="button"
-                                        disabled={stepIdx === activeRot.steps.length - 1}
-                                        onClick={() => moveStep(stepIdx, "down")}
-                                        className="text-[8px] hover:text-amber-500 dark:hover:text-amber-400 leading-none py-0.5 cursor-pointer disabled:opacity-30 disabled:hover:text-inherit"
-                                        title="Move step down"
-                                      >
-                                        ▼
-                                      </button>
-                                    </div>
-                                  </td>
-                                  <td className="py-2.5 px-3 text-gray-700 dark:text-gray-300 font-medium">{hitName}</td>
-                                  <td className="py-2.5 px-3 text-center">
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      max="99"
-                                      className="w-12 border rounded px-1.5 py-0.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-350 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all text-center font-bold"
-                                      value={step.quantity ?? 1}
-                                      onChange={e => {
-                                        const val = Math.max(1, parseInt(e.target.value) || 1);
-                                        const newSteps = [...activeRot.steps];
-                                        newSteps[stepIdx] = { ...step, quantity: val };
-                                        updateActiveRotation(() => ({ steps: newSteps }));
-                                      }}
-                                    />
-                                  </td>
-                                  <td className="py-2.5 px-3">
-                                    <select
-                                      className={selectCls + " text-[10px] py-0.5 w-24"}
-                                      value={step.reactionOverride}
-                                      onChange={e => {
-                                        const newSteps = [...activeRot.steps];
-                                        newSteps[stepIdx] = { ...step, reactionOverride: e.target.value as ReactionType | "default" };
-                                        updateActiveRotation(() => ({ steps: newSteps }));
-                                      }}
-                                    >
-                                      <option value="default">Default</option>
-                                      {Object.entries(REACTION_LABEL).map(([k, v]) => (
-                                        <option key={k} value={k}>{v}</option>
-                                      ))}
-                                    </select>
-                                  </td>
-                                  <td className="py-2.5 px-3">
-                                    <select
-                                      className={selectCls + " text-[10px] py-0.5 w-24"}
-                                      value={step.hitType || "avg"}
-                                      onChange={e => {
-                                        const newSteps = [...activeRot.steps];
-                                        newSteps[stepIdx] = { ...step, hitType: e.target.value as "avg" | "crit" | "non-crit" };
-                                        updateActiveRotation(() => ({ steps: newSteps }));
-                                      }}
-                                    >
-                                      <option value="avg">Average</option>
-                                      <option value="crit">CRIT</option>
-                                      <option value="non-crit">Non-Crit</option>
-                                    </select>
-                                  </td>
-                                  {instances.map(inst => {
-                                    const computed = computedById.get(inst.id);
-                                    const stepsDmg = computed?.rotationStepsDmg[activeRotationId];
-                                    const dmg = stepsDmg ? stepsDmg[stepIdx] : 0;
-                                    return (
-                                      <td key={inst.id} className="py-2.5 px-3 text-right tabular-nums font-semibold">
-                                        <div className="flex flex-col items-end">
-                                          <span>{fmt(dmg)}</span>
-                                          {renderPct(dmg, benchmarkDmg)}
-                                        </div>
-                                      </td>
-                                    );
-                                  })}
-                                  <td className="py-2.5 px-3 text-center">
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button
-                                        onClick={() => {
-                                          const newStep: RotationStep = {
-                                            ...step,
-                                            id: `step-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                                          };
-                                          const newSteps = [...activeRot.steps];
-                                          newSteps.splice(stepIdx + 1, 0, newStep);
-                                          updateActiveRotation(() => ({ steps: newSteps }));
-                                        }}
-                                        className="text-zinc-400 hover:text-amber-500 cursor-pointer text-xs p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
-                                        title="Duplicate step"
-                                      >
-                                        📑
-                                      </button>
-                                      <button
-                                        className="text-red-400 hover:text-red-650 dark:hover:text-red-300 cursor-pointer text-xs p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
-                                        onClick={() => {
-                                          updateActiveRotation(r => ({
-                                            steps: r.steps.filter(s => s.id !== step.id)
-                                          }));
-                                        }}
-                                        title="Remove step"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          <tfoot>
-                            <tr className="border-t border-gray-250 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-900/20">
-                              <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-200" colSpan={5}>Total Average DMG</td>
-                              {instances.map(inst => {
-                                const computed = computedById.get(inst.id);
-                                const total = computed?.rotationTotals[activeRotationId] ?? 0;
-                                const benchmarkComputed = computedById.get(activeBenchmarkId);
-                                const benchmarkTotal = benchmarkComputed?.rotationTotals[activeRotationId] ?? 0;
-                                return (
-                                  <td key={inst.id} className="py-3 px-3 text-right tabular-nums font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                                    <div className="flex flex-col items-end">
-                                      <span>{fmt(total)}</span>
-                                      {renderPct(total, benchmarkTotal)}
-                                    </div>
-                                  </td>
-                                );
-                              })}
-                              <td></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-                    Select or create a rotation on the sidebar to get started
-                  </div>
-                )}
-              </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-900/10">
-              <span className="text-[11px] text-gray-400 dark:text-zinc-500">Changes will be saved automatically along with your setup builds.</span>
-              <button
-                onClick={() => setIsRotationOpen(false)}
-                className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Attack Selector Popup Modal overlay (z-60) ── */}
-      {isSelectAttackOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg max-h-[75vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0">
-              <div>
-                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">Select Attack Instance</h3>
-                <p className="text-[10px] text-gray-400 dark:text-zinc-500">Choose an attack to append to your combo</p>
-              </div>
-              <button
-                onClick={() => setIsSelectAttackOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-850 transition-colors cursor-pointer text-xs font-bold font-mono"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* List of attacks grouped by talent */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              {config.talents.map((g, gi) => (
-                <div key={g.name} className="space-y-1.5">
-                  <h4 className="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-zinc-500">{g.name}</h4>
-                  <div className="grid grid-cols-1 gap-1.5">
-                    {g.hits.map((h, hi) => {
-                      if (h.kind === "heal") return null;
-                      const hitIdValue = hitId(gi, hi);
-                      return (
-                        <button
-                          key={hitIdValue}
-                          onClick={() => {
-                            updateActiveRotation(r => ({
-                              steps: [...r.steps, {
-                                id: String(rotationNextId),
-                                targetHitId: hitIdValue,
-                                reactionOverride: "default",
-                              }]
-                            }));
-                            setRotationNextId(prev => prev + 1);
-                            setIsSelectAttackOpen(false);
-                          }}
-                          className="w-full text-left p-2.5 rounded-lg border border-gray-200/60 dark:border-zinc-850 hover:border-zinc-900 dark:hover:border-zinc-100 bg-white hover:bg-zinc-50 dark:bg-zinc-900/40 dark:hover:bg-zinc-900 text-xs text-gray-700 dark:text-zinc-300 font-semibold transition-all cursor-pointer flex items-center justify-between group"
-                        >
-                          <span>{h.name}</span>
-                          <span className="text-[9px] text-gray-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 uppercase tracking-wider font-bold">
-                            {h.scaling}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="px-5 py-3 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex justify-end bg-gray-50/50 dark:bg-zinc-900/10">
-              <button
-                onClick={() => setIsSelectAttackOpen(false)}
-                className="rounded-lg bg-zinc-200 dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Unsaved Progress Confirmation Modal overlay (z-50) ── */}
+      {/* Unsaved Navigation Discard dialog modal */}
       {isConfirmDiscardOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
               <div className="flex items-center gap-2 text-amber-500">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2997,15 +1515,11 @@ export function CharacterCalculator({
                 ✕
               </button>
             </div>
-
-            {/* Content */}
             <div className="p-5">
               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 You have unsaved work on the calculator page for <span className="font-bold text-gray-800 dark:text-zinc-200">{config.name}</span>. Moving to another page will discard all unsaved edits.
               </p>
             </div>
-
-            {/* Footer */}
             <div className="px-5 py-3 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-end gap-2 bg-gray-50/50 dark:bg-zinc-900/10 rounded-b-2xl">
               <button
                 onClick={() => setIsConfirmDiscardOpen(false)}
@@ -3016,9 +1530,9 @@ export function CharacterCalculator({
               </button>
               <button
                 onClick={() => {
-                  setSavedJson(currentPayload()); // Sync savedJson so isDirty resolves to false
+                  calcState.setSavedJson(JSON.stringify({ instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId }));
                   setIsConfirmDiscardOpen(false);
-                  router.push(pendingNavigationHref);
+                  router.push(calcState.pendingNavigationHref);
                 }}
                 disabled={isSaving}
                 className="rounded-lg bg-red-650 hover:bg-red-650/90 text-white px-3 py-1.5 text-xs font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50"
@@ -3037,12 +1551,12 @@ export function CharacterCalculator({
         </div>
       )}
 
-      {/* Save Build Name Modal Popup */}
+      {/* Save build configuration popup dialog */}
       {isSaveModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-zinc-955 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
             <h3 className="text-base font-bold text-black dark:text-white mb-2">Save Build Configuration</h3>
-            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-4">
+            <p className="text-xs text-gray-550 dark:text-zinc-400 mb-4">
               Enter a name for this build setup to save it to the database library.
             </p>
             <input
@@ -3075,7 +1589,7 @@ export function CharacterCalculator({
         </div>
       )}
 
-      {/* ── Screenshot Scanner Modal overlay (z-50) ── */}
+      {/* Hidden OCR screenshot scanner selector */}
       <input
         id="screenshot-file-input"
         type="file"
@@ -3087,7 +1601,6 @@ export function CharacterCalculator({
       {isScannerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
-            {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
@@ -3099,10 +1612,10 @@ export function CharacterCalculator({
               </div>
               <button
                 onClick={() => {
-                  setIsScannerOpen(false);
-                  setScanImage(null);
-                  setScanResult(null);
-                  setScanError(null);
+                  calcState.setIsScannerOpen(false);
+                  calcState.setScanImage(null);
+                  calcState.setScanResult(null);
+                  calcState.setScanError(null);
                 }}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-850 transition-colors cursor-pointer text-xs font-bold font-mono"
               >
@@ -3110,9 +1623,7 @@ export function CharacterCalculator({
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-6 max-h-[70vh]">
-              {/* Dropzone screen when no image is loaded */}
               {!scanImage && (
                 <div
                   onClick={() => document.getElementById("screenshot-file-input")?.click()}
@@ -3125,18 +1636,16 @@ export function CharacterCalculator({
                     Drag & drop a screenshot here, or click to upload
                   </p>
                   <p className="text-xs text-gray-400 dark:text-zinc-500 mb-4 max-w-sm leading-relaxed">
-                    You can also copy a screenshot image directly to your clipboard and press <kbd className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-gray-250 dark:border-zinc-700 font-mono text-[10px]">Ctrl+V</kbd> (or <kbd className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-gray-250 dark:border-zinc-700 font-mono text-[10px]">Cmd+V</kbd>) on this page.
+                    You can also copy a screenshot image directly to your clipboard and press <kbd className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-gray-250 dark:border-zinc-700 font-mono text-[10px]">Ctrl+V</kbd> on this page.
                   </p>
                   <span className="text-[10px] bg-zinc-150 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded font-bold uppercase tracking-wider">
-                    Supports Mavuika & other character detail sheets
+                    Supports character detail sheets
                   </span>
                 </div>
               )}
 
-              {/* Processing screen or review screen when image is loaded */}
               {scanImage && (
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                  {/* Left Column: Image Preview + Scan Progress */}
                   <div className="md:col-span-5 flex flex-col items-center gap-4">
                     <div className="relative border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-zinc-950 flex items-center justify-center min-h-[220px] w-full shadow-inner">
                       <img
@@ -3144,8 +1653,6 @@ export function CharacterCalculator({
                         alt="Pasted screenshot preview"
                         className="max-h-[280px] object-contain rounded"
                       />
-                      
-                      {/* Scanning overlay effect */}
                       {isScanningImage && (
                         <div className="absolute inset-0 bg-emerald-500/10 animate-pulse border-y-2 border-emerald-500 flex flex-col items-center justify-center">
                           <span className="bg-emerald-600 text-white text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-lg">
@@ -3169,9 +1676,9 @@ export function CharacterCalculator({
                     {!isScanningImage && (
                       <button
                         onClick={() => {
-                          setScanImage(null);
-                          setScanResult(null);
-                          setScanError(null);
+                          calcState.setScanImage(null);
+                          calcState.setScanResult(null);
+                          calcState.setScanError(null);
                         }}
                         className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold flex items-center gap-1 cursor-pointer"
                       >
@@ -3180,17 +1687,11 @@ export function CharacterCalculator({
                     )}
                   </div>
 
-                  {/* Right Column: Results Table or Errors */}
                   <div className="md:col-span-7 space-y-4">
                     {scanError && (
                       <div className="bg-red-550/10 border border-red-500/20 text-red-500 dark:text-red-400 p-4 rounded-xl space-y-2">
                         <h4 className="text-xs font-extrabold uppercase tracking-wider">Scan Error</h4>
                         <p className="text-xs leading-relaxed">{scanError}</p>
-                        {scanError.includes("GEMINI_API_KEY") && (
-                          <div className="text-[10px] text-gray-500 dark:text-zinc-500 leading-normal border-t border-red-500/10 pt-2">
-                            To fix this, edit the <code className="font-mono bg-red-500/5 px-1 py-0.5 rounded">.env</code> file in your project root, add your Google AI Gemini API Key, then restart the Next.js development server.
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -3223,7 +1724,6 @@ export function CharacterCalculator({
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-150 dark:divide-zinc-850/60">
-                                {/* Level */}
                                 {scanResult.levelChar && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Character Level</td>
@@ -3239,7 +1739,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* HP */}
                                 {(scanResult.hpBase || scanResult.hpFlat) && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">HP (Base + Flat)</td>
@@ -3257,7 +1756,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* ATK */}
                                 {(scanResult.atkBase || scanResult.atkFlat) && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">ATK (Base + Flat)</td>
@@ -3275,7 +1773,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* DEF */}
                                 {(scanResult.defBase || scanResult.defFlat) && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">DEF (Base + Flat)</td>
@@ -3293,7 +1790,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* EM */}
                                 {scanResult.em && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Elemental Mastery</td>
@@ -3309,7 +1805,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* CRIT Rate */}
                                 {scanResult.critRate && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">CRIT Rate %</td>
@@ -3325,7 +1820,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* CRIT DMG */}
                                 {scanResult.critDmg && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">CRIT DMG %</td>
@@ -3341,7 +1835,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* Energy Recharge */}
                                 {scanResult.energyRecharge && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">Energy Recharge %</td>
@@ -3357,7 +1850,6 @@ export function CharacterCalculator({
                                   </tr>
                                 )}
 
-                                {/* DMG Bonus */}
                                 {scanResult.dmgBonus && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">All DMG Bonus%</td>
@@ -3383,14 +1875,13 @@ export function CharacterCalculator({
               )}
             </div>
 
-            {/* Modal Footer */}
             <div className="px-5 py-3.5 border-t border-gray-150 dark:border-zinc-850 shrink-0 flex items-center justify-end gap-2 bg-gray-50/50 dark:bg-zinc-900/10">
               <button
                 onClick={() => {
-                  setIsScannerOpen(false);
-                  setScanImage(null);
-                  setScanResult(null);
-                  setScanError(null);
+                  calcState.setIsScannerOpen(false);
+                  calcState.setScanImage(null);
+                  calcState.setScanResult(null);
+                  calcState.setScanError(null);
                 }}
                 className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-xs font-semibold text-black dark:text-white transition-colors cursor-pointer"
               >
@@ -3411,4 +1902,3 @@ export function CharacterCalculator({
     </div>
   );
 }
-
