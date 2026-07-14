@@ -1,7 +1,7 @@
 import type { TalentType } from "@/data/registry/types";
 
 // Seed shape for the TalentScaling table. One SeedHit expands to one DB row per level.
-export type HitKind = "damage" | "buff" | "heal";
+export type HitKind = "damage" | "buff" | "heal" | "shield";
 
 export interface SeedHit {
   hitKey: string;         // joins registry TalentHit.key (for damage hits)
