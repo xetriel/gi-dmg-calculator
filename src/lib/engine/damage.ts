@@ -4,7 +4,7 @@
 //         × DMGBonusMult × DEFMult × RESMult × AmplifyingMult × CritMult
 // Consumes resolved numeric stats + a per-hit descriptor and returns
 // Non-Crit / CRIT / Average outgoing damage. No React, no I/O — easily testable.
-import type { ScalingSource, Element, ReactionType } from "@/data/registry/types";
+import type { ScalingSource, Element, ReactionType, HitCategory } from "@/data/registry/types";
 import { levelMultiplier } from "./level-multiplier";
 
 export interface DamageStats {
@@ -14,7 +14,20 @@ export interface DamageStats {
   em: number;
   critRate: number;      // percent
   critDmg: number;       // percent
-  dmgBonus: number;      // percent
+  dmgBonus: number;      // percent — Elemental/Physical/All DMG Bonus (shown in-game)
+  normalDmgBonus: number;   // percent — Normal Attack DMG Bonus (hidden in-game)
+  chargedDmgBonus: number;  // percent — Charged Attack DMG Bonus (hidden in-game)
+  plungeDmgBonus: number;   // percent — Plunging Attack DMG Bonus (hidden in-game)
+  skillDmgBonus: number;    // percent — Elemental Skill DMG Bonus (hidden in-game)
+  burstDmgBonus: number;    // percent — Elemental Burst DMG Bonus (hidden in-game)
+  pyroDmgBonus: number;     // percent — Pyro DMG Bonus
+  hydroDmgBonus: number;    // percent — Hydro DMG Bonus
+  dendroDmgBonus: number;   // percent — Dendro DMG Bonus
+  electroDmgBonus: number;  // percent — Electro DMG Bonus
+  anemoDmgBonus: number;    // percent — Anemo DMG Bonus
+  cryoDmgBonus: number;     // percent — Cryo DMG Bonus
+  geoDmgBonus: number;      // percent — Geo DMG Bonus
+  physicalDmgBonus: number; // percent — Physical DMG Bonus
   dmgReduction: number;  // percent — "DMG Reduction / -(DMG Bonus)"
   enemyRes: number;      // percent
   levelChar: number;
@@ -36,7 +49,7 @@ export interface DirectReactionParams {
 export interface HitInput {
   multiplier: number;         // talent multiplier, percent
   scaling: ScalingSource;
-  element: Element;           // trigger element (for reaction multipliers)
+  element: Element | "Physical";           // trigger element (for reaction multipliers)
   reaction: ReactionType;
   reactionBonusPct: number;   // extra reaction bonus %, e.g. from artifacts/talents
   flatDmgBonus?: number;      // additive base DMG (e.g. Masque, Dark-Shattering Flame, C2 Blood Blossom)
@@ -44,6 +57,9 @@ export interface HitInput {
   critDmgBonusPct?: number;   // per-hit CRIT DMG bonus (e.g. Neuvillette C2 on Equitable Judgment)
   critRateBonusPct?: number;  // per-hit CRIT Rate bonus (e.g. Arlecchino C6 on NA/Burst)
   bonusDmgPct?: number;       // per-hit DMG Bonus% addition (e.g. Clorinde C4 on Last Lightfall)
+  hitCategory?: HitCategory;  // talent-type DMG Bonus routing (normal/charged/plunge/skill/burst)
+  charElement?: Element;      // character's base element for DMG Bonus routing
+  dmgBonusLabel?: string;     // character's dynamic DMG bonus label
   directReaction?: DirectReactionParams; // present => compute through the direct-reaction branch
 }
 
@@ -67,8 +83,49 @@ export function scalingTotal(stats: DamageStats, source: ScalingSource): number 
 // (1 + DMG Bonus% - DMG Reduction%). The registry's dmgReduction field is
 // labeled "DMG Reduction / -(DMG Bonus)", so it subtracts from the bonus.
 // `extraPct` allows per-hit DMG Bonus additions (same slot, additive).
-export function dmgBonusMultiplier(stats: DamageStats, extraPct: number = 0): number {
-  return 1 + (stats.dmgBonus + extraPct - stats.dmgReduction) / 100;
+// `hitCategory` selects the per-talent-type DMG Bonus (Normal/Charged/Plunge/Skill/Burst),
+// which stacks additively with the elemental and physical DMG bonuses.
+export function dmgBonusMultiplier(
+  stats: DamageStats,
+  extraPct: number = 0,
+  hitCategory?: HitCategory,
+  hitElement?: Element | "Physical",
+  charElement?: Element,
+  dmgBonusLabel: string = ""
+): number {
+  let categoryBonus = 0;
+  switch (hitCategory) {
+    case "normal":  categoryBonus = stats.normalDmgBonus; break;
+    case "charged": categoryBonus = stats.chargedDmgBonus; break;
+    case "plunge":  categoryBonus = stats.plungeDmgBonus; break;
+    case "skill":   categoryBonus = stats.skillDmgBonus; break;
+    case "burst":   categoryBonus = stats.burstDmgBonus; break;
+  }
+
+  // Determine base elemental/physical/all DMG Bonus from character's default dmgBonus field.
+  // Defaults to stats.dmgBonus when elements/labels are omitted (e.g. in basic tests).
+  let baseDmgBonus = 0;
+  const isAllDmg = !dmgBonusLabel || dmgBonusLabel === "All DMG Bonus%" || dmgBonusLabel === "DMG Bonus%";
+  if (isAllDmg || !charElement || hitElement === charElement) {
+    baseDmgBonus = stats.dmgBonus;
+  }
+
+  // Add specific elemental/physical bonus
+  let elementBonus = 0;
+  if (hitElement) {
+    switch (hitElement) {
+      case "Pyro":     elementBonus = stats.pyroDmgBonus; break;
+      case "Hydro":    elementBonus = stats.hydroDmgBonus; break;
+      case "Dendro":   elementBonus = stats.dendroDmgBonus; break;
+      case "Electro":  elementBonus = stats.electroDmgBonus; break;
+      case "Anemo":    elementBonus = stats.anemoDmgBonus; break;
+      case "Cryo":     elementBonus = stats.cryoDmgBonus; break;
+      case "Geo":      elementBonus = stats.geoDmgBonus; break;
+      case "Physical": elementBonus = stats.physicalDmgBonus; break;
+    }
+  }
+
+  return 1 + (baseDmgBonus + categoryBonus + elementBonus + extraPct - stats.dmgReduction) / 100;
 }
 
 // Enemy DEF multiplier. Per requirement, DEF debuffs are negative %DEF Bonuses
@@ -178,16 +235,23 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
   } else {
     const additive =
       (hit.flatDmgBonus ?? 0) +
-      catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct);
+      (hit.element === "Physical" ? 0 : catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct));
     const base =
       (hit.multiplier / 100) * scalingTotal(stats, hit.scaling) * (hit.baseDmgMultiplier ?? 1) +
       additive;
     nonCrit =
       base *
-      dmgBonusMultiplier(stats, hit.bonusDmgPct ?? 0) *
+      dmgBonusMultiplier(
+        stats,
+        hit.bonusDmgPct ?? 0,
+        hit.hitCategory,
+        hit.element,
+        hit.charElement,
+        hit.dmgBonusLabel
+      ) *
       defMultiplier(stats) *
       resMultiplier(stats.enemyRes) *
-      amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct);
+      (hit.element === "Physical" ? 1 : amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct));
   }
 
   const cr = clamp(stats.critRate + (hit.critRateBonusPct ?? 0), 0, 100) / 100;

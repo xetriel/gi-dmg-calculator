@@ -13,3 +13,12 @@ export const def = (key: string, name: string): TalentHit => ({ key, name, scali
 // via the direct-reaction formula branch.
 export const stellarAtk = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", direct: "stellar" });
 export const lunarDef = (key: string, name: string): TalentHit => ({ key, name, scaling: "def", direct: "lunar" });
+export const lunarEm = (key: string, name: string): TalentHit => ({ key, name, scaling: "em", direct: "lunar" });
+export const lunarAtk = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", direct: "lunar" });
+
+// Charged Attack hits — tagged with hitCategory: "charged" for talent-type DMG Bonus routing.
+export const atkCharged = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", hitCategory: "charged" });
+export const hpCharged = (key: string, name: string): TalentHit => ({ key, name, scaling: "hp", hitCategory: "charged" });
+// Plunging Attack hits — tagged with hitCategory: "plunge" for talent-type DMG Bonus routing.
+export const atkPlunge = (key: string, name: string): TalentHit => ({ key, name, scaling: "atk", hitCategory: "plunge" });
+export const defPlunge = (key: string, name: string): TalentHit => ({ key, name, scaling: "def", hitCategory: "plunge" });

@@ -38,9 +38,9 @@ export const LUNAR_DIRECT_MULTIPLIER: Record<LunarType, number> = {
 // needs Electro or Hydro application; Crystallize needs Geo).
 export const LUNAR_BY_ELEMENT: Record<Element, LunarType[]> = {
   Electro: ["lunar-charged"],
-  Hydro: ["lunar-charged"],
+  Hydro: ["lunar-charged", "lunar-bloom"],
   Geo: ["lunar-crystallize"],
-  Pyro: [], Cryo: [], Anemo: [], Dendro: [],
+  Pyro: [], Cryo: [], Anemo: [], Dendro: ["lunar-bloom"],
 };
 
 export interface LunarResult { nonCrit: number; crit: number; avg: number }

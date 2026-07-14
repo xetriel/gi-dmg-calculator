@@ -19,7 +19,12 @@ const manualResolved = (config: typeof arlecchino, raw: RawInputs) =>
 const baseStats: DamageStats = {
   atk: 2000, hp: 0, def: 0, em: 0,
   critRate: 50, critDmg: 100,
-  dmgBonus: 50, dmgReduction: 0,
+  dmgBonus: 50,
+  normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
+  skillDmgBonus: 0, burstDmgBonus: 0,
+  pyroDmgBonus: 0, hydroDmgBonus: 0, dendroDmgBonus: 0, electroDmgBonus: 0,
+  anemoDmgBonus: 0, cryoDmgBonus: 0, geoDmgBonus: 0, physicalDmgBonus: 0,
+  dmgReduction: 0,
   enemyRes: 10,
   levelChar: 90, levelEnemy: 100,
   defReduction: 0, defIgnore: 0,
@@ -53,6 +58,44 @@ describe("defMultiplier", () => {
 describe("dmgBonusMultiplier", () => {
   it("bonus minus reduction", () => {
     expect(dmgBonusMultiplier({ ...baseStats, dmgBonus: 100, dmgReduction: 20 })).toBeCloseTo(1.8);
+  });
+  it("adds category-specific bonuses", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      dmgBonus: 50,
+      normalDmgBonus: 10,
+      chargedDmgBonus: 20,
+      plungeDmgBonus: 30,
+      skillDmgBonus: 40,
+      burstDmgBonus: 50,
+    };
+    expect(dmgBonusMultiplier(s, 0, "normal")).toBeCloseTo(1.6); // 1 + (50 + 10)/100 = 1.6
+    expect(dmgBonusMultiplier(s, 0, "charged")).toBeCloseTo(1.7); // 1 + (50 + 20)/100 = 1.7
+    expect(dmgBonusMultiplier(s, 0, "plunge")).toBeCloseTo(1.8); // 1 + (50 + 30)/100 = 1.8
+    expect(dmgBonusMultiplier(s, 0, "skill")).toBeCloseTo(1.9); // 1 + (50 + 40)/100 = 1.9
+    expect(dmgBonusMultiplier(s, 0, "burst")).toBeCloseTo(2.0); // 1 + (50 + 50)/100 = 2.0
+    expect(dmgBonusMultiplier(s, 10, "skill")).toBeCloseTo(2.0); // 1 + (50 + 40 + 10)/100 = 2.0
+  });
+  it("adds element-specific and physical bonuses correctly", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      dmgBonus: 46.6, // Character's main element/all DMG bonus
+      pyroDmgBonus: 15,
+      hydroDmgBonus: 10,
+      physicalDmgBonus: 25,
+    };
+    // Pyro hit with character element = Pyro, label "Pyro DMG Bonus%"
+    // Total: base 46.6 + Pyro specific 15 = 61.6%
+    expect(dmgBonusMultiplier(s, 0, undefined, "Pyro", "Pyro", "Pyro DMG Bonus%")).toBeCloseTo(1.616);
+
+    // Hydro hit with character element = Pyro (e.g. infuses another element or just test case)
+    // base 46.6 does NOT apply because it is Pyro specific. Total: Hydro specific 10 = 10%
+    expect(dmgBonusMultiplier(s, 0, undefined, "Hydro", "Pyro", "Pyro DMG Bonus%")).toBeCloseTo(1.10);
+
+    // Hydro hit with character label "All DMG Bonus%" (base 46.6 applies to all)
+    // Total: base 46.6 + Hydro specific 10 = 56.6%
+    expect(dmgBonusMultiplier(s, 0, undefined, "Hydro", "Hydro", "All DMG Bonus%")).toBeCloseTo(1.566);
+    expect(dmgBonusMultiplier(s, 0, undefined, "Pyro", "Hydro", "All DMG Bonus%")).toBeCloseTo(1.616); // base 46.6 + Pyro 15 = 61.6%
   });
 });
 

@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk, stellarAtk } from "./hit-helpers";
+import { atk, atkCharged, atkPlunge, stellarAtk } from "./hit-helpers";
 
 // All hits scale on ATK. The "-stellar" rows are the Radiance: Stellar-Conduct
 // variants (separate wiki table rows): they are reaction DMG computed through the
@@ -16,11 +16,11 @@ export const sandrone: CharacterConfig = {
   talents: [
     { type: "normal", name: "Normal Attack — Self-Evident Proposition", hits: [
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit", "3-Hit"),
-      atk("sweeping-fire", "Charged: Sweeping Fire"),
-      atk("condensed-beam", "Charged: Condensed Beam"),
+      atkCharged("sweeping-fire", "Charged: Sweeping Fire"),
+      atkCharged("condensed-beam", "Charged: Condensed Beam"),
       stellarAtk("condensed-beam-stellar", "Charged: Condensed Beam (Stellar-Conduct)"),
       atk("power-overdrive", "DMG When in Power Overdrive"),
-      atk("plunge", "Plunge"), atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
+      atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — Differential Analysis", hits: [
       atk("prism-shot", "Prism Shot"),

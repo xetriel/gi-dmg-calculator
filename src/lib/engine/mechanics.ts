@@ -4,7 +4,7 @@
 // (Arlecchino C1/C6, Clorinde C2/C4/C6, Neuvillette C1/C2) also live here — the
 // generic ConstellationEffect system stays for simple stat/flat/level effects.
 // All formulas are from the saved wiki pages (see scripts/extract-wiki.ts).
-import type { CharacterConfig } from "@/data/registry/types";
+import type { CharacterConfig, Element } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { DamageStats, DirectReactionParams } from "./damage";
 import { stellarBRC, stellarEmBonus, resMultiplier } from "./damage";
@@ -17,6 +17,7 @@ export interface PerHitMods {
   critRateBonusPct?: number;
   bonusDmgPct?: number;
   directReaction?: DirectReactionParams; // Stellar-Conduct / Direct-Lunar hits: routes computeHit into the direct-reaction branch
+  element?: Element | "Physical";
 }
 
 export interface MechanicsResult {
@@ -30,6 +31,7 @@ export interface MechanicsCtx {
   stats: DamageStats;                   // resolved stats, before deltas
   baseAtk: number;                      // the "Base" ATK input (Paramita cap: 400% of it)
   baseDef: number;                      // the "Base" DEF input (Zibai A4: +15% of it per Geo ally)
+  baseHp?: number;                      // the "Base" HP input (Columbina C2 HP Buff)
   constellationLevel: number;           // 0–6
   talentLevels: Record<string, number>; // effective level per talent type (incl. C3/C5 +3)
   scaling: TalentScalingData;           // per-level values incl. buff/heal rows
@@ -52,12 +54,13 @@ function hitKeysOf(config: CharacterConfig, type: string): string[] {
 
 const addMods = (perHit: Record<string, PerHitMods>, key: string, mods: PerHitMods) => {
   const m = (perHit[key] ??= {});
-  if (mods.flatDmgBonus) m.flatDmgBonus = (m.flatDmgBonus ?? 0) + mods.flatDmgBonus;
-  if (mods.baseDmgMultiplier) m.baseDmgMultiplier = (m.baseDmgMultiplier ?? 1) * mods.baseDmgMultiplier;
-  if (mods.critDmgBonusPct) m.critDmgBonusPct = (m.critDmgBonusPct ?? 0) + mods.critDmgBonusPct;
-  if (mods.critRateBonusPct) m.critRateBonusPct = (m.critRateBonusPct ?? 0) + mods.critRateBonusPct;
-  if (mods.bonusDmgPct) m.bonusDmgPct = (m.bonusDmgPct ?? 0) + mods.bonusDmgPct;
-  if (mods.directReaction) m.directReaction = mods.directReaction; // set once per hit, not accumulated
+  if (mods.flatDmgBonus !== undefined) m.flatDmgBonus = (m.flatDmgBonus ?? 0) + mods.flatDmgBonus;
+  if (mods.baseDmgMultiplier !== undefined) m.baseDmgMultiplier = (m.baseDmgMultiplier ?? 1) * mods.baseDmgMultiplier;
+  if (mods.critDmgBonusPct !== undefined) m.critDmgBonusPct = (m.critDmgBonusPct ?? 0) + mods.critDmgBonusPct;
+  if (mods.critRateBonusPct !== undefined) m.critRateBonusPct = (m.critRateBonusPct ?? 0) + mods.critRateBonusPct;
+  if (mods.bonusDmgPct !== undefined) m.bonusDmgPct = (m.bonusDmgPct ?? 0) + mods.bonusDmgPct;
+  if (mods.directReaction !== undefined) m.directReaction = mods.directReaction; // set once per hit, not accumulated
+  if (mods.element !== undefined) m.element = mods.element;
 };
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -312,6 +315,524 @@ export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): Me
         res.statDeltas.critDmg = (res.statDeltas.critDmg ?? 0) + 70;
         res.notes.push("C6: +10% CRIT Rate / +70% CRIT DMG (12s after Hunter's Vigil)");
       }
+      break;
+    }
+
+    case "nefer": {
+      // A1/C2 EM Buff: Grant +100 EM (A1) if stacks reach 3 (constellation < 2) or +200 EM (C2) if stacks reach 5 (constellation >= 2).
+      const rawStacks = val("veil-stacks");
+      const maxStacks = cons >= 2 ? 5 : 3;
+      const stacks = Math.min(rawStacks, maxStacks);
+
+      if (cons >= 2 && stacks === 5) {
+        res.statDeltas.em = (res.statDeltas.em ?? 0) + 200;
+        res.notes.push("C2: +200 Elemental Mastery (5 Veil of Falsehood stacks)");
+      } else if (cons < 2 && stacks === 3) {
+        res.statDeltas.em = (res.statDeltas.em ?? 0) + 100;
+        res.notes.push("A1: +100 Elemental Mastery (3 Veil of Falsehood stacks)");
+      }
+
+      const emEff = stats.em + (res.statDeltas.em ?? 0);
+
+      // Dusklit Eaves (A3/Moonsign): Every point of EM increases Lunar-Bloom base damage by 0.0175%, capped at 14% (reached at 800 EM).
+      const lunarBase = Math.min(0.0175 * emEff, 14);
+      res.lunarBaseBonusPct = lunarBase;
+      res.notes.push(
+        `Dusklit Eaves: +${lunarBase.toFixed(2)}% Lunar-Bloom Base DMG (0.0175%/EM${lunarBase >= 14 ? ", capped" : ""})`,
+      );
+
+      // Veil of Falsehood & C2 Multipliers:
+      // Veil of Falsehood increases Phantasm Performance DMG by 8% per stack.
+      // C2 multiplies Phantasm Performance DMG by 1.4.
+      let baseDmgMult = 1 + 0.08 * stacks;
+      if (cons >= 2) {
+        baseDmgMult *= 1.4;
+      }
+
+      if (stacks > 0) {
+        res.notes.push(`Veil of Falsehood: +${stacks * 8}% Phantasm Performance DMG (${stacks} stack${stacks > 1 ? "s" : ""})`);
+      }
+      if (cons >= 2) {
+        res.notes.push("C2: Phantasm Performance deals up to 140% of original DMG");
+      }
+
+      // C6 Elevation: If C6 is unlocked and Moonsign: Ascendant Gleam is active, elevate Nefer's Lunar-Bloom DMG by 15%.
+      const elevationMult = (cons >= 6 && on("ascendant-gleam")) ? 1.15 : 1.0;
+      if (cons >= 6 && on("ascendant-gleam")) {
+        res.notes.push("C6: Nefer's Lunar-Bloom DMG is elevated by 15% (Ascendant Gleam)");
+      }
+
+      // C4 RES Shred: Decrease Dendro RES by 20% if in Shadow Dance state and RES Shred is checked.
+      if (cons >= 4 && on("shadow-dance") && on("c4-res-shred")) {
+        res.statDeltas.enemyRes = (res.statDeltas.enemyRes ?? 0) - 20;
+        res.notes.push("C4: opponent Dendro RES decreased by 20% (during Shadow Dance)");
+      }
+
+      // Skill DMG split scaling:
+      const skillEmCoeff = coeff(ctx, "skill", "skill-dmg") ?? 0;
+      const skillAtkPart = stats.atk * (skillEmCoeff / 2 / 100);
+      addMods(res.perHit, "skill-dmg", { flatDmgBonus: skillAtkPart });
+
+      // Phantasm Nefer DMG split scaling:
+      const phantasm1EmCoeff = coeff(ctx, "skill", "phantasm-1-nefer") ?? 0;
+      const phantasm1AtkPart = stats.atk * (phantasm1EmCoeff / 2 / 100) * baseDmgMult;
+      addMods(res.perHit, "phantasm-1-nefer", { baseDmgMultiplier: baseDmgMult, flatDmgBonus: phantasm1AtkPart });
+
+      if (cons < 6) {
+        const phantasm2EmCoeff = coeff(ctx, "skill", "phantasm-2-nefer") ?? 0;
+        const phantasm2AtkPart = stats.atk * (phantasm2EmCoeff / 2 / 100) * baseDmgMult;
+        addMods(res.perHit, "phantasm-2-nefer", { baseDmgMultiplier: baseDmgMult, flatDmgBonus: phantasm2AtkPart });
+      } else {
+        // C6 Converted Phantasm 2-Hit replaces the original Nefer 2-Hit
+        addMods(res.perHit, "phantasm-2-nefer", { baseDmgMultiplier: 0 });
+        res.notes.push("C6: Phantasm 2-Hit converted to Lunar-Bloom DMG");
+      }
+
+      // Shades' hits are direct Lunar reactions (Lunar-Bloom coefficient: 1.0)
+      const direct: DirectReactionParams = {
+        coefficient: 1.0,
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: 0,
+      };
+
+      // C1 flat bonus: "The Base DMG for Lunar-Bloom reactions caused by Nefer's Phantasm Performance is increased by 60% of her EM. This effect is also boosted by Veil of Falsehood."
+      // Since C1 flat bonus is also boosted by Veil and Elevation, we scale it.
+      const c1Flat = cons >= 1 ? 0.6 * emEff * baseDmgMult * elevationMult : 0;
+      if (cons >= 1) {
+        res.notes.push(`C1: +${fmt(0.6 * emEff)} Base DMG to Phantasm Performance Lunar-Bloom reactions, boosted by Veil & Elevation`);
+      }
+
+      const shadesKeys = ["phantasm-1-shades", "phantasm-2-shades", "phantasm-3-shades"];
+      for (const key of shadesKeys) {
+        addMods(res.perHit, key, {
+          directReaction: direct,
+          baseDmgMultiplier: baseDmgMult * elevationMult,
+          flatDmgBonus: c1Flat,
+        });
+      }
+
+      // C6 Converted & Extra hits:
+      if (cons >= 6) {
+        addMods(res.perHit, "c6-converted", {
+          directReaction: direct,
+          baseDmgMultiplier: baseDmgMult * elevationMult,
+          flatDmgBonus: c1Flat,
+        });
+        addMods(res.perHit, "c6-extra", {
+          directReaction: direct,
+          baseDmgMultiplier: baseDmgMult * elevationMult,
+          flatDmgBonus: c1Flat,
+        });
+      } else {
+        addMods(res.perHit, "c6-converted", { baseDmgMultiplier: 0 });
+        addMods(res.perHit, "c6-extra", { baseDmgMultiplier: 0 });
+      }
+
+      // Burst DMG split scaling & stack bonus:
+      const burst1EmCoeff = coeff(ctx, "burst", "burst-1-hit") ?? 0;
+      const burst1AtkPart = stats.atk * (burst1EmCoeff / 2 / 100);
+      addMods(res.perHit, "burst-1-hit", { flatDmgBonus: burst1AtkPart });
+
+      const burst2EmCoeff = coeff(ctx, "burst", "burst-2-hit") ?? 0;
+      const burst2AtkPart = stats.atk * (burst2EmCoeff / 2 / 100);
+      addMods(res.perHit, "burst-2-hit", { flatDmgBonus: burst2AtkPart });
+
+      const burstBonusPctPerStack = coeff(ctx, "burst", "burst-dmg-bonus") ?? 0;
+      const totalBurstBonus = burstBonusPctPerStack * stacks;
+      if (totalBurstBonus > 0) {
+        addMods(res.perHit, "burst-1-hit", { bonusDmgPct: totalBurstBonus });
+        addMods(res.perHit, "burst-2-hit", { bonusDmgPct: totalBurstBonus });
+        res.notes.push(`Burst: +${totalBurstBonus}% DMG Bonus (${stacks} Veil stack${stacks > 1 ? "s" : ""} consumed × ${burstBonusPctPerStack}%)`);
+      }
+      break;
+    }
+
+    case "flins": {
+      // C4 ATK Buff: +20% Base ATK
+      const atkBonus = cons >= 4 ? 0.20 * ctx.baseAtk : 0;
+      if (atkBonus > 0) {
+        res.statDeltas.atk = (res.statDeltas.atk ?? 0) + atkBonus;
+        res.notes.push(`C4: +${fmt(atkBonus)} ATK (20% Base ATK)`);
+      }
+      const atkEff = stats.atk + atkBonus;
+
+      // A4 Whispering Flame EM Buff: Every point of ATK increases EM by 8% (max 160). Under C4, this increases to 10% of ATK (max 220).
+      const emLimit = cons >= 4 ? 220 : 160;
+      const emRatio = cons >= 4 ? 0.10 : 0.08;
+      const emBonus = Math.min(emRatio * atkEff, emLimit);
+      if (emBonus > 0) {
+        res.statDeltas.em = (res.statDeltas.em ?? 0) + emBonus;
+        res.notes.push(
+          cons >= 4
+            ? `C4 Night on Bald Mountain: +${emBonus.toFixed(0)} Elemental Mastery (10% ATK, max 220)`
+            : `A4 Whispering Flame: +${emBonus.toFixed(0)} Elemental Mastery (8% ATK, max 160)`
+        );
+      }
+
+      // Old World Secrets (Moonsign Benediction): Every 100 ATK increases Lunar-Charged Base DMG by 0.7%, up to 14%.
+      const lunarBase = Math.min(0.7 * (atkEff / 100), 14);
+      res.lunarBaseBonusPct = lunarBase;
+      res.notes.push(
+        `Moonsign: +${lunarBase.toFixed(2)}% Lunar-Charged Base DMG (0.7%/100 ATK${lunarBase >= 14 ? ", capped" : ""})`
+      );
+
+      // Symphony of Winter (A1): +20% reaction bonus to Lunar-Charged reactions triggered by Flins under Ascendant Gleam
+      const reactionBonus = on("ascendant-gleam") ? 20 : 0;
+      if (on("ascendant-gleam")) {
+        res.notes.push("A1 Symphony of Winter: +20% Lunar-Charged DMG (Reaction Bonus)");
+      }
+
+      // C6 Elevation: Elevate Flins's Lunar-Charged DMG by 35% (C6). Under Ascendant Gleam, elevate by an additional 10% (total 45%).
+      let elevationMult = 1.0;
+      if (cons >= 6) {
+        elevationMult += 0.35;
+        if (on("ascendant-gleam")) {
+          elevationMult += 0.10;
+        }
+        res.notes.push(
+          on("ascendant-gleam")
+            ? "C6: Flins's Lunar-Charged DMG is elevated by 45% (Ascendant Gleam)"
+            : "C6: Flins's Lunar-Charged DMG is elevated by 35%"
+        );
+      }
+
+      // C2 RES Shred: decrease opponent Electro RES by 25%
+      if (cons >= 2 && on("ascendant-gleam") && on("c2-res-shred")) {
+        res.statDeltas.enemyRes = (res.statDeltas.enemyRes ?? 0) - 25;
+        res.notes.push("C2: opponent Electro RES decreased by 25% (Ascendant Gleam)");
+      }
+
+      // Direct reaction parameters for Lunar-Charged (coefficient: 3.0)
+      const direct: DirectReactionParams = {
+        coefficient: LUNAR_DIRECT_MULTIPLIER["lunar-charged"], // 3.0
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: reactionBonus,
+      };
+
+      // Scale normal/charged hits if in Manifest Flame form
+      if (on("manifest-flame")) {
+        const skillLvl = ctx.talentLevels["skill"];
+        const normalLvl = ctx.talentLevels["normal"];
+
+        const mapping = {
+          "1-hit": "mf-1-hit",
+          "2-hit": "mf-2-hit",
+          "3-hit": "mf-3-hit",
+          "4-hit": "mf-4-hit",
+          "5-hit": "mf-5-hit",
+          "charged": "mf-charged",
+        };
+
+        for (const [normKey, mfKey] of Object.entries(mapping)) {
+          const mfMult = ctx.scaling["skill"]?.byLevel[skillLvl]?.[mfKey] ?? 0;
+          const normMult = ctx.scaling["normal"]?.byLevel[normalLvl]?.[normKey] ?? 1;
+          const mult = normMult > 0 ? mfMult / normMult : 0;
+          addMods(res.perHit, normKey, { baseDmgMultiplier: mult });
+        }
+
+        // Plunging is disabled in Manifest Flame form
+        for (const key of ["plunge", "low-plunge", "high-plunge"]) {
+          addMods(res.perHit, key, { baseDmgMultiplier: 0 });
+        }
+      }
+
+      // If Ascendant Gleam is off, Thunderous Symphony Additional DMG deals 0
+      if (!on("ascendant-gleam")) {
+        addMods(res.perHit, "symphony-add", { baseDmgMultiplier: 0 });
+      }
+
+      // If C2 is not unlocked, C2 Extra DMG deals 0
+      if (cons < 2) {
+        addMods(res.perHit, "c2-extra", { baseDmgMultiplier: 0 });
+      }
+
+      // Direct reaction hits: route through directReaction + apply elevation multiplier
+      const lunarKeys = ["burst-middle", "burst-final", "symphony-dmg", "symphony-add", "c2-extra"];
+      for (const key of lunarKeys) {
+        addMods(res.perHit, key, {
+          directReaction: direct,
+          baseDmgMultiplier: elevationMult,
+        });
+      }
+      break;
+    }
+
+    case "columbina": {
+      // A1: increases her CRIT Rate by 5% per Lunacy stack (max 3 stacks).
+      const lunacy = val("lunacy-stacks");
+      res.statDeltas.critRate = (res.statDeltas.critRate ?? 0) + 5 * lunacy;
+      if (lunacy > 0) {
+        res.notes.push(`A1 Lunacy: +${5 * lunacy}% CRIT Rate (${lunacy} stack${lunacy > 1 ? "s" : ""})`);
+      }
+
+      // C2 Lunar Brilliance: increases her Max HP by 40% (based on base HP input).
+      const baseHpEff = ctx.baseHp ?? 0;
+      const hpBonus = (cons >= 2 && on("lunar-brilliance")) ? 0.40 * baseHpEff : 0;
+      if (hpBonus > 0) {
+        res.statDeltas.hp = (res.statDeltas.hp ?? 0) + hpBonus;
+        res.notes.push(`C2 Lunar Brilliance: +${fmt(hpBonus)} Max HP (40% Base HP)`);
+      }
+
+      const hpEff = stats.hp + hpBonus;
+
+      // C2 Moonsign: Ascendant Gleam character buffs (ATK, EM, and DEF)
+      if (cons >= 2 && on("lunar-brilliance")) {
+        const atkShared = 0.01 * hpEff;
+        const emShared = 0.0035 * hpEff;
+        const defShared = 0.01 * hpEff;
+        res.statDeltas.atk = (res.statDeltas.atk ?? 0) + atkShared;
+        res.statDeltas.em = (res.statDeltas.em ?? 0) + emShared;
+        res.statDeltas.def = (res.statDeltas.def ?? 0) + defShared;
+        res.notes.push(
+          `C2: +${fmt(atkShared)} ATK, +${fmt(emShared)} EM, +${fmt(defShared)} DEF (based on Columbina Max HP)`
+        );
+      }
+
+      // Moonsign Benediction: +0.2% Lunar reaction Base DMG per 1000 Max HP, cap 7%.
+      const lunarBase = Math.min(0.2 * (hpEff / 1000), 7);
+      res.lunarBaseBonusPct = lunarBase;
+      res.notes.push(
+        `Moonsign: +${lunarBase.toFixed(1)}% Lunar Base DMG Bonus (0.2%/1000 Max HP${lunarBase >= 7 ? ", capped" : ""})`
+      );
+
+      // Burst Domain Reaction Bonus:
+      const domainReactionBonus = on("lunar-domain") ? (coeff(ctx, "burst", "domain-bonus") ?? 0) : 0;
+      if (domainReactionBonus > 0) {
+        res.notes.push(`Lunar Domain: +${domainReactionBonus}% Lunar Reaction DMG Bonus`);
+      }
+
+      // Constellation Elevation bonuses: C1 (+1.5%), C2 (+7%), C4 (+1.5%), C6 (+7%)
+      let elevation = 1.0;
+      if (cons >= 1) elevation += 0.015;
+      if (cons >= 2) elevation += 0.07;
+      if (cons >= 4) elevation += 0.015;
+      if (cons >= 6) elevation += 0.07;
+      if (elevation > 1.0) {
+        res.notes.push(`Reaction Elevation: ×${elevation.toFixed(3)} (+${((elevation - 1) * 100).toFixed(1)}% from constellations)`);
+      }
+
+      // C6 CRIT DMG buff (+80% CRIT DMG on all elements inside Burst Domain)
+      const c6Active = cons >= 6 && on("lunar-domain") && on("c6-crit-dmg-buff");
+      if (c6Active) {
+        const allHits = [
+          "1-hit", "2-hit", "3-hit", "charged", "moondew-cleanse", "plunge", "low-plunge", "high-plunge",
+          "skill-dmg", "ripple-dmg", "gi-charged", "gi-bloom", "gi-crystallize", "burst-dmg"
+        ];
+        for (const key of allHits) {
+          addMods(res.perHit, key, { critDmgBonusPct: 80 });
+        }
+        res.notes.push("C6: +80% CRIT DMG to elements in Lunar Domain");
+      }
+
+      // Route Moondew Cleanse (direct Lunar-Bloom, coefficient 1.0)
+      const cleanseDirect: DirectReactionParams = {
+        coefficient: 1.0,
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: domainReactionBonus,
+      };
+      addMods(res.perHit, "moondew-cleanse", {
+        directReaction: cleanseDirect,
+        baseDmgMultiplier: elevation,
+      });
+
+      // Gravity Interference flat C4 scaling additions
+      const c4ChargedFlat = cons >= 4 ? 0.125 * hpEff * elevation : 0;
+      const c4BloomFlat = cons >= 4 ? 0.025 * hpEff * elevation : 0;
+      const c4CrystallizeFlat = cons >= 4 ? 0.125 * hpEff * elevation : 0;
+
+      // Direct reaction Gravity Interference parameters:
+      // Coefficient: Charged (3.0), Bloom (1.0), Crystallize (1.6)
+      const giChargedDirect: DirectReactionParams = {
+        coefficient: 3.0,
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: domainReactionBonus,
+      };
+      const giBloomDirect: DirectReactionParams = {
+        coefficient: 1.0,
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: domainReactionBonus,
+      };
+      const giCrystallizeDirect: DirectReactionParams = {
+        coefficient: 1.6,
+        baseDmgBonusPct: lunarBase,
+        reactionBonusPct: domainReactionBonus,
+      };
+
+      addMods(res.perHit, "gi-charged", {
+        directReaction: giChargedDirect,
+        baseDmgMultiplier: elevation,
+        flatDmgBonus: c4ChargedFlat,
+      });
+      addMods(res.perHit, "gi-bloom", {
+        directReaction: giBloomDirect,
+        baseDmgMultiplier: elevation,
+        flatDmgBonus: c4BloomFlat,
+      });
+      addMods(res.perHit, "gi-crystallize", {
+        directReaction: giCrystallizeDirect,
+        baseDmgMultiplier: elevation,
+        flatDmgBonus: c4CrystallizeFlat,
+      });
+
+      if (cons >= 4) {
+        res.notes.push(
+          `C4 flat base DMG: +${fmt(0.125 * hpEff)} (Lunar-Charged/Cryst.), +${fmt(0.025 * hpEff)} (Lunar-Bloom)`
+        );
+      }
+      break;
+    }
+
+    case "varka": {
+      // Element priority
+      let rightElement: Element = "Anemo";
+      const isPyro = on("party-has-pyro");
+      const isHydro = on("party-has-hydro");
+      const isElectro = on("party-has-electro");
+      const isCryo = on("party-has-cryo");
+
+      if (isPyro) rightElement = "Pyro";
+      else if (isHydro) rightElement = "Hydro";
+      else if (isElectro) rightElement = "Electro";
+      else if (isCryo) rightElement = "Cryo";
+
+      res.notes.push(`Right-Hand Element: ${rightElement}`);
+
+      const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
+
+      // A1 Dawn Wind's March ATK scaling DMG bonus (+10% Anemo & corresponding element per 1000 ATK, max 25%)
+      const a1BonusPct = Math.min(10 * (stats.atk / 1000), 25);
+      res.statDeltas.anemoDmgBonus = (res.statDeltas.anemoDmgBonus ?? 0) + a1BonusPct;
+      if (rightElement !== "Anemo") {
+        const bonusKey = `${rightElement.toLowerCase()}DmgBonus` as keyof DamageStats;
+        res.statDeltas[bonusKey] = (res.statDeltas[bonusKey] as number ?? 0) + a1BonusPct;
+      }
+      res.notes.push(`A1 Dawn Wind's March: +${a1BonusPct.toFixed(1)}% Anemo and ${rightElement} DMG Bonus (based on ATK)`);
+
+      // A1 Resonance Multiplier (guarded against element counts)
+      let baseDmgMult = 1.0;
+      if (on("a1-resonance-tier2") && numChecked < 2) {
+        baseDmgMult = 2.2;
+        res.notes.push("A1 Resonance Tier 2: Sturm und Drang hits deal 220% of original DMG");
+      } else if (on("a1-resonance-tier1") && numChecked < 3) {
+        baseDmgMult = 1.4;
+        res.notes.push("A1 Resonance Tier 1: Sturm und Drang hits deal 140% of original DMG");
+      }
+
+      // A4 Wind's Vanguard stacks (+7.5% Normal/Charged/Special DMG per stack, max 4 stacks)
+      const a4Stacks = val("azure-oath-stacks");
+      const a4DmgBonusPct = 7.5 * a4Stacks;
+      if (a4Stacks > 0) {
+        res.notes.push(`A4 Wind's Vanguard: +${a4DmgBonusPct.toFixed(1)}% DMG Bonus on Normal/Charged/Special attacks (${a4Stacks} stacks)`);
+      }
+
+      // C6 CRIT DMG buff (+20% per stack, max 80%)
+      if (cons >= 6 && a4Stacks > 0) {
+        const c6CritDmgPct = 20 * a4Stacks;
+        res.statDeltas.critDmg = (res.statDeltas.critDmg ?? 0) + c6CritDmgPct;
+        res.notes.push(`C6: +${c6CritDmgPct}% CRIT DMG (${a4Stacks} Azure Fang's Oath stacks)`);
+      }
+
+      // C1 Lyrical Libation multiplier (+100% / 2.0x multiplier)
+      const c1Mult = (cons >= 1 && on("lyrical-libation")) ? 2.0 : 1.0;
+      if (cons >= 1 && on("lyrical-libation")) {
+        res.notes.push("C1 Lyrical Libation: Four Winds' Ascension & Azure Devour deal 200% DMG");
+      }
+
+      // C4 Swirl Buff: +20% Anemo & Element DMG
+      if (cons >= 4 && on("c4-swirl-buff")) {
+        res.statDeltas.anemoDmgBonus = (res.statDeltas.anemoDmgBonus ?? 0) + 20;
+        if (rightElement !== "Anemo") {
+          const bonusKey = `${rightElement.toLowerCase()}DmgBonus` as keyof DamageStats;
+          res.statDeltas[bonusKey] = (res.statDeltas[bonusKey] as number ?? 0) + 20;
+        }
+        res.notes.push(`C4 Swirl: +20% Anemo & ${rightElement} DMG Bonus`);
+      }
+
+      // Regular NA/CA/Plunge element physical & override multipliers (always active)
+      const regularKeys = [
+        "1-hit", "2-hit-a", "2-hit-b", "3-hit-a", "3-hit-b",
+        "4-hit-a", "4-hit-b", "5-hit-a", "5-hit-b",
+        "charged-a", "charged-b", "plunge", "low-plunge", "high-plunge"
+      ];
+      for (const key of regularKeys) {
+        addMods(res.perHit, key, {
+          element: "Physical",
+          baseDmgMultiplier: 1.0,
+        });
+      }
+
+      // Right hand Sturm und Drang hits: rightElement & baseDmgMult (always active)
+      const rightHandKeys = [
+        "sd-1-hit", "sd-2-hit-b", "sd-3-hit-b", "sd-4-hit-a", "sd-5-hit-a",
+        "sd-charged-a", "azure-devour-a", "four-winds-ascension-a"
+      ];
+      for (const key of rightHandKeys) {
+        addMods(res.perHit, key, {
+          element: rightElement,
+          baseDmgMultiplier: baseDmgMult,
+          bonusDmgPct: a4DmgBonusPct,
+        });
+      }
+
+      // Left hand Sturm und Drang hits: Anemo & baseDmgMult (always active)
+      const leftHandKeys = [
+        "sd-2-hit-a", "sd-3-hit-a", "sd-4-hit-b", "sd-5-hit-b",
+        "sd-charged-b", "azure-devour-b", "four-winds-ascension-b"
+      ];
+      for (const key of leftHandKeys) {
+        addMods(res.perHit, key, {
+          element: "Anemo",
+          baseDmgMultiplier: baseDmgMult,
+          bonusDmgPct: a4DmgBonusPct,
+        });
+      }
+
+      // Special skill/burst hits
+      // C1 Lyrical Libation multiplier applies on Four Winds and Azure Devour
+      // Also Azure Devour deals 2 hits, so we double it
+      addMods(res.perHit, "four-winds-ascension-a", {
+        element: rightElement,
+        baseDmgMultiplier: baseDmgMult * c1Mult,
+        bonusDmgPct: a4DmgBonusPct,
+      });
+      addMods(res.perHit, "four-winds-ascension-b", {
+        element: "Anemo",
+        baseDmgMultiplier: baseDmgMult * c1Mult,
+        bonusDmgPct: a4DmgBonusPct,
+      });
+
+      addMods(res.perHit, "azure-devour-a", {
+        element: rightElement,
+        baseDmgMultiplier: baseDmgMult * c1Mult * 2,
+        bonusDmgPct: a4DmgBonusPct,
+      });
+      addMods(res.perHit, "azure-devour-b", {
+        element: "Anemo",
+        baseDmgMultiplier: baseDmgMult * c1Mult * 2,
+        bonusDmgPct: a4DmgBonusPct,
+      });
+
+      // C2 Additional Strike (800% ATK Anemo flat damage)
+      const c2Active = cons >= 2;
+      addMods(res.perHit, "c2-strike", {
+        element: "Anemo",
+        baseDmgMultiplier: c2Active ? 1.0 : 0,
+      });
+
+      // Elemental Burst elements
+      addMods(res.perHit, "burst-1-hit", {
+        element: rightElement,
+      });
+      addMods(res.perHit, "burst-2-hit", {
+        element: "Anemo",
+      });
+
+      // Regular elemental skill is Anemo DMG, only active if not Sturm (or just standard skill DMG)
+      // Actually standard Windbound Execution deals AoE Anemo DMG upon cast, so it's always Anemo.
+      addMods(res.perHit, "skill-dmg", {
+        element: "Anemo",
+      });
+
       break;
     }
   }

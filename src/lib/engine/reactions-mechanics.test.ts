@@ -6,7 +6,7 @@ import { indirectLunarDamage, lunarEmBonus, LUNAR_BY_ELEMENT } from "./lunar";
 import { resolveMechanics, type MechanicsCtx } from "./mechanics";
 import { resolveHitMultipliers, hitId } from "./validation";
 import { flattenSeed, TALENT_SEED } from "../../data/talents";
-import { huTao, arlecchino, neuvillette, clorinde, sandrone, zibai } from "../../data/registry/characters";
+import { huTao, arlecchino, neuvillette, clorinde, sandrone, zibai, nefer, flins } from "../../data/registry/characters";
 import type { TalentScalingData } from "../talent-scaling";
 
 const LV90 = 1446.853458;
@@ -14,7 +14,12 @@ const LV90 = 1446.853458;
 const baseStats: DamageStats = {
   atk: 2000, hp: 20000, def: 0, em: 0,
   critRate: 50, critDmg: 100,
-  dmgBonus: 0, dmgReduction: 0,
+  dmgBonus: 0,
+  normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
+  skillDmgBonus: 0, burstDmgBonus: 0,
+  pyroDmgBonus: 0, hydroDmgBonus: 0, dendroDmgBonus: 0, electroDmgBonus: 0,
+  anemoDmgBonus: 0, cryoDmgBonus: 0, geoDmgBonus: 0, physicalDmgBonus: 0,
+  dmgReduction: 0,
   enemyRes: 0,
   levelChar: 90, levelEnemy: 100,
   defReduction: 0, defIgnore: 0,
@@ -377,3 +382,160 @@ describe("zibai mechanics", () => {
     expect(rows.length).toBe(218);
   });
 });
+
+describe("nefer mechanics", () => {
+  it("A1/C2 EM bonus activation", () => {
+    // A1: +100 EM at 3 stacks
+    const r1 = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 0, inputs: { "veil-stacks": 3 } }));
+    expect(r1.statDeltas.em).toBe(100);
+
+    // C2: +200 EM at 5 stacks
+    const r2 = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 2, inputs: { "veil-stacks": 5 } }));
+    expect(r2.statDeltas.em).toBe(200);
+
+    // Caps stacks without C2 to 3, so EM is 100
+    const r3 = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 0, inputs: { "veil-stacks": 5 } }));
+    expect(r3.statDeltas.em).toBe(100);
+  });
+
+  it("Dusklit Eaves: base damage bonus is EM-scaled", () => {
+    const r1 = resolveMechanics(nefer, ctxFor("nefer", { stats: { ...baseStats, em: 400 } }));
+    expect(r1.lunarBaseBonusPct).toBeCloseTo(7.0);
+
+    const r2 = resolveMechanics(nefer, ctxFor("nefer", { stats: { ...baseStats, em: 900 } }));
+    expect(r2.lunarBaseBonusPct).toBeCloseTo(14.0);
+  });
+
+  it("Phantasm Performance split-scaling (Nefer hits)", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { stats: { ...baseStats, atk: 2000, em: 500 }, inputs: { "veil-stacks": 0 } }));
+    // 1-hit EM at lvl 10 = 88.7. ATK part = 2000 * (44.35 / 100) = 887.
+    // baseDmgMult = 1
+    expect(r.perHit["phantasm-1-nefer"]?.baseDmgMultiplier).toBeCloseTo(1);
+    expect(r.perHit["phantasm-1-nefer"]?.flatDmgBonus).toBeCloseTo(887);
+  });
+
+  it("C1 flat DMG bonus on Shades' hits", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 1, stats: { ...baseStats, em: 500 }, inputs: { "veil-stacks": 0 } }));
+    // C1: 60% EM flat, boosted by Veil (1.0) & Elevation (1.0).
+    // 0.6 * 500 = 300.
+    expect(r.perHit["phantasm-1-shades"]?.flatDmgBonus).toBeCloseTo(300);
+  });
+
+  it("C2 1.4x multiplier and stack scaling", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 2, stats: { ...baseStats, em: 500 }, inputs: { "veil-stacks": 5 } }));
+    // baseDmgMult = (1 + 0.08 * 5) * 1.4 = 1.4 * 1.4 = 1.96.
+    expect(r.perHit["phantasm-1-nefer"]?.baseDmgMultiplier).toBeCloseTo(1.96);
+  });
+
+  it("C4 RES reduction during Shadow Dance", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 4, inputs: { "shadow-dance": 1, "c4-res-shred": 1 } }));
+    expect(r.statDeltas.enemyRes).toBe(-20);
+  });
+
+  it("C6 converted and extra hits, and elevation under Ascendant Gleam", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { constellationLevel: 6, inputs: { "veil-stacks": 3, "ascendant-gleam": 1 } }));
+    // phantasm-2-nefer baseDmgMultiplier is 0 (converted)
+    expect(r.perHit["phantasm-2-nefer"]?.baseDmgMultiplier).toBe(0);
+
+    // c6-converted is direct reaction with 1.15 elevation multiplier
+    // baseDmgMult = (1 + 0.08 * 3) * 1.4 = 1.736 (C2 is active)
+    // elevationMult = 1.15
+    // baseDmgMultiplier = 1.736 * 1.15 = 1.9964
+    expect(r.perHit["c6-converted"]?.baseDmgMultiplier).toBeCloseTo(1.9964);
+    expect(r.perHit["c6-extra"]?.baseDmgMultiplier).toBeCloseTo(1.9964);
+  });
+
+  it("Burst DMG stack bonus and split scaling", () => {
+    const r = resolveMechanics(nefer, ctxFor("nefer", { stats: { ...baseStats, atk: 2000 }, inputs: { "veil-stacks": 3 } }));
+    // burst-dmg-bonus at level 10 is 40.
+    // total burst bonus = 40 * 3 = 120.
+    expect(r.perHit["burst-1-hit"]?.bonusDmgPct).toBe(120);
+    // ATK part: lvl 10 burst-1-hit EM = 808.7. ATK part = 2000 * 404.35 / 100 = 8087.
+    expect(r.perHit["burst-1-hit"]?.flatDmgBonus).toBeCloseTo(8087);
+  });
+
+  it("talent seed row count", () => {
+    const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "nefer"));
+    expect(rows.length).toBe(231);
+  });
+});
+
+describe("flins mechanics", () => {
+  it("C4 ATK Buff", () => {
+    const r = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 4, baseAtk: 1000 }));
+    expect(r.statDeltas.atk).toBe(200);
+  });
+
+  it("A4 Whispering Flame EM Buff", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 0, stats: { ...baseStats, atk: 1500 } }));
+    expect(r1.statDeltas.em).toBe(120); // 1500 * 0.08 = 120
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 0, stats: { ...baseStats, atk: 3000 } }));
+    expect(r2.statDeltas.em).toBe(160); // capped at 160
+
+    const r3 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 4, baseAtk: 1000, stats: { ...baseStats, atk: 1800 } }));
+    // ATK is boosted by C4: 1800 + 200 = 2000. EM bonus is 2000 * 0.10 = 200.
+    expect(r3.statDeltas.em).toBe(200);
+  });
+
+  it("Old World Secrets base DMG bonus", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { stats: { ...baseStats, atk: 1000 } }));
+    expect(r1.lunarBaseBonusPct).toBe(7); // 7%
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { stats: { ...baseStats, atk: 3000 } }));
+    expect(r2.lunarBaseBonusPct).toBe(14); // capped at 14%
+  });
+
+  it("Symphony of Winter A1 Reaction Bonus", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 1 } }));
+    expect(r1.perHit["burst-middle"]?.directReaction?.reactionBonusPct).toBe(20);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 0 } }));
+    expect(r2.perHit["burst-middle"]?.directReaction?.reactionBonusPct).toBe(0);
+  });
+
+  it("C6 elevation multipliers", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 6, inputs: { "ascendant-gleam": 0 } }));
+    expect(r1.perHit["burst-middle"]?.baseDmgMultiplier).toBeCloseTo(1.35);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 6, inputs: { "ascendant-gleam": 1 } }));
+    expect(r2.perHit["burst-middle"]?.baseDmgMultiplier).toBeCloseTo(1.45);
+  });
+
+  it("C2 Extra DMG and RES Shred", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 1 }));
+    expect(r1.perHit["c2-extra"]?.baseDmgMultiplier).toBe(0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 2, inputs: { "ascendant-gleam": 1, "c2-res-shred": 1 } }));
+    expect(r2.perHit["c2-extra"]?.baseDmgMultiplier).not.toBe(0);
+    expect(r2.statDeltas.enemyRes).toBe(-25);
+  });
+
+  it("Manifest Flame form hit scaling", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "manifest-flame": 1 } }));
+    // Manifest Flame 1-Hit level 10 = 104.85%. Original 1-Hit level 10 = 88.41%.
+    // baseDmgMultiplier for 1-hit = 104.85 / 88.41 = 1.18595...
+    expect(r1.perHit["1-hit"]?.baseDmgMultiplier).toBeCloseTo(1.18595);
+    expect(r1.perHit["plunge"]?.baseDmgMultiplier).toBe(0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "manifest-flame": 0 } }));
+    expect(r2.perHit["1-hit"]?.baseDmgMultiplier).toBeUndefined();
+    expect(r2.perHit["plunge"]?.baseDmgMultiplier).toBeUndefined();
+  });
+
+  it("Thunderous Symphony burst availability", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 1 } }));
+    expect(r1.perHit["burst-initial"]?.baseDmgMultiplier).toBeUndefined();
+    expect(r1.perHit["symphony-dmg"]?.baseDmgMultiplier).toBeCloseTo(1.0);
+    expect(r1.perHit["symphony-add"]?.baseDmgMultiplier).toBeCloseTo(1.0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 0 } }));
+    expect(r2.perHit["symphony-add"]?.baseDmgMultiplier).toBe(0);
+  });
+
+  it("talent seed row count", () => {
+    const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "flins"));
+    expect(rows.length).toBe(268);
+  });
+});
+
