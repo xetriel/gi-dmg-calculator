@@ -116,10 +116,16 @@ export function validate(
     if (toNum(raw.stats[id]) === null) errors[id] = "Required";
   }
 
-  // Level range: 0 < level <= 100 (only when the field parses).
-  for (const lvl of LEVEL_FIELDS) {
-    const v = toNum(raw.stats[lvl]);
-    if (v !== null && !(v > 0 && v <= 100)) errors[lvl] = "Must be 0 < level ≤ 100";
+  // Character Level range: 0 < level <= 100 (only when the field parses).
+  const charLvl = toNum(raw.stats["levelChar"]);
+  if (charLvl !== null && !(charLvl > 0 && charLvl <= 100)) {
+    errors["levelChar"] = "Must be 0 < level ≤ 100";
+  }
+
+  // Enemy Level range: 0 < level <= 200 (only when the field parses).
+  const enemyLvl = toNum(raw.stats["levelEnemy"]);
+  if (enemyLvl !== null && !(enemyLvl > 0 && enemyLvl <= 200)) {
+    errors["levelEnemy"] = "Must be 0 < level ≤ 200";
   }
 
   // Every talent hit must resolve to a multiplier (from its talent level or manual input).
