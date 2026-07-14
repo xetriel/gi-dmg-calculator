@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk, hp } from "./hit-helpers";
+import { atk, atkCharged, atkPlunge, hp, hpCharged } from "./hit-helpers";
 
 // Mixed scaling: basic NA / regular Charged / Plunges scale on ATK; Equitable
 // Judgment, Skill, and Burst scale on Max HP.
@@ -13,9 +13,9 @@ export const neuvillette: CharacterConfig = {
   talents: [
     { type: "normal", name: "Normal Attack", hits: [
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit", "3-Hit"),
-      atk("charged", "Charged Attack"),
-      hp("equitable-judgment", "Charged Attack: Equitable Judgment (% Max HP)"),
-      atk("plunge", "Plunge"), atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
+      atkCharged("charged", "Charged Attack"),
+      hpCharged("equitable-judgment", "Charged Attack: Equitable Judgment (% Max HP)"),
+      atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill", hits: [
       hp("skill-dmg", "Skill DMG (% Max HP)"), hp("spiritbreath-thorn", "Spiritbreath Thorn"),

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef, ScalingSource } from "@/data/registry/types";
+import type { CharacterConfig, ReactionType, StatField, ConstellationEffect, MechanicDef, ScalingSource, TalentHit } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, type RawInputs } from "@/lib/engine/validation";
@@ -11,6 +11,7 @@ import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, typ
 import { saveBuild, deleteBuild } from "@/app/builds/actions";
 import { logExport, type ExportFormat, type ExportSummary } from "@/app/history/actions";
 import { encodeBuild } from "@/lib/engine/share";
+import { levelMultiplier } from "@/lib/engine/level-multiplier";
 
 // Excel-style stat panel wired to the pure damage engine.
 // Fill every field, pick a talent level (where data exists) or type a multiplier,
@@ -51,7 +52,8 @@ const selectCls = "border px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-black
 
 // Attributes shown in the "Effective Stats" panel — the values actually used to
 // compute damage after talent toggles + constellations (e.g. Hu Tao's Paramita ATK).
-const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "percent" }[] = [
+// hideIfZero: sub-rows only appear when the value is non-zero (keeps UI clean).
+const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "percent"; hideIfZero?: boolean }[] = [
   { key: "atk", label: "ATK", unit: "flat" },
   { key: "hp", label: "Max HP", unit: "flat" },
   { key: "def", label: "DEF", unit: "flat" },
@@ -59,6 +61,11 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "critRate", label: "CRIT Rate", unit: "percent" },
   { key: "critDmg", label: "CRIT DMG", unit: "percent" },
   { key: "dmgBonus", label: "DMG Bonus", unit: "percent" },
+  { key: "normalDmgBonus", label: "  └ Normal ATK", unit: "percent", hideIfZero: true },
+  { key: "chargedDmgBonus", label: "  └ Charged ATK", unit: "percent", hideIfZero: true },
+  { key: "plungeDmgBonus", label: "  └ Plunging ATK", unit: "percent", hideIfZero: true },
+  { key: "skillDmgBonus", label: "  └ Elemental Skill", unit: "percent", hideIfZero: true },
+  { key: "burstDmgBonus", label: "  └ Elemental Burst", unit: "percent", hideIfZero: true },
 ];
 
 // A saved build row (from the DB via getBuildsForCharacter, or from localStorage offline).
@@ -165,6 +172,19 @@ const initialStats = {
   "critRate": "70",
   "critDmg": "140",
   "dmgBonus": "46.6",
+  "normalDmgBonus": "0",
+  "chargedDmgBonus": "0",
+  "plungeDmgBonus": "0",
+  "skillDmgBonus": "0",
+  "burstDmgBonus": "0",
+  "pyroDmgBonus": "0",
+  "hydroDmgBonus": "0",
+  "dendroDmgBonus": "0",
+  "electroDmgBonus": "0",
+  "anemoDmgBonus": "0",
+  "cryoDmgBonus": "0",
+  "geoDmgBonus": "0",
+  "physicalDmgBonus": "0",
   "em": "0",
   "energyRecharge": "100",
   "healingBonus": "0",
@@ -855,6 +875,13 @@ export function CharacterCalculator({
     // Section: Effective Stats
     text += "\nEFFECTIVE COMPUTED STATS\n";
     EFFECTIVE_ROWS.forEach(er => {
+      if (er.hideIfZero) {
+        const hasValue = instances.some(inst => {
+          const eff = computedById.get(inst.id)?.effectiveStats?.[er.key] ?? 0;
+          return Math.abs(eff) > 0.05;
+        });
+        if (!hasValue) return;
+      }
       text += `  ${er.label}\t` + instances.map(inst => {
         const eff = computedById.get(inst.id)?.effectiveStats?.[er.key] ?? 0;
         return `${eff.toFixed(1)}${er.unit === "percent" ? "%" : ""}`;
@@ -960,6 +987,13 @@ export function CharacterCalculator({
 
     csvContent += `\n"EFFECTIVE COMPUTED STATS"\n`;
     EFFECTIVE_ROWS.forEach(er => {
+      if (er.hideIfZero) {
+        const hasValue = instances.some(inst => {
+          const eff = computedById.get(inst.id)?.effectiveStats?.[er.key] ?? 0;
+          return Math.abs(eff) > 0.05;
+        });
+        if (!hasValue) return;
+      }
       const row = [
         er.label,
         ...instances.map(inst => {
@@ -1274,9 +1308,30 @@ export function CharacterCalculator({
   };
 
   const setMechanic = (instId: string, mechId: string, v: string) => {
-    updateInstance(instId, inst => ({
-      mechanicInputs: { ...inst.mechanicInputs, [mechId]: v },
-    }));
+    updateInstance(instId, inst => {
+      let nextInputs = { ...inst.mechanicInputs, [mechId]: v };
+      if (config.id === "varka") {
+        const isPyro = (nextInputs["party-has-pyro"] ?? "1") === "1";
+        const isHydro = (nextInputs["party-has-hydro"] ?? "0") === "1";
+        const isElectro = (nextInputs["party-has-electro"] ?? "0") === "1";
+        const isCryo = (nextInputs["party-has-cryo"] ?? "0") === "1";
+        const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
+
+        if (numChecked >= 2) {
+          nextInputs["a1-resonance-tier2"] = "0";
+        }
+        if (numChecked >= 3) {
+          nextInputs["a1-resonance-tier1"] = "0";
+        }
+
+        if (mechId === "a1-resonance-tier1" && v === "1") {
+          nextInputs["a1-resonance-tier2"] = "0";
+        } else if (mechId === "a1-resonance-tier2" && v === "1") {
+          nextInputs["a1-resonance-tier1"] = "0";
+        }
+      }
+      return { mechanicInputs: nextInputs };
+    });
   };
 
   const setStat = (instId: string, statId: string, v: string) => {
@@ -1352,6 +1407,7 @@ export function CharacterCalculator({
       stats: s,
       baseAtk: toNum(inst.stats["atk.base"]) ?? 0,
       baseDef: toNum(inst.stats["def.base"]) ?? 0,
+      baseHp: toNum(inst.stats["hp.base"]) ?? 0,
       constellationLevel: inst.constellationLevel,
       talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
       scaling,
@@ -1382,10 +1438,13 @@ export function CharacterCalculator({
         }
         const mods: PerHitMods = mech.perHit[h.key] ?? {};
         const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
+        // Resolve hitCategory: use the hit's explicit category (charged/plunge) if set,
+        // otherwise infer from the talent group type (normal/skill/burst).
+        const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
         out[id] = computeHit(s, {
           multiplier: mult,
           scaling: h.scaling,
-          element: config.element,
+          element: mods.element ?? config.element,
           reaction: inst.reaction,
           reactionBonusPct: Number(inst.reactionBonus || 0),
           flatDmgBonus: flatBonus || undefined,
@@ -1393,6 +1452,9 @@ export function CharacterCalculator({
           critDmgBonusPct: mods.critDmgBonusPct,
           critRateBonusPct: mods.critRateBonusPct,
           bonusDmgPct: mods.bonusDmgPct,
+          hitCategory: hitCat,
+          charElement: config.element,
+          dmgBonusLabel: config.dmgBonusLabel,
           // Direct-reaction hits (Stellar/Lunar) always use the direct branch; the
           // resolver supplies the params (fallback: neutral coefficients).
           directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
@@ -1434,11 +1496,13 @@ export function CharacterCalculator({
           total += val;
           return val;
         } else {
-          let hitConfig: { key: string; scaling: ScalingSource; direct?: "stellar" | "lunar" } | null = null;
+          let hitConfig: TalentHit | null = null;
+          let groupType = "normal";
           for (let gi = 0; gi < config.talents.length; gi++) {
             for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
               if (hitId(gi, hi) === step.targetHitId) {
                 hitConfig = config.talents[gi].hits[hi];
+                groupType = config.talents[gi].type;
                 break;
               }
             }
@@ -1447,10 +1511,11 @@ export function CharacterCalculator({
           if (!hitConfig) return 0;
           const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
           const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
+          const hitCat = hitConfig.hitCategory ?? (groupType as "normal" | "skill" | "burst");
           const res = computeHit(s, {
             multiplier: resolved[step.targetHitId] ?? 0,
             scaling: hitConfig.scaling,
-            element: config.element,
+            element: mods.element ?? config.element,
             reaction: effectiveReaction,
             reactionBonusPct: Number(inst.reactionBonus || 0),
             flatDmgBonus: flatBonus || undefined,
@@ -1458,6 +1523,9 @@ export function CharacterCalculator({
             critDmgBonusPct: mods.critDmgBonusPct,
             critRateBonusPct: mods.critRateBonusPct,
             bonusDmgPct: mods.bonusDmgPct,
+            hitCategory: hitCat,
+            charElement: config.element,
+            dmgBonusLabel: config.dmgBonusLabel,
             directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
           });
           const val = res[typeKey] * qty;
@@ -1879,13 +1947,36 @@ export function CharacterCalculator({
                     <div className="space-y-2">
                       {config.mechanicDefs.map((m: MechanicDef) => {
                         const val = inst.mechanicInputs[m.id] ?? "0";
+                        let isDisabled = false;
+                        if (config.id === "varka") {
+                          const isPyro = (inst.mechanicInputs["party-has-pyro"] ?? "1") === "1";
+                          const isHydro = (inst.mechanicInputs["party-has-hydro"] ?? "0") === "1";
+                          const isElectro = (inst.mechanicInputs["party-has-electro"] ?? "0") === "1";
+                          const isCryo = (inst.mechanicInputs["party-has-cryo"] ?? "0") === "1";
+                          const numChecked = (isPyro ? 1 : 0) + (isHydro ? 1 : 0) + (isElectro ? 1 : 0) + (isCryo ? 1 : 0);
+
+                          const isElementField = ["party-has-pyro", "party-has-hydro", "party-has-electro", "party-has-cryo"].includes(m.id);
+                          const isChecked = val === "1";
+
+                          if (isElementField && !isChecked && numChecked >= 3) {
+                            isDisabled = true;
+                          }
+                          if (m.id === "a1-resonance-tier2" && numChecked >= 2) {
+                            isDisabled = true;
+                          }
+                          if (m.id === "a1-resonance-tier1" && numChecked >= 3) {
+                            isDisabled = true;
+                          }
+                        }
+
                         return (
                           <div key={m.id} className="flex flex-col gap-1" title={m.hint}>
                             <div className="flex items-center justify-between gap-3">
-                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</span>
+                              <span className={`text-xs font-medium ${isDisabled ? "text-gray-400 dark:text-gray-600" : "text-gray-700 dark:text-gray-300"}`}>{m.label}</span>
                               {m.control === "toggle" ? (
-                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                                <input type="checkbox" className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                   checked={Number(val) > 0}
+                                  disabled={isDisabled}
                                   onChange={e => setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")} />
                               ) : m.control === "stacks" ? (
                                 <div className="flex gap-1">
@@ -2026,32 +2117,218 @@ export function CharacterCalculator({
 
                 {/* Effective stats — the values actually used for damage after talent
                     toggles + constellations (Paramita ATK, Sanguine Rouge DMG Bonus, …). */}
-                {effectiveStats && inputStats ? (
-                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
-                    <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                      {EFFECTIVE_ROWS.map(row => {
-                        const eff = effectiveStats[row.key];
-                        const delta = eff - inputStats[row.key];
-                        const changed = Math.abs(delta) > 0.05;
-                        const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
-                        return (
-                          <div key={row.key} className="flex items-center justify-between gap-2">
-                            <span className="text-gray-500 dark:text-gray-400">{row.label}</span>
-                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                              {show(eff)}
-                              {changed ? (
-                                <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                  {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
-                                </span>
-                              ) : null}
+                {effectiveStats && inputStats ? (() => {
+                  if (!extras) return null;
+                  // 1. Calculate effective elemental/physical bonuses
+                  const isAllDmg = config.dmgBonusLabel.includes("All") || config.dmgBonusLabel.includes("DMG Bonus%");
+                  const getEffectiveBonus = (elem: string, specificBonus: number) => {
+                    let base = specificBonus;
+                    if (isAllDmg) {
+                      base += effectiveStats.dmgBonus;
+                    } else if (config.dmgBonusLabel.toLowerCase().includes(elem.toLowerCase())) {
+                      base += effectiveStats.dmgBonus;
+                    }
+                    return base;
+                  };
+
+                  const elemBonuses = [
+                    { label: "Pyro DMG Bonus%", val: getEffectiveBonus("Pyro", effectiveStats.pyroDmgBonus) },
+                    { label: "Hydro DMG Bonus%", val: getEffectiveBonus("Hydro", effectiveStats.hydroDmgBonus) },
+                    { label: "Dendro DMG Bonus%", val: getEffectiveBonus("Dendro", effectiveStats.dendroDmgBonus) },
+                    { label: "Electro DMG Bonus%", val: getEffectiveBonus("Electro", effectiveStats.electroDmgBonus) },
+                    { label: "Anemo DMG Bonus%", val: getEffectiveBonus("Anemo", effectiveStats.anemoDmgBonus) },
+                    { label: "Cryo DMG Bonus%", val: getEffectiveBonus("Cryo", effectiveStats.cryoDmgBonus) },
+                    { label: "Geo DMG Bonus%", val: getEffectiveBonus("Geo", effectiveStats.geoDmgBonus) },
+                    { label: "Physical DMG Bonus%", val: getEffectiveBonus("Physical", effectiveStats.physicalDmgBonus) },
+                  ];
+
+                  // 2. Transformative reaction calculations
+                  const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
+                  const emTransformative = (16 * effectiveStats.em) / (effectiveStats.em + 2000) * 100;
+                  const totalTransformativeBonus = emTransformative + panelBonus;
+
+                  // 3. Amplifying multipliers
+                  const showAmplifying = ["Pyro", "Hydro", "Cryo"].includes(config.element);
+                  const reactionBonusPct = Number(inst.reactionBonus || 0);
+                  const emAmplifyingBonus = (2.78 * effectiveStats.em) / (effectiveStats.em + 1400);
+                  const getAmpMult = (base: number) => base * (1 + emAmplifyingBonus + reactionBonusPct / 100);
+
+                  // 4. Catalyze (Aggravate)
+                  const showCatalyze = config.element === "Electro";
+                  const emCatalyzeBonus = (5 * effectiveStats.em) / (effectiveStats.em + 1200);
+                  const aggravateFlat = showCatalyze
+                    ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + reactionBonusPct / 100)
+                    : 0;
+
+                  // 5. Lunar and Stellar reactions
+                  const directLunarHits = config.talents.flatMap((g, gi) =>
+                    g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
+                  ).filter(x => x.hit.direct === "lunar");
+
+                  const directStellarHits = config.talents.flatMap((g, gi) =>
+                    g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
+                  ).filter(x => x.hit.direct === "stellar");
+
+                  return (
+                    <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
+                      <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
+                      
+                      {/* Core attributes */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                        {EFFECTIVE_ROWS.map(row => {
+                          const eff = effectiveStats[row.key];
+                          const delta = eff - inputStats[row.key];
+                          const changed = Math.abs(delta) > 0.05;
+                          if (row.hideIfZero && Math.abs(eff) < 0.05 && Math.abs(inputStats[row.key]) < 0.05) return null;
+                          const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
+                          return (
+                            <div key={row.key} className="flex items-center justify-between gap-2">
+                              <span className="text-gray-500 dark:text-gray-400">{row.label}</span>
+                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                {show(eff)}
+                                {changed ? (
+                                  <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                    {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Elemental & Physical DMG Bonuses */}
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80">
+                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Elemental & Physical DMG</h3>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                          {elemBonuses.map(b => (
+                            <div key={b.label} className="flex items-center justify-between gap-2">
+                              <span className="text-gray-500 dark:text-gray-400">{b.label}</span>
+                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">{b.val.toFixed(1)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Reaction DMG Bonuses */}
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
+                        <div className="grid grid-cols-1 gap-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 dark:text-gray-400">Transformative Reaction Bonus%</span>
+                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                              {totalTransformativeBonus.toFixed(1)}%
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">
+                                (EM: {emTransformative.toFixed(1)}% + Panel: {panelBonus.toFixed(1)}%)
+                              </span>
                             </span>
                           </div>
-                        );
-                      })}
+                          
+                          {showAmplifying && (
+                            <>
+                              {config.element === "Pyro" && (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">Vaporize Multiplier</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">Melt Multiplier</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
+                                  </div>
+                                </>
+                              )}
+                              {config.element === "Hydro" && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500 dark:text-gray-400">Vaporize Multiplier</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
+                                </div>
+                              )}
+                              {config.element === "Cryo" && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500 dark:text-gray-400">Melt Multiplier</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {showCatalyze && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-500 dark:text-gray-400">Aggravate Flat DMG Bonus</span>
+                              <span className="font-medium text-gray-800 dark:text-gray-200">+{fmt(aggravateFlat)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Transformative Reaction Damage */}
+                      {extras.transformative && extras.transformative.length > 0 && (
+                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transformative Reaction DMG</h3>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                            {extras.transformative.map(tr => (
+                              <div key={tr.type} className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">{TRANSFORMATIVE_LABEL[tr.type]}</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-200">{fmt(tr.dmg)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Lunar reaction damage details */}
+                      {((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
+                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Lunar Reaction DMG</h3>
+                          <div className="grid grid-cols-1 gap-y-0.5">
+                            {extras.lunar.map(l => (
+                              <div key={l.type} className="flex justify-between items-center">
+                                <span className="text-gray-500 dark:text-gray-400">{LUNAR_LABEL[l.type]} (Indirect)</span>
+                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                  {fmt(l.res.nonCrit)} / {fmt(l.res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(l.res.avg)})</span>
+                                </span>
+                              </div>
+                            ))}
+                            {results && directLunarHits.map(x => {
+                              const res = results[x.id];
+                              if (!res) return null;
+                              return (
+                                <div key={x.id} className="flex justify-between items-center">
+                                  <span className="text-gray-500 dark:text-gray-400">{x.hit.name} (Direct)</span>
+                                  <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                    {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Stellar reaction damage details */}
+                      {results && directStellarHits.length > 0 && (
+                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Stellar Reaction DMG</h3>
+                          <div className="grid grid-cols-1 gap-y-0.5">
+                            {directStellarHits.map(x => {
+                              const res = results[x.id];
+                              if (!res) return null;
+                              return (
+                                <div key={x.id} className="flex justify-between items-center">
+                                  <span className="text-gray-500 dark:text-gray-400">{x.hit.name} (Stellar-Conduct)</span>
+                                  <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                    {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ) : null}
+                  );
+                })() : null}
 
                 {extras?.notes.length ? (
                   <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
@@ -3083,7 +3360,7 @@ export function CharacterCalculator({
                                 {/* DMG Bonus */}
                                 {scanResult.dmgBonus && (
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
-                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">{config.dmgBonusLabel}</td>
+                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">All DMG Bonus%</td>
                                     <td className="py-2 px-3 text-gray-400 tabular-nums">{targetInst.stats.dmgBonus}%</td>
                                     <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                                       <div className="flex items-center justify-between">

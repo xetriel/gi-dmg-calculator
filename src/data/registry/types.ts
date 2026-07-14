@@ -13,7 +13,11 @@ export type TalentType = "normal" | "skill" | "burst";
 export type StatKey =
   | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge"
   | "dmgBonus" | "healingBonus" | "dmgReduction" | "enemyRes"
-  | "levelChar" | "levelEnemy" | "defReduction" | "defIgnore";
+  | "levelChar" | "levelEnemy" | "defReduction" | "defIgnore"
+  | "normalDmgBonus" | "chargedDmgBonus" | "plungeDmgBonus"
+  | "skillDmgBonus" | "burstDmgBonus"
+  | "pyroDmgBonus" | "hydroDmgBonus" | "dendroDmgBonus" | "electroDmgBonus"
+  | "anemoDmgBonus" | "cryoDmgBonus" | "geoDmgBonus" | "physicalDmgBonus";
 
 export interface StatField {
   key: StatKey;
@@ -34,7 +38,11 @@ export interface StatField {
 // (Lunar-Crystallize etc.). Both compute through the same direct-reaction formula
 // branch (no enemy-DEF multiplier, no DMG Bonus%, EM bonus 6·EM/(EM+2000));
 // the mechanics resolver supplies the per-hit coefficient/bonus params.
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal"; direct?: "stellar" | "lunar"; }
+// Hit categories for talent-type-specific DMG Bonus routing.
+// "normal"/"charged"/"plunge" are sub-types within the "normal" talent group;
+// "skill"/"burst" map directly to their talent group type.
+export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst";
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in

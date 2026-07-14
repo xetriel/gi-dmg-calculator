@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk } from "./hit-helpers";
+import { atk, atkCharged, atkPlunge } from "./hit-helpers";
 
 // Corrected from the Excel's leftover metadata (it carried Arlecchino's Pyro/Polearm/CRIT DMG).
 export const clorinde: CharacterConfig = {
@@ -14,8 +14,8 @@ export const clorinde: CharacterConfig = {
     { type: "normal", name: "Normal Attack — Oath of Hunting Shadows", hits: [
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit-x2", "3-Hit ×2 (each)"),
       atk("4-hit-x3", "4-Hit ×3 (each)"), atk("5-hit", "5-Hit"),
-      atk("charged", "Charged Attack (Stamina 20)"),
-      atk("plunge", "Plunge"), atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
+      atkCharged("charged", "Charged Attack (Stamina 20)"),
+      atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — Hunter's Vigil", hits: [
       atk("swift-hunt-1", "Swift Hunt"), atk("swift-hunt-2", "Swift Hunt (Bond ≥100%)"),

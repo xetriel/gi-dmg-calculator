@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
-import { atk } from "./hit-helpers";
+import { atk, atkCharged, atkPlunge } from "./hit-helpers";
 
 export const arlecchino: CharacterConfig = {
   id: "arlecchino", name: "Arlecchino", rarity: 5,
@@ -13,8 +13,8 @@ export const arlecchino: CharacterConfig = {
       atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit", "3-Hit"),
       atk("4-hit-a", "4-Hit A"), atk("4-hit-b", "4-Hit B"),
       atk("5-hit", "5-Hit"), atk("6-hit", "6-Hit"),
-      atk("charged", "Charged Attack"), atk("plunge", "Plunge"),
-      atk("low-plunge", "Low Plunge"), atk("high-plunge", "High Plunge"),
+      atkCharged("charged", "Charged Attack"), atkPlunge("plunge", "Plunge"),
+      atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — All Is Ash", hits: [
       atk("spike", "Spike"), atk("cleave", "Cleave"), atk("blood-debt-directive", "Blood-Debt Directive"),
