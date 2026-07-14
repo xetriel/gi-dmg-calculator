@@ -6,7 +6,7 @@ import { indirectLunarDamage, lunarEmBonus, LUNAR_BY_ELEMENT } from "./lunar";
 import { resolveMechanics, type MechanicsCtx } from "./mechanics";
 import { resolveHitMultipliers, hitId } from "./validation";
 import { flattenSeed, TALENT_SEED } from "../../data/talents";
-import { huTao, arlecchino, neuvillette, clorinde, sandrone, zibai, nefer } from "../../data/registry/characters";
+import { huTao, arlecchino, neuvillette, clorinde, sandrone, zibai, nefer, flins } from "../../data/registry/characters";
 import type { TalentScalingData } from "../talent-scaling";
 
 const LV90 = 1446.853458;
@@ -459,3 +459,83 @@ describe("nefer mechanics", () => {
     expect(rows.length).toBe(231);
   });
 });
+
+describe("flins mechanics", () => {
+  it("C4 ATK Buff", () => {
+    const r = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 4, baseAtk: 1000 }));
+    expect(r.statDeltas.atk).toBe(200);
+  });
+
+  it("A4 Whispering Flame EM Buff", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 0, stats: { ...baseStats, atk: 1500 } }));
+    expect(r1.statDeltas.em).toBe(120); // 1500 * 0.08 = 120
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 0, stats: { ...baseStats, atk: 3000 } }));
+    expect(r2.statDeltas.em).toBe(160); // capped at 160
+
+    const r3 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 4, baseAtk: 1000, stats: { ...baseStats, atk: 1800 } }));
+    // ATK is boosted by C4: 1800 + 200 = 2000. EM bonus is 2000 * 0.10 = 200.
+    expect(r3.statDeltas.em).toBe(200);
+  });
+
+  it("Old World Secrets base DMG bonus", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { stats: { ...baseStats, atk: 1000 } }));
+    expect(r1.lunarBaseBonusPct).toBe(7); // 7%
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { stats: { ...baseStats, atk: 3000 } }));
+    expect(r2.lunarBaseBonusPct).toBe(14); // capped at 14%
+  });
+
+  it("Symphony of Winter A1 Reaction Bonus", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 1 } }));
+    expect(r1.perHit["burst-middle"]?.directReaction?.reactionBonusPct).toBe(20);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 0 } }));
+    expect(r2.perHit["burst-middle"]?.directReaction?.reactionBonusPct).toBe(0);
+  });
+
+  it("C6 elevation multipliers", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 6, inputs: { "ascendant-gleam": 0 } }));
+    expect(r1.perHit["burst-middle"]?.baseDmgMultiplier).toBeCloseTo(1.35);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 6, inputs: { "ascendant-gleam": 1 } }));
+    expect(r2.perHit["burst-middle"]?.baseDmgMultiplier).toBeCloseTo(1.45);
+  });
+
+  it("C2 Extra DMG and RES Shred", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 1 }));
+    expect(r1.perHit["c2-extra"]?.baseDmgMultiplier).toBe(0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { constellationLevel: 2, inputs: { "ascendant-gleam": 1, "c2-res-shred": 1 } }));
+    expect(r2.perHit["c2-extra"]?.baseDmgMultiplier).not.toBe(0);
+    expect(r2.statDeltas.enemyRes).toBe(-25);
+  });
+
+  it("Manifest Flame form hit scaling", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "manifest-flame": 1 } }));
+    // Manifest Flame 1-Hit level 10 = 104.85%. Original 1-Hit level 10 = 88.41%.
+    // baseDmgMultiplier for 1-hit = 104.85 / 88.41 = 1.18595...
+    expect(r1.perHit["1-hit"]?.baseDmgMultiplier).toBeCloseTo(1.18595);
+    expect(r1.perHit["plunge"]?.baseDmgMultiplier).toBe(0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "manifest-flame": 0 } }));
+    expect(r2.perHit["1-hit"]?.baseDmgMultiplier).toBeUndefined();
+    expect(r2.perHit["plunge"]?.baseDmgMultiplier).toBeUndefined();
+  });
+
+  it("Thunderous Symphony burst availability", () => {
+    const r1 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 1 } }));
+    expect(r1.perHit["burst-initial"]?.baseDmgMultiplier).toBeUndefined();
+    expect(r1.perHit["symphony-dmg"]?.baseDmgMultiplier).toBeCloseTo(1.0);
+    expect(r1.perHit["symphony-add"]?.baseDmgMultiplier).toBeCloseTo(1.0);
+
+    const r2 = resolveMechanics(flins, ctxFor("flins", { inputs: { "ascendant-gleam": 0 } }));
+    expect(r2.perHit["symphony-add"]?.baseDmgMultiplier).toBe(0);
+  });
+
+  it("talent seed row count", () => {
+    const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === "flins"));
+    expect(rows.length).toBe(268);
+  });
+});
+
