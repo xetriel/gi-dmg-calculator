@@ -115,17 +115,18 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                   const res = results?.[id];
                   const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
                   const isHeal = h.kind === "heal";
+                  const isShield = h.kind === "shield";
                   return (
                     <tr
                       key={id}
                       className={`border-t border-gray-100 dark:border-zinc-800/60 ${
-                        isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : ""
+                        isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : isShield ? "bg-blue-50/40 dark:bg-blue-950/10" : ""
                       }`}
                     >
                       <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
                         {h.name}{" "}
                         <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                          ({isHeal ? "HEAL" : h.scaling.toUpperCase()})
+                          ({isHeal ? "HEAL" : isShield ? "SHIELD" : h.scaling.toUpperCase()})
                         </span>
                         {h.direct ? (
                           <span
@@ -152,14 +153,16 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                         )}
                       </td>
                       {results ? (
-                        isHeal ? (
+                        isHeal || isShield ? (
                           <td
                             colSpan={3}
-                            className="py-1.5 text-right tabular-nums font-semibold text-emerald-700 dark:text-emerald-400"
+                            className={`py-1.5 text-right tabular-nums font-semibold ${
+                              isHeal ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400"
+                            }`}
                           >
                             {res ? (
                               <div className="flex flex-col items-end">
-                                <span>+{fmt(res.nonCrit)} HP</span>
+                                <span>{isHeal ? `+${fmt(res.nonCrit)} HP` : `${fmt(res.nonCrit)} Shield`}</span>
                                 {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
                               </div>
                             ) : (
