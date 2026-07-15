@@ -281,12 +281,16 @@ export function CharacterCalculator({
       g.hits.forEach((h, hi) => {
         const id = hitId(gi, hi);
         const mult = resolved[id] ?? 0;
-        if (h.kind === "heal") {
-          const heal = (mult / 100) * scalingTotal(s, h.scaling) * (1 + healingBonus / 100);
-          out[id] = { nonCrit: heal, crit: heal, avg: heal };
+        const mods: PerHitMods = mech.perHit[h.key] ?? {};
+        if (h.kind === "heal" || h.kind === "shield") {
+          const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
+          let val = (mult / 100) * scalingTotal(s, h.scaling) + flatBonus;
+          if (h.kind === "heal") {
+            val *= (1 + healingBonus / 100);
+          }
+          out[id] = { nonCrit: val, crit: val, avg: val };
           return;
         }
-        const mods: PerHitMods = mech.perHit[h.key] ?? {};
         const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
         const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
         out[id] = computeHit(s, {
@@ -393,7 +397,7 @@ export function CharacterCalculator({
       if (c?.results) {
         config.talents.forEach((g, gi) =>
           g.hits.forEach((h, hi) => {
-            if (h.kind === "heal") return;
+            if (h.kind === "heal" || h.kind === "shield") return;
             const r = c.results![hitId(gi, hi)];
             if (r) headline = Math.max(headline, r.avg);
           }),
@@ -482,7 +486,7 @@ export function CharacterCalculator({
         text += `  ${g.name}: ${h.name}\t` + instances.map(inst => {
           const res = computedById.get(inst.id)?.results?.[key];
           if (!res) return "—";
-          return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : Math.round(res.avg);
+          return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : h.kind === "shield" ? `${Math.round(res.nonCrit)} Shield` : Math.round(res.avg);
         }).join("\t") + "\n";
       });
     });
@@ -601,7 +605,7 @@ export function CharacterCalculator({
           ...instances.map(inst => {
             const res = computedById.get(inst.id)?.results?.[key];
             if (!res) return "—";
-            return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : Math.round(res.avg);
+            return h.kind === "heal" ? `+${Math.round(res.nonCrit)} HP` : h.kind === "shield" ? `${Math.round(res.nonCrit)} Shield` : Math.round(res.avg);
           })
         ];
         csvContent += row.map(r => `"${r}"`).join(",") + "\n";

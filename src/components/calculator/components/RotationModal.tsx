@@ -503,7 +503,7 @@ export const RotationModal: React.FC<RotationModalProps> = ({
                   </h4>
                   <div className="grid grid-cols-1 gap-1.5">
                     {g.hits.map((h, hi) => {
-                      if (h.kind === "heal") return null;
+                      if (h.kind === "heal" || h.kind === "shield") return null;
                       const hitIdValue = hitId(gi, hi);
                       return (
                         <button
