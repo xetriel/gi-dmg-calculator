@@ -13,8 +13,9 @@ import { varkaSeed } from "./varka";
 import { linneaSeed } from "./linnea";
 import { ineffaSeed } from "./ineffa";
 import { skirkSeed } from "./skirk";
+import { varesaSeed } from "./varesa";
 
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed, varesaSeed];
 
 export interface TalentRow {
   characterId: string;

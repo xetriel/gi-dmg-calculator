@@ -21,6 +21,7 @@ import { resolveFlins } from "./characters/flins";
 import { resolveColumbina } from "./characters/columbina";
 import { resolveVarka } from "./characters/varka";
 import { resolveIneffa } from "./characters/ineffa";
+import { resolveVaresa } from "./characters/varesa";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
@@ -38,6 +39,7 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "columbina": resolveColumbina,
   "varka": resolveVarka,
   "ineffa": resolveIneffa,
+  "varesa": resolveVaresa,
 };
 
 export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
