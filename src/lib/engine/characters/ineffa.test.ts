@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { ineffa } from "../../data/registry/characters/ineffa";
-import { ineffaSeed } from "../../data/talents/ineffa";
-import { resolveMechanics, type MechanicsCtx } from "./mechanics";
-import type { DamageStats, TalentScalingData } from "./mechanics";
+import { resolveMechanics } from "../mechanics";
+import { ineffa } from "../../../data/registry/characters/ineffa";
+import { ineffaSeed } from "../../../data/talents/ineffa";
+import type { DamageStats, TalentScalingData } from "../damage";
+import type { MechanicsCtx } from "../mechanics-utils";
 
 // Helper to build scaling data mock for Ineffa
 const mockScaling: TalentScalingData = {};
