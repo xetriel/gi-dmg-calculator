@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { resolveMechanics } from "./mechanics";
-import { varka } from "../../data/registry/characters/varka";
-import { varkaSeed } from "../../data/talents/varka";
-import type { DamageStats } from "@/lib/engine/damage";
-import type { TalentScalingData } from "@/lib/talent-scaling";
-import type { MechanicsCtx } from "./mechanics";
+import { resolveMechanics } from "../mechanics";
+import { varka } from "../../../data/registry/characters/varka";
+import { varkaSeed } from "../../../data/talents/varka";
+import type { DamageStats } from "../damage";
+import type { TalentScalingData } from "../../talent-scaling";
+import type { MechanicsCtx } from "../mechanics-utils";
 
 const baseStats: DamageStats = {
   atk: 1000,
