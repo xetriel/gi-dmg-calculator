@@ -235,7 +235,7 @@ export function CharacterCalculator({
       reactionBonus: inst.reactionBonus,
       mechanicInputs: inst.mechanicInputs,
     };
-    const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel);
+    const resolved = resolveHitMultipliers(config, scaling, inst.levels, inst.hits, inst.constellationLevel, inst.mechanicInputs);
     const validation = validate(config, raw, resolved);
     if (!validation.ok) {
       return {
@@ -261,7 +261,7 @@ export function CharacterCalculator({
       baseDef: toNum(inst.stats["def.base"]) ?? 0,
       baseHp: toNum(inst.stats["hp.base"]) ?? 0,
       constellationLevel: inst.constellationLevel,
-      talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel),
+      talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs),
       scaling,
       inputs: mechInputs,
     });
