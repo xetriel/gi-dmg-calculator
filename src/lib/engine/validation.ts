@@ -66,8 +66,12 @@ export function effectiveTalentLevels(
   scaling: TalentScalingData,
   levels: Record<string, string>,
   constellationLevel: number = 0,
+  mechanicInputs?: Record<string, string>,
 ): Record<string, number> {
   const lvlBonuses = talentLevelBonuses(config.constellations, constellationLevel);
+  if (config.id === "skirk" && mechanicInputs && (mechanicInputs["mutual-weapons-mentorship"] ?? "1") === "1") {
+    lvlBonuses.skill = (lvlBonuses.skill ?? 0) + 1;
+  }
   const out: Record<string, number> = {};
   for (const g of config.talents) {
     const s = scaling[g.type];
@@ -88,9 +92,10 @@ export function resolveHitMultipliers(
   levels: Record<string, string>,
   manualHits: Record<string, string>,
   constellationLevel: number = 0,
+  mechanicInputs?: Record<string, string>,
 ): Record<string, number | null> {
   const out: Record<string, number | null> = {};
-  const effLevels = effectiveTalentLevels(config, scaling, levels, constellationLevel);
+  const effLevels = effectiveTalentLevels(config, scaling, levels, constellationLevel, mechanicInputs);
   config.talents.forEach((g, gi) => {
     const s = scaling[g.type];
     const cappedLvl = effLevels[g.type];
