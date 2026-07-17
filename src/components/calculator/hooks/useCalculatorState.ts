@@ -8,18 +8,18 @@ import { encodeBuild } from "@/lib/engine/share";
 import { toNum } from "@/lib/engine/validation";
 
 export const initialStats: Record<string, string> = {
-  "hp.base": "0",
-  "hp.percent": "0",
+  "hp.base": "1000",
+  "hp.percent": "50",
   "hp.flat": "15000",
-  "atk.base": "0",
-  "atk.percent": "0",
-  "atk.flat": "1500",
-  "def.base": "0",
-  "def.percent": "0",
-  "def.flat": "800",
+  "atk.base": "700",
+  "atk.percent": "40",
+  "atk.flat": "1200",
+  "def.base": "800",
+  "def.percent": "10",
+  "def.flat": "30",
   "critRate": "70",
   "critDmg": "140",
-  "dmgBonus": "46.6",
+  "dmgBonus": "0",
   "normalDmgBonus": "0",
   "chargedDmgBonus": "0",
   "plungeDmgBonus": "0",
@@ -42,6 +42,24 @@ export const initialStats: Record<string, string> = {
   "levelEnemy": "100",
   "defReduction": "0",
   "defIgnore": "0",
+};
+
+export const getInitialStats = (config: CharacterConfig): Record<string, string> => {
+  const stats = { ...initialStats };
+
+  // Check if character has Lunar or Stellar damage output
+  const isLunarOrStellar = config.talents.some(t =>
+    t.hits.some(h => h.direct === "lunar" || h.direct === "stellar")
+  );
+
+  if (!isLunarOrStellar) {
+    const elemKey = `${config.element.toLowerCase()}DmgBonus`;
+    if (elemKey in stats) {
+      stats[elemKey] = "46.6";
+    }
+  }
+
+  return stats;
 };
 
 export function hydrateFromBuild(
@@ -128,7 +146,7 @@ export function useCalculatorState({
     }
     return {
       id,
-      stats: { ...initialStats },
+      stats: getInitialStats(config),
       hits: {},
       levels: initLevels,
       mechanicInputs: initMechanics,
