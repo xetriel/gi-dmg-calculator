@@ -9,6 +9,7 @@ import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine/lunar";
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
+import { renderStyledText } from "./calculator/utils/colors";
 
 // Import custom hooks and components
 import { useRotation } from "./calculator/hooks/useRotation";
@@ -334,7 +335,7 @@ export function CharacterCalculator({
       const stepDmgs = r.steps.map((step: RotationStep) => {
         const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
         const rawType = step.hitType || "avg";
-        const typeKey = (rawType === "non-crit" ? "nonCrit" : rawType) as keyof HitResult;
+        const typeKey = (rawType === "non-crit" ? "nonCrit" : rawType) as "nonCrit" | "crit" | "avg";
         const qty = step.quantity ?? 1;
 
         if (effectiveReaction === inst.reaction) {
@@ -1042,8 +1043,8 @@ export function CharacterCalculator({
           {config.notes?.length ? (
             <div>
               <h3 className="font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 text-[10px]">Notes</h3>
-              <ul className="list-disc pl-4 text-gray-505 dark:text-gray-400 space-y-0.5">
-                {config.notes.map(n => <li key={n}>{n}</li>)}
+              <ul className="list-disc pl-4 text-gray-550 dark:text-gray-400 space-y-0.5">
+                {config.notes.map(n => <li key={n}>{renderStyledText(n)}</li>)}
               </ul>
             </div>
           ) : null}
@@ -1401,7 +1402,7 @@ export function CharacterCalculator({
                 {extras?.notes.length ? (
                   <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
                     {extras.notes.map(n => (
-                      <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {n}</p>
+                      <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {renderStyledText(n)}</p>
                     ))}
                   </div>
                 ) : null}
