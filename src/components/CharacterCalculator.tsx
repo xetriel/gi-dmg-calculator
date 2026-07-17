@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
@@ -231,8 +231,8 @@ export function CharacterCalculator({
     const startRect = cardEl.getBoundingClientRect();
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const relativeX = moveEvent.clientX - startRect.left;
-      const percentage = Math.max(25, Math.min(75, (relativeX / startRect.width) * 100));
+      const relativeY = moveEvent.clientY - startRect.top;
+      const percentage = Math.max(20, Math.min(80, (relativeY / startRect.height) * 100));
       setSplitRatio(percentage);
     };
 
@@ -243,6 +243,31 @@ export function CharacterCalculator({
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const upperRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const lowerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const handleUpperScroll = (cardId: string, event: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = event.currentTarget.scrollTop;
+    instances.forEach(inst => {
+      if (inst.id === cardId) return;
+      const target = upperRefs.current[inst.id];
+      if (target && target.scrollTop !== scrollTop) {
+        target.scrollTop = scrollTop;
+      }
+    });
+  };
+
+  const handleLowerScroll = (cardId: string, event: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = event.currentTarget.scrollTop;
+    instances.forEach(inst => {
+      if (inst.id === cardId) return;
+      const target = lowerRefs.current[inst.id];
+      if (target && target.scrollTop !== scrollTop) {
+        target.scrollTop = scrollTop;
+      }
+    });
   };
 
   const activeBenchmarkId = benchmarkId || instances[0]?.id;
@@ -1481,8 +1506,8 @@ export function CharacterCalculator({
               <div
                 key={inst.id}
                 id={`setup-card-${inst.id}`}
-                className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 ${
-                  isSplitView ? "w-[900px]" : "w-[480px]"
+                className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 w-[480px] ${
+                  isSplitView ? "h-[700px]" : ""
                 } ${baseBenchmarkInst
                   ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
                   : "border-gray-200 dark:border-zinc-800"
@@ -1525,9 +1550,14 @@ export function CharacterCalculator({
                 </div>
 
                 {isSplitView ? (
-                  <div className="flex items-start flex-1 min-h-0">
-                    {/* Left Column: Input Settings */}
-                    <div style={{ width: `${splitRatio}%` }} className="flex flex-col shrink-0 pr-4 space-y-4">
+                  <div className="flex flex-col flex-1 min-h-0">
+                    {/* Top Section: Input Settings */}
+                    <div
+                      ref={el => { upperRefs.current[inst.id] = el; }}
+                      onScroll={(e) => handleUpperScroll(inst.id, e)}
+                      style={{ height: `${splitRatio}%` }}
+                      className="overflow-y-auto shrink-0 pb-2 flex flex-col gap-4 no-scrollbar"
+                    >
                       {/* Constellation & Mechanics selectors */}
                       <MechanicsPanel
                         inst={inst}
@@ -1546,17 +1576,22 @@ export function CharacterCalculator({
                       />
                     </div>
 
-                    {/* Draggable Vertical Splitter Divider */}
+                    {/* Draggable Horizontal Splitter Divider */}
                     <div
                       onMouseDown={(e) => handleMouseDown(e, inst.id)}
-                      className="w-1.5 hover:w-2 bg-gray-200/80 hover:bg-amber-400 dark:bg-zinc-800/80 dark:hover:bg-amber-500 cursor-col-resize self-stretch mx-1 rounded-full transition-all flex items-center justify-center shrink-0 z-10 group"
-                      title="Drag to adjust column widths"
+                      className="h-1.5 hover:h-2 bg-gray-200/80 hover:bg-amber-400 dark:bg-zinc-800/80 dark:hover:bg-amber-500 cursor-row-resize my-1 rounded-full transition-all flex items-center justify-center shrink-0 z-10 group"
+                      title="Drag to adjust section heights"
                     >
-                      <div className="w-0.5 h-8 bg-gray-400 dark:bg-zinc-650 group-hover:bg-white rounded-full transition-colors"></div>
+                      <div className="w-8 h-0.5 bg-gray-400 dark:bg-zinc-650 group-hover:bg-white rounded-full transition-colors"></div>
                     </div>
 
-                    {/* Right Column: Output & Calculations */}
-                    <div style={{ width: `${100 - splitRatio - 1}%` }} className="flex flex-col shrink-0 pl-4 space-y-4">
+                    {/* Bottom Section: Output & Calculations */}
+                    <div
+                      ref={el => { lowerRefs.current[inst.id] = el; }}
+                      onScroll={(e) => handleLowerScroll(inst.id, e)}
+                      style={{ height: `${100 - splitRatio - 2}%` }}
+                      className="overflow-y-auto shrink-0 pt-2 flex flex-col gap-4 no-scrollbar"
+                    >
                       {renderOutputs()}
                     </div>
                   </div>
