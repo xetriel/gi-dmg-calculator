@@ -2,6 +2,7 @@ import React from "react";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { CalcInstance, ComputedInstance, SavedRotation, RotationStep } from "../types";
 import { hitId } from "@/lib/engine/validation";
+import { getHitColor, DMG_COLORS } from "../utils/colors";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
@@ -375,10 +376,37 @@ export const RotationModal: React.FC<RotationModalProps> = ({
                               const computed = computedById.get(inst.id);
                               const stepsDmg = computed?.rotationStepsDmg[activeRotationId];
                               const dmg = stepsDmg ? stepsDmg[stepIdx] : 0;
+                              
+                              let hitConfig = null;
+                              for (let gi = 0; gi < config.talents.length; gi++) {
+                                for (let hi = 0; hi < config.talents[gi].hits.length; hi++) {
+                                  if (hitId(gi, hi) === step.targetHitId) {
+                                    hitConfig = config.talents[gi].hits[hi];
+                                    break;
+                                  }
+                                }
+                                if (hitConfig) break;
+                              }
+
+                              const details = computed?.rotationStepsDetails?.[activeRotationId]?.[stepIdx];
+                              const cellColor = hitConfig?.kind === "heal"
+                                ? DMG_COLORS["Heal-related"]
+                                : hitConfig?.kind === "shield"
+                                ? DMG_COLORS["Shield-related"]
+                                : details
+                                ? getHitColor(
+                                    details.element ?? config.element,
+                                    details.reaction,
+                                    hitConfig?.direct,
+                                    hitConfig?.name
+                                  )
+                                : undefined;
+
                               return (
                                 <td
                                   key={inst.id}
                                   className="py-2.5 px-3 text-right tabular-nums font-semibold"
+                                  style={cellColor ? { color: cellColor } : undefined}
                                 >
                                   <div className="flex flex-col items-end">
                                     <span>{fmt(dmg)}</span>
@@ -423,7 +451,7 @@ export const RotationModal: React.FC<RotationModalProps> = ({
                     </tbody>
                     <tfoot>
                       <tr className="border-t border-gray-250 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-900/20">
-                        <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-250" colSpan={5}>
+                        <td className="py-3 px-3 font-semibold text-gray-800 dark:text-white" colSpan={5}>
                           Total Average DMG
                         </td>
                         {instances.map((inst) => {
@@ -435,7 +463,7 @@ export const RotationModal: React.FC<RotationModalProps> = ({
                           return (
                             <td
                               key={inst.id}
-                              className="py-3 px-3 text-right tabular-nums font-bold text-sm text-zinc-900 dark:text-zinc-100"
+                              className="py-3 px-3 text-right tabular-nums font-bold text-sm text-zinc-900 dark:text-white"
                             >
                               <div className="flex flex-col items-end">
                                 <span>{fmt(total)}</span>
