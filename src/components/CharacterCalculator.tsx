@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
@@ -206,6 +206,69 @@ export function CharacterCalculator({
   const [showSharedBanner, setShowSharedBanner] = useState(isSharedBuild);
   const [isRotationOpen, setIsRotationOpen] = useState(false);
   const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
+
+  const [isSplitView, setIsSplitView] = useState(false);
+  const [splitRatio, setSplitRatio] = useState(45);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsSplitView(localStorage.getItem("calculator-split-view") === "true");
+    }
+  }, []);
+
+  const toggleSplitView = () => {
+    const newState = !isSplitView;
+    setIsSplitView(newState);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("calculator-split-view", String(newState));
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, cardId: string) => {
+    e.preventDefault();
+    const cardEl = document.getElementById(`setup-card-${cardId}`);
+    if (!cardEl) return;
+    const startRect = cardEl.getBoundingClientRect();
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const relativeY = moveEvent.clientY - startRect.top;
+      const percentage = Math.max(20, Math.min(80, (relativeY / startRect.height) * 100));
+      setSplitRatio(percentage);
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const upperRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const lowerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const handleUpperScroll = (cardId: string, event: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = event.currentTarget.scrollTop;
+    instances.forEach(inst => {
+      if (inst.id === cardId) return;
+      const target = upperRefs.current[inst.id];
+      if (target && target.scrollTop !== scrollTop) {
+        target.scrollTop = scrollTop;
+      }
+    });
+  };
+
+  const handleLowerScroll = (cardId: string, event: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = event.currentTarget.scrollTop;
+    instances.forEach(inst => {
+      if (inst.id === cardId) return;
+      const target = lowerRefs.current[inst.id];
+      if (target && target.scrollTop !== scrollTop) {
+        target.scrollTop = scrollTop;
+      }
+    });
+  };
 
   const activeBenchmarkId = benchmarkId || instances[0]?.id;
 
@@ -813,12 +876,12 @@ export function CharacterCalculator({
           </div>
           <p
             onClick={() => setShowExtraInfo(!showExtraInfo)}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer select-none transition-colors mt-1"
-            title="Click to toggle special mechanics, panels, and notes"
+            className="text-[11px] text-gray-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors cursor-pointer select-none truncate max-w-sm mt-0.5 flex items-center gap-1"
           >
-            <span>
-              {config.rarity}★ · {config.element} · {config.weapon} · scales off {config.scalingSource.toUpperCase()} ·
-              ascension stat: {config.ascensionStat.label} (max {config.ascensionStat.maxValue}%)
+            <span>{config.weapon} · {config.element} · Rarity: {config.rarity}★</span>
+            <span className="text-gray-405">•</span>
+            <span className="underline">
+              {showExtraInfo ? "Hide info" : "Show character details"}
             </span>
             <span className={`inline-block transform transition-transform duration-200 text-gray-400 dark:text-zinc-500 font-mono text-xs ${showExtraInfo ? "rotate-180" : ""}`}>
               ▼
@@ -831,6 +894,17 @@ export function CharacterCalculator({
               {saveStatus}
             </span>
           )}
+          <button
+            onClick={toggleSplitView}
+            className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5 ${
+              isSplitView
+                ? "bg-amber-500/10 border-amber-500/40 text-amber-600 dark:text-amber-400 font-extrabold"
+                : "border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white"
+            }`}
+            title="Toggle split layout for setups"
+          >
+            <span>{isSplitView ? "🥞 Column View" : "📖 Split View"}</span>
+          </button>
           <button
             onClick={() => setIsRotationOpen(true)}
             className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
@@ -1092,18 +1166,354 @@ export function CharacterCalculator({
             const err = (id: string) => validation.errors[id];
             const inputCls = (id: string, w: string) =>
               `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""}`;
-
             const baseBenchmarkInst = activeBenchmarkId === inst.id;
+
+            const renderOutputs = () => {
+              if (!effectiveStats || !inputStats || !extras) return null;
+
+              const isAllDmg = config.dmgBonusLabel.includes("All") || config.dmgBonusLabel.includes("DMG Bonus%");
+              const getEffectiveBonus = (elem: string, specificBonus: number) => {
+                let base = specificBonus;
+                if (isAllDmg) {
+                  base += effectiveStats.dmgBonus;
+                } else if (config.dmgBonusLabel.toLowerCase().includes(elem.toLowerCase())) {
+                  base += effectiveStats.dmgBonus;
+                }
+                return base;
+              };
+
+              const elemBonuses = [
+                { label: "Pyro DMG Bonus%", val: getEffectiveBonus("Pyro", effectiveStats.pyroDmgBonus) },
+                { label: "Hydro DMG Bonus%", val: getEffectiveBonus("Hydro", effectiveStats.hydroDmgBonus) },
+                { label: "Dendro DMG Bonus%", val: getEffectiveBonus("Dendro", effectiveStats.dendroDmgBonus) },
+                { label: "Electro DMG Bonus%", val: getEffectiveBonus("Electro", effectiveStats.electroDmgBonus) },
+                { label: "Anemo DMG Bonus%", val: getEffectiveBonus("Anemo", effectiveStats.anemoDmgBonus) },
+                { label: "Cryo DMG Bonus%", val: getEffectiveBonus("Cryo", effectiveStats.cryoDmgBonus) },
+                { label: "Geo DMG Bonus%", val: getEffectiveBonus("Geo", effectiveStats.geoDmgBonus) },
+                { label: "Physical DMG Bonus%", val: getEffectiveBonus("Physical", effectiveStats.physicalDmgBonus) },
+              ];
+
+              const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
+              const emTransformative = (16 * effectiveStats.em) / (effectiveStats.em + 2000) * 100;
+              const totalTransformativeBonus = emTransformative + reactionBonusPct;
+
+              const showAmplifying = ["Pyro", "Hydro", "Cryo"].includes(config.element);
+              const instReactionBonusPct = Number(inst.reactionBonus || 0);
+              const emAmplifyingBonus = (2.78 * effectiveStats.em) / (effectiveStats.em + 1400);
+              const getAmpMult = (base: number) => base * (1 + emAmplifyingBonus + instReactionBonusPct / 100);
+
+              const showCatalyze = config.element === "Electro";
+              const emCatalyzeBonus = (5 * effectiveStats.em) / (effectiveStats.em + 1200);
+              const aggravateFlat = showCatalyze
+                ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
+                : 0;
+
+              const directLunarHits = config.talents.flatMap((g, gi) =>
+                g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
+              ).filter(x => x.hit.direct === "lunar");
+
+              const directStellarHits = config.talents.flatMap((g, gi) =>
+                g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
+              ).filter(x => x.hit.direct === "stellar");
+
+              return (
+                <div className="space-y-4">
+                  {/* Reaction selector */}
+                  <section className="mb-2">
+                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction</h2>
+                    {reactionOptions.length > 1 ? (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <select className={selectCls} value={inst.reaction}
+                          onChange={e => setReaction(inst.id, e.target.value as ReactionType)}>
+                          {reactionOptions.map(r => (
+                            <option key={r} value={r} className="bg-white dark:bg-zinc-800 text-black dark:text-white">
+                              {REACTION_LABEL[r]}
+                            </option>
+                          ))}
+                        </select>
+                        {inst.reaction !== "none" ? (
+                          <label className="flex items-center gap-2 text-sm select-none">
+                            Reaction Bonus %
+                            <input className={inputCls("reactionBonus", "w-24")} type="number"
+                              value={inst.reactionBonus}
+                              onChange={e => setReactionBonus(inst.id, e.target.value)} />
+                            {err("reactionBonus") ? <span className="text-xs text-red-655">{err("reactionBonus")}</span> : null}
+                          </label>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-405">No hit-attached reaction available for {config.element}.</p>
+                    )}
+                  </section>
+
+                  {instances.length > 1 && (
+                    <div className="mb-2 select-none">
+                      <button
+                        onClick={() => setBenchmarkId(inst.id)}
+                        disabled={baseBenchmarkInst}
+                        className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${baseBenchmarkInst
+                          ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-650 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
+                          : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                          }`}
+                      >
+                        Compare This
+                      </button>
+                    </div>
+                  )}
+
+                  {!validation.ok && (
+                    <span className="text-xs text-red-655 block mb-2 select-none">
+                      {Object.keys(validation.errors).length} field(s) need attention.
+                    </span>
+                  )}
+
+                  {/* Effective stats panel box */}
+                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
+                    <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs select-none">
+                      {EFFECTIVE_ROWS.map(row => {
+                        const eff = effectiveStats[row.key];
+                        const delta = eff - inputStats[row.key];
+                        const changed = Math.abs(delta) > 0.05;
+                        if (row.hideIfZero && Math.abs(eff) < 0.05 && Math.abs(inputStats[row.key]) < 0.05) return null;
+                        const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
+                        return (
+                          <div key={row.key} className="flex items-center justify-between gap-2">
+                            <span className="text-gray-550 dark:text-gray-400">{row.label}</span>
+                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                              {show(eff)}
+                              {changed ? (
+                                <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-450">
+                                  {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
+                                </span>
+                              ) : null}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80">
+                      <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Elemental & Physical DMG</h3>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                        {elemBonuses.map(b => (
+                          <div key={b.label} className="flex items-center justify-between gap-2">
+                            <span className="text-gray-555 dark:text-gray-400">{b.label}</span>
+                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">{b.val.toFixed(1)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                      <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
+                      <div className="grid grid-cols-1 gap-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-gray-555 dark:text-gray-400">Transformative Reaction Bonus%</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">
+                            {totalTransformativeBonus.toFixed(1)}%
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">
+                              (EM: {emTransformative.toFixed(1)}% + Panel: {reactionBonusPct.toFixed(1)}%)
+                            </span>
+                          </span>
+                        </div>
+                        
+                        {showAmplifying && (
+                          <>
+                            {config.element === "Pyro" && (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-555 dark:text-gray-400">Vaporize Multiplier</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-555 dark:text-gray-400">Melt Multiplier</span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
+                                </div>
+                              </>
+                            )}
+                            {config.element === "Hydro" && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-555 dark:text-gray-400">Vaporize Multiplier</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
+                              </div>
+                            )}
+                            {config.element === "Cryo" && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-555 dark:text-gray-400">Melt Multiplier</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {showCatalyze && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-555 dark:text-gray-400">Aggravate Flat DMG Bonus</span>
+                            <span className="font-medium text-gray-800 dark:text-gray-200">+{fmt(aggravateFlat)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {extras && extras.transformative && extras.transformative.length > 0 && (
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transformative Reaction DMG</h3>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                          {extras.transformative.map(tr => (
+                            <div key={tr.type} className="flex justify-between">
+                              <span className="text-gray-555 dark:text-gray-400">{TRANSFORMATIVE_LABEL[tr.type]}</span>
+                              <span className="font-medium text-gray-800 dark:text-gray-200">{fmt(tr.dmg)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {extras && ((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Lunar Reaction DMG</h3>
+                        <div className="grid grid-cols-1 gap-y-0.5">
+                          {extras.lunar.map(l => (
+                            <div key={l.type} className="flex justify-between items-center">
+                              <span className="text-gray-550 dark:text-gray-400">{LUNAR_LABEL[l.type]} (Indirect)</span>
+                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                {fmt(l.res.nonCrit)} / {fmt(l.res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(l.res.avg)})</span>
+                              </span>
+                            </div>
+                          ))}
+                          {results && directLunarHits.map(x => {
+                            const res = results[x.id];
+                            if (!res) return null;
+                            return (
+                              <div key={x.id} className="flex justify-between items-center">
+                                <span className="text-gray-555 dark:text-gray-400">{x.hit.name} (Direct)</span>
+                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                  {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {results && directStellarHits.length > 0 && (
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
+                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Stellar Reaction DMG</h3>
+                        <div className="grid grid-cols-1 gap-y-0.5">
+                          {directStellarHits.map(x => {
+                            const res = results[x.id];
+                            if (!res) return null;
+                            return (
+                              <div key={x.id} className="flex justify-between items-center">
+                                <span className="text-gray-555 dark:text-gray-400">{x.hit.name} (Stellar-Conduct)</span>
+                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+                                  {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {extras.notes.length ? (
+                    <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5 select-none">
+                      {extras.notes.map(n => (
+                        <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {renderStyledText(n)}</p>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {validation.general.map(g => (
+                    <p key={g} className="mb-2 text-xs text-amber-600 select-none">{g}</p>
+                  ))}
+
+                  {/* Talent table list rendering */}
+                  <DamageTable
+                    inst={inst}
+                    config={config}
+                    scaling={scaling}
+                    results={results}
+                    benchmarkResults={benchmarkResults}
+                    showPct={instances.length > 1}
+                    validation={validation}
+                    setLevel={setLevel}
+                    setHit={setHit}
+                  />
+
+                  {/* Transformative Reaction lists */}
+                  <TransformativePanel
+                    inst={inst}
+                    config={config}
+                    extras={extras}
+                    validation={validation}
+                    updateInstance={updateInstance}
+                  />
+
+                  {/* Rotation Average summaries */}
+                  <div className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3 select-none">
+                    <h3 className="font-semibold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Combo Rotations DMG</h3>
+                    <div className="space-y-1.5">
+                      {rotationState.rotations.map(r => {
+                        if (r.steps.length === 0) return null;
+                        const isSelected = r.id === rotationState.activeRotationId;
+                        const total = rotationTotals[r.id] ?? 0;
+                        const benchmarkTotal = benchmarkResults ? (computedById.get(activeBenchmarkId)?.rotationTotals?.[r.id] ?? 0) : 0;
+                        return (
+                          <div
+                            key={r.id}
+                            className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${
+                              isSelected
+                                ? "bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-400 font-extrabold"
+                                : "bg-transparent border-transparent text-gray-500 dark:text-zinc-350"
+                            }`}
+                          >
+                            <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
+                            <div className="flex flex-col items-end leading-none">
+                              <span className="tabular-nums font-mono mb-0.5">{fmt(total)}</span>
+                              {(() => {
+                                if (instances.length <= 1 || benchmarkTotal === 0) return null;
+                                const pct = (total / benchmarkTotal) * 100;
+                                let colorClass = "text-gray-400 dark:text-zinc-500";
+                                if (pct < 99.95) {
+                                  colorClass = "text-red-500 dark:text-red-400 font-semibold";
+                                } else if (pct > 100.05) {
+                                  colorClass = "text-green-500 dark:text-green-400 font-semibold";
+                                }
+                                return (
+                                  <span className={`text-[9px] ${colorClass}`}>
+                                    {pct.toFixed(1)}%
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {rotationState.rotations.every(r => r.steps.length === 0) && (
+                        <p className="text-[10px] text-gray-405 dark:text-zinc-500 italic">No rotations built yet. Open the Rotation Builder above to get started.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            };
 
             return (
               <div
                 key={inst.id}
-                className={`w-[420px] shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 ${baseBenchmarkInst
+                id={`setup-card-${inst.id}`}
+                className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 w-[480px] ${
+                  isSplitView ? "h-[700px]" : ""
+                } ${baseBenchmarkInst
                   ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
                   : "border-gray-200 dark:border-zinc-800"
-                  }`}
+                }`}
               >
-                <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4 shrink-0">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm">Setup {index + 1}</span>
@@ -1123,7 +1533,7 @@ export function CharacterCalculator({
                         calcState.setScanResult(null);
                         calcState.setScanError(null);
                       }}
-                      className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-250 font-semibold cursor-pointer flex items-center gap-0.5"
+                      className="text-xs text-zinc-555 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-250 font-semibold cursor-pointer flex items-center gap-0.5"
                       title="Scan stats from screenshot"
                     >
                       <span>📷 Scan</span>
@@ -1139,355 +1549,74 @@ export function CharacterCalculator({
                   </div>
                 </div>
 
-                {/* Constellation & Mechanics selectors */}
-                <MechanicsPanel
-                  inst={inst}
-                  config={config}
-                  validation={validation}
-                  updateInstance={updateInstance}
-                  setMechanic={setMechanic}
-                />
-
-                {/* Core attribute tables */}
-                <StatsGrid
-                  inst={inst}
-                  config={config}
-                  validation={validation}
-                  setStat={setStat}
-                />
-
-                <section className="mb-4">
-                  <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction</h2>
-                  {reactionOptions.length > 1 ? (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <select className={selectCls} value={inst.reaction}
-                        onChange={e => setReaction(inst.id, e.target.value as ReactionType)}>
-                        {reactionOptions.map(r => (
-                          <option key={r} value={r} className="bg-white dark:bg-zinc-800 text-black dark:text-white">
-                            {REACTION_LABEL[r]}
-                          </option>
-                        ))}
-                      </select>
-                      {inst.reaction !== "none" ? (
-                        <label className="flex items-center gap-2 text-sm">
-                          Reaction Bonus %
-                          <input className={inputCls("reactionBonus", "w-24")} type="number"
-                            value={inst.reactionBonus}
-                            onChange={e => setReactionBonus(inst.id, e.target.value)} />
-                          {err("reactionBonus") ? <span className="text-xs text-red-600">{err("reactionBonus")}</span> : null}
-                        </label>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-400">No hit-attached reaction available for {config.element}.</p>
-                  )}
-                </section>
-
-                {instances.length > 1 && (
-                  <div className="mb-4">
-                    <button
-                      onClick={() => setBenchmarkId(inst.id)}
-                      disabled={baseBenchmarkInst}
-                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all shadow-sm ${baseBenchmarkInst
-                        ? "bg-gray-100 text-gray-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-850"
-                        : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
-                        }`}
+                {isSplitView ? (
+                  <div className="flex flex-col flex-1 min-h-0">
+                    {/* Top Section: Input Settings */}
+                    <div
+                      ref={el => { upperRefs.current[inst.id] = el; }}
+                      onScroll={(e) => handleUpperScroll(inst.id, e)}
+                      style={{ height: `${splitRatio}%` }}
+                      className="overflow-y-auto shrink-0 pb-2 flex flex-col gap-4 no-scrollbar"
                     >
-                      Compare This
-                    </button>
-                  </div>
-                )}
+                      {/* Constellation & Mechanics selectors */}
+                      <MechanicsPanel
+                        inst={inst}
+                        config={config}
+                        validation={validation}
+                        updateInstance={updateInstance}
+                        setMechanic={setMechanic}
+                      />
 
-                {!validation.ok && (
-                  <span className="text-xs text-red-600 block mb-3">
-                    {Object.keys(validation.errors).length} field(s) need attention.
-                  </span>
-                )}
-
-                {/* Effective stats panel box */}
-                {effectiveStats && inputStats ? (() => {
-                  if (!extras) return null;
-                  const isAllDmg = config.dmgBonusLabel.includes("All") || config.dmgBonusLabel.includes("DMG Bonus%");
-                  const getEffectiveBonus = (elem: string, specificBonus: number) => {
-                    let base = specificBonus;
-                    if (isAllDmg) {
-                      base += effectiveStats.dmgBonus;
-                    } else if (config.dmgBonusLabel.toLowerCase().includes(elem.toLowerCase())) {
-                      base += effectiveStats.dmgBonus;
-                    }
-                    return base;
-                  };
-
-                  const elemBonuses = [
-                    { label: "Pyro DMG Bonus%", val: getEffectiveBonus("Pyro", effectiveStats.pyroDmgBonus) },
-                    { label: "Hydro DMG Bonus%", val: getEffectiveBonus("Hydro", effectiveStats.hydroDmgBonus) },
-                    { label: "Dendro DMG Bonus%", val: getEffectiveBonus("Dendro", effectiveStats.dendroDmgBonus) },
-                    { label: "Electro DMG Bonus%", val: getEffectiveBonus("Electro", effectiveStats.electroDmgBonus) },
-                    { label: "Anemo DMG Bonus%", val: getEffectiveBonus("Anemo", effectiveStats.anemoDmgBonus) },
-                    { label: "Cryo DMG Bonus%", val: getEffectiveBonus("Cryo", effectiveStats.cryoDmgBonus) },
-                    { label: "Geo DMG Bonus%", val: getEffectiveBonus("Geo", effectiveStats.geoDmgBonus) },
-                    { label: "Physical DMG Bonus%", val: getEffectiveBonus("Physical", effectiveStats.physicalDmgBonus) },
-                  ];
-
-                  const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
-                  const emTransformative = (16 * effectiveStats.em) / (effectiveStats.em + 2000) * 100;
-                  const totalTransformativeBonus = emTransformative + reactionBonusPct;
-
-                  const showAmplifying = ["Pyro", "Hydro", "Cryo"].includes(config.element);
-                  const instReactionBonusPct = Number(inst.reactionBonus || 0);
-                  const emAmplifyingBonus = (2.78 * effectiveStats.em) / (effectiveStats.em + 1400);
-                  const getAmpMult = (base: number) => base * (1 + emAmplifyingBonus + instReactionBonusPct / 100);
-
-                  const showCatalyze = config.element === "Electro";
-                  const emCatalyzeBonus = (5 * effectiveStats.em) / (effectiveStats.em + 1200);
-                  const aggravateFlat = showCatalyze
-                    ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
-                    : 0;
-
-                  const directLunarHits = config.talents.flatMap((g, gi) =>
-                    g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
-                  ).filter(x => x.hit.direct === "lunar");
-
-                  const directStellarHits = config.talents.flatMap((g, gi) =>
-                    g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
-                  ).filter(x => x.hit.direct === "stellar");
-
-                  return (
-                    <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
-                      <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
-                      
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                        {EFFECTIVE_ROWS.map(row => {
-                          const eff = effectiveStats[row.key];
-                          const delta = eff - inputStats[row.key];
-                          const changed = Math.abs(delta) > 0.05;
-                          if (row.hideIfZero && Math.abs(eff) < 0.05 && Math.abs(inputStats[row.key]) < 0.05) return null;
-                          const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
-                          return (
-                            <div key={row.key} className="flex items-center justify-between gap-2">
-                              <span className="text-gray-500 dark:text-gray-400">{row.label}</span>
-                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                {show(eff)}
-                                {changed ? (
-                                  <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                    {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
-                                  </span>
-                                ) : null}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80">
-                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Elemental & Physical DMG</h3>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                          {elemBonuses.map(b => (
-                            <div key={b.label} className="flex items-center justify-between gap-2">
-                              <span className="text-gray-500 dark:text-gray-400">{b.label}</span>
-                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">{b.val.toFixed(1)}%</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
-                        <div className="grid grid-cols-1 gap-y-0.5">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Transformative Reaction Bonus%</span>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">
-                              {totalTransformativeBonus.toFixed(1)}%
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">
-                                (EM: {emTransformative.toFixed(1)}% + Panel: {reactionBonusPct.toFixed(1)}%)
-                              </span>
-                            </span>
-                          </div>
-                          
-                          {showAmplifying && (
-                            <>
-                              {config.element === "Pyro" && (
-                                <>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500 dark:text-gray-400">Vaporize Multiplier</span>
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-500 dark:text-gray-400">Melt Multiplier</span>
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
-                                  </div>
-                                </>
-                              )}
-                              {config.element === "Hydro" && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500 dark:text-gray-400">Vaporize Multiplier</span>
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
-                                </div>
-                              )}
-                              {config.element === "Cryo" && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500 dark:text-gray-400">Melt Multiplier</span>
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
-                                </div>
-                              )}
-                            </>
-                          )}
-
-                          {showCatalyze && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400">Aggravate Flat DMG Bonus</span>
-                              <span className="font-medium text-gray-800 dark:text-gray-200">+{fmt(aggravateFlat)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {extras && extras.transformative && extras.transformative.length > 0 && (
-                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transformative Reaction DMG</h3>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                            {extras.transformative.map(tr => (
-                              <div key={tr.type} className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">{TRANSFORMATIVE_LABEL[tr.type]}</span>
-                                <span className="font-medium text-gray-800 dark:text-gray-200">{fmt(tr.dmg)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {extras && ((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
-                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Lunar Reaction DMG</h3>
-                          <div className="grid grid-cols-1 gap-y-0.5">
-                            {extras.lunar.map(l => (
-                              <div key={l.type} className="flex justify-between items-center">
-                                <span className="text-gray-500 dark:text-gray-400">{LUNAR_LABEL[l.type]} (Indirect)</span>
-                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                  {fmt(l.res.nonCrit)} / {fmt(l.res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(l.res.avg)})</span>
-                                </span>
-                              </div>
-                            ))}
-                            {results && directLunarHits.map(x => {
-                              const res = results[x.id];
-                              if (!res) return null;
-                              return (
-                                <div key={x.id} className="flex justify-between items-center">
-                                  <span className="text-gray-500 dark:text-gray-400">{x.hit.name} (Direct)</span>
-                                  <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                    {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {results && directStellarHits.length > 0 && (
-                        <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Stellar Reaction DMG</h3>
-                          <div className="grid grid-cols-1 gap-y-0.5">
-                            {directStellarHits.map(x => {
-                              const res = results[x.id];
-                              if (!res) return null;
-                              return (
-                                <div key={x.id} className="flex justify-between items-center">
-                                  <span className="text-gray-500 dark:text-gray-400">{x.hit.name} (Stellar-Conduct)</span>
-                                  <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                    {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                      {/* Core attribute tables */}
+                      <StatsGrid
+                        inst={inst}
+                        config={config}
+                        validation={validation}
+                        setStat={setStat}
+                      />
                     </div>
-                  );
-                })() : null}
 
-                {extras?.notes.length ? (
-                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
-                    {extras.notes.map(n => (
-                      <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {renderStyledText(n)}</p>
-                    ))}
+                    {/* Draggable Horizontal Splitter Divider */}
+                    <div
+                      onMouseDown={(e) => handleMouseDown(e, inst.id)}
+                      className="h-1.5 hover:h-2 bg-gray-200/80 hover:bg-amber-400 dark:bg-zinc-800/80 dark:hover:bg-amber-500 cursor-row-resize my-1 rounded-full transition-all flex items-center justify-center shrink-0 z-10 group"
+                      title="Drag to adjust section heights"
+                    >
+                      <div className="w-8 h-0.5 bg-gray-400 dark:bg-zinc-650 group-hover:bg-white rounded-full transition-colors"></div>
+                    </div>
+
+                    {/* Bottom Section: Output & Calculations */}
+                    <div
+                      ref={el => { lowerRefs.current[inst.id] = el; }}
+                      onScroll={(e) => handleLowerScroll(inst.id, e)}
+                      style={{ height: `${100 - splitRatio - 2}%` }}
+                      className="overflow-y-auto shrink-0 pt-2 flex flex-col gap-4 no-scrollbar"
+                    >
+                      {renderOutputs()}
+                    </div>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="flex flex-col gap-4 flex-1">
+                    {/* Constellation & Mechanics selectors */}
+                    <MechanicsPanel
+                      inst={inst}
+                      config={config}
+                      validation={validation}
+                      updateInstance={updateInstance}
+                      setMechanic={setMechanic}
+                    />
 
-                {validation.general.map(g => (
-                  <p key={g} className="mb-2 text-xs text-amber-600">{g}</p>
-                ))}
+                    {/* Core attribute tables */}
+                    <StatsGrid
+                      inst={inst}
+                      config={config}
+                      validation={validation}
+                      setStat={setStat}
+                    />
 
-                {/* Talent table list rendering */}
-                <DamageTable
-                  inst={inst}
-                  config={config}
-                  scaling={scaling}
-                  results={results}
-                  benchmarkResults={benchmarkResults}
-                  showPct={instances.length > 1}
-                  validation={validation}
-                  setLevel={setLevel}
-                  setHit={setHit}
-                />
-
-                {/* Transformative Reaction lists */}
-                <TransformativePanel
-                  inst={inst}
-                  config={config}
-                  extras={extras}
-                  validation={validation}
-                  updateInstance={updateInstance}
-                />
-
-                {/* Rotation Average summaries */}
-                <div className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3 select-none">
-                  <h3 className="font-semibold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Combo Rotations DMG</h3>
-                  <div className="space-y-1.5">
-                    {rotationState.rotations.map(r => {
-                      if (r.steps.length === 0) return null;
-                      const isSelected = r.id === rotationState.activeRotationId;
-                      return (
-                        <div
-                          key={r.id}
-                          className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${isSelected
-                            ? "bg-zinc-100 dark:bg-zinc-800/85 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-extrabold"
-                            : "bg-transparent border-transparent text-gray-500 dark:text-zinc-300"
-                            }`}
-                        >
-                          <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
-                          <div className="flex flex-col items-end leading-none">
-                            <span className="tabular-nums font-mono mb-0.5">{fmt(rotationTotals[r.id] ?? 0)}</span>
-                            {(() => {
-                              if (instances.length <= 1) return null;
-                              const currentVal = rotationTotals[r.id] ?? 0;
-                              const benchmarkVal = computedById.get(activeBenchmarkId)?.rotationTotals[r.id] ?? 0;
-                              if (benchmarkVal === 0) return null;
-                              const pct = (currentVal / benchmarkVal) * 100;
-                              
-                              let colorClass = "text-gray-400 dark:text-zinc-500";
-                              if (pct < 99.95) {
-                                colorClass = "text-red-500 dark:text-red-400 font-semibold";
-                              } else if (pct > 100.05) {
-                                colorClass = "text-green-500 dark:text-green-400 font-semibold";
-                              }
-                              
-                              return (
-                                <span className={`text-[9px] ${colorClass}`}>
-                                  {pct.toFixed(1)}%
-                                </span>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {rotationState.rotations.every(r => r.steps.length === 0) && (
-                      <p className="text-[10px] text-gray-400 dark:text-zinc-500 italic">No rotations built yet. Open the Rotation Builder above to get started.</p>
-                    )}
+                    {renderOutputs()}
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

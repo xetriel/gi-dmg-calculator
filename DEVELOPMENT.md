@@ -6,9 +6,10 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 17, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 18, 2026).
 
 ### New Character Calculators
+- **Gaming (July 18, 2026)**: Added Gaming, a 4-star Pyro Claymore character specializing in plunging attacks via his Elemental Skill *Bestial Ascent*, featuring A4 plunge DMG bonus and C6 crit scaling.
 - **Varesa (July 17, 2026)**: Added Varesa, a 5-star Electro Catalyst character from Natlan specializing in Plunging Attacks and Nightsoul-related mechanics.
 - **Skirk (July 17, 2026)**: Added Skirk, a playable 5-star Cryo Sword character utilizing a unique "Serpent's Subtlety" resource system instead of traditional Elemental Energy.
 - **Linnea (July 15, 2026)**: Added Linnea character definition, stat scaling data, and custom mechanics.
@@ -20,8 +21,11 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Vertical/Horizontal Split View Layout (July 18, 2026)**: Implemented split-screen mechanics for character setups with vertical splitting (top part for inputs, bottom part for damage outputs), featuring mouse drag resizing via a draggable horizontal divider.
+- **Collapsible Constellation Dropdown Permanence (July 18, 2026)**: Modified the constellation dropdown to always display all 6 constellations (C1-C6) with dynamic dimming (`opacity-40` with transitions) on locked/inactive constellations.
+- **Dynamic Initial Stats Application (July 18, 2026)**: Improved the character stats initializer to automatically set the primary element DMG bonus to `46.6%` for elemental characters while leaving it at `0%` for direct reaction Lunar/Stellar characters. Also upgraded default layout stats ratios (HP, ATK, DEF, CRIT).
+- **WebP Element and Weapon Assets (July 17, 2026)**: Replaced vector SVG paths in `icons.tsx` with optimized WebP images (`Element_[Name].webp` and `Weapon-class-[Name]-icon.webp`) combined with dark-mode invert filters.
 - **Character Filtering & Sidebar Collapse (July 17, 2026)**: Added search, element, weapon, and quality filters on the character selection dashboard and sidebar.
-  - Created custom high-quality vector SVGs for elements and weapons in a new icons module.
   - Collapsible panels allow dynamic narrowing of character lists on the sidebar and dashboard.
 - **Output Damage Type Coloring (July 17, 2026)**: Implemented dynamic text and output coloring in the calculator UI.
   - Created a keyword highlighting text renderer for character and calculation notes.
