@@ -6,10 +6,13 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 15, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 17, 2026).
 
 ### New Character Calculators
+- **Varesa (July 17, 2026)**: Added Varesa, a 5-star Electro Catalyst character from Natlan specializing in Plunging Attacks and Nightsoul-related mechanics.
+- **Skirk (July 17, 2026)**: Added Skirk, a playable 5-star Cryo Sword character utilizing a unique "Serpent's Subtlety" resource system instead of traditional Elemental Energy.
 - **Linnea (July 15, 2026)**: Added Linnea character definition, stat scaling data, and custom mechanics.
+- **Ineffa (July 14, 2026)**: Added Ineffa character definition, stat scaling data, custom direct reaction scaling, C1 reaction bonus, and dynamic shield calculations.
 - **Varka (July 14, 2026)**: Implemented Varka talent multipliers, passive skills, and special A1/A4 resonance check logic.
 - **Columbina (July 14, 2026)**: Implemented Columbina talent multipliers and status effects utilizing Lunar reaction mechanics.
 - **Flins (July 14, 2026)**: Added Flins character logic and calculations.
@@ -17,6 +20,13 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Character Filtering & Sidebar Collapse (July 17, 2026)**: Added search, element, weapon, and quality filters on the character selection dashboard and sidebar.
+  - Created custom high-quality vector SVGs for elements and weapons in a new icons module.
+  - Collapsible panels allow dynamic narrowing of character lists on the sidebar and dashboard.
+- **Output Damage Type Coloring (July 17, 2026)**: Implemented dynamic text and output coloring in the calculator UI.
+  - Created a keyword highlighting text renderer for character and calculation notes.
+  - Styled non-crit, crit, average damage table cells, and transformative reaction panels dynamically by element/reaction/heal color configurations.
+- **Support for Shield Kind (July 15, 2026)**: Extended the engine and UI to support `shield` as a first-class hit kind. Shields do not scale with Healing Bonus, are styled with a distinct blue background, are labeled as `(SHIELD)` in the rows, and print with a `Shield` suffix in exports.
 - **Gemini OCR Screenshot Scanner (July 10, 2026)**: Integrated Character Stats Screenshot Scanner using the Gemini API. Users can paste or drop screenshots of their character screen to automatically populate base and flat stats.
 - **Export Logs & History (July 3, 2026)**: Created the `/history` logs page showing a history of downloads and exports, including a multi-build delta comparison and sparkline graphs.
 - **Multi-Format Exporting (July 3, 2026)**: Added support for exporting build statistics and combo graphs to JSON, CSV, TXT, PDF, and PNG formats.
@@ -25,6 +35,7 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Detailed Stats Breakdown (July 14, 2026)**: Expanded the "Effective Stats" tab to display comprehensive breakdown formulas for all DMG Bonuses.
 
 ### Changes & Adjustments
+- **Engine Refactoring & Modularization (July 17, 2026)**: Extracted character-specific calculations from the monolithic `mechanics.ts` into a new modular folder structure under `src/lib/engine/characters/`. Each character now has their own implementation file and corresponding test file.
 - **Enemy Level Range**: Increased validation and limits for the enemy level from `100` to `200` (`Must be 0 < level ≤ 200`) to support high-level boss simulations.
 - **Code Refactor**: Performed a major refactoring of calculator components to optimize performance, responsiveness, and file structure.
 - **Outermost Header Enhancements**: Revamped RootLayout header with custom SVG sword logos, a v1.2.0-Beta version pill, and a pulsing status badge showing database connectivity.
