@@ -47,7 +47,7 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
                   onClick={() =>
                     updateInstance(inst.id, () => ({
                       constellationLevel:
-                        inst.constellationLevel === lvl ? lvl - 1 : lvl,
+                        inst.constellationLevel === lvl ? Math.max(0, lvl - 1) : lvl,
                     }))
                   }
                   title={
@@ -71,28 +71,32 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
               );
             })}
           </div>
-          {inst.constellationLevel > 0 && (
-            <details className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 group">
-              <summary className="cursor-pointer font-semibold list-none flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-350 select-none">
-                <span>Show Constellation Details</span>
-                <span className="text-[8px] transform group-open:rotate-180 transition-transform duration-200">
-                  ▼
-                </span>
-              </summary>
-              <div className="mt-1.5 space-y-1 pl-1 border-l border-zinc-200 dark:border-zinc-800">
-                {config.constellations!
-                  .filter((c) => c.level <= inst.constellationLevel)
-                  .map((c) => (
-                    <span key={c.level} className="block leading-normal">
-                      <span className="font-bold text-zinc-700 dark:text-zinc-300">
-                        C{c.level} ({c.name})
-                      </span>
-                      : {c.description}
+          <details className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 group">
+            <summary className="cursor-pointer font-semibold list-none flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-350 select-none">
+              <span>Show Constellation Details</span>
+              <span className="text-[8px] transform group-open:rotate-180 transition-transform duration-200">
+                ▼
+              </span>
+            </summary>
+            <div className="mt-1.5 space-y-1 pl-1 border-l border-zinc-200 dark:border-zinc-800">
+              {config.constellations!.map((c) => {
+                const isActive = inst.constellationLevel >= c.level;
+                return (
+                  <span
+                    key={c.level}
+                    className={`block leading-normal transition-opacity duration-150 ${
+                      isActive ? "opacity-100" : "opacity-40"
+                    }`}
+                  >
+                    <span className="font-bold text-zinc-700 dark:text-zinc-300">
+                      C{c.level} ({c.name})
                     </span>
-                  ))}
-              </div>
-            </details>
-          )}
+                    : {c.description}
+                  </span>
+                );
+              })}
+            </div>
+          </details>
         </div>
       ) : null}
 
