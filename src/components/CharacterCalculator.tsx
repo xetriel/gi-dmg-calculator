@@ -247,6 +247,7 @@ export function CharacterCalculator({
         effectiveStats: null,
         rotationTotals: {},
         rotationStepsDmg: {},
+        rotationStepsDetails: {},
       };
     }
     const s = resolveStats(raw);
@@ -329,20 +330,22 @@ export function CharacterCalculator({
 
     const rotationTotals: Record<string, number> = {};
     const rotationStepsDmg: Record<string, number[]> = {};
+    const rotationStepsDetails: Record<string, HitResult[]> = {};
 
     for (const r of rotationState.rotations) {
       let total = 0;
-      const stepDmgs = r.steps.map((step: RotationStep) => {
+      const stepDmgs: number[] = [];
+      const stepDetails: HitResult[] = [];
+
+      r.steps.forEach((step: RotationStep) => {
         const effectiveReaction = step.reactionOverride === "default" ? inst.reaction : step.reactionOverride;
         const rawType = step.hitType || "avg";
         const typeKey = (rawType === "non-crit" ? "nonCrit" : rawType) as "nonCrit" | "crit" | "avg";
         const qty = step.quantity ?? 1;
 
+        let res: HitResult | undefined;
         if (effectiveReaction === inst.reaction) {
-          const res = out[step.targetHitId];
-          const val = (res ? res[typeKey] : 0) * qty;
-          total += val;
-          return val;
+          res = out[step.targetHitId];
         } else {
           let hitConfig = null;
           let groupType = "normal";
@@ -356,36 +359,41 @@ export function CharacterCalculator({
             }
             if (hitConfig) break;
           }
-          if (!hitConfig) return 0;
-          const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
-          const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
-          const hitCat = hitConfig.hitCategory ?? (groupType as "normal" | "skill" | "burst");
-          const res = computeHit(s, {
-            multiplier: resolved[step.targetHitId] ?? 0,
-            scaling: hitConfig.scaling,
-            element: mods.element ?? config.element,
-            reaction: effectiveReaction,
-            reactionBonusPct: Number(inst.reactionBonus || 0),
-            flatDmgBonus: flatBonus || undefined,
-            baseDmgMultiplier: mods.baseDmgMultiplier,
-            critDmgBonusPct: mods.critDmgBonusPct,
-            critRateBonusPct: mods.critRateBonusPct,
-            bonusDmgPct: mods.bonusDmgPct,
-            hitCategory: hitCat,
-            charElement: config.element,
-            dmgBonusLabel: config.dmgBonusLabel,
-            directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
-          });
-          const val = res[typeKey] * qty;
-          total += val;
-          return val;
+          if (hitConfig) {
+            const mods: PerHitMods = mech.perHit[hitConfig.key] ?? {};
+            const flatBonus = constellationFlatBonus(effects, hitConfig.key, s) + (mods.flatDmgBonus ?? 0);
+            const hitCat = hitConfig.hitCategory ?? (groupType as "normal" | "skill" | "burst");
+            res = computeHit(s, {
+              multiplier: resolved[step.targetHitId] ?? 0,
+              scaling: hitConfig.scaling,
+              element: mods.element ?? config.element,
+              reaction: effectiveReaction,
+              reactionBonusPct: Number(inst.reactionBonus || 0),
+              flatDmgBonus: flatBonus || undefined,
+              baseDmgMultiplier: mods.baseDmgMultiplier,
+              critDmgBonusPct: mods.critDmgBonusPct,
+              critRateBonusPct: mods.critRateBonusPct,
+              bonusDmgPct: mods.bonusDmgPct,
+              hitCategory: hitCat,
+              charElement: config.element,
+              dmgBonusLabel: config.dmgBonusLabel,
+              directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+            });
+          }
         }
+
+        const val = (res ? res[typeKey] : 0) * qty;
+        total += val;
+        stepDmgs.push(val);
+        stepDetails.push(res || { nonCrit: 0, crit: 0, avg: 0 });
       });
+
       rotationTotals[r.id] = total;
       rotationStepsDmg[r.id] = stepDmgs;
+      rotationStepsDetails[r.id] = stepDetails;
     }
 
-    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg };
+    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg, rotationStepsDetails };
   }
 
   const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
@@ -1444,12 +1452,34 @@ export function CharacterCalculator({
                         <div
                           key={r.id}
                           className={`text-xs flex items-center justify-between gap-4 font-semibold leading-tight py-1.5 px-2.5 rounded-lg border transition-all ${isSelected
-                            ? "bg-zinc-105 dark:bg-zinc-800/80 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-105 font-extrabold"
-                            : "bg-transparent border-transparent text-gray-400 dark:text-zinc-500"
+                            ? "bg-zinc-100 dark:bg-zinc-800/85 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-extrabold"
+                            : "bg-transparent border-transparent text-gray-500 dark:text-zinc-300"
                             }`}
                         >
                           <span className="truncate max-w-[240px]">{r.name || "Combo"}:</span>
-                          <span className="tabular-nums font-mono">{fmt(rotationTotals[r.id] ?? 0)}</span>
+                          <div className="flex flex-col items-end leading-none">
+                            <span className="tabular-nums font-mono mb-0.5">{fmt(rotationTotals[r.id] ?? 0)}</span>
+                            {(() => {
+                              if (instances.length <= 1) return null;
+                              const currentVal = rotationTotals[r.id] ?? 0;
+                              const benchmarkVal = computedById.get(activeBenchmarkId)?.rotationTotals[r.id] ?? 0;
+                              if (benchmarkVal === 0) return null;
+                              const pct = (currentVal / benchmarkVal) * 100;
+                              
+                              let colorClass = "text-gray-400 dark:text-zinc-500";
+                              if (pct < 99.95) {
+                                colorClass = "text-red-500 dark:text-red-400 font-semibold";
+                              } else if (pct > 100.05) {
+                                colorClass = "text-green-500 dark:text-green-400 font-semibold";
+                              }
+                              
+                              return (
+                                <span className={`text-[9px] ${colorClass}`}>
+                                  {pct.toFixed(1)}%
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </div>
                       );
                     })}
@@ -1463,15 +1493,14 @@ export function CharacterCalculator({
           })}
 
           {instances.length < 3 && (
-            <div
-              onClick={addInstance}
-              className="w-[420px] shrink-0 border-2 border-dashed border-gray-300 dark:border-zinc-800 hover:border-amber-500/60 dark:hover:border-amber-500/40 rounded-xl p-5 flex flex-col items-center justify-center self-stretch min-h-[400px] hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 cursor-pointer group transition-all duration-200 select-none no-print"
-              title="Add a new setup column to compare stats"
-            >
-              <div className="flex flex-col items-center gap-2.5 text-center">
-                <span className="text-3xl text-gray-400 dark:text-zinc-500 group-hover:text-amber-500 transition-colors">➕</span>
-                <span className="font-bold text-sm text-gray-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">Add New Setup</span>
-                <span className="text-xs text-gray-400 dark:text-zinc-500">Compare up to 3 setups side-by-side</span>
+            <div className="w-[200px] shrink-0 sticky top-6 no-print">
+              <div
+                onClick={addInstance}
+                className="border-2 border-dashed border-gray-300 dark:border-zinc-800 hover:border-amber-500/60 dark:hover:border-amber-500/40 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-white/40 dark:bg-zinc-900/10 hover:bg-gray-50/30 dark:hover:bg-zinc-900/20 group transition-all duration-200 select-none shadow-xs"
+                title="Add a new setup column to compare stats"
+              >
+                <span className="text-xl group-hover:scale-110 transition-transform">➕</span>
+                <span className="font-bold text-xs text-gray-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">Add Setup</span>
               </div>
             </div>
           )}
@@ -1559,9 +1588,9 @@ export function CharacterCalculator({
       {/* Save build configuration popup dialog */}
       {isSaveModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-955 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-[400px] shadow-2xl animate-in zoom-in-95 duration-200 text-black dark:text-white">
             <h3 className="text-base font-bold text-black dark:text-white mb-2">Save Build Configuration</h3>
-            <p className="text-xs text-gray-550 dark:text-zinc-400 mb-4">
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-4">
               Enter a name for this build setup to save it to the database library.
             </p>
             <input

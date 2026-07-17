@@ -56,4 +56,5 @@ export interface ComputedInstance {
   effectiveStats: DamageStats | null;
   rotationTotals: Record<string, number>;
   rotationStepsDmg: Record<string, number[]>;
+  rotationStepsDetails: Record<string, HitResult[]>;
 }
