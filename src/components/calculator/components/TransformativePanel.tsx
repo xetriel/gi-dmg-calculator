@@ -4,6 +4,7 @@ import type { CalcInstance, ReactionExtras } from "../types";
 import type { validate } from "@/lib/engine/validation";
 import { TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType } from "@/lib/engine/lunar";
+import { DMG_COLORS } from "../utils/colors";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
@@ -33,6 +34,38 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
   const hasLunar = LUNAR_BY_ELEMENT[config.element]?.length > 0;
 
   if (!hasTransformative && !hasLunar) return null;
+
+  const getTransformativeColor = (type: TransformativeType): string => {
+    switch (type) {
+      case "burning": return DMG_COLORS["Burning"];
+      case "swirl": {
+        if (config.element === "Anemo") {
+          if (Number(inst.mechanicInputs["party-has-pyro"]) > 0) return DMG_COLORS["Pyro"];
+          if (Number(inst.mechanicInputs["party-has-hydro"]) > 0) return DMG_COLORS["Hydro"];
+          if (Number(inst.mechanicInputs["party-has-electro"]) > 0) return DMG_COLORS["Electro"];
+          if (Number(inst.mechanicInputs["party-has-cryo"]) > 0) return DMG_COLORS["Cryo"];
+        }
+        return DMG_COLORS["Anemo"];
+      }
+      case "superconduct": return DMG_COLORS["Superconduct"];
+      case "electro-charged": return DMG_COLORS["Electro-Charged"];
+      case "bloom": return DMG_COLORS["Bloom"];
+      case "overloaded": return DMG_COLORS["Overloaded"];
+      case "burgeon": return DMG_COLORS["Burgeon"];
+      case "hyperbloom": return DMG_COLORS["Hyperbloom"];
+      case "shatter": return DMG_COLORS["Shattered"];
+      default: return "inherit";
+    }
+  };
+
+  const getLunarColor = (type: LunarType): string => {
+    switch (type) {
+      case "lunar-charged": return DMG_COLORS["Lunar-Charged"];
+      case "lunar-bloom": return DMG_COLORS["Lunar-Bloom"];
+      case "lunar-crystallize": return DMG_COLORS["Lunar-Crystallize"];
+      default: return "inherit";
+    }
+  };
 
   return (
     <section className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3">
@@ -85,41 +118,59 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
             </tr>
           </thead>
           <tbody>
-            {extras.transformative.map((t: { type: TransformativeType; dmg: number }) => (
-              <tr
-                key={t.type}
-                className="border-t border-gray-100 dark:border-zinc-800/60"
-              >
-                <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
-                  {TRANSFORMATIVE_LABEL[t.type]}
-                </td>
-                <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
-                  <span className="font-semibold">{fmt(t.dmg)}</span>
-                  <span className="ml-1 text-[10px] text-gray-400">
-                    (no crit)
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {extras.lunar.map((l: { type: LunarType; res: any }) => (
-              <tr
-                key={l.type}
-                className="border-t border-gray-100 dark:border-zinc-800/60"
-              >
-                <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
-                  {LUNAR_LABEL[l.type]}
-                </td>
-                <td className="py-1.5 pr-1 text-right tabular-nums">
-                  {fmt(l.res.nonCrit)}
-                </td>
-                <td className="py-1.5 pr-1 text-right tabular-nums">
-                  {fmt(l.res.crit)}
-                </td>
-                <td className="py-1.5 text-right tabular-nums font-semibold">
-                  {fmt(l.res.avg)}
-                </td>
-              </tr>
-            ))}
+            {extras.transformative.map((t: { type: TransformativeType; dmg: number }) => {
+              const color = getTransformativeColor(t.type);
+              const label = t.type === "swirl" && config.element === "Anemo" ? (() => {
+                const swirled = (() => {
+                  if (Number(inst.mechanicInputs["party-has-pyro"]) > 0) return "Pyro";
+                  if (Number(inst.mechanicInputs["party-has-hydro"]) > 0) return "Hydro";
+                  if (Number(inst.mechanicInputs["party-has-electro"]) > 0) return "Electro";
+                  if (Number(inst.mechanicInputs["party-has-cryo"]) > 0) return "Cryo";
+                  return "";
+                })();
+                return swirled ? `${swirled} Swirl` : "Swirl";
+              })() : TRANSFORMATIVE_LABEL[t.type];
+              return (
+                <tr
+                  key={t.type}
+                  className="border-t border-gray-100 dark:border-zinc-800/60"
+                  style={{ color }}
+                >
+                  <td className="py-1.5 font-medium" style={{ color }}>
+                    {label}
+                  </td>
+                  <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
+                    <span className="font-semibold">{fmt(t.dmg)}</span>
+                    <span className="ml-1 text-[10px] text-gray-400">
+                      (no crit)
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+            {extras.lunar.map((l: { type: LunarType; res: any }) => {
+              const color = getLunarColor(l.type);
+              return (
+                <tr
+                  key={l.type}
+                  className="border-t border-gray-100 dark:border-zinc-800/60"
+                  style={{ color }}
+                >
+                  <td className="py-1.5 font-medium" style={{ color }}>
+                    {LUNAR_LABEL[l.type]}
+                  </td>
+                  <td className="py-1.5 pr-1 text-right tabular-nums">
+                    {fmt(l.res.nonCrit)}
+                  </td>
+                  <td className="py-1.5 pr-1 text-right tabular-nums">
+                    {fmt(l.res.crit)}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums font-semibold">
+                    {fmt(l.res.avg)}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (

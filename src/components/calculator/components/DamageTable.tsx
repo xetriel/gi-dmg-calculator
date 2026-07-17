@@ -5,6 +5,7 @@ import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { CalcInstance } from "../types";
 import type { validate } from "@/lib/engine/validation";
 import { hitId } from "@/lib/engine/validation";
+import { getHitColor, DMG_COLORS } from "../utils/colors";
 
 const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; title: string }> = {
   stellar: {
@@ -130,9 +131,12 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                         </span>
                         {h.direct ? (
                           <span
-                            className={`ml-1 text-[9px] font-bold uppercase tracking-wider rounded px-1 py-0.5 ${
-                              DIRECT_TAG[h.direct].cls
-                            }`}
+                            className="ml-1 text-[9px] font-bold uppercase tracking-wider rounded px-1 py-0.5 border"
+                            style={{
+                              backgroundColor: h.direct === "stellar" ? "rgba(228, 209, 255, 0.15)" : "rgba(255, 242, 186, 0.15)",
+                              borderColor: h.direct === "stellar" ? "rgba(228, 209, 255, 0.3)" : "rgba(255, 242, 186, 0.3)",
+                              color: h.direct === "stellar" ? "rgb(180, 150, 220)" : "rgb(210, 170, 70)",
+                            }}
                             title={DIRECT_TAG[h.direct].title}
                           >
                             {DIRECT_TAG[h.direct].label}
@@ -156,9 +160,8 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                         isHeal || isShield ? (
                           <td
                             colSpan={3}
-                            className={`py-1.5 text-right tabular-nums font-semibold ${
-                              isHeal ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400"
-                            }`}
+                            className="py-1.5 text-right tabular-nums font-semibold"
+                            style={{ color: isHeal ? DMG_COLORS["Heal-related"] : DMG_COLORS["Shield-related"] }}
                           >
                             {res ? (
                               <div className="flex flex-col items-end">
@@ -169,40 +172,44 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                               "—"
                             )}
                           </td>
-                        ) : (
-                          <>
-                            <td className="py-1.5 pr-1 text-right tabular-nums">
-                              {res ? (
-                                <div className="flex flex-col items-end">
-                                  <span>{fmt(res.nonCrit)}</span>
-                                  {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
-                                </div>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
-                            <td className="py-1.5 pr-1 text-right tabular-nums">
-                              {res ? (
-                                <div className="flex flex-col items-end">
-                                  <span>{fmt(res.crit)}</span>
-                                  {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
-                                </div>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
-                            <td className="py-1.5 text-right tabular-nums font-semibold">
-                              {res ? (
-                                <div className="flex flex-col items-end">
-                                  <span>{fmt(res.avg)}</span>
-                                  {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
-                                </div>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
-                          </>
-                        )
+                        ) : (() => {
+                          const cellColor = res ? getHitColor(res.element ?? config.element, res.reaction, h.direct, h.name) : undefined;
+                          const cellStyle = cellColor ? { color: cellColor } : undefined;
+                          return (
+                            <>
+                              <td className="py-1.5 pr-1 text-right tabular-nums" style={cellStyle}>
+                                {res ? (
+                                  <div className="flex flex-col items-end">
+                                    <span>{fmt(res.nonCrit)}</span>
+                                    {renderPct(res.nonCrit, benchmarkResults?.[id]?.nonCrit)}
+                                  </div>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              <td className="py-1.5 pr-1 text-right tabular-nums" style={cellStyle}>
+                                {res ? (
+                                  <div className="flex flex-col items-end">
+                                    <span>{fmt(res.crit)}</span>
+                                    {renderPct(res.crit, benchmarkResults?.[id]?.crit)}
+                                  </div>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              <td className="py-1.5 text-right tabular-nums font-semibold" style={cellStyle}>
+                                {res ? (
+                                  <div className="flex flex-col items-end">
+                                    <span>{fmt(res.avg)}</span>
+                                    {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
+                                  </div>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                            </>
+                          );
+                        })()
                       ) : null}
                     </tr>
                   );
