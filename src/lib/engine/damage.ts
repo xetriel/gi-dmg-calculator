@@ -67,6 +67,8 @@ export interface HitResult {
   nonCrit: number;
   crit: number;
   avg: number;
+  element?: Element | "Physical";
+  reaction?: ReactionType;
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
@@ -260,5 +262,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
     nonCrit,
     crit: nonCrit * (1 + cd),
     avg: nonCrit * (1 + cr * cd),
+    element: hit.element,
+    reaction: hit.reaction,
   };
 }

@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { resolveMechanics } from "../mechanics";
 import { ineffa } from "../../../data/registry/characters/ineffa";
 import { ineffaSeed } from "../../../data/talents/ineffa";
-import type { DamageStats, TalentScalingData } from "../damage";
+import type { DamageStats } from "../damage";
+import type { TalentScalingData } from "../../talent-scaling";
 import type { MechanicsCtx } from "../mechanics-utils";
 
 // Helper to build scaling data mock for Ineffa
@@ -18,7 +19,7 @@ ineffaSeed.hits.forEach(h => {
 
 const defaultStats: DamageStats = {
   atk: 1000, hp: 10000, def: 800, em: 100,
-  critRate: 5, critDmg: 50, energyRecharge: 100,
+  critRate: 5, critDmg: 50,
   dmgBonus: 0, normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
   skillDmgBonus: 0, burstDmgBonus: 0,
   pyroDmgBonus: 0, hydroDmgBonus: 0, dendroDmgBonus: 0, electroDmgBonus: 0,
@@ -27,9 +28,9 @@ const defaultStats: DamageStats = {
   defReduction: 0, defIgnore: 0,
 };
 
-function createCtx(overrides: Partial<MechanicsCtx>): MechanicsCtx {
+function createCtx(overrides: Omit<Partial<MechanicsCtx>, "stats"> & { stats?: Partial<DamageStats> }): MechanicsCtx {
   return {
-    stats: { ...defaultStats, ...overrides.stats },
+    stats: { ...defaultStats, ...overrides.stats } as DamageStats,
     baseAtk: overrides.baseAtk ?? 300,
     baseDef: overrides.baseDef ?? 600,
     constellationLevel: overrides.constellationLevel ?? 0,
