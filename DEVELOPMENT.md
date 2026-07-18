@@ -6,9 +6,10 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 18, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 19, 2026).
 
 ### New Character Calculators
+- **Durin (July 19, 2026)**: Added Durin, a 5-star Pyro Sword off-field Burst sub-DPS who switches between Purity (White) and Darkness (Dark) forms, featuring element shred/reaction buffs, ATK-based summon scaling, C1 flat DMG, and C6 DEF ignore.
 - **Gaming (July 18, 2026)**: Added Gaming, a 4-star Pyro Claymore character specializing in plunging attacks via his Elemental Skill *Bestial Ascent*, featuring A4 plunge DMG bonus and C6 crit scaling.
 - **Varesa (July 17, 2026)**: Added Varesa, a 5-star Electro Catalyst character from Natlan specializing in Plunging Attacks and Nightsoul-related mechanics.
 - **Skirk (July 17, 2026)**: Added Skirk, a playable 5-star Cryo Sword character utilizing a unique "Serpent's Subtlety" resource system instead of traditional Elemental Energy.
@@ -21,6 +22,8 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Comprehensive Effective Stats (July 19, 2026)**: Re-designed the "Effective Stats" panel on the setup card to show all output stats (such as target levels, defenses, resistances, Energy Recharge, Healing Bonus, and specific active element/physical DMG bonuses), removing actual reaction output DMG values to keep the panel focused purely on stats.
+- **Scrollbar Hiding in Sidebar (July 19, 2026)**: Added styling to hide the vertical and horizontal scrollbars in the navigation panel and list container, improving UI cleanliness while retaining full scroll functionality.
 - **Vertical/Horizontal Split View Layout (July 18, 2026)**: Implemented split-screen mechanics for character setups with vertical splitting (top part for inputs, bottom part for damage outputs), featuring mouse drag resizing via a draggable horizontal divider.
 - **Collapsible Constellation Dropdown Permanence (July 18, 2026)**: Modified the constellation dropdown to always display all 6 constellations (C1-C6) with dynamic dimming (`opacity-40` with transitions) on locked/inactive constellations.
 - **Dynamic Initial Stats Application (July 18, 2026)**: Improved the character stats initializer to automatically set the primary element DMG bonus to `46.6%` for elemental characters while leaving it at `0%` for direct reaction Lunar/Stellar characters. Also upgraded default layout stats ratios (HP, ATK, DEF, CRIT).
