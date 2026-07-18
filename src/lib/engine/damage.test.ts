@@ -28,6 +28,7 @@ const baseStats: DamageStats = {
   enemyRes: 10,
   levelChar: 90, levelEnemy: 100,
   defReduction: 0, defIgnore: 0,
+  energyRecharge: 100, healingBonus: 0,
 };
 
 describe("resMultiplier", () => {

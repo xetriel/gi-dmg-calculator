@@ -34,6 +34,8 @@ export interface DamageStats {
   levelEnemy: number;
   defReduction: number;  // percent
   defIgnore: number;     // percent
+  energyRecharge: number; // percent
+  healingBonus: number;   // percent
 }
 
 // Per-hit direct-reaction parameters, shared by Stellar-Conduct and Direct Lunar
