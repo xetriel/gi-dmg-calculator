@@ -52,12 +52,28 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "em", label: "EM", unit: "flat" },
   { key: "critRate", label: "CRIT Rate", unit: "percent" },
   { key: "critDmg", label: "CRIT DMG", unit: "percent" },
+  { key: "energyRecharge", label: "Energy Recharge", unit: "percent" },
+  { key: "healingBonus", label: "Healing Bonus", unit: "percent", hideIfZero: true },
   { key: "dmgBonus", label: "DMG Bonus", unit: "percent" },
   { key: "normalDmgBonus", label: "  └ Normal ATK", unit: "percent", hideIfZero: true },
   { key: "chargedDmgBonus", label: "  └ Charged ATK", unit: "percent", hideIfZero: true },
   { key: "plungeDmgBonus", label: "  └ Plunging ATK", unit: "percent", hideIfZero: true },
   { key: "skillDmgBonus", label: "  └ Elemental Skill", unit: "percent", hideIfZero: true },
   { key: "burstDmgBonus", label: "  └ Elemental Burst", unit: "percent", hideIfZero: true },
+  { key: "pyroDmgBonus", label: "Pyro DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "hydroDmgBonus", label: "Hydro DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "dendroDmgBonus", label: "Dendro DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "electroDmgBonus", label: "Electro DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "anemoDmgBonus", label: "Anemo DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "cryoDmgBonus", label: "Cryo DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "geoDmgBonus", label: "Geo DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "physicalDmgBonus", label: "Physical DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "dmgReduction", label: "DMG Reduction / -(DMG Bonus)", unit: "percent", hideIfZero: true },
+  { key: "enemyRes", label: "Enemy RES", unit: "percent" },
+  { key: "levelChar", label: "Level", unit: "flat" },
+  { key: "levelEnemy", label: "Enemy Level", unit: "flat" },
+  { key: "defReduction", label: "DEF Reduction", unit: "percent", hideIfZero: true },
+  { key: "defIgnore", label: "DEF Ignore", unit: "percent", hideIfZero: true },
 ];
 
 function activeEffects(config: CharacterConfig, level: number) {
@@ -363,12 +379,13 @@ export function CharacterCalculator({
           scaling: h.scaling,
           element: mods.element ?? config.element,
           reaction: inst.reaction,
-          reactionBonusPct: Number(inst.reactionBonus || 0),
+          reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
           flatDmgBonus: flatBonus || undefined,
           baseDmgMultiplier: mods.baseDmgMultiplier,
           critDmgBonusPct: mods.critDmgBonusPct,
           critRateBonusPct: mods.critRateBonusPct,
           bonusDmgPct: mods.bonusDmgPct,
+          defIgnorePct: mods.defIgnorePct,
           hitCategory: hitCat,
           charElement: config.element,
           dmgBonusLabel: config.dmgBonusLabel,
@@ -431,12 +448,13 @@ export function CharacterCalculator({
               scaling: hitConfig.scaling,
               element: mods.element ?? config.element,
               reaction: effectiveReaction,
-              reactionBonusPct: Number(inst.reactionBonus || 0),
+              reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
               flatDmgBonus: flatBonus || undefined,
               baseDmgMultiplier: mods.baseDmgMultiplier,
               critDmgBonusPct: mods.critDmgBonusPct,
               critRateBonusPct: mods.critRateBonusPct,
               bonusDmgPct: mods.bonusDmgPct,
+              defIgnorePct: mods.defIgnorePct,
               hitCategory: hitCat,
               charElement: config.element,
               dmgBonusLabel: config.dmgBonusLabel,
@@ -1171,28 +1189,6 @@ export function CharacterCalculator({
             const renderOutputs = () => {
               if (!effectiveStats || !inputStats || !extras) return null;
 
-              const isAllDmg = config.dmgBonusLabel.includes("All") || config.dmgBonusLabel.includes("DMG Bonus%");
-              const getEffectiveBonus = (elem: string, specificBonus: number) => {
-                let base = specificBonus;
-                if (isAllDmg) {
-                  base += effectiveStats.dmgBonus;
-                } else if (config.dmgBonusLabel.toLowerCase().includes(elem.toLowerCase())) {
-                  base += effectiveStats.dmgBonus;
-                }
-                return base;
-              };
-
-              const elemBonuses = [
-                { label: "Pyro DMG Bonus%", val: getEffectiveBonus("Pyro", effectiveStats.pyroDmgBonus) },
-                { label: "Hydro DMG Bonus%", val: getEffectiveBonus("Hydro", effectiveStats.hydroDmgBonus) },
-                { label: "Dendro DMG Bonus%", val: getEffectiveBonus("Dendro", effectiveStats.dendroDmgBonus) },
-                { label: "Electro DMG Bonus%", val: getEffectiveBonus("Electro", effectiveStats.electroDmgBonus) },
-                { label: "Anemo DMG Bonus%", val: getEffectiveBonus("Anemo", effectiveStats.anemoDmgBonus) },
-                { label: "Cryo DMG Bonus%", val: getEffectiveBonus("Cryo", effectiveStats.cryoDmgBonus) },
-                { label: "Geo DMG Bonus%", val: getEffectiveBonus("Geo", effectiveStats.geoDmgBonus) },
-                { label: "Physical DMG Bonus%", val: getEffectiveBonus("Physical", effectiveStats.physicalDmgBonus) },
-              ];
-
               const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
               const emTransformative = (16 * effectiveStats.em) / (effectiveStats.em + 2000) * 100;
               const totalTransformativeBonus = emTransformative + reactionBonusPct;
@@ -1207,14 +1203,6 @@ export function CharacterCalculator({
               const aggravateFlat = showCatalyze
                 ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                 : 0;
-
-              const directLunarHits = config.talents.flatMap((g, gi) =>
-                g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
-              ).filter(x => x.hit.direct === "lunar");
-
-              const directStellarHits = config.talents.flatMap((g, gi) =>
-                g.hits.map((h, hi) => ({ hit: h, id: hitId(gi, hi) }))
-              ).filter(x => x.hit.direct === "stellar");
 
               return (
                 <div className="space-y-4">
@@ -1293,18 +1281,6 @@ export function CharacterCalculator({
                       })}
                     </div>
 
-                    <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80">
-                      <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Elemental & Physical DMG</h3>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                        {elemBonuses.map(b => (
-                          <div key={b.label} className="flex items-center justify-between gap-2">
-                            <span className="text-gray-555 dark:text-gray-400">{b.label}</span>
-                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">{b.val.toFixed(1)}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                     <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
                       <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
                       <div className="grid grid-cols-1 gap-y-0.5">
@@ -1355,68 +1331,6 @@ export function CharacterCalculator({
                         )}
                       </div>
                     </div>
-
-                    {extras && extras.transformative && extras.transformative.length > 0 && (
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transformative Reaction DMG</h3>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                          {extras.transformative.map(tr => (
-                            <div key={tr.type} className="flex justify-between">
-                              <span className="text-gray-555 dark:text-gray-400">{TRANSFORMATIVE_LABEL[tr.type]}</span>
-                              <span className="font-medium text-gray-800 dark:text-gray-200">{fmt(tr.dmg)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {extras && ((extras.lunar && extras.lunar.length > 0) || (results && directLunarHits.length > 0)) && (
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Lunar Reaction DMG</h3>
-                        <div className="grid grid-cols-1 gap-y-0.5">
-                          {extras.lunar.map(l => (
-                            <div key={l.type} className="flex justify-between items-center">
-                              <span className="text-gray-550 dark:text-gray-400">{LUNAR_LABEL[l.type]} (Indirect)</span>
-                              <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                {fmt(l.res.nonCrit)} / {fmt(l.res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(l.res.avg)})</span>
-                              </span>
-                            </div>
-                          ))}
-                          {results && directLunarHits.map(x => {
-                            const res = results[x.id];
-                            if (!res) return null;
-                            return (
-                              <div key={x.id} className="flex justify-between items-center">
-                                <span className="text-gray-555 dark:text-gray-400">{x.hit.name} (Direct)</span>
-                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                  {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {results && directStellarHits.length > 0 && (
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                        <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Stellar Reaction DMG</h3>
-                        <div className="grid grid-cols-1 gap-y-0.5">
-                          {directStellarHits.map(x => {
-                            const res = results[x.id];
-                            if (!res) return null;
-                            return (
-                              <div key={x.id} className="flex justify-between items-center">
-                                <span className="text-gray-555 dark:text-gray-400">{x.hit.name} (Stellar-Conduct)</span>
-                                <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                                  {fmt(res.nonCrit)} / {fmt(res.crit)} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">(avg {fmt(res.avg)})</span>
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {extras.notes.length ? (
