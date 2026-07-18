@@ -57,6 +57,7 @@ export interface HitInput {
   critDmgBonusPct?: number;   // per-hit CRIT DMG bonus (e.g. Neuvillette C2 on Equitable Judgment)
   critRateBonusPct?: number;  // per-hit CRIT Rate bonus (e.g. Arlecchino C6 on NA/Burst)
   bonusDmgPct?: number;       // per-hit DMG Bonus% addition (e.g. Clorinde C4 on Last Lightfall)
+  defIgnorePct?: number;      // per-hit DEF ignore % (e.g. Durin C6 on Burst)
   hitCategory?: HitCategory;  // talent-type DMG Bonus routing (normal/charged/plunge/skill/burst)
   charElement?: Element;      // character's base element for DMG Bonus routing
   dmgBonusLabel?: string;     // character's dynamic DMG bonus label
@@ -132,8 +133,8 @@ export function dmgBonusMultiplier(
 
 // Enemy DEF multiplier. Per requirement, DEF debuffs are negative %DEF Bonuses
 // and the total %DEF Bonus is floored at -90% (enemy DEF factor >= 0.10).
-export function defMultiplier(stats: DamageStats): number {
-  const defBonusPct = Math.max(-(stats.defReduction + stats.defIgnore), -90);
+export function defMultiplier(stats: DamageStats, extraIgnorePct: number = 0): number {
+  const defBonusPct = Math.max(-(stats.defReduction + stats.defIgnore + extraIgnorePct), -90);
   const k = 1 + defBonusPct / 100; // enemy DEF factor, >= 0.10
   const lc = stats.levelChar + 100;
   return lc / (lc + (stats.levelEnemy + 100) * k);
@@ -251,7 +252,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
         hit.charElement,
         hit.dmgBonusLabel
       ) *
-      defMultiplier(stats) *
+      defMultiplier(stats, hit.defIgnorePct) *
       resMultiplier(stats.enemyRes) *
       (hit.element === "Physical" ? 1 : amplifyingMultiplier(hit.element, hit.reaction, stats.em, hit.reactionBonusPct));
   }
