@@ -8,6 +8,8 @@ export interface PerHitMods {
   critDmgBonusPct?: number;
   critRateBonusPct?: number;
   bonusDmgPct?: number;
+  reactionBonusPct?: number; // extra reaction bonus %, e.g. from talents
+  defIgnorePct?: number;     // per-hit DEF ignore % (e.g. Durin C6 on Burst)
   directReaction?: DirectReactionParams; // Stellar-Conduct / Direct-Lunar hits: routes computeHit into the direct-reaction branch
   element?: Element | "Physical";
 }
@@ -51,6 +53,8 @@ export const addMods = (perHit: Record<string, PerHitMods>, key: string, mods: P
   if (mods.critDmgBonusPct !== undefined) m.critDmgBonusPct = (m.critDmgBonusPct ?? 0) + mods.critDmgBonusPct;
   if (mods.critRateBonusPct !== undefined) m.critRateBonusPct = (m.critRateBonusPct ?? 0) + mods.critRateBonusPct;
   if (mods.bonusDmgPct !== undefined) m.bonusDmgPct = (m.bonusDmgPct ?? 0) + mods.bonusDmgPct;
+  if (mods.reactionBonusPct !== undefined) m.reactionBonusPct = (m.reactionBonusPct ?? 0) + mods.reactionBonusPct;
+  if (mods.defIgnorePct !== undefined) m.defIgnorePct = (m.defIgnorePct ?? 0) + mods.defIgnorePct;
   if (mods.directReaction !== undefined) m.directReaction = mods.directReaction; // set once per hit, not accumulated
   if (mods.element !== undefined) m.element = mods.element;
 };

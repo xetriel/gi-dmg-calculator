@@ -201,5 +201,7 @@ export function resolveStats(raw: RawInputs): DamageStats {
     levelEnemy: g("levelEnemy"),
     defReduction: g("defReduction"),
     defIgnore: g("defIgnore"),
+    energyRecharge: g("energyRecharge"),
+    healingBonus: g("healingBonus"),
   };
 }
