@@ -50,7 +50,7 @@ export function Sidebar() {
   const isFilteringActive = searchQuery || selectedElement || selectedWeapon || selectedQuality || sortOrder !== "none";
 
   return (
-    <nav className={`shrink-0 border-r border-gray-200 dark:border-zinc-800 p-3 flex flex-col gap-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-sm h-full overflow-y-auto select-none transition-all duration-200 ${isCollapsed ? "w-14 items-center" : "w-60"}`}>
+    <nav className={`shrink-0 border-r border-gray-200 dark:border-zinc-800 p-3 flex flex-col gap-1 bg-gray-50/50 dark:bg-zinc-900/30 backdrop-blur-sm h-full overflow-y-auto no-scrollbar select-none transition-all duration-200 ${isCollapsed ? "w-14 items-center" : "w-60"}`}>
       {/* Header with Toggle Sidebar and Filters */}
       {isCollapsed ? (
         <div className="pb-2 border-b border-gray-200/55 dark:border-zinc-800/40 mb-1 flex justify-center w-full">
@@ -229,7 +229,7 @@ export function Sidebar() {
       )}
 
       {/* Characters List Links */}
-      <div className={`flex-1 space-y-1 overflow-y-auto ${isCollapsed ? "w-full flex flex-col items-center" : ""}`}>
+      <div className={`flex-1 space-y-1 overflow-y-auto no-scrollbar ${isCollapsed ? "w-full flex flex-col items-center" : ""}`}>
         {sortedCharacters.length > 0 ? (
           sortedCharacters.map(c => {
             const href = `/characters/${c.id}`;
