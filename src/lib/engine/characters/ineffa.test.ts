@@ -26,6 +26,7 @@ const defaultStats: DamageStats = {
   anemoDmgBonus: 0, cryoDmgBonus: 0, geoDmgBonus: 0, physicalDmgBonus: 0,
   dmgReduction: 0, enemyRes: 10, levelChar: 90, levelEnemy: 90,
   defReduction: 0, defIgnore: 0,
+  energyRecharge: 100, healingBonus: 0,
 };
 
 function createCtx(overrides: Omit<Partial<MechanicsCtx>, "stats"> & { stats?: Partial<DamageStats> }): MechanicsCtx {

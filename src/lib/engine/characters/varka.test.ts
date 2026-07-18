@@ -33,6 +33,8 @@ const baseStats: DamageStats = {
   levelEnemy: 90,
   defReduction: 0,
   defIgnore: 0,
+  energyRecharge: 100,
+  healingBonus: 0,
 };
 
 // Build helper for scaling data

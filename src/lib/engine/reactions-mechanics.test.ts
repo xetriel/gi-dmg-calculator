@@ -23,6 +23,7 @@ const baseStats: DamageStats = {
   enemyRes: 0,
   levelChar: 90, levelEnemy: 100,
   defReduction: 0, defIgnore: 0,
+  energyRecharge: 100, healingBonus: 0,
 };
 
 // Build TalentScalingData for a character straight from its seed (as the page does).
