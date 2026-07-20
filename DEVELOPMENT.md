@@ -6,9 +6,11 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 19, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 21, 2026).
 
 ### New Character Calculators
+- **Kamisato Ayaka (July 21, 2026)**: Added Kamisato Ayaka, a 5-star Cryo Sword main-DPS featuring Cryo infusion via alternate sprint (*Kamisato Art: Senho*), A1 Normal/Charged attack DMG bonus (+30%), A4 Cryo DMG bonus (+18%), C2 Frostflake Seki no To mini-whirlwinds (20% DMG), C4 DEF reduction (-30%), and C6 Charged Attack DMG bonus (+298%).
+- **Alhaitham (July 21, 2026)**: Added Alhaitham, a 5-star Dendro Sword main-DPS who utilizes Chisel-Light Mirrors to infuse his attacks with Dendro and deal dual ATK + EM scaling Projection Attacks (`1-mirror`, `2-mirror`, `3-mirror`), featuring A4 EM-to-DMG bonus scaling (0.1% per EM up to 100%), C2 EM boost, C4 Dendro DMG bonus/EM share, and C6 CRIT Rate/DMG bonus.
 - **Durin (July 19, 2026)**: Added Durin, a 5-star Pyro Sword off-field Burst sub-DPS who switches between Purity (White) and Darkness (Dark) forms, featuring element shred/reaction buffs, ATK-based summon scaling, C1 flat DMG, and C6 DEF ignore.
 - **Gaming (July 18, 2026)**: Added Gaming, a 4-star Pyro Claymore character specializing in plunging attacks via his Elemental Skill *Bestial Ascent*, featuring A4 plunge DMG bonus and C6 crit scaling.
 - **Varesa (July 17, 2026)**: Added Varesa, a 5-star Electro Catalyst character from Natlan specializing in Plunging Attacks and Nightsoul-related mechanics.
