@@ -14,8 +14,11 @@ export interface PerHitMods {
   element?: Element | "Physical";
 }
 
+import type { StatBuffSource } from "@/components/calculator/types";
+
 export interface MechanicsResult {
   statDeltas: Partial<DamageStats>; // added onto the resolved stats before computing hits
+  statBuffSources?: Record<string, StatBuffSource[]>; // detailed sources for breakdown
   perHit: Record<string, PerHitMods>; // keyed by TalentHit.key
   notes: string[]; // computed info lines shown in the UI (e.g. heal amounts, caps hit)
   lunarBaseBonusPct?: number; // auto Lunar Base DMG Bonus (Moonsign passives, e.g. Zibai) — also fed to the indirect lunar panel
