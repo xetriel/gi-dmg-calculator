@@ -15,12 +15,13 @@ import { renderStyledText } from "./calculator/utils/colors";
 import { useRotation } from "./calculator/hooks/useRotation";
 import { useCalculatorState, initialStats } from "./calculator/hooks/useCalculatorState";
 import { hydrateFromBuild } from "./calculator/hooks/useCalculatorState";
-import type { SavedBuild, CalcInstance, ComputedInstance, RotationStep } from "./calculator/types";
+import type { SavedBuild, CalcInstance, ComputedInstance, RotationStep, StatBuffSource } from "./calculator/types";
 import { StatsGrid } from "./calculator/components/StatsGrid";
 import { MechanicsPanel } from "./calculator/components/MechanicsPanel";
 import { DamageTable } from "./calculator/components/DamageTable";
 import { TransformativePanel } from "./calculator/components/TransformativePanel";
 import { RotationModal } from "./calculator/components/RotationModal";
+import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
 
 const REACTION_LABEL: Record<ReactionType, string> = {
   none: "None",
@@ -1255,81 +1256,205 @@ export function CharacterCalculator({
                     </span>
                   )}
 
-                  {/* Effective stats panel box */}
-                  <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5">
-                    <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Effective Stats</h2>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs select-none">
-                      {EFFECTIVE_ROWS.map(row => {
-                        const eff = effectiveStats[row.key];
-                        const delta = eff - inputStats[row.key];
-                        const changed = Math.abs(delta) > 0.05;
-                        if (row.hideIfZero && Math.abs(eff) < 0.05 && Math.abs(inputStats[row.key]) < 0.05) return null;
-                        const show = (v: number) => (row.unit === "percent" ? `${v.toFixed(1)}%` : fmt(v));
-                        return (
-                          <div key={row.key} className="flex items-center justify-between gap-2">
-                            <span className="text-gray-550 dark:text-gray-400">{row.label}</span>
-                            <span className="tabular-nums font-medium text-gray-800 dark:text-gray-200">
-                              {show(eff)}
-                              {changed ? (
-                                <span className="ml-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-450">
-                                  {delta > 0 ? "+" : "−"}{row.unit === "percent" ? `${Math.abs(delta).toFixed(1)}%` : fmt(Math.abs(delta))}
-                                </span>
-                              ) : null}
-                            </span>
-                          </div>
-                        );
-                      })}
+                  {/* Remastered Effective stats panel box */}
+                  <div className="mb-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/40 p-3 shadow-2xs select-none">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
+                        Effective Stats & Buff Breakdown
+                      </h2>
+                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
+                        Formula: Raw + Additions = Total
+                      </span>
                     </div>
 
-                    <div className="mt-2.5 pt-2.5 border-t border-gray-150 dark:border-zinc-800/80 text-xs">
-                      <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Reaction DMG Bonuses</h3>
-                      <div className="grid grid-cols-1 gap-y-0.5">
-                        <div className="flex justify-between">
-                          <span className="text-gray-555 dark:text-gray-400">Transformative Reaction Bonus%</span>
-                          <span className="font-medium text-gray-800 dark:text-gray-200">
-                            {totalTransformativeBonus.toFixed(1)}%
-                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal ml-1">
-                              (EM: {emTransformative.toFixed(1)}% + Panel: {reactionBonusPct.toFixed(1)}%)
-                            </span>
-                          </span>
-                        </div>
-                        
-                        {showAmplifying && (
-                          <>
-                            {config.element === "Pyro" && (
-                              <>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-555 dark:text-gray-400">Vaporize Multiplier</span>
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-555 dark:text-gray-400">Melt Multiplier</span>
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
-                                </div>
-                              </>
-                            )}
-                            {config.element === "Hydro" && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-555 dark:text-gray-400">Vaporize Multiplier</span>
-                                <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(2.0).toFixed(2)}x</span>
-                              </div>
-                            )}
-                            {config.element === "Cryo" && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-555 dark:text-gray-400">Melt Multiplier</span>
-                                <span className="font-medium text-gray-800 dark:text-gray-200">{getAmpMult(1.5).toFixed(2)}x</span>
-                              </div>
-                            )}
-                          </>
-                        )}
+                    <div className="flex flex-col gap-1">
+                      {/* Base & Combat Stats Breakdown */}
+                      {EFFECTIVE_ROWS.map(row => {
+                        const raw = inputStats[row.key] ?? 0;
+                        const total = effectiveStats[row.key] ?? 0;
+                        const delta = total - raw;
 
-                        {showCatalyze && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-555 dark:text-gray-400">Aggravate Flat DMG Bonus</span>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">+{fmt(aggravateFlat)}</span>
-                          </div>
-                        )}
-                      </div>
+                        const additions: StatBuffSource[] = [];
+
+                        // Add mechanics sources
+                        const parsedInputs: Record<string, number> = {};
+                        if (inst.mechanicInputs) {
+                          for (const [k, v] of Object.entries(inst.mechanicInputs)) {
+                            parsedInputs[k] = Number(v) || 0;
+                          }
+                        }
+
+                        const mechResult = resolveMechanics(config, {
+                          stats: inputStats,
+                          baseAtk: toNum(inst.stats["atk.base"]) ?? 800,
+                          baseDef: toNum(inst.stats["def.base"]) ?? 500,
+                          baseHp: toNum(inst.stats["hp.base"]) ?? 15000,
+                          constellationLevel: inst.constellationLevel,
+                          talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs),
+                          scaling,
+                          inputs: parsedInputs,
+                        });
+
+                        if (mechResult.statBuffSources?.[row.key]) {
+                          additions.push(...mechResult.statBuffSources[row.key]);
+                        }
+
+                        // Add constellation stat bonuses
+                        if (config.constellations) {
+                          for (const c of config.constellations) {
+                            if (c.level <= inst.constellationLevel) {
+                              for (const e of c.effects) {
+                                if (e.type === "stat_bonus" && e.statKey === row.key && e.statValue) {
+                                  additions.push({
+                                    source: `C${c.level} (${c.name})`,
+                                    value: e.statValue,
+                                    description: c.description || `Grants +${e.statValue} ${row.label}`,
+                                  });
+                                }
+                              }
+                            }
+                          }
+                        }
+
+                        // Generic fallback addition if total differs from raw but no source was explicitly captured
+                        const recordedSum = additions.reduce((acc, curr) => acc + curr.value, 0);
+                        const unrecordedDelta = delta - recordedSum;
+                        if (Math.abs(unrecordedDelta) > 0.05) {
+                          additions.push({
+                            source: "Character Mechanics / Trait Buff",
+                            value: unrecordedDelta,
+                            description: "Special state or active passive mechanic modifier",
+                          });
+                        }
+
+                        return (
+                          <StatBreakdownRow
+                            key={row.key}
+                            name={row.label}
+                            unit={row.unit}
+                            raw={raw}
+                            additions={additions}
+                            total={total}
+                            hideIfZero={row.hideIfZero}
+                          />
+                        );
+                      })}
+
+                      {/* Reaction Multipliers & Reaction Buff Rows */}
+                      <StatBreakdownRow
+                        name="Transformative Reaction Bonus"
+                        unit="percent"
+                        raw={emTransformative}
+                        additions={
+                          reactionBonusPct > 0
+                            ? [{ source: "Panel Reaction Bonus", value: reactionBonusPct, description: "Direct reaction bonus input" }]
+                            : []
+                        }
+                        total={totalTransformativeBonus}
+                      />
+
+                      {showAmplifying && config.element === "Pyro" && (
+                        <>
+                          <StatBreakdownRow
+                            name="Vaporize Multiplier"
+                            unit="multiplier"
+                            raw={1.5}
+                            additions={[
+                              ...(emAmplifyingBonus > 0
+                                ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
+                                : []),
+                              ...(instReactionBonusPct > 0
+                                ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
+                                : []),
+                            ]}
+                            total={getAmpMult(1.5)}
+                          />
+                          <StatBreakdownRow
+                            name="Melt Multiplier"
+                            unit="multiplier"
+                            raw={2.0}
+                            additions={[
+                              ...(emAmplifyingBonus > 0
+                                ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
+                                : []),
+                              ...(instReactionBonusPct > 0
+                                ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
+                                : []),
+                            ]}
+                            total={getAmpMult(2.0)}
+                          />
+                        </>
+                      )}
+
+                      {showAmplifying && config.element === "Hydro" && (
+                        <StatBreakdownRow
+                          name="Vaporize Multiplier"
+                          unit="multiplier"
+                          raw={2.0}
+                          additions={[
+                            ...(emAmplifyingBonus > 0
+                              ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
+                              : []),
+                            ...(instReactionBonusPct > 0
+                              ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
+                              : []),
+                          ]}
+                          total={getAmpMult(2.0)}
+                        />
+                      )}
+
+                      {showAmplifying && config.element === "Cryo" && (
+                        <StatBreakdownRow
+                          name="Melt Multiplier"
+                          unit="multiplier"
+                          raw={1.5}
+                          additions={[
+                            ...(emAmplifyingBonus > 0
+                              ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
+                              : []),
+                            ...(instReactionBonusPct > 0
+                              ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
+                              : []),
+                          ]}
+                          total={getAmpMult(1.5)}
+                        />
+                      )}
+
+                      {showCatalyze && (
+                        <StatBreakdownRow
+                          name="Aggravate Flat DMG Bonus"
+                          unit="flat"
+                          raw={1.15 * levelMultiplier(effectiveStats.levelChar)}
+                          additions={
+                            emCatalyzeBonus > 0 || instReactionBonusPct > 0
+                              ? [
+                                  {
+                                    source: "EM Catalyze & Panel Reaction Bonus",
+                                    value: aggravateFlat - 1.15 * levelMultiplier(effectiveStats.levelChar),
+                                    description: "Level base scaling * (1 + EM bonus% + panel reaction bonus%)",
+                                  },
+                                ]
+                              : []
+                          }
+                          total={aggravateFlat}
+                        />
+                      )}
+
+                      {toNum(inst.lunarBaseBonus) ? (
+                        <StatBreakdownRow
+                          name="Lunar Reaction Base DMG Bonus"
+                          unit="percent"
+                          raw={0}
+                          additions={[
+                            {
+                              source: "Moonsign Benediction / Panel Input",
+                              value: toNum(inst.lunarBaseBonus) || 0,
+                              description: "Lunar reaction base DMG bonus %",
+                            },
+                          ]}
+                          total={toNum(inst.lunarBaseBonus) || 0}
+                        />
+                      ) : null}
                     </div>
                   </div>
 
