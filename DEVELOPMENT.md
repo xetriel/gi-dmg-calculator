@@ -6,7 +6,7 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 21, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 22, 2026).
 
 ### New Character Calculators
 - **Kamisato Ayaka (July 21, 2026)**: Added Kamisato Ayaka, a 5-star Cryo Sword main-DPS featuring Cryo infusion via alternate sprint (*Kamisato Art: Senho*), A1 Normal/Charged attack DMG bonus (+30%), A4 Cryo DMG bonus (+18%), C2 Frostflake Seki no To mini-whirlwinds (20% DMG), C4 DEF reduction (-30%), and C6 Charged Attack DMG bonus (+298%).
@@ -24,6 +24,7 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Remastered Effective Stats Panel & Additive Breakdown (July 22, 2026)**: Remastered the "EFFECTIVE STATS" panel into a single-column stacked layout displaying the full additive breakdown (`<raw> + <add1> + <add2> = <total>`) for every single attribute and reaction multiplier. Integrated interactive chat-cloud tooltips (`[?]`) via a new [StatBreakdownRow.tsx](file:///c:/Users/Henry%20Budiana/Documents/GitHub/gi-dmg-calculator/src/components/calculator/components/StatBreakdownRow.tsx) component to reveal detailed buff source descriptions on hover/click.
 - **Comprehensive Effective Stats (July 19, 2026)**: Re-designed the "Effective Stats" panel on the setup card to show all output stats (such as target levels, defenses, resistances, Energy Recharge, Healing Bonus, and specific active element/physical DMG bonuses), removing actual reaction output DMG values to keep the panel focused purely on stats.
 - **Scrollbar Hiding in Sidebar (July 19, 2026)**: Added styling to hide the vertical and horizontal scrollbars in the navigation panel and list container, improving UI cleanliness while retaining full scroll functionality.
 - **Vertical/Horizontal Split View Layout (July 18, 2026)**: Implemented split-screen mechanics for character setups with vertical splitting (top part for inputs, bottom part for damage outputs), featuring mouse drag resizing via a draggable horizontal divider.
