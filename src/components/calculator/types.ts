@@ -48,12 +48,29 @@ export interface ReactionExtras {
   notes: string[];
 }
 
+export interface StatBuffSource {
+  source: string;       // e.g. "Paramita Papilio State (Skill)", "Sanguine Bleed (A4)"
+  value: number;        // e.g. 400 or 33.0
+  description?: string; // detailed explanation
+}
+
+export interface StatBreakdown {
+  key: string;
+  label: string;
+  unit: "flat" | "percent" | "multiplier";
+  raw: number;
+  additions: StatBuffSource[];
+  total: number;
+  hideIfZero?: boolean;
+}
+
 export interface ComputedInstance {
   validation: ReturnType<typeof validate>;
   results: Record<string, HitResult> | null;
   extras: ReactionExtras | null;
   inputStats: DamageStats | null;
   effectiveStats: DamageStats | null;
+  statBreakdowns?: StatBreakdown[];
   rotationTotals: Record<string, number>;
   rotationStepsDmg: Record<string, number[]>;
   rotationStepsDetails: Record<string, HitResult[]>;
