@@ -22,6 +22,8 @@ const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; titl
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
+import { HitFormulaTooltip } from "./HitFormulaTooltip";
+
 interface DamageTableProps {
   inst: CalcInstance;
   config: CharacterConfig;
@@ -32,6 +34,7 @@ interface DamageTableProps {
   validation: ReturnType<typeof validate>;
   setLevel: (instId: string, type: string, v: string) => void;
   setHit: (instId: string, hitId: string, v: string) => void;
+  onFormulaRedirect?: (targetAnchorId: string) => void;
 }
 
 export const DamageTable: React.FC<DamageTableProps> = ({
@@ -44,6 +47,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
   validation,
   setLevel,
   setHit,
+  onFormulaRedirect,
 }) => {
   const err = (id: string) => validation.errors[id];
   
@@ -117,11 +121,13 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                   const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
                   const isHeal = h.kind === "heal";
                   const isShield = h.kind === "shield";
+                  const isInactive = h.minConstellation != null && inst.constellationLevel < h.minConstellation;
+
                   return (
                     <tr
                       key={id}
                       className={`border-t border-gray-100 dark:border-zinc-800/60 ${
-                        isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : isShield ? "bg-blue-50/40 dark:bg-blue-950/10" : ""
+                        isHeal ? "bg-emerald-50/40 dark:bg-emerald-950/10" : isShield ? "bg-blue-50/40 dark:bg-blue-950/10" : isInactive ? "opacity-60 bg-gray-50/30 dark:bg-zinc-900/30" : ""
                       }`}
                     >
                       <td className="py-1.5 text-gray-700 dark:text-gray-300 font-medium">
@@ -142,6 +148,16 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                             {DIRECT_TAG[h.direct].label}
                           </span>
                         ) : null}
+                        {onFormulaRedirect && !isHeal && !isShield && (
+                          <HitFormulaTooltip
+                            hitName={h.name}
+                            targetAnchorId={`hit-${id}`}
+                            nonCrit={isInactive ? undefined : res?.nonCrit}
+                            crit={isInactive ? undefined : res?.crit}
+                            avg={isInactive ? undefined : res?.avg}
+                            onFormulaRedirect={onFormulaRedirect}
+                          />
+                        )}
                       </td>
                       <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
                         {levelVal != null ? (
@@ -157,7 +173,11 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                         )}
                       </td>
                       {results ? (
-                        isHeal || isShield ? (
+                        isInactive ? (
+                          <td colSpan={3} className="py-1.5 text-right font-mono text-gray-400 dark:text-zinc-500 italic" title={`Requires Constellation ${h.minConstellation}`}>
+                            —
+                          </td>
+                        ) : isHeal || isShield ? (
                           <td
                             colSpan={3}
                             className="py-1.5 text-right tabular-nums font-semibold"

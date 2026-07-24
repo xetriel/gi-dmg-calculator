@@ -1,0 +1,345 @@
+import type { CharacterConfig, Element, ReactionType } from "@/data/registry/types";
+import type { TalentScalingData } from "@/lib/talent-scaling";
+import type { CalcInstance } from "@/components/calculator/types";
+import {
+  computeHit,
+  scalingTotal,
+  defMultiplier,
+  resMultiplier,
+  amplifyingMultiplier,
+  catalyzeAdditive,
+  dmgBonusMultiplier,
+  stellarEmBonus,
+  type DamageStats,
+  type HitResult,
+} from "./damage";
+import {
+  resolveStats,
+  resolveHitMultipliers,
+  effectiveTalentLevels,
+  toNum,
+  hitId,
+} from "./validation";
+import { resolveMechanics } from "./mechanics";
+import { levelMultiplier } from "./level-multiplier";
+import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "./transformative";
+import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
+
+export interface FormulaBreakdown {
+  id: string;
+  hitName: string;
+  category: string;
+  element: Element | "Physical";
+  reaction: ReactionType;
+  multiplierPct: number;
+  scalingSource: string;
+  nonCrit: number;
+  crit: number;
+  avg: number;
+  mainFormula: string;
+  subBreakdowns: string[];
+}
+
+const fmt = (n: number, decimals: number = 1) => {
+  if (!Number.isFinite(n)) return "0";
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  });
+};
+
+const fmtPct = (n: number, decimals: number = 1) => `${fmt(n, decimals)}%`;
+
+export function explainHitFormulas(
+  config: CharacterConfig,
+  scaling: TalentScalingData,
+  inst: CalcInstance
+): FormulaBreakdown[] {
+  const inputStats = resolveStats({
+    stats: inst.stats,
+    hits: inst.hits,
+    reaction: inst.reaction,
+    reactionBonus: inst.reactionBonus,
+    mechanicInputs: inst.mechanicInputs,
+  });
+
+  const parsedInputs: Record<string, number> = {};
+  if (inst.mechanicInputs) {
+    for (const [k, v] of Object.entries(inst.mechanicInputs)) {
+      parsedInputs[k] = Number(v) || 0;
+    }
+  }
+
+  const baseAtk = toNum(inst.stats["atk.base"]) ?? 800;
+  const baseDef = toNum(inst.stats["def.base"]) ?? 500;
+  const baseHp = toNum(inst.stats["hp.base"]) ?? 15000;
+  const atkFlat = toNum(inst.stats["atk.flat"]) ?? 0;
+  const atkPct = toNum(inst.stats["atk.percent"]) ?? 0;
+  const hpFlat = toNum(inst.stats["hp.flat"]) ?? 0;
+  const hpPct = toNum(inst.stats["hp.percent"]) ?? 0;
+  const defFlat = toNum(inst.stats["def.flat"]) ?? 0;
+  const defPct = toNum(inst.stats["def.percent"]) ?? 0;
+
+  const mech = resolveMechanics(config, {
+    stats: inputStats,
+    baseAtk,
+    baseDef,
+    baseHp,
+    constellationLevel: inst.constellationLevel,
+    talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs),
+    scaling,
+    inputs: parsedInputs,
+  });
+
+  const effectiveStats: DamageStats = {
+    ...inputStats,
+    ...mech.statDeltas,
+  };
+
+  const resolvedMultipliers = resolveHitMultipliers(
+    config,
+    scaling,
+    inst.levels,
+    inst.hits,
+    inst.constellationLevel,
+    inst.mechanicInputs
+  );
+
+  const breakdowns: FormulaBreakdown[] = [];
+
+  // 1. Process standard talent hits
+  config.talents.forEach((g, gi) => {
+    g.hits.forEach((h, hi) => {
+      const id = hitId(gi, hi);
+      const mult = resolvedMultipliers[id];
+      if (mult == null || mult === 0) return;
+
+      const mods = mech.perHit[h.key] ?? {};
+      const elem = mods.element ?? config.element;
+      const effectiveReaction = inst.reaction;
+
+      const hitRes = computeHit(effectiveStats, {
+        multiplier: mult,
+        scaling: h.scaling,
+        element: elem,
+        reaction: effectiveReaction,
+        reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
+        flatDmgBonus: mods.flatDmgBonus,
+        baseDmgMultiplier: mods.baseDmgMultiplier,
+        critDmgBonusPct: mods.critDmgBonusPct,
+        critRateBonusPct: mods.critRateBonusPct,
+        bonusDmgPct: mods.bonusDmgPct,
+        defIgnorePct: mods.defIgnorePct,
+        hitCategory: h.hitCategory ?? (g.type as any),
+        charElement: config.element,
+        dmgBonusLabel: config.dmgBonusLabel,
+        directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+      });
+
+      const statVal = scalingTotal(effectiveStats, h.scaling);
+      const statName = h.scaling.toUpperCase();
+      const baseMult = mods.baseDmgMultiplier ?? 1;
+      const flatIncrease = mods.flatDmgBonus ?? 0;
+
+      // Catalyze additive DMG
+      const catAdd = elem === "Physical" ? 0 : catalyzeAdditive(elem, effectiveReaction, effectiveStats.levelChar, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
+      const totalIncrease = flatIncrease + catAdd;
+
+      // Base DMG term calculation
+      const baseDmgTerm = (mult / 100) * statVal * baseMult + totalIncrease;
+
+      // DMG bonus calculation
+      let categoryBonus = 0;
+      const catKey = h.hitCategory ?? (g.type as any);
+      if (catKey === "normal") categoryBonus = effectiveStats.normalDmgBonus;
+      else if (catKey === "charged") categoryBonus = effectiveStats.chargedDmgBonus;
+      else if (catKey === "plunge") categoryBonus = effectiveStats.plungeDmgBonus;
+      else if (catKey === "skill") categoryBonus = effectiveStats.skillDmgBonus;
+      else if (catKey === "burst") categoryBonus = effectiveStats.burstDmgBonus;
+      else if (catKey === "special") categoryBonus = 0;
+
+      let elementBonus = 0;
+      if (elem === "Pyro") elementBonus = effectiveStats.pyroDmgBonus;
+      else if (elem === "Hydro") elementBonus = effectiveStats.hydroDmgBonus;
+      else if (elem === "Dendro") elementBonus = effectiveStats.dendroDmgBonus;
+      else if (elem === "Electro") elementBonus = effectiveStats.electroDmgBonus;
+      else if (elem === "Anemo") elementBonus = effectiveStats.anemoDmgBonus;
+      else if (elem === "Cryo") elementBonus = effectiveStats.cryoDmgBonus;
+      else if (elem === "Geo") elementBonus = effectiveStats.geoDmgBonus;
+      else if (elem === "Physical") elementBonus = effectiveStats.physicalDmgBonus;
+
+      const commonBonus = effectiveStats.dmgBonus;
+      const extraBonus = mods.bonusDmgPct ?? 0;
+      const totalDmgBonusPct = commonBonus + categoryBonus + elementBonus + extraBonus - effectiveStats.dmgReduction;
+      const dmgBonusMult = 1 + totalDmgBonusPct / 100;
+
+      // CRIT Rate & CRIT DMG
+      const effectiveCritRate = Math.min(Math.max(effectiveStats.critRate + (mods.critRateBonusPct ?? 0), 0), 100);
+      const effectiveCritDmg = effectiveStats.critDmg + (mods.critDmgBonusPct ?? 0);
+      const critMult = 1 + effectiveCritDmg / 100;
+
+      // DEF & RES multipliers
+      const defMult = defMultiplier(effectiveStats, mods.defIgnorePct);
+      const resMult = resMultiplier(effectiveStats.enemyRes);
+      const ampMult = elem === "Physical" ? 1 : amplifyingMultiplier(elem, effectiveReaction, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
+
+      // Build main formula line
+      const mainFormula = `${h.name} ${fmt(hitRes.crit)} = (${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)}) * (100% + Total Crit Rate ${fmtPct(effectiveCritRate)} * Total Crit DMG ${fmtPct(effectiveCritDmg)})${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
+
+      // Sub breakdowns
+      const subBreakdowns: string[] = [];
+
+      // Stat breakdown (ATK/HP/DEF/EM)
+      if (h.scaling === "atk") {
+        const charAtk = (config.stats.find(s => s.key === "atk") as any)?.baseDefault ?? 342;
+        const weaponAtk = Math.max(0, baseAtk - charAtk);
+        const mechAtkAdds = mech.statBuffSources?.["atk"] ?? [];
+        const mechAtkSum = mechAtkAdds.reduce((acc, c) => acc + c.value, 0);
+
+        subBreakdowns.push(`Total ATK ${fmt(effectiveStats.atk)} = Base ATK ${fmt(baseAtk)} * (100% + Art. ATK ${fmtPct(atkPct)}${mechAtkAdds.length > 0 ? ` + Mechanics ATK%` : ""}) + Art. ATK ${fmt(atkFlat)}${mechAtkSum !== 0 ? ` + Buffs ${fmt(mechAtkSum)}` : ""}`);
+        subBreakdowns.push(`Base ATK ${fmt(baseAtk)} = Char. ATK ${fmt(charAtk)} + Weapon ATK ${fmt(weaponAtk)}`);
+        if (mechAtkAdds.length > 0) {
+          subBreakdowns.push(`Mechanics ATK Buffs = ${mechAtkAdds.map(a => `${a.source} (${fmt(a.value)})`).join(" + ")}`);
+        }
+      } else if (h.scaling === "hp") {
+        subBreakdowns.push(`Total HP ${fmt(effectiveStats.hp)} = Base HP ${fmt(baseHp)} * (100% + HP ${fmtPct(hpPct)}) + Flat HP ${fmt(hpFlat)}`);
+      } else if (h.scaling === "def") {
+        subBreakdowns.push(`Total DEF ${fmt(effectiveStats.def)} = Base DEF ${fmt(baseDef)} * (100% + DEF ${fmtPct(defPct)}) + Flat DEF ${fmt(defFlat)}`);
+      } else if (h.scaling === "em") {
+        subBreakdowns.push(`Total EM ${fmt(effectiveStats.em)} = Base EM ${fmt(inputStats.em)}`);
+      }
+
+      // DMG Increase breakdown
+      if (totalIncrease > 0) {
+        subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = ${flatIncrease > 0 ? `Flat DMG Bonus ${fmt(flatIncrease)}` : ""}${catAdd > 0 ? `${flatIncrease > 0 ? " + " : ""}Aggravate Catalyze DMG ${fmt(catAdd)}` : ""}`);
+      }
+
+      // DMG Bonus breakdown
+      if (catKey === "special") {
+        subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = Total Common DMG Bonus ${fmtPct(commonBonus)} + Total ${elem} DMG Bonus ${fmtPct(elementBonus)}${extraBonus > 0 ? ` + Extra Hit Bonus ${fmtPct(extraBonus)}` : ""} (Independent Special Hit — Excludes Skill/Normal/Burst DMG Bonus)`);
+      } else {
+        subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = Total Common DMG Bonus ${fmtPct(commonBonus)} + Total ${g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)} + Total ${elem} DMG Bonus ${fmtPct(elementBonus)}${extraBonus > 0 ? ` + Extra Hit Bonus ${fmtPct(extraBonus)}` : ""}`);
+      }
+      subBreakdowns.push(`Total Common DMG Bonus ${fmtPct(commonBonus)} = Common DMG Bonus ${fmtPct(commonBonus)}`);
+      subBreakdowns.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)} = ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+
+      // CRIT Rate & CRIT DMG breakdown
+      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(inputStats.critRate)}${mods.critRateBonusPct ? ` + Bonus Crit Rate ${fmtPct(mods.critRateBonusPct)}` : ""}), 100%), 0%)`);
+      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(inputStats.critDmg)}${mods.critDmgBonusPct ? ` + Bonus Crit DMG ${fmtPct(mods.critDmgBonusPct)}` : ""}`);
+
+      // DEF Multiplier breakdown
+      if (!h.direct) {
+        subBreakdowns.push(`Enemy DEF Multiplier ${fmtPct(defMult * 100)} = Min(100%, ((Char. Level ${effectiveStats.levelChar} + 100) / (Char. Level ${effectiveStats.levelChar} + 100 + (Enemy Level ${effectiveStats.levelEnemy} + 100))))`);
+      }
+
+      // RES Multiplier breakdown
+      subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(inputStats.enemyRes)}`);
+
+      if (ampMult !== 1) {
+        const baseAmp = elem === "Physical" ? 1 : (AMP_BASE[elem]?.[effectiveReaction] ?? 1);
+        subBreakdowns.push(`Amplifying Reaction Multiplier ${fmt(ampMult, 2)}x = Base ${effectiveReaction} (${baseAmp}x) * (1 + 2.78 * EM ${fmt(effectiveStats.em)} / (EM + 1400) + Reaction Bonus ${fmtPct(Number(inst.reactionBonus || 0))})`);
+      }
+
+      breakdowns.push({
+        id: `hit-${id}`,
+        hitName: h.name,
+        category: g.type,
+        element: elem,
+        reaction: effectiveReaction,
+        multiplierPct: mult,
+        scalingSource: h.scaling,
+        nonCrit: hitRes.nonCrit,
+        crit: hitRes.crit,
+        avg: hitRes.avg,
+        mainFormula,
+        subBreakdowns,
+      });
+    });
+  });
+
+  // 2. Process Transformative Reactions
+  const transformativeList = TRANSFORMATIVE_BY_ELEMENT[config.element] ?? [];
+  transformativeList.forEach(tType => {
+    const dmg = transformativeDamage(
+      tType,
+      effectiveStats.levelChar,
+      effectiveStats.em,
+      effectiveStats.enemyRes,
+      toNum(inst.reactionPanelBonus) ?? 0
+    );
+
+    const label = TRANSFORMATIVE_LABEL[tType];
+    const emBonusPct = ((16 * effectiveStats.em) / (effectiveStats.em + 2000)) * 100;
+    const panelBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
+    const totalBonusPct = emBonusPct + panelBonusPct;
+    const resMult = resMultiplier(effectiveStats.enemyRes);
+
+    const mainFormula = `${label} DMG ${fmt(dmg)} = Base Reaction Scaling * (100% + Reaction Bonus ${fmtPct(totalBonusPct)}) * Enemy RES Multiplier ${fmtPct(resMult * 100)}`;
+    const subBreakdowns = [
+      `Reaction Bonus ${fmtPct(totalBonusPct)} = EM Bonus ${fmtPct(emBonusPct)} + Panel Bonus ${fmtPct(panelBonusPct)}`,
+      `EM Bonus ${fmtPct(emBonusPct)} = (16 * EM ${fmt(effectiveStats.em)}) / (EM + 2000)`,
+      `Enemy RES Multiplier ${fmtPct(resMult * 100)} = (100% - Enemy RES ${fmtPct(effectiveStats.enemyRes)} / 2)`,
+    ];
+
+    breakdowns.push({
+      id: `tr-${tType}`,
+      hitName: `${label} Reaction`,
+      category: "transformative",
+      element: config.element,
+      reaction: "none",
+      multiplierPct: 0,
+      scalingSource: "em",
+      nonCrit: dmg,
+      crit: dmg,
+      avg: dmg,
+      mainFormula,
+      subBreakdowns,
+    });
+  });
+
+  // 3. Process Indirect Lunar Reactions
+  const lunarList = LUNAR_BY_ELEMENT[config.element] ?? [];
+  lunarList.forEach(lType => {
+    const res = indirectLunarDamage(
+      lType,
+      effectiveStats,
+      toNum(inst.lunarBaseBonus) ?? 0,
+      toNum(inst.reactionPanelBonus) ?? 0
+    );
+
+    const label = LUNAR_LABEL[lType];
+    const emBonus = stellarEmBonus(effectiveStats.em);
+    const mainFormula = `${label} DMG ${fmt(res.avg)} = Base Lunar DMG * (100% + EM Bonus ${fmtPct(emBonus * 100)}) * (100% + Crit Rate ${fmtPct(effectiveStats.critRate)} * Crit DMG ${fmtPct(effectiveStats.critDmg)}) * Enemy RES Multiplier`;
+    const subBreakdowns = [
+      `EM Bonus ${fmtPct(emBonus * 100)} = (6 * EM ${fmt(effectiveStats.em)}) / (EM + 2000)`,
+      `Non-Crit DMG: ${fmt(res.nonCrit)} | Crit DMG: ${fmt(res.crit)} | Average DMG: ${fmt(res.avg)}`,
+    ];
+
+    breakdowns.push({
+      id: `lunar-${lType}`,
+      hitName: `${label} Reaction`,
+      category: "lunar",
+      element: config.element,
+      reaction: "none",
+      multiplierPct: 0,
+      scalingSource: "em",
+      nonCrit: res.nonCrit,
+      crit: res.crit,
+      avg: res.avg,
+      mainFormula,
+      subBreakdowns,
+    });
+  });
+
+  return breakdowns;
+}
+
+const AMP_BASE: Record<Element, Partial<Record<ReactionType, number>>> = {
+  Pyro: { vaporize: 1.5, melt: 2.0 },
+  Hydro: { vaporize: 2.0 },
+  Cryo: { melt: 1.5 },
+  Electro: {},
+  Anemo: {},
+  Geo: {},
+  Dendro: {},
+};

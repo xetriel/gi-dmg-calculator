@@ -114,7 +114,7 @@ describe("seed data integrity", () => {
     const count = (id: string) => flattenSeed(TALENT_SEED.filter(s => s.characterId === id)).length;
     expect(count("hu-tao")).toBe(205);       // NA 11×11 + skill 2×14 + burst 4×14
     expect(count("neuvillette")).toBe(152);  // NA 8×13 + skill 2×11 + burst 2×13
-    expect(count("arlecchino")).toBe(211);   // NA 12×14 + skill 3×10 + burst 1×13
+    expect(count("arlecchino")).toBe(225);   // NA 12×14 + skill 3×10 + burst 1×13 + special (c2) 1×14
     expect(count("clorinde")).toBe(203);     // NA 9×11 + skill 6×13 + burst 2×13
   });
   it("level-select resolves wiki spot values", () => {

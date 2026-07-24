@@ -9,6 +9,7 @@ import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine/lunar";
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
+import { encodeBuild } from "@/lib/engine/share";
 import { renderStyledText } from "./calculator/utils/colors";
 
 // Import custom hooks and components
@@ -1205,6 +1206,13 @@ export function CharacterCalculator({
                 ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                 : 0;
 
+              const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
+                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
+                const encoded = encodeBuild(payload);
+                const hash = targetAnchorId ? `#${targetAnchorId}` : "";
+                router.push(`/characters/${config.id}/formula?share=${encoded}${hash}`);
+              };
+
               return (
                 <div className="space-y-4">
                   {/* Reaction selector */}
@@ -1258,13 +1266,22 @@ export function CharacterCalculator({
 
                   {/* Remastered Effective stats panel box */}
                   <div className="mb-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/40 p-3 shadow-2xs select-none">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                       <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
                         Effective Stats & Buff Breakdown
                       </h2>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
-                        Formula: Raw + Additions = Total
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono hidden sm:inline">
+                          Formula: Raw + Additions = Total
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleFormulaRedirectWithAnchor()}
+                          className="text-[10px] px-2.5 py-1 font-semibold rounded bg-amber-500 hover:bg-amber-600 text-black transition-colors cursor-pointer shadow-xs"
+                        >
+                          Formula Breakdown Page →
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -1481,6 +1498,7 @@ export function CharacterCalculator({
                     validation={validation}
                     setLevel={setLevel}
                     setHit={setHit}
+                    onFormulaRedirect={handleFormulaRedirectWithAnchor}
                   />
 
                   {/* Transformative Reaction lists */}
@@ -1490,6 +1508,7 @@ export function CharacterCalculator({
                     extras={extras}
                     validation={validation}
                     updateInstance={updateInstance}
+                    onFormulaRedirect={handleFormulaRedirectWithAnchor}
                   />
 
                   {/* Rotation Average summaries */}
