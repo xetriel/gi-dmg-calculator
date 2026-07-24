@@ -75,7 +75,8 @@ export function effectiveTalentLevels(
   const out: Record<string, number> = {};
   for (const g of config.talents) {
     const s = scaling[g.type];
-    const baseLvl = s ? Number(levels[g.type]) : NaN;
+    const rawLvlStr = levels[g.type] ?? (g.type === "special" ? "1" : "");
+    const baseLvl = s ? Number(rawLvlStr) : NaN;
     const effectiveLvl = baseLvl ? baseLvl + (lvlBonuses[g.type] ?? 0) : NaN;
     const maxLvl = s ? Math.max(...s.levels) : 0;
     out[g.type] = effectiveLvl > maxLvl ? maxLvl : effectiveLvl;
@@ -134,11 +135,13 @@ export function validate(
   }
 
   // Every talent hit must resolve to a multiplier (from its talent level or manual input).
+  const consLevel = toNum(raw.stats["constellationLevel"]) ?? 0;
   config.talents.forEach((g, gi) =>
-    g.hits.forEach((_h, hi) => {
+    g.hits.forEach((h, hi) => {
       const id = hitId(gi, hi);
       const m = resolvedHits[id];
-      if (m == null || !Number.isFinite(m)) errors[id] = "Required";
+      const isInactive = h.minConstellation != null && consLevel < h.minConstellation;
+      if ((m == null || !Number.isFinite(m)) && !isInactive) errors[id] = "Required";
     }),
   );
 

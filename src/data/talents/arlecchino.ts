@@ -27,5 +27,7 @@ export const arlecchinoSeed: CharacterTalentSeed = {
     { hitKey: "blood-debt-directive", talentType: "skill", values: [31.80, 34.19, 36.57, 39.75, 42.13, 44.52, 47.70, 50.88, 54.06, 57.24] },
     // Elemental Burst — Balemoon Rising
     { hitKey: "skill-dmg", talentType: "burst", values: [370.40, 398.18, 425.96, 463.00, 490.78, 518.56, 555.60, 592.64, 629.68, 666.72, 703.76, 740.80, 787.10] },
+    // C2 DMG — Balemoon Bloodfire (900% ATK)
+    { hitKey: "c2-balemoon-bloodfire", talentType: "special", values: [900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900] },
   ],
 };

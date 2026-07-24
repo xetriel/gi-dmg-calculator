@@ -7,8 +7,8 @@ export type Weapon = "Sword" | "Claymore" | "Polearm" | "Catalyst" | "Bow";
 // "none" = no reaction. Transformative and Lunar reactions are standalone outputs.
 export type ReactionType = "none" | "vaporize" | "melt" | "aggravate";
 
-// The three talent categories; each has one selectable level in the UI.
-export type TalentType = "normal" | "skill" | "burst";
+// The talent categories; each has one selectable level in the UI.
+export type TalentType = "normal" | "skill" | "burst" | "special";
 
 export type StatKey =
   | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge"
@@ -40,9 +40,9 @@ export interface StatField {
 // the mechanics resolver supplies the per-hit coefficient/bonus params.
 // Hit categories for talent-type-specific DMG Bonus routing.
 // "normal"/"charged"/"plunge" are sub-types within the "normal" talent group;
-// "skill"/"burst" map directly to their talent group type.
-export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst";
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; }
+// "skill"/"burst" map directly to their talent group type. "special" hits receive only All DMG Bonus.
+export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst" | "special";
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; minConstellation?: number; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in

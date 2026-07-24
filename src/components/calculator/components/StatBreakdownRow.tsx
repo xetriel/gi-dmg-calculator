@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import type { StatBuffSource } from "../types";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -21,11 +21,26 @@ export const StatBreakdownRow: React.FC<StatBreakdownRowProps> = ({
   hideIfZero,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // If hideIfZero is true and total is virtually zero, don't render
   if (hideIfZero && Math.abs(total) < 0.05) {
     return null;
   }
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 200);
+  };
 
   const formatVal = (v: number) => {
     if (unit === "percent") return `${v.toFixed(1)}%`;
@@ -89,8 +104,8 @@ export const StatBreakdownRow: React.FC<StatBreakdownRowProps> = ({
         {/* Question Mark Logo / Chat-Cloud Tooltip Button */}
         <div
           className="relative inline-block ml-1"
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <button
             type="button"
@@ -103,7 +118,11 @@ export const StatBreakdownRow: React.FC<StatBreakdownRowProps> = ({
 
           {/* Chat Cloud Speech Bubble Popover */}
           {showTooltip && (
-            <div className="absolute right-0 bottom-full mb-2 w-72 z-50 p-3 rounded-xl bg-zinc-900/95 dark:bg-zinc-950/95 text-white border border-zinc-700/80 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+            <div
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              className="absolute right-0 bottom-full mb-2 w-72 z-50 p-3 rounded-xl bg-zinc-900/95 dark:bg-zinc-950/95 text-white border border-zinc-700/80 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 pointer-events-auto"
+            >
               {/* Speech bubble arrow point */}
               <div className="absolute right-1.5 -bottom-1.5 w-3 h-3 bg-zinc-900 dark:bg-zinc-950 border-r border-b border-zinc-700/80 transform rotate-45"></div>
 
