@@ -8,12 +8,15 @@ import { DMG_COLORS } from "../utils/colors";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
+import { HitFormulaTooltip } from "./HitFormulaTooltip";
+
 interface TransformativePanelProps {
   inst: CalcInstance;
   config: CharacterConfig;
   extras: ReactionExtras | null;
   validation: ReturnType<typeof validate>;
   updateInstance: (id: string, updater: (inst: CalcInstance) => Partial<CalcInstance>) => void;
+  onFormulaRedirect?: (targetAnchorId: string) => void;
 }
 
 export const TransformativePanel: React.FC<TransformativePanelProps> = ({
@@ -22,6 +25,7 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
   extras,
   validation,
   updateInstance,
+  onFormulaRedirect,
 }) => {
   const err = (id: string) => validation.errors[id];
   
@@ -138,6 +142,16 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                 >
                   <td className="py-1.5 font-medium" style={{ color }}>
                     {label}
+                    {onFormulaRedirect && (
+                      <HitFormulaTooltip
+                        hitName={`${label} Reaction`}
+                        targetAnchorId={`tr-${t.type}`}
+                        nonCrit={t.dmg}
+                        crit={t.dmg}
+                        avg={t.dmg}
+                        onFormulaRedirect={onFormulaRedirect}
+                      />
+                    )}
                   </td>
                   <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
                     <span className="font-semibold">{fmt(t.dmg)}</span>
@@ -158,6 +172,16 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                 >
                   <td className="py-1.5 font-medium" style={{ color }}>
                     {LUNAR_LABEL[l.type]}
+                    {onFormulaRedirect && (
+                      <HitFormulaTooltip
+                        hitName={`${LUNAR_LABEL[l.type]} Reaction`}
+                        targetAnchorId={`lunar-${l.type}`}
+                        nonCrit={l.res.nonCrit}
+                        crit={l.res.crit}
+                        avg={l.res.avg}
+                        onFormulaRedirect={onFormulaRedirect}
+                      />
+                    )}
                   </td>
                   <td className="py-1.5 pr-1 text-right tabular-nums">
                     {fmt(l.res.nonCrit)}

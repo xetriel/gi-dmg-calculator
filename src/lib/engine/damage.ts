@@ -105,6 +105,7 @@ export function dmgBonusMultiplier(
     case "plunge":  categoryBonus = stats.plungeDmgBonus; break;
     case "skill":   categoryBonus = stats.skillDmgBonus; break;
     case "burst":   categoryBonus = stats.burstDmgBonus; break;
+    case "special": categoryBonus = 0; break;
   }
 
   // Determine base elemental/physical/all DMG Bonus from character's default dmgBonus field.

@@ -20,6 +20,9 @@ export const arlecchino: CharacterConfig = {
       atk("spike", "Spike"), atk("cleave", "Cleave"), atk("blood-debt-directive", "Blood-Debt Directive"),
     ] },
     { type: "burst", name: "Elemental Burst — Balemoon Rising", hits: [atk("skill-dmg", "Skill DMG")] },
+    { type: "special", name: "C2 DMG — Balemoon Bloodfire", hits: [
+      { key: "c2-balemoon-bloodfire", name: "Balemoon Bloodfire", scaling: "atk", hitCategory: "special", minConstellation: 2 }
+    ] },
   ],
   mechanicDefs: [
     { id: "bond-of-life", label: "Bond of Life (% Max HP)", control: "percent", max: 200, defaultValue: 100,
