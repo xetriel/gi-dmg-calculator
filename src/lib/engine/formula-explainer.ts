@@ -24,6 +24,7 @@ import { resolveMechanics } from "./mechanics";
 import { levelMultiplier } from "./level-multiplier";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "./transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
+import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
 
 export interface FormulaBreakdown {
   id: string;
@@ -96,6 +97,14 @@ export function explainHitFormulas(
     ...mech.statDeltas,
   };
 
+  const effects = activeEffects(config, inst.constellationLevel);
+  const statBonuses = constellationStatBonuses(effects);
+  for (const [key, val] of Object.entries(statBonuses)) {
+    if (key in effectiveStats) {
+      (effectiveStats as unknown as Record<string, number>)[key] += val;
+    }
+  }
+
   const resolvedMultipliers = resolveHitMultipliers(
     config,
     scaling,
@@ -114,9 +123,15 @@ export function explainHitFormulas(
       const mult = resolvedMultipliers[id];
       if (mult == null || mult === 0) return;
 
+      // Skip inactive constellation hits
+      if (h.minConstellation != null && inst.constellationLevel < h.minConstellation) {
+        return;
+      }
+
       const mods = mech.perHit[h.key] ?? {};
       const elem = mods.element ?? config.element;
       const effectiveReaction = inst.reaction;
+      const flatBonus = constellationFlatBonus(effects, h.key, effectiveStats) + (mods.flatDmgBonus ?? 0);
 
       const hitRes = computeHit(effectiveStats, {
         multiplier: mult,
@@ -124,7 +139,7 @@ export function explainHitFormulas(
         element: elem,
         reaction: effectiveReaction,
         reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
-        flatDmgBonus: mods.flatDmgBonus,
+        flatDmgBonus: flatBonus || undefined,
         baseDmgMultiplier: mods.baseDmgMultiplier,
         critDmgBonusPct: mods.critDmgBonusPct,
         critRateBonusPct: mods.critRateBonusPct,
@@ -139,7 +154,7 @@ export function explainHitFormulas(
       const statVal = scalingTotal(effectiveStats, h.scaling);
       const statName = h.scaling.toUpperCase();
       const baseMult = mods.baseDmgMultiplier ?? 1;
-      const flatIncrease = mods.flatDmgBonus ?? 0;
+      const flatIncrease = flatBonus;
 
       // Catalyze additive DMG
       const catAdd = elem === "Physical" ? 0 : catalyzeAdditive(elem, effectiveReaction, effectiveStats.levelChar, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
@@ -212,6 +227,12 @@ export function explainHitFormulas(
       // DMG Increase breakdown
       if (totalIncrease > 0) {
         subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = ${flatIncrease > 0 ? `Flat DMG Bonus ${fmt(flatIncrease)}` : ""}${catAdd > 0 ? `${flatIncrease > 0 ? " + " : ""}Aggravate Catalyze DMG ${fmt(catAdd)}` : ""}`);
+        if (config.id === "arlecchino" && flatIncrease > 0 && (h.hitCategory === "normal" || g.type === "normal")) {
+          const bolPct = parsedInputs["bond-of-life"] ?? 0;
+          let masquePct = 238;
+          if (inst.constellationLevel >= 1) masquePct += 100;
+          subBreakdowns.push(`Masque of the Red Death Flat DMG ${fmt(flatIncrease)} = Masque Increase ${masquePct}% * Bond of Life ${bolPct}% * Total ATK ${fmt(effectiveStats.atk)}`);
+        }
       }
 
       // DMG Bonus breakdown
@@ -303,7 +324,7 @@ export function explainHitFormulas(
     const res = indirectLunarDamage(
       lType,
       effectiveStats,
-      toNum(inst.lunarBaseBonus) ?? 0,
+      (toNum(inst.lunarBaseBonus) ?? 0) + (mech.lunarBaseBonusPct ?? 0),
       toNum(inst.reactionPanelBonus) ?? 0
     );
 
