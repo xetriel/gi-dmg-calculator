@@ -3,8 +3,7 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { HitResult } from "@/lib/engine/damage";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { CalcInstance } from "../types";
-import type { validate } from "@/lib/engine/validation";
-import { hitId } from "@/lib/engine/validation";
+import { hitId, effectiveTalentLevels, type validate } from "@/lib/engine/validation";
 import { getHitColor, DMG_COLORS } from "../utils/colors";
 
 const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; title: string }> = {
@@ -50,6 +49,13 @@ export const DamageTable: React.FC<DamageTableProps> = ({
   onFormulaRedirect,
 }) => {
   const err = (id: string) => validation.errors[id];
+  const effLevels = effectiveTalentLevels(
+    config,
+    scaling,
+    inst.levels,
+    inst.constellationLevel,
+    inst.mechanicInputs
+  );
   
   const inputCls = (id: string, w: string) =>
     `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${
@@ -78,14 +84,17 @@ export const DamageTable: React.FC<DamageTableProps> = ({
     <>
       {config.talents.map((g, gi) => {
         const s = scaling[g.type];
-        const selLevel = s ? Number(inst.levels[g.type]) : NaN;
+        const baseLevel = s ? Number(inst.levels[g.type]) : NaN;
+        const effLevel = effLevels[g.type];
+        const bonusLvl = Number.isFinite(effLevel) && Number.isFinite(baseLevel) ? effLevel - baseLevel : 0;
+
         return (
           <section key={g.name} className="mt-4">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-1">
               <h3 className="font-semibold text-sm">{g.name}</h3>
               {s && s.levels.length ? (
-                <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                  Lv.
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <span>Lv.</span>
                   <select
                     className="border border-gray-250 dark:border-zinc-700 rounded px-1.5 py-0.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white"
                     value={inst.levels[g.type] ?? ""}
@@ -97,7 +106,15 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                       </option>
                     ))}
                   </select>
-                </label>
+                  {bonusLvl > 0 ? (
+                    <span
+                      className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1 py-0.5 rounded border border-amber-500/20 select-none"
+                      title={`+${bonusLvl} from Constellations (Effective Level ${effLevel})`}
+                    >
+                      +{bonusLvl} (Lv.{effLevel})
+                    </span>
+                  ) : null}
+                </div>
               ) : null}
             </div>
             <table className="mt-1 w-full text-xs">
@@ -118,7 +135,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                 {g.hits.map((h, hi) => {
                   const id = hitId(gi, hi);
                   const res = results?.[id];
-                  const levelVal = s && selLevel ? s.byLevel[selLevel]?.[h.key] : undefined;
+                  const levelVal = s && effLevel ? s.byLevel[effLevel]?.[h.key] : undefined;
                   const isHeal = h.kind === "heal";
                   const isShield = h.kind === "shield";
                   const isInactive = h.minConstellation != null && inst.constellationLevel < h.minConstellation;
@@ -161,7 +178,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                       </td>
                       <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
                         {levelVal != null ? (
-                          <span title={`Talent Lv. ${selLevel}`}>{levelVal}</span>
+                          <span title={`Talent Lv. ${effLevel}${bonusLvl > 0 ? ` (+${bonusLvl} from Constellations)` : ""}`}>{levelVal}</span>
                         ) : (
                           <input
                             className={inputCls(id, "w-16 text-right")}
