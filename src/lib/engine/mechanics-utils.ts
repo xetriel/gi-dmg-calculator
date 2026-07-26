@@ -1,7 +1,7 @@
-import type { CharacterConfig, Element } from "@/data/registry/types";
+import type { CharacterConfig, Element, HitCategory } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { DamageStats, DirectReactionParams } from "./damage";
-
+ 
 export interface PerHitMods {
   flatDmgBonus?: number;
   baseDmgMultiplier?: number;
@@ -47,6 +47,15 @@ export function coeff(ctx: MechanicsCtx, talentType: string, hitKey: string): nu
 // All damage hit keys of one talent group (used to apply "all Normal Attack" effects).
 export function hitKeysOf(config: CharacterConfig, type: string): string[] {
   return config.talents.find(g => g.type === type)?.hits.filter(h => h.kind !== "heal" && h.kind !== "shield").map(h => h.key) ?? [];
+}
+
+// Damage hit keys of a specific category within a talent group (e.g. category "normal" to filter out charged/plunge).
+export function hitKeysOfCategory(config: CharacterConfig, type: string, category: HitCategory): string[] {
+  const group = config.talents.find(g => g.type === type);
+  if (!group) return [];
+  return group.hits
+    .filter(h => h.kind !== "heal" && h.kind !== "shield" && (h.hitCategory === category || (!h.hitCategory && group.type === category)))
+    .map(h => h.key);
 }
 
 export const addMods = (perHit: Record<string, PerHitMods>, key: string, mods: PerHitMods) => {
