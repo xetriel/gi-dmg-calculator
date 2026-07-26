@@ -1277,16 +1277,9 @@ export function CharacterCalculator({
                         Effective Stats & Buff Breakdown
                       </h2>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono hidden sm:inline">
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
                           Formula: Raw + Additions = Total
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => handleFormulaRedirectWithAnchor()}
-                          className="text-[10px] px-2.5 py-1 font-semibold rounded bg-amber-500 hover:bg-amber-600 text-black transition-colors cursor-pointer shadow-xs"
-                        >
-                          Formula Breakdown Page →
-                        </button>
                       </div>
                     </div>
 
