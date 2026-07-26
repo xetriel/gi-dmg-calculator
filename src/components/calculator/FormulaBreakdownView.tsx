@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CharacterConfig } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { CalcInstance } from "./types";
+import { encodeBuild } from "@/lib/engine/share";
 import { hydrateFromBuild, getInitialStats } from "./hooks/useCalculatorState";
 import { explainHitFormulas, type FormulaBreakdown } from "@/lib/engine/formula-explainer";
 import { DMG_COLORS } from "./utils/colors";
@@ -67,6 +68,10 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
   const activeInst = instances.find(i => i.id === activeInstId) ?? instances[0];
   const breakdowns = explainHitFormulas(config, scaling, activeInst);
 
+  const sharePayload = { instances, rotations: [], activeRotationId: "" };
+  const encodedShare = encodeBuild(sharePayload);
+  const backHref = `/characters/${config.id}${encodedShare ? `?share=${encodedShare}` : ""}`;
+
   const categories = ["all", "normal", "charged", "plunge", "skill", "burst", "special", "transformative", "lunar", "team-buffs"];
 
   const filteredBreakdowns = breakdowns.filter(b => {
@@ -115,7 +120,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
           </div>
 
           <Link
-            href={`/characters/${config.id}`}
+            href={backHref}
             className="px-4 py-2 text-sm font-semibold rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors flex items-center gap-1.5 shadow-xs"
           >
             ← Back to Calculator

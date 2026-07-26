@@ -158,12 +158,26 @@ export function useCalculatorState({
     };
   };
 
+  // Read working draft from localStorage if present
+  const getWorkingDraft = () => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error("Failed to load draft from localStorage:", e);
+    }
+    return null;
+  };
+
+  const draftData = getWorkingDraft();
+
   const [instances, setInstances] = useState<CalcInstance[]>(
-    () => hydrated?.instances ?? [createInitialInstance("1")]
+    () => hydrated?.instances ?? draftData?.instances ?? [createInitialInstance("1")]
   );
 
-  const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
-  const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
+  const [activeBuildId, setActiveBuildId] = useState<string | null>(() => hydrated ? null : (draftData?.activeBuildId ?? initialBuild?.id ?? null));
+  const [activeBuildName, setActiveBuildName] = useState<string>(() => hydrated ? "Shared Build" : (draftData?.activeBuildName ?? initialBuild?.name ?? "Scratchpad"));
   const [savedBuildsList, setSavedBuildsList] = useState<SavedBuild[]>(() => {
     let offlineList: SavedBuild[] = [];
     if (typeof window !== "undefined") {
@@ -183,6 +197,7 @@ export function useCalculatorState({
   const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
 
   const [savedJson, setSavedJson] = useState<string>(() => {
+    if (draftData?.savedJson) return draftData.savedJson;
     const payload = {
       instances: hydrated?.instances ?? [createInitialInstance("1")],
       rotations: hydrated?.rotations ?? [{ id: "combo-1", name: "Combo 1", description: "Default rotation sequence", steps: [] }],
@@ -190,9 +205,28 @@ export function useCalculatorState({
     };
     return JSON.stringify(payload);
   });
+
+  // Auto-save working draft to localStorage on mutations
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const draft = {
+        instances,
+        rotations,
+        activeRotationId,
+        activeBuildId,
+        activeBuildName,
+        savedJson,
+      };
+      localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
+    } catch (e) {
+      console.error("Failed to auto-save working draft:", e);
+    }
+  }, [config.id, instances, rotations, activeRotationId, activeBuildId, activeBuildName, savedJson]);
+
   const [benchmarkId, setBenchmarkId] = useState<string | null>(null);
   const [nextId, setNextId] = useState(() => {
-    const insts = hydrated?.instances ?? [];
+    const insts: CalcInstance[] = hydrated?.instances ?? draftData?.instances ?? [];
     if (insts.length > 0) {
       const ids = insts.map(i => Number(i.id) || 0);
       return Math.max(...ids, 0) + 1;
