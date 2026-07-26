@@ -1,6 +1,6 @@
 import type { CharacterConfig } from "@/data/registry/types";
 import type { MechanicsCtx, MechanicsResult } from "../mechanics-utils";
-import { addMods, coeff, hitKeysOf, fmt } from "../mechanics-utils";
+import { addMods, coeff, hitKeysOfCategory, fmt } from "../mechanics-utils";
 
 export function resolveArlecchino(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
   const res: MechanicsResult = { statDeltas: {}, perHit: {}, notes: [] };
@@ -17,7 +17,7 @@ export function resolveArlecchino(config: CharacterConfig, ctx: MechanicsCtx): M
     let masquePct = coeff(ctx, "normal", "masque-increase") ?? 0;
     if (cons >= 1) masquePct += 100;
     const additive = (masquePct / 100) * (bolPct / 100) * stats.atk;
-    for (const key of hitKeysOf(config, "normal")) {
+    for (const key of hitKeysOfCategory(config, "normal", "normal")) {
       addMods(res.perHit, key, { flatDmgBonus: additive });
     }
     res.notes.push(
@@ -30,13 +30,13 @@ export function resolveArlecchino(config: CharacterConfig, ctx: MechanicsCtx): M
   }
   // Utility passive "The Balemoon Alone May Know": +40% Pyro DMG Bonus in combat.
   if (on("pyro-bonus")) {
-    res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + 40;
+    res.statDeltas.pyroDmgBonus = (res.statDeltas.pyroDmgBonus ?? 0) + 40;
     res.notes.push("Balemoon passive: +40% Pyro DMG Bonus (in combat)");
   }
   // C6: Burst DMG += ATK × 700% × BoL%; NA & Burst +10% CRIT Rate / +70% CRIT DMG.
   if (cons >= 6) {
     addMods(res.perHit, "skill-dmg", { flatDmgBonus: 7.0 * (bolPct / 100) * stats.atk });
-    for (const key of [...hitKeysOf(config, "normal"), "skill-dmg"]) {
+    for (const key of [...hitKeysOfCategory(config, "normal", "normal"), "skill-dmg"]) {
       addMods(res.perHit, key, { critRateBonusPct: 10, critDmgBonusPct: 70 });
     }
     res.notes.push("C6: Burst +700% ATK × BoL%; NA & Burst +10% CRIT Rate / +70% CRIT DMG");

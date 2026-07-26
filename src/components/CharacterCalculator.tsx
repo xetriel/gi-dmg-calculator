@@ -237,6 +237,38 @@ export function CharacterCalculator({
     window.addEventListener("mouseup", handleMouseUp);
   };
 
+  const [highlightedSetupId, setHighlightedSetupId] = useState<string | null>(null);
+
+  // Clean up stale ?share=... query from browser history so back button preserves working draft
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("share")) {
+      params.delete("share");
+      const newQuery = params.toString();
+      const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ""}${window.location.hash}`;
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const setupId = params.get("setup");
+    if (setupId) {
+      setHighlightedSetupId(setupId);
+      setTimeout(() => {
+        const el = document.getElementById(`setup-card-${setupId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+      }, 200);
+      setTimeout(() => {
+        setHighlightedSetupId(null);
+      }, 2500);
+    }
+  }, []);
+
   const upperRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const lowerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -1184,7 +1216,7 @@ export function CharacterCalculator({
                 const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
                 const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
-                router.push(`/characters/${config.id}/formula?share=${encoded}${hash}`);
+                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${hash}`);
               };
 
               return (
@@ -1245,16 +1277,9 @@ export function CharacterCalculator({
                         Effective Stats & Buff Breakdown
                       </h2>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono hidden sm:inline">
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
                           Formula: Raw + Additions = Total
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => handleFormulaRedirectWithAnchor()}
-                          className="text-[10px] px-2.5 py-1 font-semibold rounded bg-amber-500 hover:bg-amber-600 text-black transition-colors cursor-pointer shadow-xs"
-                        >
-                          Formula Breakdown Page →
-                        </button>
                       </div>
                     </div>
 
@@ -1540,9 +1565,12 @@ export function CharacterCalculator({
                 id={`setup-card-${inst.id}`}
                 className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 w-[480px] ${
                   isSplitView ? "h-[700px]" : ""
-                } ${baseBenchmarkInst
-                  ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
-                  : "border-gray-200 dark:border-zinc-800"
+                } ${
+                  highlightedSetupId === inst.id
+                    ? "border-amber-500 ring-2 ring-amber-500 shadow-md"
+                    : baseBenchmarkInst
+                    ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-400 dark:ring-zinc-500 bg-white/80 dark:bg-zinc-900/40"
+                    : "border-gray-200 dark:border-zinc-800"
                 }`}
               >
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4 shrink-0">

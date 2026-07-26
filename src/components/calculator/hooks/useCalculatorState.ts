@@ -158,26 +158,19 @@ export function useCalculatorState({
     };
   };
 
+  const [isMounted, setIsMounted] = useState(false);
+
   const [instances, setInstances] = useState<CalcInstance[]>(
     () => hydrated?.instances ?? [createInitialInstance("1")]
   );
 
-  const [activeBuildId, setActiveBuildId] = useState<string | null>(() => initialBuild?.id ?? null);
-  const [activeBuildName, setActiveBuildName] = useState<string>(() => initialBuild?.name ?? "Scratchpad");
-  const [savedBuildsList, setSavedBuildsList] = useState<SavedBuild[]>(() => {
-    let offlineList: SavedBuild[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(`gi_calc_offline_builds_${config.id}`);
-        if (stored) {
-          offlineList = JSON.parse(stored).map((b: SavedBuild) => ({ ...b, isOffline: true }));
-        }
-      } catch (err) {
-        console.error("Failed to parse offline builds:", err);
-      }
-    }
-    return [...offlineList, ...savedBuilds];
-  });
+  const [activeBuildId, setActiveBuildId] = useState<string | null>(
+    () => (hydrated ? null : initialBuild?.id ?? null)
+  );
+  const [activeBuildName, setActiveBuildName] = useState<string>(
+    () => (hydrated ? "Shared Build" : initialBuild?.name ?? "Scratchpad")
+  );
+  const [savedBuildsList, setSavedBuildsList] = useState<SavedBuild[]>(() => [...savedBuilds]);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [newBuildName, setNewBuildName] = useState("");
   const [isLoadDropdownOpen, setIsLoadDropdownOpen] = useState(false);
@@ -190,9 +183,62 @@ export function useCalculatorState({
     };
     return JSON.stringify(payload);
   });
+
+  // Load working draft and offline builds from localStorage on client mount ONLY
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window === "undefined") return;
+    try {
+      const storedDraft = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+      if (storedDraft) {
+        const draft = JSON.parse(storedDraft);
+        if (Array.isArray(draft.instances) && draft.instances.length > 0) {
+          setInstances(draft.instances);
+        }
+        if (draft.activeBuildId !== undefined) {
+          setActiveBuildId(draft.activeBuildId);
+        }
+        if (draft.activeBuildName) {
+          setActiveBuildName(draft.activeBuildName);
+        }
+        if (draft.savedJson) {
+          setSavedJson(draft.savedJson);
+        }
+      }
+      const storedOffline = localStorage.getItem(`gi_calc_offline_builds_${config.id}`);
+      if (storedOffline) {
+        const offlineList: SavedBuild[] = JSON.parse(storedOffline).map((b: SavedBuild) => ({ ...b, isOffline: true }));
+        setSavedBuildsList(prev => {
+          const serverIds = new Set(savedBuilds.map(b => b.id));
+          return [...offlineList.filter(b => !serverIds.has(b.id)), ...savedBuilds];
+        });
+      }
+    } catch (e) {
+      console.error("Failed to load draft from localStorage after mount:", e);
+    }
+  }, [config.id]);
+
+  // Auto-save working draft to localStorage on mutations after mount
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMounted) return;
+    try {
+      const draft = {
+        instances,
+        rotations,
+        activeRotationId,
+        activeBuildId,
+        activeBuildName,
+        savedJson,
+      };
+      localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
+    } catch (e) {
+      console.error("Failed to auto-save working draft:", e);
+    }
+  }, [config.id, instances, rotations, activeRotationId, activeBuildId, activeBuildName, savedJson, isMounted]);
+
   const [benchmarkId, setBenchmarkId] = useState<string | null>(null);
   const [nextId, setNextId] = useState(() => {
-    const insts = hydrated?.instances ?? [];
+    const insts: CalcInstance[] = hydrated?.instances ?? instances;
     if (insts.length > 0) {
       const ids = insts.map(i => Number(i.id) || 0);
       return Math.max(...ids, 0) + 1;
