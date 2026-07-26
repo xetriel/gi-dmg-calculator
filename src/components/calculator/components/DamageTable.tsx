@@ -74,7 +74,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
     }
 
     return (
-      <span className={`text-[10px] leading-none ${colorClass}`}>
+      <span className={`text-[10px] leading-none select-none ${colorClass}`}>
         {pct.toFixed(1)}%
       </span>
     );
