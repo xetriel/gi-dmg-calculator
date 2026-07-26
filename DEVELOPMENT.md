@@ -6,7 +6,7 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 22, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 27, 2026).
 
 ### New Character Calculators
 - **Kamisato Ayaka (July 21, 2026)**: Added Kamisato Ayaka, a 5-star Cryo Sword main-DPS featuring Cryo infusion via alternate sprint (*Kamisato Art: Senho*), A1 Normal/Charged attack DMG bonus (+30%), A4 Cryo DMG bonus (+18%), C2 Frostflake Seki no To mini-whirlwinds (20% DMG), C4 DEF reduction (-30%), and C6 Charged Attack DMG bonus (+298%).
@@ -24,6 +24,10 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Formula Breakdown Page & Explainer Engine (`/characters/[id]/formula`) (July 26, 2026)**: Introduced a dedicated calculation breakdown route (`/characters/[id]/formula`) powered by `formula-explainer.ts` and `FormulaBreakdownView.tsx`. Displays step-by-step mathematical derivations for all damage instances, including base scaling, flat bonuses, DMG%, CRIT, enemy DEF/RES, and reaction multipliers.
+- **Source-Referenced Sub-Equations & Team Buffs (July 26, 2026)**: Upgraded calculation breakdown equations with explicit source attributions (e.g. `Team ATK 115.0% = ATK (Arlecchino) 25% + ATK (Bennett) 20% + ...`) and character-specific mechanic expansions (such as Arlecchino's Masque of the Red Death flat DMG breakdown). Added a dedicated **Received Team Buffs** card.
+- **Draft Auto-Persistence & Navigation Fixes (July 26, 2026)**: Integrated automatic `localStorage` draft synchronization (`gi_calc_draft_${characterId}`) and `?share=` URL encoding to eliminate unsaved state reversions when navigating back and forth via browser buttons. Added a damage mode selector (Non-Crit, CRIT, Average, Reactions) to the breakdown page.
+- **Constellations Module & Arlecchino Mechanics Scoping (July 25, 2026)**: Extracted constellation logic into `constellations.ts`. Scoped Arlecchino's C6 CRIT Rate (+10%) and CRIT DMG (+70%) bonuses specifically to Normal Attacks (`1-hit`–`6-hit`) and Burst (`skill-dmg`), and restricted Masque of the Red Death flat DMG to Normal Attacks.
 - **Remastered Effective Stats Panel & Additive Breakdown (July 22, 2026)**: Remastered the "EFFECTIVE STATS" panel into a single-column stacked layout displaying the full additive breakdown (`<raw> + <add1> + <add2> = <total>`) for every single attribute and reaction multiplier. Integrated interactive chat-cloud tooltips (`[?]`) via a new [StatBreakdownRow.tsx] component to reveal detailed buff source descriptions on hover/click.
 - **Comprehensive Effective Stats (July 19, 2026)**: Re-designed the "Effective Stats" panel on the setup card to show all output stats (such as target levels, defenses, resistances, Energy Recharge, Healing Bonus, and specific active element/physical DMG bonuses), removing actual reaction output DMG values to keep the panel focused purely on stats.
 - **Scrollbar Hiding in Sidebar (July 19, 2026)**: Added styling to hide the vertical and horizontal scrollbars in the navigation panel and list container, improving UI cleanliness while retaining full scroll functionality.
