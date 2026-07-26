@@ -15,12 +15,14 @@ interface FormulaBreakdownViewProps {
   config: CharacterConfig;
   scaling: TalentScalingData;
   initialBuild: { id: string | null; name: string | null; data: unknown } | null;
+  initialSetupId?: string | null;
 }
 
 export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
   config,
   scaling,
   initialBuild,
+  initialSetupId,
 }) => {
   // Hydrate calculation instances from shared or default build
   const [instances] = useState<CalcInstance[]>(() => {
@@ -46,13 +48,23 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
     return [createInit("setup-1")];
   });
 
-  const [activeInstId, setActiveInstId] = useState<string>(instances[0]?.id ?? "setup-1");
+  const [activeInstId, setActiveInstId] = useState<string>(() => {
+    if (initialSetupId && instances.some(i => i.id === initialSetupId)) {
+      return initialSetupId;
+    }
+    return instances[0]?.id ?? "setup-1";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const setup = params.get("setup");
+    if (setup && instances.some(i => i.id === setup)) {
+      setActiveInstId(setup);
+    }
     const hash = window.location.hash.replace("#", "");
     if (hash) {
       setHighlightedId(hash);
@@ -63,7 +75,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
         }
       }, 150);
     }
-  }, []);
+  }, [instances]);
 
   const activeInst = instances.find(i => i.id === activeInstId) ?? instances[0];
   const breakdowns = explainHitFormulas(config, scaling, activeInst);

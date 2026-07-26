@@ -1184,7 +1184,7 @@ export function CharacterCalculator({
                 const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
                 const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
-                router.push(`/characters/${config.id}/formula?share=${encoded}${hash}`);
+                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${hash}`);
               };
 
               return (
