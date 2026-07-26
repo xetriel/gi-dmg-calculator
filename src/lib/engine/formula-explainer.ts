@@ -246,10 +246,16 @@ export function explainHitFormulas(
       if (totalIncrease > 0) {
         if (config.id === "arlecchino" && flatIncrease > 0 && (h.hitCategory === "normal" || g.type === "normal")) {
           const bolPct = parsedInputs["bond-of-life"] ?? 100;
-          let masquePct = 238;
-          if (inst.constellationLevel >= 1) masquePct += 100;
+          const effNaLvl = effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs)["normal"] ?? 10;
+          const baseMasque = scaling.normal?.byLevel[effNaLvl]?.["masque-increase"] ?? 238;
+          const c1Bonus = inst.constellationLevel >= 1 ? 100 : 0;
+          
           subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = Total Normal Att. DMG Increase ${fmt(totalIncrease)}`);
-          subBreakdowns.push(`Total Normal Att. DMG Increase ${fmt(totalIncrease)} = ${masquePct}% * Total ATK ${fmt(effectiveStats.atk)} * ${bolPct}%`);
+          if (c1Bonus > 0) {
+            subBreakdowns.push(`Total Normal Att. DMG Increase ${fmt(totalIncrease)} = ${fmtPct(baseMasque)} * Total ATK ${fmt(effectiveStats.atk)} * ${bolPct}% + ${fmtPct(c1Bonus)} (C1) * Total ATK ${fmt(effectiveStats.atk)} * ${bolPct}%`);
+          } else {
+            subBreakdowns.push(`Total Normal Att. DMG Increase ${fmt(totalIncrease)} = ${fmtPct(baseMasque)} * Total ATK ${fmt(effectiveStats.atk)} * ${bolPct}%`);
+          }
         } else {
           subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = ${flatIncrease > 0 ? `Flat DMG Bonus ${fmt(flatIncrease)}` : ""}${catAdd > 0 ? `${flatIncrease > 0 ? " + " : ""}Aggravate Catalyze DMG ${fmt(catAdd)}` : ""}`);
         }
