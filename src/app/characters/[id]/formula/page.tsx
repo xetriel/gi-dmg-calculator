@@ -59,6 +59,8 @@ export default async function FormulaPage({
     }
   }
 
+  const initialSetupId = typeof sParams.setup === "string" ? sParams.setup : null;
+
   const initialBuildProp = initialBuildData
     ? { id: initialBuildId, name: initialBuildName, data: initialBuildData }
     : null;
@@ -68,6 +70,7 @@ export default async function FormulaPage({
       config={config}
       scaling={scaling}
       initialBuild={initialBuildProp}
+      initialSetupId={initialSetupId}
     />
   );
 }
