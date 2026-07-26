@@ -201,20 +201,38 @@ export function explainHitFormulas(
       // Build main formula line
       const mainFormula = `${h.name} ${fmt(hitRes.crit)} = (${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)}) * (100% + Total Crit Rate ${fmtPct(effectiveCritRate)} * Total Crit DMG ${fmtPct(effectiveCritDmg)})${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
 
-      // Sub breakdowns
+      // Sub breakdowns with source references
       const subBreakdowns: string[] = [];
 
-      // Stat breakdown (ATK/HP/DEF/EM)
+      // 1. Stat breakdown (ATK/HP/DEF/EM)
       if (h.scaling === "atk") {
-        const charAtk = (config.stats.find(s => s.key === "atk") as any)?.baseDefault ?? 342;
+        const charAtk = (config.stats.find(s => s.key === "atk") as any)?.baseDefault ?? 342.03;
         const weaponAtk = Math.max(0, baseAtk - charAtk);
         const mechAtkAdds = mech.statBuffSources?.["atk"] ?? [];
-        const mechAtkSum = mechAtkAdds.reduce((acc, c) => acc + c.value, 0);
+        
+        // Extract team ATK% and flat ATK sources if present
+        const teamAtkBuffs = mechAtkAdds.filter(a => a.source.toLowerCase().includes("team") || a.source.toLowerCase().includes("bennett") || a.source.toLowerCase().includes("xilonen") || a.source.toLowerCase().includes("kazuha"));
+        const teamAtkPctSum = teamAtkBuffs.filter(a => a.source.toLowerCase().includes("%") || a.value < 100).reduce((acc, c) => acc + c.value, 0);
+        const flatAtkBuffs = mechAtkAdds.filter(a => a.value >= 100 && !a.source.toLowerCase().includes("%"));
+        const flatAtkSum = flatAtkBuffs.reduce((acc, c) => acc + c.value, 0);
 
-        subBreakdowns.push(`Total ATK ${fmt(effectiveStats.atk)} = Base ATK ${fmt(baseAtk)} * (100% + Art. ATK ${fmtPct(atkPct)}${mechAtkAdds.length > 0 ? ` + Mechanics ATK%` : ""}) + Art. ATK ${fmt(atkFlat)}${mechAtkSum !== 0 ? ` + Buffs ${fmt(mechAtkSum)}` : ""}`);
-        subBreakdowns.push(`Base ATK ${fmt(baseAtk)} = Char. ATK ${fmt(charAtk)} + Weapon ATK ${fmt(weaponAtk)}`);
-        if (mechAtkAdds.length > 0) {
-          subBreakdowns.push(`Mechanics ATK Buffs = ${mechAtkAdds.map(a => `${a.source} (${fmt(a.value)})`).join(" + ")}`);
+        const atkPctTerms: string[] = [];
+        if (atkPct > 0) atkPctTerms.push(`Art. ATK ${fmtPct(atkPct)}`);
+        if (teamAtkPctSum > 0) atkPctTerms.push(`Team ATK ${fmtPct(teamAtkPctSum)}`);
+
+        let atkPctExpr = atkPctTerms.length > 0 ? ` * (100% + ${atkPctTerms.join(" + ")})` : "";
+        let flatAtkExpr = atkFlat > 0 ? ` + Art. ATK ${fmt(atkFlat)}` : "";
+        if (flatAtkBuffs.length > 0) {
+          flatAtkExpr += flatAtkBuffs.map(b => ` + ATK (${b.source}) ${fmt(b.value)}`).join("");
+        } else if (flatAtkSum > 0) {
+          flatAtkExpr += ` + Buffs ${fmt(flatAtkSum)}`;
+        }
+
+        subBreakdowns.push(`Total ATK ${fmt(effectiveStats.atk)} = Base ATK ${fmt(baseAtk)}${atkPctExpr}${flatAtkExpr}`);
+        subBreakdowns.push(`Base ATK ${fmt(baseAtk)} = Char. ATK ${fmt(charAtk, 2)} + Weapon ATK ${fmt(weaponAtk, 2)}`);
+
+        if (teamAtkBuffs.length > 0 && teamAtkPctSum > 0) {
+          subBreakdowns.push(`Team ATK ${fmtPct(teamAtkPctSum)} = ${teamAtkBuffs.map(b => `ATK (${b.source}) ${fmtPct(b.value)}`).join(" + ")}`);
         }
       } else if (h.scaling === "hp") {
         subBreakdowns.push(`Total HP ${fmt(effectiveStats.hp)} = Base HP ${fmt(baseHp)} * (100% + HP ${fmtPct(hpPct)}) + Flat HP ${fmt(hpFlat)}`);
@@ -224,36 +242,58 @@ export function explainHitFormulas(
         subBreakdowns.push(`Total EM ${fmt(effectiveStats.em)} = Base EM ${fmt(inputStats.em)}`);
       }
 
-      // DMG Increase breakdown
+      // 2. DMG Increase breakdown
       if (totalIncrease > 0) {
-        subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = ${flatIncrease > 0 ? `Flat DMG Bonus ${fmt(flatIncrease)}` : ""}${catAdd > 0 ? `${flatIncrease > 0 ? " + " : ""}Aggravate Catalyze DMG ${fmt(catAdd)}` : ""}`);
         if (config.id === "arlecchino" && flatIncrease > 0 && (h.hitCategory === "normal" || g.type === "normal")) {
-          const bolPct = parsedInputs["bond-of-life"] ?? 0;
+          const bolPct = parsedInputs["bond-of-life"] ?? 100;
           let masquePct = 238;
           if (inst.constellationLevel >= 1) masquePct += 100;
-          subBreakdowns.push(`Masque of the Red Death Flat DMG ${fmt(flatIncrease)} = Masque Increase ${masquePct}% * Bond of Life ${bolPct}% * Total ATK ${fmt(effectiveStats.atk)}`);
+          subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = Total Normal Att. DMG Increase ${fmt(totalIncrease)}`);
+          subBreakdowns.push(`Total Normal Att. DMG Increase ${fmt(totalIncrease)} = ${masquePct}% * Total ATK ${fmt(effectiveStats.atk)} * ${bolPct}%`);
+        } else {
+          subBreakdowns.push(`Total DMG Increase ${fmt(totalIncrease)} = ${flatIncrease > 0 ? `Flat DMG Bonus ${fmt(flatIncrease)}` : ""}${catAdd > 0 ? `${flatIncrease > 0 ? " + " : ""}Aggravate Catalyze DMG ${fmt(catAdd)}` : ""}`);
         }
       }
 
-      // DMG Bonus breakdown
-      if (catKey === "special") {
-        subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = Total Common DMG Bonus ${fmtPct(commonBonus)} + Total ${elem} DMG Bonus ${fmtPct(elementBonus)}${extraBonus > 0 ? ` + Extra Hit Bonus ${fmtPct(extraBonus)}` : ""} (Independent Special Hit — Excludes Skill/Normal/Burst DMG Bonus)`);
-      } else {
-        subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = Total Common DMG Bonus ${fmtPct(commonBonus)} + Total ${g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)} + Total ${elem} DMG Bonus ${fmtPct(elementBonus)}${extraBonus > 0 ? ` + Extra Hit Bonus ${fmtPct(extraBonus)}` : ""}`);
+      // 3. DMG Bonus breakdown
+      const isSpecial = catKey === "special";
+      const bonusParts: string[] = [];
+      if (commonBonus > 0) bonusParts.push(`Total Common DMG Bonus ${fmtPct(commonBonus)}`);
+      if (categoryBonus > 0 && !isSpecial) bonusParts.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
+      if (elementBonus > 0) bonusParts.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+      if (extraBonus > 0) bonusParts.push(`Extra Hit Bonus ${fmtPct(extraBonus)}`);
+
+      subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = ${bonusParts.length > 0 ? bonusParts.join(" + ") : "0%"}${isSpecial ? " (Independent Special Hit)" : ""}`);
+      if (commonBonus > 0) {
+        subBreakdowns.push(`Total Common DMG Bonus ${fmtPct(commonBonus)} = Common DMG Bonus ${fmtPct(commonBonus)}`);
       }
-      subBreakdowns.push(`Total Common DMG Bonus ${fmtPct(commonBonus)} = Common DMG Bonus ${fmtPct(commonBonus)}`);
-      subBreakdowns.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)} = ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+      if (categoryBonus > 0 && !isSpecial) {
+        subBreakdowns.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)} = ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
+      }
+      if (elementBonus > 0) {
+        subBreakdowns.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)} = ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+      }
 
-      // CRIT Rate & CRIT DMG breakdown
-      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(inputStats.critRate)}${mods.critRateBonusPct ? ` + Bonus Crit Rate ${fmtPct(mods.critRateBonusPct)}` : ""}), 100%), 0%)`);
-      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(inputStats.critDmg)}${mods.critDmgBonusPct ? ` + Bonus Crit DMG ${fmtPct(mods.critDmgBonusPct)}` : ""}`);
+      // 4. CRIT Rate & CRIT DMG breakdown
+      const charCritDmg = config.ascensionStat?.label === "CRIT DMG" ? (config.ascensionStat.maxValue ?? 38.4) : 0;
+      const charCritRate = config.ascensionStat?.label === "CRIT Rate" ? (config.ascensionStat.maxValue ?? 19.2) : 0;
+      const defaultCritRate = 5 + charCritRate;
+      const defaultCritDmg = 50 + charCritDmg;
 
-      // DEF Multiplier breakdown
+      const artCritRate = Math.max(0, inputStats.critRate - defaultCritRate);
+      const artCritDmg = Math.max(0, inputStats.critDmg - defaultCritDmg);
+      const extraCritRate = mods.critRateBonusPct ?? 0;
+      const extraCritDmg = mods.critDmgBonusPct ?? 0;
+
+      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(defaultCritRate)}${artCritRate > 0 ? ` + Art. Crit Rate ${fmtPct(artCritRate)}` : ""}${extraCritRate > 0 ? ` + Bonus Crit Rate ${fmtPct(extraCritRate)}` : ""}), 100%), 0%)`);
+      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(defaultCritDmg)}${artCritDmg > 0 ? ` + Art. Crit DMG ${fmtPct(artCritDmg)}` : ""}${extraCritDmg > 0 ? ` + Bonus Crit DMG ${fmtPct(extraCritDmg)}` : ""}`);
+
+      // 5. DEF Multiplier breakdown
       if (!h.direct) {
         subBreakdowns.push(`Enemy DEF Multiplier ${fmtPct(defMult * 100)} = Min(100%, ((Char. Level ${effectiveStats.levelChar} + 100) / (Char. Level ${effectiveStats.levelChar} + 100 + (Enemy Level ${effectiveStats.levelEnemy} + 100))))`);
       }
 
-      // RES Multiplier breakdown
+      // 6. RES Multiplier breakdown
       subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(inputStats.enemyRes)}`);
 
       if (ampMult !== 1) {
@@ -351,6 +391,51 @@ export function explainHitFormulas(
       subBreakdowns,
     });
   });
+
+  // 4. Add Received Team Buffs Section
+  const teamBuffsLines: string[] = [];
+  const atkBuffs = (mech.statBuffSources?.["atk"] ?? []);
+  if (atkBuffs.length > 0) {
+    const teamAtkPctSum = atkBuffs.filter(a => a.source.toLowerCase().includes("%") || a.value < 100).reduce((acc, c) => acc + c.value, 0);
+    if (teamAtkPctSum > 0) {
+      teamBuffsLines.push(`Team ATK ${fmtPct(teamAtkPctSum)} = ${atkBuffs.map(b => `ATK (${b.source}) ${fmtPct(b.value)}`).join(" + ")}`);
+    }
+  }
+
+  const emBuffs = (mech.statBuffSources?.["em"] ?? []);
+  if (emBuffs.length > 0) {
+    const emSum = emBuffs.reduce((acc, c) => acc + c.value, 0);
+    teamBuffsLines.push(`Team Elemental Mastery ${fmt(emSum)} = ${emBuffs.map(b => `Elemental Mastery (${b.source}) ${fmt(b.value)}`).join(" + ")}`);
+  }
+
+  const dmgBonusBuffs = (mech.statBuffSources?.["dmgBonus"] ?? []);
+  if (dmgBonusBuffs.length > 0) {
+    const totalDmgBonusSum = dmgBonusBuffs.reduce((acc, c) => acc + c.value, 0);
+    teamBuffsLines.push(`Team ${config.element} DMG Bonus ${fmtPct(totalDmgBonusSum)} = ${dmgBonusBuffs.map(b => `${config.element} DMG Bonus (${b.source}) ${fmtPct(b.value)}`).join(" + ")}`);
+  }
+
+  const resBuffs = (mech.statBuffSources?.["enemyRes"] ?? []);
+  if (resBuffs.length > 0) {
+    const resShredSum = resBuffs.reduce((acc, c) => acc + c.value, 0);
+    teamBuffsLines.push(`Team Enemy ${config.element} DMG RES ${fmtPct(-resShredSum)} = ${resBuffs.map(b => `Enemy ${config.element} DMG RES (${b.source}) ${fmtPct(-b.value)}`).join(" + ")}`);
+  }
+
+  if (teamBuffsLines.length > 0) {
+    breakdowns.push({
+      id: "received-team-buffs",
+      hitName: "Received Team Buffs",
+      category: "team-buffs",
+      element: config.element,
+      reaction: "none",
+      multiplierPct: 0,
+      scalingSource: "none",
+      nonCrit: 0,
+      crit: 0,
+      avg: 0,
+      mainFormula: "Received Team Buffs Summary",
+      subBreakdowns: teamBuffsLines,
+    });
+  }
 
   return breakdowns;
 }
