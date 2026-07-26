@@ -30,7 +30,7 @@ export function resolveArlecchino(config: CharacterConfig, ctx: MechanicsCtx): M
   }
   // Utility passive "The Balemoon Alone May Know": +40% Pyro DMG Bonus in combat.
   if (on("pyro-bonus")) {
-    res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + 40;
+    res.statDeltas.pyroDmgBonus = (res.statDeltas.pyroDmgBonus ?? 0) + 40;
     res.notes.push("Balemoon passive: +40% Pyro DMG Bonus (in combat)");
   }
   // C6: Burst DMG += ATK × 700% × BoL%; NA & Burst +10% CRIT Rate / +70% CRIT DMG.

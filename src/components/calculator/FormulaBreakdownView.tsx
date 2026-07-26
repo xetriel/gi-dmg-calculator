@@ -26,7 +26,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
   initialSetupId,
 }) => {
   const router = useRouter();
-  // Hydrate calculation instances from shared or default build
+  // Hydrate calculation instances from shared or default build, with fallback to working draft
   const [instances] = useState<CalcInstance[]>(() => {
     const createInit = (id: string): CalcInstance => ({
       id,
@@ -47,6 +47,21 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
         return hyd.instances;
       }
     }
+
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+        if (stored) {
+          const draft = JSON.parse(stored);
+          if (Array.isArray(draft.instances) && draft.instances.length > 0) {
+            return draft.instances;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load working draft in FormulaBreakdownView:", e);
+      }
+    }
+
     return [createInit("setup-1")];
   });
 
@@ -56,6 +71,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
     }
     return instances[0]?.id ?? "setup-1";
   });
+  const [dmgType, setDmgType] = useState<"crit" | "nonCrit" | "avg">("crit");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -96,17 +112,25 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
 
   const categories = ["all", "normal", "charged", "plunge", "skill", "burst", "special", "transformative", "lunar", "team-buffs"];
 
+  const getFormulaForType = (b: FormulaBreakdown, type: "crit" | "nonCrit" | "avg"): string => {
+    if (type === "nonCrit") return b.mainFormulaNonCrit ?? b.mainFormula;
+    if (type === "avg") return b.mainFormulaAvg ?? b.mainFormula;
+    return b.mainFormulaCrit ?? b.mainFormula;
+  };
+
   const filteredBreakdowns = breakdowns.filter(b => {
+    const activeFormula = getFormulaForType(b, dmgType);
     const matchesSearch =
       b.hitName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.mainFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      activeFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.subBreakdowns.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCat = activeCategory === "all" || b.category === activeCategory;
     return matchesSearch && matchesCat;
   });
 
   const handleCopyFormula = (b: FormulaBreakdown) => {
-    const fullText = [b.mainFormula, ...b.subBreakdowns].join("\n");
+    const mainLine = getFormulaForType(b, dmgType);
+    const fullText = [mainLine, ...b.subBreakdowns].join("\n");
     navigator.clipboard.writeText(fullText);
     setCopiedId(b.id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -115,52 +139,35 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
   const elementColor = DMG_COLORS[config.element] ?? "#3b82f6";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 p-4 md:p-8">
-      {/* Top Header */}
-      <div className="max-w-6xl mx-auto mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-md text-lg"
-              style={{ backgroundColor: elementColor }}
-            >
-              {config.element.substring(0, 2)}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
-                  {config.name} Damage Formula Breakdown
-                </h1>
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                  {config.weapon} • {config.element}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
-                Exact mathematical sub-equations and parameter breakdown for all possible damage outputs
-              </p>
-            </div>
-          </div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 p-4 md:p-8 font-sans">
+      {/* Top Navigation */}
+      <div className="max-w-6xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <button
-            type="button"
             onClick={handleBackToCalculator}
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shadow-2xs"
           >
             ← Back to Calculator
           </button>
+          <h1 className="text-xl font-bold tracking-tight">
+            Formula Breakdown & Mechanics: {config.name}
+          </h1>
         </div>
+        <div className="text-xs text-gray-500 dark:text-zinc-400">
+          Showing exact equations & stat scaling
+        </div>
+      </div>
 
-        {/* Setup Switcher Tabs (if multiple setups exist) */}
+      {/* Setup selector tabs if multiple instances */}
+      <div className="max-w-6xl mx-auto mb-6">
         {instances.length > 1 && (
-          <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider shrink-0">
-              Setups:
-            </span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-200 dark:border-zinc-800">
+            <span className="text-xs font-medium text-gray-500 dark:text-zinc-400 shrink-0">Setup:</span>
             {instances.map((inst, index) => (
               <button
                 key={inst.id}
                 onClick={() => setActiveInstId(inst.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all shrink-0 ${
                   activeInstId === inst.id
                     ? "bg-amber-500 text-white shadow-xs"
                     : "bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
@@ -191,15 +198,51 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
             ))}
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Filter by hit name or formula..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-            />
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* Damage Mode Selector */}
+            <div className="flex items-center gap-1 bg-gray-200/60 dark:bg-zinc-900 p-0.5 rounded-lg border border-gray-250 dark:border-zinc-800 shrink-0">
+              <button
+                onClick={() => setDmgType("crit")}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                  dmgType === "crit"
+                    ? "bg-amber-500 text-white shadow-xs font-bold"
+                    : "text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                ⚡ CRIT
+              </button>
+              <button
+                onClick={() => setDmgType("nonCrit")}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                  dmgType === "nonCrit"
+                    ? "bg-zinc-800 text-white shadow-xs font-bold"
+                    : "text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                Non-Crit
+              </button>
+              <button
+                onClick={() => setDmgType("avg")}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                  dmgType === "avg"
+                    ? "bg-emerald-600 text-white shadow-xs font-bold"
+                    : "text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                Average
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-64">
+              <input
+                type="text"
+                placeholder="Filter by hit name or formula..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -215,6 +258,8 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
         ) : (
           filteredBreakdowns.map(b => {
             const isTeamCard = b.category === "team-buffs";
+            const activeFormula = getFormulaForType(b, dmgType);
+
             return (
               <div
                 key={b.id}
@@ -250,19 +295,25 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
 
                   {!isTeamCard && (
                     <div className="flex items-center gap-3 text-xs font-mono">
-                      <div className="flex items-center gap-1">
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-all ${
+                        dmgType === "nonCrit" ? "bg-zinc-200 dark:bg-zinc-800 ring-1 ring-zinc-400 font-bold" : ""
+                      }`}>
                         <span className="text-gray-400 text-[10px]">Non-Crit:</span>
                         <span className="font-semibold text-gray-700 dark:text-zinc-300">
                           {fmt(b.nonCrit)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-all ${
+                        dmgType === "crit" ? "bg-amber-500/15 dark:bg-amber-500/20 ring-1 ring-amber-500 font-bold" : ""
+                      }`}>
                         <span className="text-amber-500 text-[10px] font-bold">CRIT:</span>
                         <span className="font-bold text-amber-600 dark:text-amber-400">
                           {fmt(b.crit)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-all ${
+                        dmgType === "avg" ? "bg-emerald-500/15 dark:bg-emerald-500/20 ring-1 ring-emerald-500 font-bold" : ""
+                      }`}>
                         <span className="text-emerald-500 text-[10px] font-bold">Avg:</span>
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                           {fmt(b.avg)}
@@ -273,7 +324,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
                         onClick={() => handleCopyFormula(b)}
                         className="ml-2 px-2.5 py-1 text-[11px] font-sans font-medium rounded border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300 transition-colors"
                       >
-                        {copiedId === b.id ? "✓ Copied" : "Copy Text"}
+                        {copiedId === b.id ? "✓ Copied" : "Copy"}
                       </button>
                     </div>
                   )}
@@ -291,7 +342,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
                 {/* Main Formula Highlight Box (or Title for Team Buffs) */}
                 {!isTeamCard && (
                   <div className="mb-3 p-3 rounded-lg bg-zinc-950 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed border border-zinc-800 shadow-inner">
-                    {b.mainFormula}
+                    {activeFormula}
                   </div>
                 )}
 

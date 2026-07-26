@@ -38,6 +38,9 @@ export interface FormulaBreakdown {
   crit: number;
   avg: number;
   mainFormula: string;
+  mainFormulaNonCrit?: string;
+  mainFormulaCrit?: string;
+  mainFormulaAvg?: string;
   subBreakdowns: string[];
 }
 
@@ -65,10 +68,9 @@ export function explainHitFormulas(
   });
 
   const parsedInputs: Record<string, number> = {};
-  if (inst.mechanicInputs) {
-    for (const [k, v] of Object.entries(inst.mechanicInputs)) {
-      parsedInputs[k] = Number(v) || 0;
-    }
+  for (const m of config.mechanicDefs ?? []) {
+    const rawVal = inst.mechanicInputs?.[m.id];
+    parsedInputs[m.id] = toNum(rawVal) ?? (m.defaultValue ?? 0);
   }
 
   const baseAtk = toNum(inst.stats["atk.base"]) ?? 800;
@@ -92,10 +94,12 @@ export function explainHitFormulas(
     inputs: parsedInputs,
   });
 
-  const effectiveStats: DamageStats = {
-    ...inputStats,
-    ...mech.statDeltas,
-  };
+  const effectiveStats: DamageStats = { ...inputStats };
+  for (const [key, val] of Object.entries(mech.statDeltas)) {
+    if (key in effectiveStats && typeof val === "number") {
+      (effectiveStats as unknown as Record<string, number>)[key] += val;
+    }
+  }
 
   const effects = activeEffects(config, inst.constellationLevel);
   const statBonuses = constellationStatBonuses(effects);
@@ -198,8 +202,14 @@ export function explainHitFormulas(
       const resMult = resMultiplier(effectiveStats.enemyRes);
       const ampMult = elem === "Physical" ? 1 : amplifyingMultiplier(elem, effectiveReaction, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
 
-      // Build main formula line
-      const mainFormula = `${h.name} ${fmt(hitRes.crit)} = (${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)}) * (100% + Total Crit Rate ${fmtPct(effectiveCritRate)} * Total Crit DMG ${fmtPct(effectiveCritDmg)})${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
+      // Build main formula lines for Non-Crit, CRIT, and Avg modes
+      const basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
+      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
+
+      const mainFormulaNonCrit = `${h.name} ${fmt(hitRes.nonCrit)} = ${basePart}${defResPart}`;
+      const mainFormulaCrit = `${h.name} ${fmt(hitRes.crit)} = ${basePart} * (100% + Total Crit DMG ${fmtPct(effectiveCritDmg)})${defResPart}`;
+      const mainFormulaAvg = `${h.name} ${fmt(hitRes.avg)} = ${basePart} * (100% + Total Crit Rate ${fmtPct(effectiveCritRate)} * Total Crit DMG ${fmtPct(effectiveCritDmg)})${defResPart}`;
+      const mainFormula = mainFormulaCrit;
 
       // Sub breakdowns with source references
       const subBreakdowns: string[] = [];
@@ -286,13 +296,11 @@ export function explainHitFormulas(
       const defaultCritRate = 5 + charCritRate;
       const defaultCritDmg = 50 + charCritDmg;
 
-      const artCritRate = Math.max(0, inputStats.critRate - defaultCritRate);
-      const artCritDmg = Math.max(0, inputStats.critDmg - defaultCritDmg);
-      const extraCritRate = mods.critRateBonusPct ?? 0;
-      const extraCritDmg = mods.critDmgBonusPct ?? 0;
+      const artCritRate = Math.max(0, toNum(inst.stats["critRate"]) ?? 0);
+      const artCritDmg = Math.max(0, toNum(inst.stats["critDmg"]) ?? 0);
 
-      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(defaultCritRate)}${artCritRate > 0 ? ` + Art. Crit Rate ${fmtPct(artCritRate)}` : ""}${extraCritRate > 0 ? ` + Bonus Crit Rate ${fmtPct(extraCritRate)}` : ""}), 100%), 0%)`);
-      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(defaultCritDmg)}${artCritDmg > 0 ? ` + Art. Crit DMG ${fmtPct(artCritDmg)}` : ""}${extraCritDmg > 0 ? ` + Bonus Crit DMG ${fmtPct(extraCritDmg)}` : ""}`);
+      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(defaultCritRate)}${artCritRate > 0 ? ` + Art. Crit Rate ${fmtPct(artCritRate)}` : ""}), 100%), 0%)`);
+      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(defaultCritDmg)}${artCritDmg > 0 ? ` + Art. Crit DMG ${fmtPct(artCritDmg)}` : ""}`);
 
       // 5. DEF Multiplier breakdown
       if (!h.direct) {
@@ -300,12 +308,7 @@ export function explainHitFormulas(
       }
 
       // 6. RES Multiplier breakdown
-      subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(inputStats.enemyRes)}`);
-
-      if (ampMult !== 1) {
-        const baseAmp = elem === "Physical" ? 1 : (AMP_BASE[elem]?.[effectiveReaction] ?? 1);
-        subBreakdowns.push(`Amplifying Reaction Multiplier ${fmt(ampMult, 2)}x = Base ${effectiveReaction} (${baseAmp}x) * (1 + 2.78 * EM ${fmt(effectiveStats.em)} / (EM + 1400) + Reaction Bonus ${fmtPct(Number(inst.reactionBonus || 0))})`);
-      }
+      subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)}`);
 
       breakdowns.push({
         id: `hit-${id}`,
@@ -319,6 +322,9 @@ export function explainHitFormulas(
         crit: hitRes.crit,
         avg: hitRes.avg,
         mainFormula,
+        mainFormulaNonCrit,
+        mainFormulaCrit,
+        mainFormulaAvg,
         subBreakdowns,
       });
     });
