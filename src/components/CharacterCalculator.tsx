@@ -239,6 +239,18 @@ export function CharacterCalculator({
 
   const [highlightedSetupId, setHighlightedSetupId] = useState<string | null>(null);
 
+  // Clean up stale ?share=... query from browser history so back button preserves working draft
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("share")) {
+      params.delete("share");
+      const newQuery = params.toString();
+      const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ""}${window.location.hash}`;
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);

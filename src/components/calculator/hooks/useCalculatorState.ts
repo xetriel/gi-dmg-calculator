@@ -187,7 +187,7 @@ export function useCalculatorState({
   // Load working draft and offline builds from localStorage on client mount ONLY
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window === "undefined" || hydrated) return;
+    if (typeof window === "undefined") return;
     try {
       const storedDraft = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
       if (storedDraft) {
@@ -216,7 +216,7 @@ export function useCalculatorState({
     } catch (e) {
       console.error("Failed to load draft from localStorage after mount:", e);
     }
-  }, [config.id, hydrated]);
+  }, [config.id]);
 
   // Auto-save working draft to localStorage on mutations after mount
   useEffect(() => {
