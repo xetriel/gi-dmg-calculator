@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { CharacterConfig } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { CalcInstance } from "./types";
@@ -24,6 +25,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
   initialBuild,
   initialSetupId,
 }) => {
+  const router = useRouter();
   // Hydrate calculation instances from shared or default build
   const [instances] = useState<CalcInstance[]>(() => {
     const createInit = (id: string): CalcInstance => ({
@@ -82,7 +84,15 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
 
   const sharePayload = { instances, rotations: [], activeRotationId: "" };
   const encodedShare = encodeBuild(sharePayload);
-  const backHref = `/characters/${config.id}${encodedShare ? `?share=${encodedShare}` : ""}`;
+  const backHref = `/characters/${config.id}?${encodedShare ? `share=${encodedShare}&` : ""}setup=${activeInstId}`;
+
+  const handleBackToCalculator = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(backHref);
+    }
+  };
 
   const categories = ["all", "normal", "charged", "plunge", "skill", "burst", "special", "transformative", "lunar", "team-buffs"];
 
@@ -131,12 +141,13 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
             </div>
           </div>
 
-          <Link
-            href={backHref}
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors flex items-center gap-1.5 shadow-xs"
+          <button
+            type="button"
+            onClick={handleBackToCalculator}
+            className="px-4 py-2 text-sm font-semibold rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             ← Back to Calculator
-          </Link>
+          </button>
         </div>
 
         {/* Setup Switcher Tabs (if multiple setups exist) */}
