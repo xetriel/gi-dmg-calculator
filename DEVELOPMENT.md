@@ -6,7 +6,7 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 27, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 28, 2026).
 
 ### New Character Calculators
 - **Kamisato Ayaka (July 21, 2026)**: Added Kamisato Ayaka, a 5-star Cryo Sword main-DPS featuring Cryo infusion via alternate sprint (*Kamisato Art: Senho*), A1 Normal/Charged attack DMG bonus (+30%), A4 Cryo DMG bonus (+18%), C2 Frostflake Seki no To mini-whirlwinds (20% DMG), C4 DEF reduction (-30%), and C6 Charged Attack DMG bonus (+298%).
@@ -24,6 +24,11 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Direct Lunar Reaction Engine & Explainer Alignment (July 28, 2026)**: Aligned direct Lunar reactions (Lunar-Charged, Lunar-Bloom, Lunar-Crystallize) with Genshin Optimizer formulas. Direct reaction derivations in `formula-explainer.ts` omit irrelevant standard DMG Bonus% / Enemy DEF terms, formatting explicit transformative base multipliers (`100% + 6 * EM / (EM + 2000)`) and HP-scaled Lunar Base DMG bonuses (`Min(0.2% * (HP / 1000), 7%)`). Added reaction-specific Lunar stat inputs (`lunarChargedBaseBonusPct`, etc.).
+- **Columbina Elemental & Reaction Mechanics Fix (July 27, 2026)**: Updated Columbina hit element definitions in the registry (`moondew-cleanse` to Dendro, `gi-charged` to Electro, `gi-bloom` to Dendro, `gi-crystallize` to Geo). Enhanced engine (`computeHit`), explainer, and `DamageTable.tsx` to respect per-hit element overrides (`mods.element ?? h.element ?? config.element`).
+- **Reaction Selection & Validation Hardening (July 28, 2026)**: Fixed disappearing damage outputs on reaction selection by gracefully defaulting un-typed or empty `reactionBonus` fields (`""`) to `0%` baseline without failing form validation, and automatically initializing `reactionBonus` to `"0"` on dropdown selection.
+- **Base Stats Input UI Expansion & Spin Arrow Removal (July 27, 2026)**: Expanded stat input field widths in `StatsGrid.tsx` to `w-20 sm:w-24` with tabular monospace alignment, comfortably supporting 6–8 digit values. Added global CSS rules in `globals.css` to hide Webkit/Firefox number spin arrows.
+- **Single-Stat OCR Recognition Support (July 27, 2026)**: Updated Gemini OCR prompt and state hook logic so single total stat values recognized from screenshots (without base/bonus breakdown splits) automatically populate flat stat fields while setting base stats to `"0"`.
 - **Formula Breakdown Page & Explainer Engine (`/characters/[id]/formula`) (July 26, 2026)**: Introduced a dedicated calculation breakdown route (`/characters/[id]/formula`) powered by `formula-explainer.ts` and `FormulaBreakdownView.tsx`. Displays step-by-step mathematical derivations for all damage instances, including base scaling, flat bonuses, DMG%, CRIT, enemy DEF/RES, and reaction multipliers.
 - **Source-Referenced Sub-Equations & Team Buffs (July 26, 2026)**: Upgraded calculation breakdown equations with explicit source attributions (e.g. `Team ATK 115.0% = ATK (Arlecchino) 25% + ATK (Bennett) 20% + ...`) and character-specific mechanic expansions (such as Arlecchino's Masque of the Red Death flat DMG breakdown). Added a dedicated **Received Team Buffs** card.
 - **Draft Auto-Persistence & Navigation Fixes (July 26, 2026)**: Integrated automatic `localStorage` draft synchronization (`gi_calc_draft_${characterId}`) and `?share=` URL encoding to eliminate unsaved state reversions when navigating back and forth via browser buttons. Added a damage mode selector (Non-Crit, CRIT, Average, Reactions) to the breakdown page.
