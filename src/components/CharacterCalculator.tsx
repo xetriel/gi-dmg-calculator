@@ -385,7 +385,7 @@ export function CharacterCalculator({
         out[id] = computeHit(s, {
           multiplier: mult,
           scaling: h.scaling,
-          element: mods.element ?? config.element,
+          element: mods.element ?? h.element ?? config.element,
           reaction: inst.reaction,
           reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
           flatDmgBonus: flatBonus || undefined,

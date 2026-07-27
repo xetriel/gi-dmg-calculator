@@ -42,7 +42,7 @@ export interface StatField {
 // "normal"/"charged"/"plunge" are sub-types within the "normal" talent group;
 // "skill"/"burst" map directly to their talent group type. "special" hits receive only All DMG Bonus.
 export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst" | "special";
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; minConstellation?: number; }
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; minConstellation?: number; element?: Element | "Physical"; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in
