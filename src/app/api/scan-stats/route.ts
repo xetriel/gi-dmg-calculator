@@ -39,8 +39,10 @@ export async function POST(request: Request) {
     }
 
     const promptText = `Analyze this Genshin Impact character details screen screenshot. Extract the character stats and level.
-For stats like HP, ATK, and DEF, the screenshot shows two values under the total: a white number (base stat) and a green number (additional bonus, e.g., '+6,485'). 
-Map the white number as base (e.g. hpBase, atkBase, defBase) and the green number as flat bonus (e.g. hpFlat, atkFlat, defFlat). Set the percentage bonuses (hpPercent, atkPercent, defPercent) to "0".
+For primary stats (HP, ATK, DEF):
+1. If the screenshot shows separate base (white number) and flat bonus (green number, e.g., '+6,485'), map the white number as base (hpBase, atkBase, defBase) and the green number as flat bonus (hpFlat, atkFlat, defFlat).
+2. If the screenshot ONLY shows a single stat value for HP, ATK, or DEF (e.g., '33000' or 'Max HP: 33,000' with no green '+' bonus breakdown), map base (hpBase, atkBase, defBase) to "0" and put that single total stat value directly into flat bonus (hpFlat, atkFlat, defFlat).
+Set all percentage bonuses (hpPercent, atkPercent, defPercent) to "0".
 Extract other stats like Elemental Mastery (em), CRIT Rate (critRate), CRIT DMG (critDmg), Energy Recharge (energyRecharge), and the Element DMG Bonus or Physical DMG Bonus (dmgBonus) as clean decimal string values without units/percent signs (e.g., "60.0" instead of "60.0%").
 Also extract the Character Level (levelChar) and the Character Name (characterName).`;
 
@@ -63,14 +65,14 @@ Also extract the Character Level (levelChar) and the Character Name (characterNa
         responseSchema: {
           type: "OBJECT",
           properties: {
-            hpBase: { type: "STRING", description: "White base HP number" },
-            hpFlat: { type: "STRING", description: "Green flat additional HP number (e.g., 6485 from +6,485)" },
+            hpBase: { type: "STRING", description: "White base HP number if separate base/bonus values exist; otherwise \"0\"" },
+            hpFlat: { type: "STRING", description: "Green flat additional HP number if separate values exist; otherwise the single HP stat number" },
             hpPercent: { type: "STRING", description: "Set to \"0\"" },
-            atkBase: { type: "STRING", description: "White base ATK number" },
-            atkFlat: { type: "STRING", description: "Green flat additional ATK number (e.g., 485 from +485)" },
+            atkBase: { type: "STRING", description: "White base ATK number if separate base/bonus values exist; otherwise \"0\"" },
+            atkFlat: { type: "STRING", description: "Green flat additional ATK number if separate values exist; otherwise the single ATK stat number" },
             atkPercent: { type: "STRING", description: "Set to \"0\"" },
-            defBase: { type: "STRING", description: "White base DEF number" },
-            defFlat: { type: "STRING", description: "Green flat additional DEF number" },
+            defBase: { type: "STRING", description: "White base DEF number if separate base/bonus values exist; otherwise \"0\"" },
+            defFlat: { type: "STRING", description: "Green flat additional DEF number if separate values exist; otherwise the single DEF stat number" },
             defPercent: { type: "STRING", description: "Set to \"0\"" },
             em: { type: "STRING", description: "Elemental Mastery number" },
             critRate: { type: "STRING", description: "CRIT Rate percentage number (no % sign)" },

@@ -1966,11 +1966,11 @@ export function CharacterCalculator({
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">HP (Base + Flat)</td>
                                     <td className="py-2 px-3 text-gray-400 tabular-nums">
-                                      {targetInst.stats["hp.base"]} + {targetInst.stats["hp.flat"]}
+                                      {targetInst.stats["hp.base"] ?? 0} + {targetInst.stats["hp.flat"] ?? 0}
                                     </td>
                                     <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                                       <div className="flex items-center justify-between">
-                                        <span>{scanResult.hpBase} + {scanResult.hpFlat}</span>
+                                        <span>{scanResult.hpBase ?? "0"} + {scanResult.hpFlat ?? "0"}</span>
                                         {(showDiff(scanResult.hpBase, targetInst.stats["hp.base"]) || showDiff(scanResult.hpFlat, targetInst.stats["hp.flat"])) && (
                                           <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
                                         )}
@@ -1983,11 +1983,11 @@ export function CharacterCalculator({
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">ATK (Base + Flat)</td>
                                     <td className="py-2 px-3 text-gray-400 tabular-nums">
-                                      {targetInst.stats["atk.base"]} + {targetInst.stats["atk.flat"]}
+                                      {targetInst.stats["atk.base"] ?? 0} + {targetInst.stats["atk.flat"] ?? 0}
                                     </td>
                                     <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                                       <div className="flex items-center justify-between">
-                                        <span>{scanResult.atkBase} + {scanResult.atkFlat}</span>
+                                        <span>{scanResult.atkBase ?? "0"} + {scanResult.atkFlat ?? "0"}</span>
                                         {(showDiff(scanResult.atkBase, targetInst.stats["atk.base"]) || showDiff(scanResult.atkFlat, targetInst.stats["atk.flat"])) && (
                                           <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
                                         )}
@@ -2000,11 +2000,11 @@ export function CharacterCalculator({
                                   <tr className="hover:bg-gray-50/10 dark:hover:bg-zinc-900/5 transition-colors">
                                     <td className="py-2 px-3 font-medium text-gray-700 dark:text-zinc-350">DEF (Base + Flat)</td>
                                     <td className="py-2 px-3 text-gray-400 tabular-nums">
-                                      {targetInst.stats["def.base"]} + {targetInst.stats["def.flat"]}
+                                      {targetInst.stats["def.base"] ?? 0} + {targetInst.stats["def.flat"] ?? 0}
                                     </td>
                                     <td className="py-2 px-3 font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                                       <div className="flex items-center justify-between">
-                                        <span>{scanResult.defBase} + {scanResult.defFlat}</span>
+                                        <span>{scanResult.defBase ?? "0"} + {scanResult.defFlat ?? "0"}</span>
                                         {(showDiff(scanResult.defBase, targetInst.stats["def.base"]) || showDiff(scanResult.defFlat, targetInst.stats["def.flat"])) && (
                                           <span className="text-[8px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-mono font-bold">New</span>
                                         )}
