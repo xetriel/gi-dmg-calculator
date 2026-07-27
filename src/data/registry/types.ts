@@ -10,6 +10,8 @@ export type ReactionType = "none" | "vaporize" | "melt" | "aggravate";
 // The talent categories; each has one selectable level in the UI.
 export type TalentType = "normal" | "skill" | "burst" | "special";
 
+import type { LunarType } from "@/lib/engine/lunar";
+
 export type StatKey =
   | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge"
   | "dmgBonus" | "healingBonus" | "dmgReduction" | "enemyRes"
@@ -17,13 +19,16 @@ export type StatKey =
   | "normalDmgBonus" | "chargedDmgBonus" | "plungeDmgBonus"
   | "skillDmgBonus" | "burstDmgBonus"
   | "pyroDmgBonus" | "hydroDmgBonus" | "dendroDmgBonus" | "electroDmgBonus"
-  | "anemoDmgBonus" | "cryoDmgBonus" | "geoDmgBonus" | "physicalDmgBonus";
+  | "anemoDmgBonus" | "cryoDmgBonus" | "geoDmgBonus" | "physicalDmgBonus"
+  | "lunarChargedDmgBonus" | "lunarBloomDmgBonus" | "lunarCrystallizeDmgBonus"
+  | "lunarChargedElevation" | "lunarBloomElevation" | "lunarCrystallizeElevation"
+  | "lunarChargedFlatDmg" | "lunarBloomFlatDmg" | "lunarCrystallizeFlatDmg";
 
 export interface StatField {
   key: StatKey;
   label: string;                         // may be character-specific (e.g. "Pyro DMG Bonus%")
   unit: "flat" | "percent";
-  group: "base" | "advanced" | "combat" | "defense";
+  group: "base" | "advanced" | "combat" | "defense" | "lunar";
   hasBaseAndFlat?: boolean;              // HP/ATK/DEF show Base + Flat + Total (like the Excel)
   derived?: boolean;                     // RES/Level/Defense multipliers are computed, not typed
 }
@@ -42,7 +47,7 @@ export interface StatField {
 // "normal"/"charged"/"plunge" are sub-types within the "normal" talent group;
 // "skill"/"burst" map directly to their talent group type. "special" hits receive only All DMG Bonus.
 export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst" | "special";
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; hitCategory?: HitCategory; minConstellation?: number; }
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; lunarType?: LunarType; hitCategory?: HitCategory; minConstellation?: number; element?: Element | "Physical"; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in

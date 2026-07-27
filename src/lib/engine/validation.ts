@@ -19,9 +19,10 @@ export interface ValidationResult {
 export const hitId = (groupIndex: number, hitIndex: number) => `${groupIndex}:${hitIndex}`;
 
 // Parse a raw string to a finite number, or null if empty/invalid.
-export function toNum(s: string | undefined): number | null {
+export function toNum(s: string | number | undefined): number | null {
   if (s == null) return null;
-  const t = s.trim();
+  if (typeof s === "number") return Number.isFinite(s) ? s : null;
+  const t = String(s).trim();
   if (t === "") return null;
   const n = Number(t);
   return Number.isFinite(n) ? n : null;
@@ -145,9 +146,9 @@ export function validate(
     }),
   );
 
-  // Reaction bonus required only when a reaction is selected.
-  if (raw.reaction !== "none" && toNum(raw.reactionBonus) === null) {
-    errors["reactionBonus"] = "Required";
+  // Reaction bonus validation: if typed, must be a valid number. Empty string defaults to 0.
+  if (raw.reaction !== "none" && raw.reactionBonus && raw.reactionBonus.trim() !== "" && toNum(raw.reactionBonus) === null) {
+    errors["reactionBonus"] = "Invalid number";
   }
 
   // Mechanic percent inputs (e.g. Bond of Life) must be a number within 0..max
@@ -206,5 +207,14 @@ export function resolveStats(raw: RawInputs): DamageStats {
     defIgnore: g("defIgnore"),
     energyRecharge: g("energyRecharge"),
     healingBonus: g("healingBonus"),
+    lunarChargedDmgBonus: g("lunarChargedDmgBonus"),
+    lunarBloomDmgBonus: g("lunarBloomDmgBonus"),
+    lunarCrystallizeDmgBonus: g("lunarCrystallizeDmgBonus"),
+    lunarChargedElevation: g("lunarChargedElevation"),
+    lunarBloomElevation: g("lunarBloomElevation"),
+    lunarCrystallizeElevation: g("lunarCrystallizeElevation"),
+    lunarChargedFlatDmg: g("lunarChargedFlatDmg"),
+    lunarBloomFlatDmg: g("lunarBloomFlatDmg"),
+    lunarCrystallizeFlatDmg: g("lunarCrystallizeFlatDmg"),
   };
 }

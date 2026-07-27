@@ -14,7 +14,7 @@ export const columbina: CharacterConfig = {
         { key: "2-hit", name: "2-Hit", scaling: "atk", hitCategory: "normal" },
         { key: "3-hit", name: "3-Hit", scaling: "atk", hitCategory: "normal" },
         { key: "charged", name: "Charged Attack", scaling: "atk", hitCategory: "charged" },
-        { key: "moondew-cleanse", name: "Moondew Cleanse DMG (% Max HP ×3)", scaling: "hp", direct: "lunar" },
+        { key: "moondew-cleanse", name: "Moondew Cleanse DMG (% Max HP ×3)", scaling: "hp", direct: "lunar", lunarType: "lunar-bloom", element: "Dendro" },
         { key: "plunge", name: "Plunge", scaling: "atk", hitCategory: "plunge" },
         { key: "low-plunge", name: "Low Plunge", scaling: "atk", hitCategory: "plunge" },
         { key: "high-plunge", name: "High Plunge", scaling: "atk", hitCategory: "plunge" },
@@ -24,9 +24,9 @@ export const columbina: CharacterConfig = {
       type: "skill", name: "Elemental Skill — Eternal Tides", hits: [
         { key: "skill-dmg", name: "Skill DMG (% Max HP)", scaling: "hp", hitCategory: "skill" },
         { key: "ripple-dmg", name: "Gravity Ripple: Continuous DMG (% Max HP)", scaling: "hp", hitCategory: "skill" },
-        { key: "gi-charged", name: "Gravity Interference: Lunar-Charged DMG (% Max HP)", scaling: "hp", direct: "lunar" },
-        { key: "gi-bloom", name: "Gravity Interference: Lunar-Bloom DMG (% Max HP)", scaling: "hp", direct: "lunar" },
-        { key: "gi-crystallize", name: "Gravity Interference: Lunar-Crystallize DMG (% Max HP)", scaling: "hp", direct: "lunar" },
+        { key: "gi-charged", name: "Gravity Interference: Lunar-Charged DMG (% Max HP)", scaling: "hp", direct: "lunar", lunarType: "lunar-charged", element: "Electro" },
+        { key: "gi-bloom", name: "Gravity Interference: Lunar-Bloom DMG (% Max HP)", scaling: "hp", direct: "lunar", lunarType: "lunar-bloom", element: "Dendro" },
+        { key: "gi-crystallize", name: "Gravity Interference: Lunar-Crystallize DMG (% Max HP)", scaling: "hp", direct: "lunar", lunarType: "lunar-crystallize", element: "Geo" },
       ]
     },
     {

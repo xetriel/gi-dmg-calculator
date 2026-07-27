@@ -42,6 +42,15 @@ export const initialStats: Record<string, string> = {
   "levelEnemy": "100",
   "defReduction": "0",
   "defIgnore": "0",
+  "lunarChargedDmgBonus": "0",
+  "lunarBloomDmgBonus": "0",
+  "lunarCrystallizeDmgBonus": "0",
+  "lunarChargedElevation": "0",
+  "lunarBloomElevation": "0",
+  "lunarCrystallizeElevation": "0",
+  "lunarChargedFlatDmg": "0",
+  "lunarBloomFlatDmg": "0",
+  "lunarCrystallizeFlatDmg": "0",
 };
 
 export const getInitialStats = (config: CharacterConfig): Record<string, string> => {
@@ -307,25 +316,25 @@ export function useCalculatorState({
     updateInstance(setupId, inst => {
       const updatedStats = { ...inst.stats };
 
-      if (data.levelChar) updatedStats["levelChar"] = data.levelChar;
+      if (data.levelChar !== undefined && data.levelChar !== "") updatedStats["levelChar"] = data.levelChar;
       
-      if (data.hpBase) updatedStats["hp.base"] = data.hpBase;
-      if (data.hpFlat) updatedStats["hp.flat"] = data.hpFlat;
-      if (data.hpPercent) updatedStats["hp.percent"] = data.hpPercent;
+      if (data.hpBase !== undefined && data.hpBase !== "") updatedStats["hp.base"] = data.hpBase;
+      if (data.hpFlat !== undefined && data.hpFlat !== "") updatedStats["hp.flat"] = data.hpFlat;
+      if (data.hpPercent !== undefined && data.hpPercent !== "") updatedStats["hp.percent"] = data.hpPercent;
 
-      if (data.atkBase) updatedStats["atk.base"] = data.atkBase;
-      if (data.atkFlat) updatedStats["atk.flat"] = data.atkFlat;
-      if (data.atkPercent) updatedStats["atk.percent"] = data.atkPercent;
+      if (data.atkBase !== undefined && data.atkBase !== "") updatedStats["atk.base"] = data.atkBase;
+      if (data.atkFlat !== undefined && data.atkFlat !== "") updatedStats["atk.flat"] = data.atkFlat;
+      if (data.atkPercent !== undefined && data.atkPercent !== "") updatedStats["atk.percent"] = data.atkPercent;
 
-      if (data.defBase) updatedStats["def.base"] = data.defBase;
-      if (data.defFlat) updatedStats["def.flat"] = data.defFlat;
-      if (data.defPercent) updatedStats["def.percent"] = data.defPercent;
+      if (data.defBase !== undefined && data.defBase !== "") updatedStats["def.base"] = data.defBase;
+      if (data.defFlat !== undefined && data.defFlat !== "") updatedStats["def.flat"] = data.defFlat;
+      if (data.defPercent !== undefined && data.defPercent !== "") updatedStats["def.percent"] = data.defPercent;
 
-      if (data.em) updatedStats["em"] = data.em;
-      if (data.critRate) updatedStats["critRate"] = data.critRate;
-      if (data.critDmg) updatedStats["critDmg"] = data.critDmg;
-      if (data.energyRecharge) updatedStats["energyRecharge"] = data.energyRecharge;
-      if (data.dmgBonus) updatedStats["dmgBonus"] = data.dmgBonus;
+      if (data.em !== undefined && data.em !== "") updatedStats["em"] = data.em;
+      if (data.critRate !== undefined && data.critRate !== "") updatedStats["critRate"] = data.critRate;
+      if (data.critDmg !== undefined && data.critDmg !== "") updatedStats["critDmg"] = data.critDmg;
+      if (data.energyRecharge !== undefined && data.energyRecharge !== "") updatedStats["energyRecharge"] = data.energyRecharge;
+      if (data.dmgBonus !== undefined && data.dmgBonus !== "") updatedStats["dmgBonus"] = data.dmgBonus;
 
       return {
         stats: updatedStats,
