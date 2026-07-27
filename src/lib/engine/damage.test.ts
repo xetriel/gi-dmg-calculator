@@ -198,9 +198,9 @@ describe("validate", () => {
     expect(res.errors["levelChar"]).toMatch(/level/);
     expect(res.errors["levelEnemy"]).toMatch(/level/);
   });
-  it("requires reaction bonus only when a reaction is selected", () => {
+  it("allows reaction bonus to be empty (defaults to 0%) when a reaction is selected", () => {
     const raw = { ...fullRaw(arlecchino), reaction: "vaporize" as const, reactionBonus: "" };
-    expect(validate(arlecchino, raw, manualResolved(arlecchino, raw)).errors["reactionBonus"]).toBe("Required");
+    expect(validate(arlecchino, raw, manualResolved(arlecchino, raw)).ok).toBe(true);
     const ok = { ...raw, reactionBonus: "0" };
     expect(validate(arlecchino, ok, manualResolved(arlecchino, ok)).ok).toBe(true);
   });
