@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolveMechanics } from "../mechanics";
 import { columbina } from "../../../data/registry/characters/columbina";
 import { columbinaSeed } from "../../../data/talents/columbina";
-import type { DamageStats } from "../damage";
+import { type DamageStats, computeHit } from "../damage";
 import type { TalentScalingData } from "../../talent-scaling";
 import type { MechanicsCtx } from "../mechanics-utils";
 
@@ -177,9 +177,9 @@ describe("Columbina Mechanics & Scale Resolving", () => {
     expect(rC2.perHit["gi-crystallize"]?.flatDmgBonus).toBeCloseTo(3575, 4);
 
     // All hit branches are active
-    expect(rC2.perHit["gi-charged"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
-    expect(rC2.perHit["gi-bloom"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
-    expect(rC2.perHit["gi-crystallize"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
+    expect(rC2.perHit["gi-charged"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
+    expect(rC2.perHit["gi-bloom"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
+    expect(rC2.perHit["gi-crystallize"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
   });
 
   it("C6 CRIT DMG buff application in Lunar Domain", () => {
@@ -192,29 +192,77 @@ describe("Columbina Mechanics & Scale Resolving", () => {
   });
 
   it("Constellation Elevation multiplier summation", () => {
-    // C0: 1.0
+    // C0: 0%
     const ctx0 = createCtx({ constellationLevel: 0 });
     const r0 = resolveMechanics(columbina, ctx0);
-    expect(r0.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBe(1.0);
+    expect(r0.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBe(0);
 
     // C1: 1.015 (+1.5%)
     const ctx1 = createCtx({ constellationLevel: 1 });
     const r1 = resolveMechanics(columbina, ctx1);
-    expect(r1.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.015, 6);
+    expect(r1.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(1.5, 6);
 
     // C2: 1.085 (+1.5% + 7%)
     const ctx2 = createCtx({ constellationLevel: 2 });
     const r2 = resolveMechanics(columbina, ctx2);
-    expect(r2.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.085, 6);
+    expect(r2.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(8.5, 6);
 
     // C4: 1.10 (+1.5% + 7% + 1.5%)
     const ctx4 = createCtx({ constellationLevel: 4 });
     const r4 = resolveMechanics(columbina, ctx4);
-    expect(r4.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.10, 6);
+    expect(r4.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(10.0, 6);
 
     // C6: 1.17 (+1.5% + 7% + 1.5% + 7%)
     const ctx6 = createCtx({ constellationLevel: 6 });
     const r6 = resolveMechanics(columbina, ctx6);
-    expect(r6.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.17, 6);
+    expect(r6.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(17.0, 6);
+  });
+
+  it("Moondew Cleanse, GI-Bloom are Dendro, GI-Charged is Electro, GI-Crystallize is Geo", () => {
+    const normalGroup = columbina.talents.find(t => t.type === "normal");
+    const skillGroup = columbina.talents.find(t => t.type === "skill");
+
+    const moondew = normalGroup?.hits.find(h => h.key === "moondew-cleanse");
+    const giCharged = skillGroup?.hits.find(h => h.key === "gi-charged");
+    const giBloom = skillGroup?.hits.find(h => h.key === "gi-bloom");
+    const giCrystallize = skillGroup?.hits.find(h => h.key === "gi-crystallize");
+
+    expect(moondew?.element).toBe("Dendro");
+    expect(giCharged?.element).toBe("Electro");
+    expect(giBloom?.element).toBe("Dendro");
+    expect(giCrystallize?.element).toBe("Geo");
+  });
+
+  it("matches Genshin Optimizer exact Moondew Cleanse DMG calculation (84,842)", () => {
+    const stats: DamageStats = {
+      atk: 1000, hp: 44126, def: 500, em: 574.85,
+      critRate: 100, critDmg: 291.2,
+      dmgBonus: 0, normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
+      skillDmgBonus: 0, burstDmgBonus: 0, pyroDmgBonus: 0, hydroDmgBonus: 0,
+      dendroDmgBonus: 0, electroDmgBonus: 0, anemoDmgBonus: 0, cryoDmgBonus: 0,
+      geoDmgBonus: 0, physicalDmgBonus: 0, dmgReduction: 0, enemyRes: -45,
+      levelChar: 90, levelEnemy: 100, defReduction: 0, defIgnore: 0,
+      energyRecharge: 100, healingBonus: 0,
+      lunarBloomDmgBonus: 215,
+      lunarBloomElevation: 8.5,
+      lunarBloomFlatDmg: 9795.1,
+    };
+
+    const res = computeHit(stats, {
+      multiplier: 2.7,
+      scaling: "hp",
+      element: "Dendro",
+      reaction: "none",
+      reactionBonusPct: 0,
+      baseDmgMultiplier: 1.0,
+      directReaction: {
+        coefficient: 1.0,
+        baseDmgBonusPct: 21.0,
+        reactionBonusPct: 0,
+        lunarType: "lunar-bloom",
+      },
+    });
+
+    expect(Math.round(res.crit)).toBe(84582);
   });
 });

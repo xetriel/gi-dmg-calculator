@@ -7,6 +7,7 @@ const GROUPS: { key: StatField["group"]; label: string }[] = [
   { key: "base", label: "Base Stats" },
   { key: "combat", label: "Combat Stats" },
   { key: "advanced", label: "Advanced Stats" },
+  { key: "lunar", label: "Lunar Reaction & Direct Stats" },
   { key: "defense", label: "Target Stats" },
 ];
 
@@ -57,9 +58,9 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
                         {f.label}
                       </span>
                       {f.hasBaseAndFlat ? (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap justify-end">
                           <input
-                            className={inputCls(`${f.key}.base`, "w-16")}
+                            className={inputCls(`${f.key}.base`, "w-20 sm:w-24 text-right font-mono")}
                             type="number"
                             placeholder="Base"
                             value={inst.stats[`${f.key}.base`] ?? ""}
@@ -67,10 +68,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
                               setStat(inst.id, `${f.key}.base`, e.target.value)
                             }
                           />
-                          <span className="text-gray-400 dark:text-gray-500">+</span>
+                          <span className="text-gray-400 dark:text-gray-500 font-bold">+</span>
                           <div className="relative">
                             <input
-                              className={inputCls(`${f.key}.percent`, "w-16 pr-4")}
+                              className={inputCls(`${f.key}.percent`, "w-20 sm:w-24 pr-5 text-right font-mono")}
                               type="number"
                               placeholder="%"
                               value={inst.stats[`${f.key}.percent`] ?? ""}
@@ -82,13 +83,13 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
                                 )
                               }
                             />
-                            <span className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] pointer-events-none">
+                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium pointer-events-none select-none">
                               %
                             </span>
                           </div>
-                          <span className="text-gray-400 dark:text-gray-500">+</span>
+                          <span className="text-gray-400 dark:text-gray-500 font-bold">+</span>
                           <input
-                            className={inputCls(`${f.key}.flat`, "w-16")}
+                            className={inputCls(`${f.key}.flat`, "w-20 sm:w-24 text-right font-mono")}
                             type="number"
                             placeholder="Flat"
                             value={inst.stats[`${f.key}.flat`] ?? ""}
@@ -99,7 +100,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
                         </span>
                       ) : (
                         <input
-                          className={inputCls(f.key, "w-24")}
+                          className={inputCls(f.key, "w-28 sm:w-32 text-right font-mono")}
                           type="number"
                           value={inst.stats[f.key] ?? ""}
                           onChange={(e) =>

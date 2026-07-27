@@ -210,7 +210,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                             )}
                           </td>
                         ) : (() => {
-                          const cellColor = res ? getHitColor(res.element ?? config.element, res.reaction, h.direct, h.name) : undefined;
+                          const cellColor = res ? getHitColor(res.element ?? h.element ?? config.element, res.reaction, h.direct, h.name) : undefined;
                           const cellStyle = cellColor ? { color: cellColor } : undefined;
                           return (
                             <>
