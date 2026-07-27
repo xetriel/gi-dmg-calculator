@@ -1227,7 +1227,13 @@ export function CharacterCalculator({
                     {reactionOptions.length > 1 ? (
                       <div className="flex flex-wrap items-center gap-3">
                         <select className={selectCls} value={inst.reaction}
-                          onChange={e => setReaction(inst.id, e.target.value as ReactionType)}>
+                          onChange={e => {
+                            const newRx = e.target.value as ReactionType;
+                            setReaction(inst.id, newRx);
+                            if (newRx !== "none" && (!inst.reactionBonus || inst.reactionBonus.trim() === "")) {
+                              setReactionBonus(inst.id, "0");
+                            }
+                          }}>
                           {reactionOptions.map(r => (
                             <option key={r} value={r} className="bg-white dark:bg-zinc-800 text-black dark:text-white">
                               {REACTION_LABEL[r]}

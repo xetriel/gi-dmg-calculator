@@ -57,4 +57,38 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
     expect(hit1?.subBreakdowns.some(s => s.includes("Base ATK"))).toBe(true);
     expect(hit1?.subBreakdowns.some(s => s.includes("Total Normal Att. DMG Increase"))).toBe(true);
   });
+
+  it("generates correct Direct Lunar formula for Columbina Moondew Cleanse", async () => {
+    const columbinaConfig = (await import("../../data/registry/characters/columbina")).columbina;
+    const columbinaScaling = buildScaling("columbina");
+    const inst = {
+      id: "setup-columbina",
+      stats: {
+        "hp.base": "14695",
+        "hp.flat": "29431",
+        "hp.percent": "0",
+        "em": "574.85",
+        "critRate": "99.1",
+        "critDmg": "211.2",
+        "enemyRes": "-45",
+      },
+      hits: {},
+      levels: { normal: "10", skill: "10", burst: "10" },
+      mechanicInputs: { "lunar-domain": "1" },
+      reaction: "none" as const,
+      reactionBonus: "0",
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
+      constellationLevel: 0,
+    };
+
+    const breakdowns = explainHitFormulas(columbinaConfig, columbinaScaling, inst);
+    const moondew = breakdowns.find(b => b.hitName.includes("Moondew Cleanse"));
+
+    expect(moondew).toBeDefined();
+    expect(moondew?.mainFormulaCrit).not.toContain("Total DMG Bonus");
+    expect(moondew?.mainFormulaCrit).toContain("Base Transformative Multiplier");
+    expect(moondew?.mainFormulaCrit).toContain("Lunar Base DMG Bonus");
+    expect(moondew?.mainFormulaCrit).not.toContain("Enemy DEF Multiplier");
+  });
 });

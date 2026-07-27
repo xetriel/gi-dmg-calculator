@@ -203,7 +203,17 @@ export function explainHitFormulas(
       const ampMult = elem === "Physical" ? 1 : amplifyingMultiplier(elem, effectiveReaction, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
 
       // Build main formula lines for Non-Crit, CRIT, and Avg modes
-      const basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
+      let basePart = "";
+      if (h.direct) {
+        const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
+        const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
+        const coeffStr = dr.coefficient !== 1 ? `${dr.coefficient} * ` : "";
+        const baseBonusStr = dr.baseDmgBonusPct > 0 ? ` * (100% + Lunar Base DMG Bonus ${fmtPct(dr.baseDmgBonusPct)})` : "";
+        const rxBonusStr = dr.reactionBonusPct > 0 ? ` + Reaction Bonus ${fmtPct(dr.reactionBonusPct)}` : "";
+        basePart = `(${coeffStr}${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${rxBonusStr})${baseBonusStr}`;
+      } else {
+        basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
+      }
       const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
 
       const mainFormulaNonCrit = `${h.name} ${fmt(hitRes.nonCrit)} = ${basePart}${defResPart}`;
@@ -272,22 +282,31 @@ export function explainHitFormulas(
       }
 
       // 3. DMG Bonus breakdown
-      const isSpecial = catKey === "special";
-      const bonusParts: string[] = [];
-      if (commonBonus > 0) bonusParts.push(`Total Common DMG Bonus ${fmtPct(commonBonus)}`);
-      if (categoryBonus > 0 && !isSpecial) bonusParts.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
-      if (elementBonus > 0) bonusParts.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
-      if (extraBonus > 0) bonusParts.push(`Extra Hit Bonus ${fmtPct(extraBonus)}`);
+      if (h.direct) {
+        const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
+        const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
+        subBreakdowns.push(`Base Transformative Multiplier ${fmtPct(100 + emBonusPct)} = 100% + 6 * Total EM ${fmt(effectiveStats.em)} / (Total EM ${fmt(effectiveStats.em)} + 2000)`);
+        if (dr.baseDmgBonusPct > 0) {
+          subBreakdowns.push(`Lunar Base DMG Bonus ${fmtPct(dr.baseDmgBonusPct)} = Min(0.2% * (Total HP ${fmt(effectiveStats.hp)} / 1000), 7%)`);
+        }
+      } else {
+        const isSpecial = catKey === "special";
+        const bonusParts: string[] = [];
+        if (commonBonus > 0) bonusParts.push(`Total Common DMG Bonus ${fmtPct(commonBonus)}`);
+        if (categoryBonus > 0 && !isSpecial) bonusParts.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
+        if (elementBonus > 0) bonusParts.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+        if (extraBonus > 0) bonusParts.push(`Extra Hit Bonus ${fmtPct(extraBonus)}`);
 
-      subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = ${bonusParts.length > 0 ? bonusParts.join(" + ") : "0%"}${isSpecial ? " (Independent Special Hit)" : ""}`);
-      if (commonBonus > 0) {
-        subBreakdowns.push(`Total Common DMG Bonus ${fmtPct(commonBonus)} = Common DMG Bonus ${fmtPct(commonBonus)}`);
-      }
-      if (categoryBonus > 0 && !isSpecial) {
-        subBreakdowns.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)} = ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
-      }
-      if (elementBonus > 0) {
-        subBreakdowns.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)} = ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+        subBreakdowns.push(`Total DMG Bonus ${fmtPct(totalDmgBonusPct)} = ${bonusParts.length > 0 ? bonusParts.join(" + ") : "0%"}${isSpecial ? " (Independent Special Hit)" : ""}`);
+        if (commonBonus > 0) {
+          subBreakdowns.push(`Total Common DMG Bonus ${fmtPct(commonBonus)} = Common DMG Bonus ${fmtPct(commonBonus)}`);
+        }
+        if (categoryBonus > 0 && !isSpecial) {
+          subBreakdowns.push(`Total ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)} = ${g.type === "normal" ? "Normal Att." : g.type.toUpperCase()} DMG Bonus ${fmtPct(categoryBonus)}`);
+        }
+        if (elementBonus > 0) {
+          subBreakdowns.push(`Total ${elem} DMG Bonus ${fmtPct(elementBonus)} = ${elem} DMG Bonus ${fmtPct(elementBonus)}`);
+        }
       }
 
       // 4. CRIT Rate & CRIT DMG breakdown
