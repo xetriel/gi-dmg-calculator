@@ -207,5 +207,14 @@ export function resolveStats(raw: RawInputs): DamageStats {
     defIgnore: g("defIgnore"),
     energyRecharge: g("energyRecharge"),
     healingBonus: g("healingBonus"),
+    lunarChargedDmgBonus: g("lunarChargedDmgBonus"),
+    lunarBloomDmgBonus: g("lunarBloomDmgBonus"),
+    lunarCrystallizeDmgBonus: g("lunarCrystallizeDmgBonus"),
+    lunarChargedElevation: g("lunarChargedElevation"),
+    lunarBloomElevation: g("lunarBloomElevation"),
+    lunarCrystallizeElevation: g("lunarCrystallizeElevation"),
+    lunarChargedFlatDmg: g("lunarChargedFlatDmg"),
+    lunarBloomFlatDmg: g("lunarBloomFlatDmg"),
+    lunarCrystallizeFlatDmg: g("lunarCrystallizeFlatDmg"),
   };
 }

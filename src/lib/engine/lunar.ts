@@ -65,11 +65,33 @@ export function indirectLunarDamage(
 ): LunarResult {
   const mult = LUNAR_INDIRECT_MULTIPLIER[type];
   if (!mult) return { nonCrit: 0, crit: 0, avg: 0 };
-  const nonCrit =
+
+  let specificDmgBonus = 0;
+  let specificElevation = 0;
+  let specificFlatDmg = 0;
+  if (type === "lunar-charged") {
+    specificDmgBonus = stats.lunarChargedDmgBonus ?? 0;
+    specificElevation = stats.lunarChargedElevation ?? 0;
+    specificFlatDmg = stats.lunarChargedFlatDmg ?? 0;
+  } else if (type === "lunar-bloom") {
+    specificDmgBonus = stats.lunarBloomDmgBonus ?? 0;
+    specificElevation = stats.lunarBloomElevation ?? 0;
+    specificFlatDmg = stats.lunarBloomFlatDmg ?? 0;
+  } else if (type === "lunar-crystallize") {
+    specificDmgBonus = stats.lunarCrystallizeDmgBonus ?? 0;
+    specificElevation = stats.lunarCrystallizeElevation ?? 0;
+    specificFlatDmg = stats.lunarCrystallizeFlatDmg ?? 0;
+  }
+
+  const baseTerm =
     mult *
     levelMultiplier(stats.levelChar) *
     (1 + lunarBaseDmgBonusPct / 100) *
-    (1 + lunarEmBonus(stats.em) + reactionBonusPct / 100) *
-    resMultiplier(stats.enemyRes);
+    (1 + lunarEmBonus(stats.em) + (reactionBonusPct + specificDmgBonus) / 100);
+
+  const totalBase = baseTerm + specificFlatDmg;
+  const specialBonusFactor = 1 + specificElevation / 100;
+  const nonCrit = totalBase * specialBonusFactor * resMultiplier(stats.enemyRes);
+
   return withCrit(nonCrit, stats);
 }

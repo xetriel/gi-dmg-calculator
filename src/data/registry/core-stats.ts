@@ -29,4 +29,13 @@ export const coreStats = (dmgBonusLabel: string): StatField[] => [
   { key: "levelEnemy",     label: "Level (Enemy)",      unit: "flat",    group: "defense" },
   { key: "defReduction",   label: "DEF Reduction%",     unit: "percent", group: "defense" },
   { key: "defIgnore",      label: "DEF Ignore%",        unit: "percent", group: "defense" },
+  { key: "lunarChargedDmgBonus",     label: "Lunar-Charged DMG Bonus%",                unit: "percent", group: "lunar" },
+  { key: "lunarChargedElevation",    label: "Lunar-Charged Elevated DMG Multiplier%",   unit: "percent", group: "lunar" },
+  { key: "lunarChargedFlatDmg",      label: "Lunar-Charged Flat DMG Increase",          unit: "flat",    group: "lunar" },
+  { key: "lunarBloomDmgBonus",       label: "Lunar-Bloom DMG Bonus%",                  unit: "percent", group: "lunar" },
+  { key: "lunarBloomElevation",      label: "Lunar-Bloom Elevated DMG Multiplier%",     unit: "percent", group: "lunar" },
+  { key: "lunarBloomFlatDmg",        label: "Lunar-Bloom Flat DMG Increase",            unit: "flat",    group: "lunar" },
+  { key: "lunarCrystallizeDmgBonus", label: "Lunar-Crystallize DMG Bonus%",            unit: "percent", group: "lunar" },
+  { key: "lunarCrystallizeElevation",label: "Lunar-Crystallize Elevated DMG Multiplier%", unit: "percent", group: "lunar" },
+  { key: "lunarCrystallizeFlatDmg",  label: "Lunar-Crystallize Flat DMG Increase",      unit: "flat",    group: "lunar" },
 ];

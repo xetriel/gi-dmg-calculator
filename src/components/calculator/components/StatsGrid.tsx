@@ -7,6 +7,7 @@ const GROUPS: { key: StatField["group"]; label: string }[] = [
   { key: "base", label: "Base Stats" },
   { key: "combat", label: "Combat Stats" },
   { key: "advanced", label: "Advanced Stats" },
+  { key: "lunar", label: "Lunar Reaction & Direct Stats" },
   { key: "defense", label: "Target Stats" },
 ];
 

@@ -36,6 +36,15 @@ export interface DamageStats {
   defIgnore: number;     // percent
   energyRecharge: number; // percent
   healingBonus: number;   // percent
+  lunarChargedDmgBonus?: number;
+  lunarBloomDmgBonus?: number;
+  lunarCrystallizeDmgBonus?: number;
+  lunarChargedElevation?: number;
+  lunarBloomElevation?: number;
+  lunarCrystallizeElevation?: number;
+  lunarChargedFlatDmg?: number;
+  lunarBloomFlatDmg?: number;
+  lunarCrystallizeFlatDmg?: number;
 }
 
 // Per-hit direct-reaction parameters, shared by Stellar-Conduct and Direct Lunar
@@ -46,6 +55,7 @@ export interface DirectReactionParams {
   coefficient: number;        // Base Reaction Coefficient (Polestar hits 1/1.45…1.9; Lunar-Crystallize 1.6)
   baseDmgBonusPct: number;    // %Reaction Base DMG Bonus (Light of Rationalisme / Moonsign passives, max 14)
   reactionBonusPct: number;   // %Reaction Bonus (e.g. constellation +30, artifacts)
+  lunarType?: "lunar-charged" | "lunar-crystallize" | "lunar-bloom";
 }
 
 export interface HitInput {
@@ -224,20 +234,37 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
 
   if (hit.directReaction) {
     // Direct-reaction branch (wiki "Stellar-Conduct Damage" / "Direct Lunar Damage"):
-    //   (Coefficient × Mult% × Stat × BaseDMGMult × (1 + %ReactionBaseDMGBonus)
-    //    × (1 + EMBonus + %ReactionBonus) + additive) × RESMult × CRIT
-    // No enemy-DEF multiplier, no DMG Bonus%, no amplifying/catalyze;
-    // Elevation Multiplier treated as 1.
+    //   ((Coeff × Mult% × Stat × (1 + %EMBonus + %ReactionBonus) × (1 + %BaseDMGBonus) × BaseDMGMult) + Additive)
+    //   × SpecialBonusFactor × RESMult × CRIT
     const s = hit.directReaction;
-    const base =
-      s.coefficient *
-        (hit.multiplier / 100) *
-        scalingTotal(stats, hit.scaling) *
-        (hit.baseDmgMultiplier ?? 1) *
-        (1 + s.baseDmgBonusPct / 100) *
-        (1 + stellarEmBonus(stats.em) + s.reactionBonusPct / 100) +
-      (hit.flatDmgBonus ?? 0);
-    nonCrit = base * resMultiplier(stats.enemyRes);
+    let specificDmgBonus = 0;
+    let specificElevation = 0;
+    let specificFlatDmg = 0;
+    if (s.lunarType === "lunar-charged") {
+      specificDmgBonus = stats.lunarChargedDmgBonus ?? 0;
+      specificElevation = stats.lunarChargedElevation ?? 0;
+      specificFlatDmg = stats.lunarChargedFlatDmg ?? 0;
+    } else if (s.lunarType === "lunar-bloom") {
+      specificDmgBonus = stats.lunarBloomDmgBonus ?? 0;
+      specificElevation = stats.lunarBloomElevation ?? 0;
+      specificFlatDmg = stats.lunarBloomFlatDmg ?? 0;
+    } else if (s.lunarType === "lunar-crystallize") {
+      specificDmgBonus = stats.lunarCrystallizeDmgBonus ?? 0;
+      specificElevation = stats.lunarCrystallizeElevation ?? 0;
+      specificFlatDmg = stats.lunarCrystallizeFlatDmg ?? 0;
+    }
+
+    const emBonusFrac = stellarEmBonus(stats.em);
+    const emRxBonusFactor = 1 + emBonusFrac + (s.reactionBonusPct + specificDmgBonus) / 100;
+    const baseDmgBonusFactor = 1 + s.baseDmgBonusPct / 100;
+    const baseMultFactor = hit.baseDmgMultiplier ?? 1;
+
+    const abilityBase = s.coefficient * (hit.multiplier / 100) * scalingTotal(stats, hit.scaling);
+    const scaledBase = abilityBase * emRxBonusFactor * baseDmgBonusFactor * baseMultFactor;
+    const totalBase = scaledBase + (hit.flatDmgBonus ?? 0) + specificFlatDmg;
+    const specialBonusFactor = 1 + specificElevation / 100;
+
+    nonCrit = totalBase * specialBonusFactor * resMultiplier(stats.enemyRes);
   } else {
     const additive =
       (hit.flatDmgBonus ?? 0) +
