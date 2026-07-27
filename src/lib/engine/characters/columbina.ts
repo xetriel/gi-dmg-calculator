@@ -75,15 +75,18 @@ export function resolveColumbina(config: CharacterConfig, ctx: MechanicsCtx): Me
     res.notes.push("C6: +80% CRIT DMG to elements in Lunar Domain");
   }
 
+  const elevationBonusPct = (elevation - 1) * 100;
+
   // Route Moondew Cleanse (direct Lunar-Bloom, coefficient 1.0)
   const cleanseDirect: DirectReactionParams = {
     coefficient: 1.0,
     baseDmgBonusPct: lunarBase,
     reactionBonusPct: domainReactionBonus,
+    elevationBonusPct,
+    lunarType: "lunar-bloom",
   };
   addMods(res.perHit, "moondew-cleanse", {
     directReaction: cleanseDirect,
-    baseDmgMultiplier: elevation,
   });
 
   // Gravity Interference flat C4 scaling additions
@@ -97,31 +100,34 @@ export function resolveColumbina(config: CharacterConfig, ctx: MechanicsCtx): Me
     coefficient: 3.0,
     baseDmgBonusPct: lunarBase,
     reactionBonusPct: domainReactionBonus,
+    elevationBonusPct,
+    lunarType: "lunar-charged",
   };
   const giBloomDirect: DirectReactionParams = {
     coefficient: 1.0,
     baseDmgBonusPct: lunarBase,
     reactionBonusPct: domainReactionBonus,
+    elevationBonusPct,
+    lunarType: "lunar-bloom",
   };
   const giCrystallizeDirect: DirectReactionParams = {
     coefficient: 1.6,
     baseDmgBonusPct: lunarBase,
     reactionBonusPct: domainReactionBonus,
+    elevationBonusPct,
+    lunarType: "lunar-crystallize",
   };
 
   addMods(res.perHit, "gi-charged", {
     directReaction: giChargedDirect,
-    baseDmgMultiplier: elevation,
     flatDmgBonus: c4ChargedFlat,
   });
   addMods(res.perHit, "gi-bloom", {
     directReaction: giBloomDirect,
-    baseDmgMultiplier: elevation,
     flatDmgBonus: c4BloomFlat,
   });
   addMods(res.perHit, "gi-crystallize", {
     directReaction: giCrystallizeDirect,
-    baseDmgMultiplier: elevation,
     flatDmgBonus: c4CrystallizeFlat,
   });
 

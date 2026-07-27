@@ -55,6 +55,7 @@ export interface DirectReactionParams {
   coefficient: number;        // Base Reaction Coefficient (Polestar hits 1/1.45…1.9; Lunar-Crystallize 1.6)
   baseDmgBonusPct: number;    // %Reaction Base DMG Bonus (Light of Rationalisme / Moonsign passives, max 14)
   reactionBonusPct: number;   // %Reaction Bonus (e.g. constellation +30, artifacts)
+  elevationBonusPct?: number; // %Reaction Elevation Bonus (e.g. constellation elevation)
   lunarType?: "lunar-charged" | "lunar-crystallize" | "lunar-bloom";
 }
 
@@ -262,7 +263,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
     const abilityBase = s.coefficient * (hit.multiplier / 100) * scalingTotal(stats, hit.scaling);
     const scaledBase = abilityBase * emRxBonusFactor * baseDmgBonusFactor * baseMultFactor;
     const totalBase = scaledBase + (hit.flatDmgBonus ?? 0) + specificFlatDmg;
-    const specialBonusFactor = 1 + specificElevation / 100;
+    const specialBonusFactor = 1 + (specificElevation + (s.elevationBonusPct ?? 0)) / 100;
 
     nonCrit = totalBase * specialBonusFactor * resMultiplier(stats.enemyRes);
   } else {

@@ -177,9 +177,9 @@ describe("Columbina Mechanics & Scale Resolving", () => {
     expect(rC2.perHit["gi-crystallize"]?.flatDmgBonus).toBeCloseTo(3575, 4);
 
     // All hit branches are active
-    expect(rC2.perHit["gi-charged"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
-    expect(rC2.perHit["gi-bloom"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
-    expect(rC2.perHit["gi-crystallize"]?.baseDmgMultiplier).toBeCloseTo(1.10, 4);
+    expect(rC2.perHit["gi-charged"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
+    expect(rC2.perHit["gi-bloom"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
+    expect(rC2.perHit["gi-crystallize"]?.directReaction?.elevationBonusPct).toBeCloseTo(10, 4);
   });
 
   it("C6 CRIT DMG buff application in Lunar Domain", () => {
@@ -192,30 +192,30 @@ describe("Columbina Mechanics & Scale Resolving", () => {
   });
 
   it("Constellation Elevation multiplier summation", () => {
-    // C0: 1.0
+    // C0: 0%
     const ctx0 = createCtx({ constellationLevel: 0 });
     const r0 = resolveMechanics(columbina, ctx0);
-    expect(r0.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBe(1.0);
+    expect(r0.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBe(0);
 
     // C1: 1.015 (+1.5%)
     const ctx1 = createCtx({ constellationLevel: 1 });
     const r1 = resolveMechanics(columbina, ctx1);
-    expect(r1.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.015, 6);
+    expect(r1.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(1.5, 6);
 
     // C2: 1.085 (+1.5% + 7%)
     const ctx2 = createCtx({ constellationLevel: 2 });
     const r2 = resolveMechanics(columbina, ctx2);
-    expect(r2.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.085, 6);
+    expect(r2.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(8.5, 6);
 
     // C4: 1.10 (+1.5% + 7% + 1.5%)
     const ctx4 = createCtx({ constellationLevel: 4 });
     const r4 = resolveMechanics(columbina, ctx4);
-    expect(r4.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.10, 6);
+    expect(r4.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(10.0, 6);
 
     // C6: 1.17 (+1.5% + 7% + 1.5% + 7%)
     const ctx6 = createCtx({ constellationLevel: 6 });
     const r6 = resolveMechanics(columbina, ctx6);
-    expect(r6.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.17, 6);
+    expect(r6.perHit["moondew-cleanse"]?.directReaction?.elevationBonusPct).toBeCloseTo(17.0, 6);
   });
 
   it("Moondew Cleanse, GI-Bloom are Dendro, GI-Charged is Electro, GI-Crystallize is Geo", () => {
