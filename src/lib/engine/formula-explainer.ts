@@ -133,7 +133,7 @@ export function explainHitFormulas(
       }
 
       const mods = mech.perHit[h.key] ?? {};
-      const elem = mods.element ?? config.element;
+      const elem = mods.element ?? h.element ?? config.element;
       const effectiveReaction = inst.reaction;
       const flatBonus = constellationFlatBonus(effects, h.key, effectiveStats) + (mods.flatDmgBonus ?? 0);
 

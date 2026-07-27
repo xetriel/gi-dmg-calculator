@@ -217,4 +217,19 @@ describe("Columbina Mechanics & Scale Resolving", () => {
     const r6 = resolveMechanics(columbina, ctx6);
     expect(r6.perHit["moondew-cleanse"]?.baseDmgMultiplier).toBeCloseTo(1.17, 6);
   });
+
+  it("Moondew Cleanse, GI-Bloom are Dendro, GI-Charged is Electro, GI-Crystallize is Geo", () => {
+    const normalGroup = columbina.talents.find(t => t.type === "normal");
+    const skillGroup = columbina.talents.find(t => t.type === "skill");
+
+    const moondew = normalGroup?.hits.find(h => h.key === "moondew-cleanse");
+    const giCharged = skillGroup?.hits.find(h => h.key === "gi-charged");
+    const giBloom = skillGroup?.hits.find(h => h.key === "gi-bloom");
+    const giCrystallize = skillGroup?.hits.find(h => h.key === "gi-crystallize");
+
+    expect(moondew?.element).toBe("Dendro");
+    expect(giCharged?.element).toBe("Electro");
+    expect(giBloom?.element).toBe("Dendro");
+    expect(giCrystallize?.element).toBe("Geo");
+  });
 });
