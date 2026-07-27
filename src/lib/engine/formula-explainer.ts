@@ -204,7 +204,47 @@ export function explainHitFormulas(
 
       // Build main formula lines for Non-Crit, CRIT, and Avg modes
       let basePart = "";
-      if (h.direct) {
+      let specialPart = "";
+      if (h.direct === "lunar") {
+        const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0, lunarType: h.lunarType };
+        const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
+
+        let specificDmgBonus = 0;
+        let specificElevation = 0;
+        let specificFlatDmg = 0;
+        let lunarLabel = "Lunar DMG Bonus";
+
+        if (h.lunarType === "lunar-charged") {
+          specificDmgBonus = effectiveStats.lunarChargedDmgBonus ?? 0;
+          specificElevation = effectiveStats.lunarChargedElevation ?? 0;
+          specificFlatDmg = effectiveStats.lunarChargedFlatDmg ?? 0;
+          lunarLabel = "Lunar-Charged DMG Bonus";
+        } else if (h.lunarType === "lunar-bloom") {
+          specificDmgBonus = effectiveStats.lunarBloomDmgBonus ?? 0;
+          specificElevation = effectiveStats.lunarBloomElevation ?? 0;
+          specificFlatDmg = effectiveStats.lunarBloomFlatDmg ?? 0;
+          lunarLabel = "Lunar-Bloom DMG Bonus";
+        } else if (h.lunarType === "lunar-crystallize") {
+          specificDmgBonus = effectiveStats.lunarCrystallizeDmgBonus ?? 0;
+          specificElevation = effectiveStats.lunarCrystallizeElevation ?? 0;
+          specificFlatDmg = effectiveStats.lunarCrystallizeFlatDmg ?? 0;
+          lunarLabel = "Lunar-Crystallize DMG Bonus";
+        }
+
+        const totalLunarDmgBonus = dr.reactionBonusPct + specificDmgBonus;
+        const totalFlatIncrease = totalIncrease + specificFlatDmg;
+        const elevationPct = specificElevation;
+
+        const coeffStr = `${fmtPct(mult)}`;
+        const baseTransStr = `(Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${totalLunarDmgBonus > 0 ? ` + Total ${lunarLabel} ${fmtPct(totalLunarDmgBonus)}` : ""})`;
+        const baseBonusStr = dr.baseDmgBonusPct > 0 ? ` * (100% + Total Lunar Base DMG Multiplier ${fmtPct(dr.baseDmgBonusPct)})` : "";
+        const flatStr = totalFlatIncrease > 0 ? ` + Total Lunar DMG Increase ${fmt(totalFlatIncrease)}` : "";
+
+        basePart = `(${coeffStr} * Total ${statName} ${fmt(statVal)} * ${baseTransStr}${baseBonusStr}${flatStr})`;
+        if (elevationPct > 0) {
+          specialPart = ` * (100% + Total Lunar Special DMG Bonus ${fmtPct(elevationPct)})`;
+        }
+      } else if (h.direct) {
         const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
         const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
         const coeffStr = dr.coefficient !== 1 ? `${dr.coefficient} * ` : "";
@@ -214,7 +254,7 @@ export function explainHitFormulas(
       } else {
         basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
       }
-      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
+      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`}${specialPart} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
 
       const mainFormulaNonCrit = `${h.name} ${fmt(hitRes.nonCrit)} = ${basePart}${defResPart}`;
       const mainFormulaCrit = `${h.name} ${fmt(hitRes.crit)} = ${basePart} * (100% + Total Crit DMG ${fmtPct(effectiveCritDmg)})${defResPart}`;

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolveMechanics } from "../mechanics";
 import { columbina } from "../../../data/registry/characters/columbina";
 import { columbinaSeed } from "../../../data/talents/columbina";
-import type { DamageStats } from "../damage";
+import { type DamageStats, computeHit } from "../damage";
 import type { TalentScalingData } from "../../talent-scaling";
 import type { MechanicsCtx } from "../mechanics-utils";
 
@@ -231,5 +231,38 @@ describe("Columbina Mechanics & Scale Resolving", () => {
     expect(giCharged?.element).toBe("Electro");
     expect(giBloom?.element).toBe("Dendro");
     expect(giCrystallize?.element).toBe("Geo");
+  });
+
+  it("matches Genshin Optimizer exact Moondew Cleanse DMG calculation (84,842)", () => {
+    const stats: DamageStats = {
+      atk: 1000, hp: 44126, def: 500, em: 574.85,
+      critRate: 100, critDmg: 291.2,
+      dmgBonus: 0, normalDmgBonus: 0, chargedDmgBonus: 0, plungeDmgBonus: 0,
+      skillDmgBonus: 0, burstDmgBonus: 0, pyroDmgBonus: 0, hydroDmgBonus: 0,
+      dendroDmgBonus: 0, electroDmgBonus: 0, anemoDmgBonus: 0, cryoDmgBonus: 0,
+      geoDmgBonus: 0, physicalDmgBonus: 0, dmgReduction: 0, enemyRes: -45,
+      levelChar: 90, levelEnemy: 100, defReduction: 0, defIgnore: 0,
+      energyRecharge: 100, healingBonus: 0,
+      lunarBloomDmgBonus: 215,
+      lunarBloomElevation: 8.5,
+      lunarBloomFlatDmg: 9795.1,
+    };
+
+    const res = computeHit(stats, {
+      multiplier: 2.7,
+      scaling: "hp",
+      element: "Dendro",
+      reaction: "none",
+      reactionBonusPct: 0,
+      baseDmgMultiplier: 1.0,
+      directReaction: {
+        coefficient: 1.0,
+        baseDmgBonusPct: 21.0,
+        reactionBonusPct: 0,
+        lunarType: "lunar-bloom",
+      },
+    });
+
+    expect(Math.round(res.crit)).toBe(84582);
   });
 });

@@ -88,7 +88,7 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
     expect(moondew).toBeDefined();
     expect(moondew?.mainFormulaCrit).not.toContain("Total DMG Bonus");
     expect(moondew?.mainFormulaCrit).toContain("Base Transformative Multiplier");
-    expect(moondew?.mainFormulaCrit).toContain("Lunar Base DMG Bonus");
+    expect(moondew?.mainFormulaCrit).toContain("Total Lunar Base DMG Multiplier");
     expect(moondew?.mainFormulaCrit).not.toContain("Enemy DEF Multiplier");
   });
 });

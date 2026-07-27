@@ -42,6 +42,15 @@ export const initialStats: Record<string, string> = {
   "levelEnemy": "100",
   "defReduction": "0",
   "defIgnore": "0",
+  "lunarChargedDmgBonus": "0",
+  "lunarBloomDmgBonus": "0",
+  "lunarCrystallizeDmgBonus": "0",
+  "lunarChargedElevation": "0",
+  "lunarBloomElevation": "0",
+  "lunarCrystallizeElevation": "0",
+  "lunarChargedFlatDmg": "0",
+  "lunarBloomFlatDmg": "0",
+  "lunarCrystallizeFlatDmg": "0",
 };
 
 export const getInitialStats = (config: CharacterConfig): Record<string, string> => {
