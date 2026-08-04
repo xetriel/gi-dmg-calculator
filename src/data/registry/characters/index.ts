@@ -23,10 +23,11 @@ import { diluc } from "./diluc";
 import { cyno } from "./cyno";
 import { aloy } from "./aloy";
 import { eula } from "./eula";
+import { ganyu } from "./ganyu";
 import { mavuika } from "./mavuika";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
-export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, mavuika };
-export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, mavuika];
+export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, mavuika };
+export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, mavuika];
 export const byId = (id: string) => CHARACTERS.find(c => c.id === id);
