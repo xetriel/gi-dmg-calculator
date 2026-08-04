@@ -30,6 +30,9 @@ export const DMG_COLORS = {
 };
 
 const KEYWORDS = [
+  // Exceptions (e.g. Ganyu's Frostflake Arrow Bloom / Frostflake Bloom, not Dendro Bloom reaction)
+  { pattern: /\bFrostflake[^\n.,;:()]*?Blooms?\b/i, colorKey: "Default" as const },
+
   // Lunar / Stellar Special Reactions
   { pattern: /\bLunar-Crystallize\b/i, colorKey: "Lunar-Crystallize" as const },
   { pattern: /\bLunar-Charged\b/i, colorKey: "Lunar-Charged" as const },
@@ -93,7 +96,14 @@ export function renderStyledText(text: string): React.ReactNode {
   return parts.map((part, index) => {
     const match = KEYWORDS.find(k => k.pattern.test(part));
     if (match) {
-      const color = DMG_COLORS[match.colorKey];
+      if (match.colorKey === "Default") {
+        return React.createElement(
+          "span",
+          { key: index, className: "font-semibold" },
+          part
+        );
+      }
+      const color = DMG_COLORS[match.colorKey as keyof typeof DMG_COLORS];
       return React.createElement(
         "span",
         { key: index, style: { color }, className: "font-semibold" },
