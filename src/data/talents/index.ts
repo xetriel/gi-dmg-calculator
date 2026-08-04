@@ -18,9 +18,10 @@ import { gamingSeed } from "./gaming";
 import { durinSeed } from "./durin";
 import { alhaithamSeed } from "./alhaitham";
 import { ayakaSeed } from "./ayaka";
+import { ayatoSeed } from "./ayato";
 import { mavuikaSeed } from "./mavuika";
 
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed, varesaSeed, gamingSeed, durinSeed, alhaithamSeed, ayakaSeed, mavuikaSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed, varesaSeed, gamingSeed, durinSeed, alhaithamSeed, ayakaSeed, ayatoSeed, mavuikaSeed];
 
 export interface TalentRow {
   characterId: string;
