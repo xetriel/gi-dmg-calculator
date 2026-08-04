@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
-import { prisma } from "@/lib/prisma";
+import { getDbStatus } from "@/app/actions/db-status";
+import { DbStatusBadge, SavedBuildsBadge } from "@/components/DbStatusBadge";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +26,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let buildsCount = 0;
-  try {
-    buildsCount = await prisma.build.count();
-  } catch (err) {
-    console.error("Database connection failed in layout:", err);
-  }
+  const dbStatus = await getDbStatus();
 
   return (
     <html
@@ -51,10 +47,7 @@ export default async function RootLayout({
               <span className="text-[9px] font-bold font-mono bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
                 v1.2.0-Beta
               </span>
-              <div className="flex items-center gap-1.5 text-[9px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5 px-2 py-0.5 border border-emerald-500/15 rounded-full font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>DB Online</span>
-              </div>
+              <DbStatusBadge initialStatus={dbStatus} />
             </div>
 
             {/* Right Meta Section */}
@@ -63,10 +56,10 @@ export default async function RootLayout({
                 <span>🕑</span>
                 <span>History</span>
               </Link>
-              <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-250/60 dark:border-zinc-800 px-2.5 py-1 rounded-lg">
-                <span>📂</span>
-                <span>{buildsCount} Saved Builds</span>
-              </div>
+              <SavedBuildsBadge
+                initialCount={dbStatus.buildsCount}
+                isOnline={dbStatus.status === "online"}
+              />
               <a
                 href="https://github.com/xetriel/gi-dmg-calculator"
                 target="_blank"
