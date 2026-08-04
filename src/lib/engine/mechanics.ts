@@ -27,6 +27,8 @@ import { resolveDurin } from "./characters/durin";
 import { resolveAlhaitham } from "./characters/alhaitham";
 import { resolveAyaka } from "./characters/ayaka";
 import { resolveAyato } from "./characters/ayato";
+import { resolveDehya } from "./characters/dehya";
+import { resolveDiluc } from "./characters/diluc";
 import { resolveMavuika } from "./characters/mavuika";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
@@ -51,6 +53,8 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "alhaitham": resolveAlhaitham,
   "ayaka": resolveAyaka,
   "ayato": resolveAyato,
+  "dehya": resolveDehya,
+  "diluc": resolveDiluc,
   "mavuika": resolveMavuika,
 };
 

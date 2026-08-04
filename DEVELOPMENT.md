@@ -6,9 +6,13 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to July 28, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 4, 2026).
 
 ### New Character Calculators
+- **Diluc (August 4, 2026)**: Added Diluc, a 5-star Pyro Claymore character featuring Pyro infusion on Burst (*Dawn*), A1 stamina cost reduction, A4 Pyro DMG bonus during infusion (+20%), C1 DMG bonus against >50% HP targets (+15%), C2 ATK/Speed stacking bonuses, C4 Searing Fate rhythm DMG bonus (+40%), and C6 NA DMG/speed bonus.
+- **Dehya (August 4, 2026)**: Added Dehya, a 5-star Pyro Claymore character featuring dual ATK+HP scaling for Skill (*Molten Inferno*) and Burst (*Leonine Bite*), C1 HP flat DMG additions (+3.6% Max HP for Skill, +6.0% Max HP for Burst), C2 Fiery Sanctum DMG bonus (+50%), and C6 Burst CRIT Rate (+10%) / CRIT DMG (+60%).
+- **Kamisato Ayato (August 4, 2026)**: Added Kamisato Ayato, a 5-star Hydro Sword character featuring Shunsuiken strikes with Namisen HP flat DMG stacking (`namisenFlatDmg = stacks * (namisenPct / 100) * Max HP`), C1 DMG bonus against <=50% HP targets (+40%), C2 Max HP bonus (+50%), and Suiyuu Burst field NA DMG bonus.
+- **Mavuika (August 1, 2026)**: Added Mavuika, a 5-star Pyro Claymore Archon character from Natlan featuring Fighting Spirit stack buffs, Flamestrider drive combo modes, A1/A4 passive bonuses, and C1/C2/C4/C6 constellation scaling.
 - **Kamisato Ayaka (July 21, 2026)**: Added Kamisato Ayaka, a 5-star Cryo Sword main-DPS featuring Cryo infusion via alternate sprint (*Kamisato Art: Senho*), A1 Normal/Charged attack DMG bonus (+30%), A4 Cryo DMG bonus (+18%), C2 Frostflake Seki no To mini-whirlwinds (20% DMG), C4 DEF reduction (-30%), and C6 Charged Attack DMG bonus (+298%).
 - **Alhaitham (July 21, 2026)**: Added Alhaitham, a 5-star Dendro Sword main-DPS who utilizes Chisel-Light Mirrors to infuse his attacks with Dendro and deal dual ATK + EM scaling Projection Attacks (`1-mirror`, `2-mirror`, `3-mirror`), featuring A4 EM-to-DMG bonus scaling (0.1% per EM up to 100%), C2 EM boost, C4 Dendro DMG bonus/EM share, and C6 CRIT Rate/DMG bonus.
 - **Durin (July 19, 2026)**: Added Durin, a 5-star Pyro Sword off-field Burst sub-DPS who switches between Purity (White) and Darkness (Dark) forms, featuring element shred/reaction buffs, ATK-based summon scaling, C1 flat DMG, and C6 DEF ignore.
