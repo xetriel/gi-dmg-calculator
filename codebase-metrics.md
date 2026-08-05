@@ -1,19 +1,4 @@
-## Code Metrics Summary
-
-| Date | Additions | Deletions | Total Changes |
-| --- | --- | --- | --- |
-| 2026-07-03 | 19,747 | 1,581 | 21,328 |
-| 2026-07-15 | 23,928 | 3,563 | 27,491 |
-| 2026-07-17 | 27,742 | 5,266 | 33,008 |
-| 2026-07-18 | 28,643 | 5,799 | 34,442 |
-| 2026-07-19 | 29,077 | 5,916 | 34,993 |
-| 2026-07-21 | 29,694 | 6,056 | 35,750 |
-| 2026-07-22 | 30,068 | 6,128 | 36,196 |
-| 2026-07-27 | 31,718 | 6,432 | 38,150 |
-| 2026-07-28 | 32,089 | 6,548 | 38,637 |
-| 2026-08-04 | 35,013 | 6,592 | 41,605 |
-
-#### 1. Cumulative Codebase Metrics (Added `Commits` Column)
+## 1. Cumulative Codebase Metrics (Added `Commits` Column)
 | Date | Commits | Additions | Deletions | Total Changes |
 | --- | --- | --- | --- | --- |
 | 2026-07-01 | 5 | 10,288 | 226 | 10,514 |
@@ -38,7 +23,7 @@
 | 2026-08-01 | 108 | 32,606 | 6,575 | 39,181 |
 | 2026-08-04 | 122 | 35,044 | 6,615 | 41,659 |
 
-#### 2. Contributor Insights (GitHub Insights Style)
+## 2. Contributor Insights (GitHub Insights Style)
 | Contributor | Commits | Additions | Deletions | Total Changes |
 | --- | --- | --- | --- | --- |
 | Letriel | 71 | 17,069 | 5,119 | 22,188 |
