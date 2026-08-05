@@ -37,6 +37,7 @@ import { resolveHeizou } from "./characters/heizou";
 import { resolveItto } from "./characters/itto";
 import { resolveKaveh } from "./characters/kaveh";
 import { resolveKeqing } from "./characters/keqing";
+import { resolveKlee } from "./characters/klee";
 import { resolveMavuika } from "./characters/mavuika";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
@@ -71,6 +72,7 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "itto": resolveItto,
   "kaveh": resolveKaveh,
   "keqing": resolveKeqing,
+  "klee": resolveKlee,
   "mavuika": resolveMavuika,
 };
 
