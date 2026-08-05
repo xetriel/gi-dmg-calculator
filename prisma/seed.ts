@@ -12,10 +12,8 @@ async function main() {
 
   for (const seed of TALENT_SEED) {
     const rows = flattenSeed([seed]);
-    await prisma.$transaction([
-      prisma.talentScaling.deleteMany({ where: { characterId: seed.characterId } }),
-      prisma.talentScaling.createMany({ data: rows }),
-    ]);
+    await prisma.talentScaling.deleteMany({ where: { characterId: seed.characterId } });
+    await prisma.talentScaling.createMany({ data: rows });
     console.log(`${seed.characterId}: synced ${rows.length} rows`);
   }
 
