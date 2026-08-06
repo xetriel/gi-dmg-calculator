@@ -40,6 +40,7 @@ import { resolveKeqing } from "./characters/keqing";
 import { resolveKlee } from "./characters/klee";
 import { resolveMavuika } from "./characters/mavuika";
 import { resolveMualani } from "./characters/mualani";
+import { resolveLyney } from "./characters/lyney";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
@@ -76,6 +77,7 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "klee": resolveKlee,
   "mavuika": resolveMavuika,
   "mualani": resolveMualani,
+  "lyney": resolveLyney,
 };
 
 export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
