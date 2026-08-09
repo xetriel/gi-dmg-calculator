@@ -164,6 +164,8 @@ export function useCalculatorState({
       reactionPanelBonus: "0",
       lunarBaseBonus: "0",
       constellationLevel: 0,
+      teamSupports: [],
+      teamBuffsEnabled: true,
     };
   };
 
