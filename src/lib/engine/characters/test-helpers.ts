@@ -51,11 +51,11 @@ export function scalingFor(characterId: string): TalentScalingData {
 
 export function ctxFor(characterId: string, overrides: Partial<MechanicsCtx> = {}): MechanicsCtx {
   return {
-    stats: baseStats,
+    stats: { ...baseStats, ...(overrides.stats || {}) },
     baseAtk: 800,
     baseDef: 500,
     constellationLevel: 0,
-    talentLevels: { normal: 10, skill: 10, burst: 10 },
+    talentLevels: overrides.talentLevels || overrides.levels || { normal: 10, skill: 10, burst: 10 },
     scaling: scalingFor(characterId),
     inputs: {},
     ...overrides,
