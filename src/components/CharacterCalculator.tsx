@@ -269,7 +269,20 @@ export function CharacterCalculator({
         setHighlightedSetupId(null);
       }, 2500);
     }
-  }, []);
+
+    try {
+      const savedScroll = sessionStorage.getItem(`gi_calc_scroll_${config.id}`);
+      if (savedScroll) {
+        const scrollY = parseInt(savedScroll, 10);
+        if (!isNaN(scrollY) && scrollY > 0) {
+          setTimeout(() => {
+            window.scrollTo({ top: scrollY, behavior: "smooth" });
+          }, 150);
+        }
+        sessionStorage.removeItem(`gi_calc_scroll_${config.id}`);
+      }
+    } catch (e) {}
+  }, [config.id]);
 
   const upperRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const lowerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -1230,7 +1243,15 @@ export function CharacterCalculator({
                 const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
                 const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
-                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${hash}`);
+                let modeParam = "";
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
+                    const storedMode = localStorage.getItem("gi_calc_dmg_type");
+                    if (storedMode) modeParam = `&mode=${storedMode}`;
+                  } catch (e) {}
+                }
+                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
               };
 
               return (
