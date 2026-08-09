@@ -31,6 +31,7 @@ export interface MechanicsCtx {
   baseHp?: number;                      // the "Base" HP input (Columbina C2 HP Buff)
   constellationLevel: number;           // 0–6
   talentLevels: Record<string, number>; // effective level per talent type (incl. C3/C5 +3)
+  levels?: Record<string, number>;       // alias for talentLevels
   scaling: TalentScalingData;           // per-level values incl. buff/heal rows
   inputs: Record<string, number>;       // MechanicDef.id -> value (toggle: 0/1)
 }
