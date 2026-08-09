@@ -34,9 +34,10 @@ import { mualani } from "./mualani";
 import { lyney } from "./lyney";
 import { xiao } from "./xiao";
 import { tartaglia } from "./tartaglia";
+import { yanfei } from "./yanfei";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
-export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia };
-export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia];
+export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei };
+export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei];
 export const byId = (id: string) => CHARACTERS.find(c => c.id === id);
