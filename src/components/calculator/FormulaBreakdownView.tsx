@@ -71,17 +71,49 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
     }
     return instances[0]?.id ?? "setup-1";
   });
-  const [dmgType, setDmgType] = useState<"crit" | "nonCrit" | "avg">("crit");
+  const [dmgType, setDmgType] = useState<"crit" | "nonCrit" | "avg">((): "crit" | "nonCrit" | "avg" => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const modeParam = params.get("mode") as "crit" | "nonCrit" | "avg" | null;
+      if (modeParam && ["crit", "nonCrit", "avg"].includes(modeParam)) {
+        return modeParam;
+      }
+      try {
+        const stored = localStorage.getItem("gi_calc_dmg_type") as "crit" | "nonCrit" | "avg" | null;
+        if (stored && ["crit", "nonCrit", "avg"].includes(stored)) {
+          return stored;
+        }
+      } catch (e) {}
+    }
+    return "avg";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  const handleSetDmgType = (type: "crit" | "nonCrit" | "avg") => {
+    setDmgType(type);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("gi_calc_dmg_type", type);
+      } catch (e) {}
+      const params = new URLSearchParams(window.location.search);
+      params.set("mode", type);
+      const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
+      window.history.replaceState(null, "", newUrl);
+    }
+  };
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const setup = params.get("setup");
     if (setup && instances.some(i => i.id === setup)) {
       setActiveInstId(setup);
+    }
+    const modeParam = params.get("mode") as "crit" | "nonCrit" | "avg" | null;
+    if (modeParam && ["crit", "nonCrit", "avg"].includes(modeParam)) {
+      setDmgType(modeParam);
     }
     const hash = window.location.hash.replace("#", "");
     if (hash) {
@@ -100,7 +132,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
 
   const sharePayload = { instances, rotations: [], activeRotationId: "" };
   const encodedShare = encodeBuild(sharePayload);
-  const backHref = `/characters/${config.id}?${encodedShare ? `share=${encodedShare}&` : ""}setup=${activeInstId}`;
+  const backHref = `/characters/${config.id}?${encodedShare ? `share=${encodedShare}&` : ""}setup=${activeInstId}&mode=${dmgType}`;
 
   const handleBackToCalculator = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -202,7 +234,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
             {/* Damage Mode Selector */}
             <div className="flex items-center gap-1 bg-gray-200/60 dark:bg-zinc-900 p-0.5 rounded-lg border border-gray-250 dark:border-zinc-800 shrink-0">
               <button
-                onClick={() => setDmgType("crit")}
+                onClick={() => handleSetDmgType("crit")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
                   dmgType === "crit"
                     ? "bg-amber-500 text-white shadow-xs font-bold"
@@ -212,7 +244,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
                 ⚡ CRIT
               </button>
               <button
-                onClick={() => setDmgType("nonCrit")}
+                onClick={() => handleSetDmgType("nonCrit")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
                   dmgType === "nonCrit"
                     ? "bg-zinc-800 text-white shadow-xs font-bold"
@@ -222,7 +254,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
                 Non-Crit
               </button>
               <button
-                onClick={() => setDmgType("avg")}
+                onClick={() => handleSetDmgType("avg")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
                   dmgType === "avg"
                     ? "bg-emerald-600 text-white shadow-xs font-bold"
