@@ -3,6 +3,9 @@ import type { HitResult, DamageStats } from "@/lib/engine/damage";
 import type { TransformativeType } from "@/lib/engine/transformative";
 import type { LunarType, LunarResult } from "@/lib/engine/lunar";
 import type { validate } from "@/lib/engine/validation";
+import type { SupportInstance } from "@/lib/engine/team-buffs";
+
+export type { SupportInstance } from "@/lib/engine/team-buffs";
 
 export interface SavedBuild {
   id: string;
@@ -25,6 +28,8 @@ export interface CalcInstance {
   reactionPanelBonus: string;
   lunarBaseBonus: string;
   constellationLevel: number;
+  teamSupports?: SupportInstance[];    // max 3 support characters
+  teamBuffsEnabled?: boolean;          // master toggle, defaults to true
 }
 
 export interface RotationStep {
