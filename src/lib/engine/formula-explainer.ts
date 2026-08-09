@@ -25,6 +25,7 @@ import { levelMultiplier } from "./level-multiplier";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "./transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
 import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
+import { resolveTeamBuffs } from "./team-buffs";
 
 export interface FormulaBreakdown {
   id: string;
@@ -107,6 +108,20 @@ export function explainHitFormulas(
     if (key in effectiveStats) {
       (effectiveStats as unknown as Record<string, number>)[key] += val;
     }
+  }
+
+  // Apply team support buffs
+  let lunarBaseFromTeam = 0;
+  const teamResult = (inst.teamBuffsEnabled !== false && inst.teamSupports?.length)
+    ? resolveTeamBuffs(inst.teamSupports, true)
+    : null;
+  if (teamResult) {
+    for (const [key, val] of Object.entries(teamResult.statDeltas)) {
+      if (key in effectiveStats && typeof val === "number") {
+        (effectiveStats as unknown as Record<string, number>)[key] += val;
+      }
+    }
+    lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
   }
 
   const resolvedMultipliers = resolveHitMultipliers(
@@ -435,7 +450,7 @@ export function explainHitFormulas(
     const res = indirectLunarDamage(
       lType,
       effectiveStats,
-      (toNum(inst.lunarBaseBonus) ?? 0) + (mech.lunarBaseBonusPct ?? 0),
+      (toNum(inst.lunarBaseBonus) ?? 0) + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam,
       toNum(inst.reactionPanelBonus) ?? 0
     );
 
@@ -489,6 +504,31 @@ export function explainHitFormulas(
   if (resBuffs.length > 0) {
     const resShredSum = resBuffs.reduce((acc, c) => acc + c.value, 0);
     teamBuffsLines.push(`Team Enemy ${config.element} DMG RES ${fmtPct(-resShredSum)} = ${resBuffs.map(b => `Enemy ${config.element} DMG RES (${b.source}) ${fmtPct(-b.value)}`).join(" + ")}`);
+  }
+
+  // Add team support buff sources
+  if (teamResult && teamResult.sources.length > 0) {
+    // Group by stat
+    const byStatMap = new Map<string, { stat: string; sources: { name: string; label: string; value: number }[] }>();
+    for (const s of teamResult.sources) {
+      const existing = byStatMap.get(s.stat);
+      if (existing) {
+        existing.sources.push({ name: s.supportName, label: s.label, value: s.value });
+      } else {
+        byStatMap.set(s.stat, { stat: s.stat, sources: [{ name: s.supportName, label: s.label, value: s.value }] });
+      }
+    }
+    for (const [stat, group] of byStatMap) {
+      const isFlat = stat === "em" || stat === "atk" || stat === "hp" || stat === "def";
+      const total = group.sources.reduce((acc, s) => acc + s.value, 0);
+      const fmtVal = isFlat ? fmt(total) : fmtPct(total);
+      const parts = group.sources.map(s => `${s.label} ${isFlat ? fmt(s.value) : fmtPct(s.value)}`);
+      const statLabel = stat === "em" ? "Elemental Mastery" 
+        : stat === "lunarChargedDmgBonus" ? "Lunar-Charged DMG Bonus" 
+        : stat === "lunarBaseBonusPct" ? "Lunar Base DMG"
+        : stat.charAt(0).toUpperCase() + stat.slice(1);
+      teamBuffsLines.push(`Team ${statLabel} ${fmtVal} = ${parts.join(" + ")}`);
+    }
   }
 
   if (teamBuffsLines.length > 0) {
