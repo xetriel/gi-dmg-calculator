@@ -286,6 +286,30 @@ export function CharacterCalculator({
 
   const upperRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const lowerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const notesBoxRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [maxNotesHeight, setMaxNotesHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const updateMaxHeight = () => {
+      let maxH = 0;
+      instances.forEach(inst => {
+        const el = notesBoxRefs.current[inst.id];
+        if (el) {
+          const h = el.scrollHeight;
+          if (h > maxH) maxH = h;
+        }
+      });
+      setMaxNotesHeight(maxH);
+    };
+
+    updateMaxHeight();
+    const timer = setTimeout(updateMaxHeight, 50);
+    window.addEventListener("resize", updateMaxHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateMaxHeight);
+    };
+  }, [instances, config]);
 
   const handleUpperScroll = (cardId: string, event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -1529,12 +1553,21 @@ export function CharacterCalculator({
                     </div>
                   </div>
 
-                  {extras.notes.length ? (
-                    <div className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5 select-none">
+                  {extras.notes.length > 0 ? (
+                    <div
+                      ref={el => { notesBoxRefs.current[inst.id] = el; }}
+                      style={{ minHeight: maxNotesHeight > 0 ? `${maxNotesHeight}px` : undefined }}
+                      className="mb-3 rounded-lg border border-gray-150 dark:border-zinc-800/80 bg-white/40 dark:bg-zinc-950/20 p-2.5 select-none flex flex-col justify-start transition-[min-height] duration-150"
+                    >
                       {extras.notes.map(n => (
                         <p key={n} className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">• {renderStyledText(n)}</p>
                       ))}
                     </div>
+                  ) : maxNotesHeight > 0 ? (
+                    <div
+                      style={{ minHeight: `${maxNotesHeight}px` }}
+                      className="mb-3 rounded-lg border border-transparent p-2.5 opacity-0 pointer-events-none select-none aria-hidden='true'"
+                    />
                   ) : null}
 
                   {validation.general.map(g => (
