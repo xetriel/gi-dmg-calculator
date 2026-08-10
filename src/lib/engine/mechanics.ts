@@ -50,6 +50,7 @@ import { resolveTravelerElectro } from "./characters/traveler-electro";
 import { resolveTravelerDendro } from "./characters/traveler-dendro";
 import { resolveTravelerHydro } from "./characters/traveler-hydro";
 import { resolveTravelerPyro } from "./characters/traveler-pyro";
+import { resolveTravelerCryo } from "./characters/traveler-cryo";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
@@ -96,6 +97,7 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "traveler-dendro": resolveTravelerDendro,
   "traveler-hydro": resolveTravelerHydro,
   "traveler-pyro": resolveTravelerPyro,
+  "traveler-cryo": resolveTravelerCryo,
 };
 
 export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
