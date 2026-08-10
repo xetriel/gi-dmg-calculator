@@ -19,6 +19,7 @@ export const travelerHydroSeed: CharacterTalentSeed = {
     // Elemental Skill — Aquacrest Saber
     { hitKey: "torrent-surge", talentType: "skill", values: [187.2, 201.24, 215.28, 234.0, 248.04, 262.08, 280.8, 299.52, 318.24, 336.96, 355.68, 374.4, 397.8, 421.2] },
     { hitKey: "dewdrop", talentType: "skill", values: [32.8, 35.26, 37.72, 41.0, 43.46, 45.92, 49.2, 52.48, 55.76, 59.04, 62.32, 65.6, 69.7, 73.8] },
+    { hitKey: "spiritbreath-thorn", talentType: "skill", values: [33.6, 36.12, 38.64, 42.0, 44.52, 47.04, 50.4, 53.76, 57.12, 60.48, 63.84, 67.2, 71.4, 75.6] },
 
     // Elemental Burst — Torrential Deluge
     { hitKey: "bubble-dmg", talentType: "burst", values: [98.4, 105.78, 113.16, 123.0, 130.38, 137.76, 147.6, 157.44, 167.28, 177.12, 186.96, 196.8, 209.1, 221.4] },
