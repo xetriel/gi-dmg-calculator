@@ -45,6 +45,12 @@ import { resolveXiao } from "./characters/xiao";
 import { resolveTartaglia } from "./characters/tartaglia";
 import { resolveXinyan } from "./characters/xinyan";
 import { resolveYanfei } from "./characters/yanfei";
+import { resolveTravelerAnemo } from "./characters/traveler-anemo";
+import { resolveTravelerGeo } from "./characters/traveler-geo";
+import { resolveTravelerElectro } from "./characters/traveler-electro";
+import { resolveTravelerDendro } from "./characters/traveler-dendro";
+import { resolveTravelerHydro } from "./characters/traveler-hydro";
+import { resolveTravelerPyro } from "./characters/traveler-pyro";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
@@ -86,6 +92,12 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "tartaglia": resolveTartaglia,
   "xinyan": resolveXinyan,
   "yanfei": resolveYanfei,
+  "traveler-anemo": resolveTravelerAnemo,
+  "traveler-geo": resolveTravelerGeo,
+  "traveler-electro": resolveTravelerElectro,
+  "traveler-dendro": resolveTravelerDendro,
+  "traveler-hydro": resolveTravelerHydro,
+  "traveler-pyro": resolveTravelerPyro,
 };
 
 export function resolveMechanics(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
