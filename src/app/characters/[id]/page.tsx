@@ -10,10 +10,15 @@ export const dynamic = "force-dynamic";
 import { TALENT_SEED, flattenSeed } from "@/data/talents";
 
 async function loadScaling(characterId: string): Promise<TalentScalingData> {
-  const rows = await prisma.talentScaling.findMany({
-    where: { characterId },
-    select: { talentType: true, hitKey: true, level: true, value: true },
-  });
+  let rows: Array<{ talentType: string; hitKey: string; level: number; value: number }> = [];
+  try {
+    rows = await prisma.talentScaling.findMany({
+      where: { characterId },
+      select: { talentType: true, hitKey: true, level: true, value: true },
+    });
+  } catch (err) {
+    console.warn(`[loadScaling] DB connection error for ${characterId}, falling back to TALENT_SEED:`, err);
+  }
   const out: TalentScalingData = {};
   if (rows.length > 0) {
     for (const r of rows) {
@@ -71,8 +76,9 @@ export default async function Page({
       data: b.data,
       updatedAt: b.updatedAt,
     }));
-  } catch (err) {
-    console.error("Failed to query builds from database:", err);
+  } catch {
+    // If table doesn't exist or DB is offline/restarting, fail silently with empty builds
+    savedBuilds = [];
   }
 
   if (!initialBuildData && savedBuilds.length > 0) {

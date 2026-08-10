@@ -14,7 +14,7 @@ export const travelerPyro: CharacterConfig = {
   talents: [
     {
       type: "normal",
-      name: "Normal Attack — Foreign Blaze",
+      name: "Normal Attack — Foreign Starfire",
       hits: [
         { key: "1-hit", name: "1-Hit DMG", scaling: "atk", hitCategory: "normal", element: "Physical" },
         { key: "2-hit", name: "2-Hit DMG", scaling: "atk", hitCategory: "normal", element: "Physical" },
@@ -22,7 +22,9 @@ export const travelerPyro: CharacterConfig = {
         { key: "4-hit", name: "4-Hit DMG", scaling: "atk", hitCategory: "normal", element: "Physical" },
         { key: "5-hit", name: "5-Hit DMG", scaling: "atk", hitCategory: "normal", element: "Physical" },
         { key: "charged-1", name: "Charged Attack (Hit 1)", scaling: "atk", hitCategory: "charged", element: "Physical" },
-        { key: "charged-2", name: "Charged Attack (Hit 2)", scaling: "atk", hitCategory: "charged", element: "Physical" },
+        { key: "charged-2-aether", name: "Charged Attack (Hit 2 — Aether)", scaling: "atk", hitCategory: "charged", element: "Physical" },
+        { key: "charged-2-lumine", name: "Charged Attack (Hit 2 — Lumine)", scaling: "atk", hitCategory: "charged", element: "Physical" },
+        { key: "charged-inferno", name: "Charged Attack: Inferno (Special Passive)", scaling: "atk", hitCategory: "charged", element: "Pyro" },
         { key: "plunge", name: "Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
         { key: "low-plunge", name: "Low Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
         { key: "high-plunge", name: "High Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
@@ -30,16 +32,18 @@ export const travelerPyro: CharacterConfig = {
     },
     {
       type: "skill",
-      name: "Elemental Skill — Scorching Eruption",
+      name: "Elemental Skill — Flowfire Blade",
       hits: [
-        { key: "skill-dmg", name: "Skill DMG", scaling: "atk", hitCategory: "skill", element: "Pyro" },
+        { key: "blazing-threshold-dmg", name: "Blazing Threshold DMG (Tap Skill)", scaling: "atk", hitCategory: "skill", element: "Pyro" },
+        { key: "hold-dmg", name: "Hold Skill DMG", scaling: "atk", hitCategory: "skill", element: "Pyro" },
+        { key: "scorching-threshold-dmg", name: "Scorching Threshold DMG (Hold Interval)", scaling: "atk", hitCategory: "skill", element: "Pyro" },
       ]
     },
     {
       type: "burst",
-      name: "Elemental Burst — Volcanic Burst",
+      name: "Elemental Burst — Plains Scorcher",
       hits: [
-        { key: "burst-dmg", name: "Burst DMG", scaling: "atk", hitCategory: "burst", element: "Pyro" },
+        { key: "burst-dmg", name: "Skill DMG (Mark Blast)", scaling: "atk", hitCategory: "burst", element: "Pyro" },
       ]
     }
   ],
@@ -83,9 +87,9 @@ export const travelerPyro: CharacterConfig = {
   constellations: [
     { level: 1, name: "Starfire's Flowing Light", description: "While Blazing Threshold or Scorching Threshold is active, the active character deals 6% increased DMG. If in Nightsoul's Blessing, they deal an additional 9% DMG.", effects: [{ type: "informational" }] },
     { level: 2, name: "Ever-Lit Candle", description: "Restores Nightsoul points when nearby party members trigger Pyro-related reactions.", effects: [{ type: "informational" }] },
-    { level: 3, name: "Relayed Beacon", description: "Increases the Level of Scorching Eruption by 3.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
+    { level: 3, name: "Relayed Beacon", description: "Increases the Level of Flowfire Blade by 3.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 4, name: "Ravaging Flame", description: "After using Elemental Burst, grants 20% Pyro DMG Bonus for 12s.", effects: [{ type: "informational" }] },
-    { level: 5, name: "The Fire Inextinguishable", description: "Increases the Level of Volcanic Burst by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
+    { level: 5, name: "The Fire Inextinguishable", description: "Increases the Level of Plains Scorcher by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
     { level: 6, name: "The Sacred Flame Imperishable", description: "Normal, Charged, and Plunging Attacks deal Pyro DMG while in Nightsoul's Blessing state and gain 40% CRIT DMG.", effects: [{ type: "informational" }] }
   ]
 };
