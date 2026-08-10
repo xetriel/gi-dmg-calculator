@@ -79,7 +79,7 @@ describe("traveler mechanics", () => {
     }));
     expect(r6.perHit["1-hit"]?.element).toBe("Pyro");
     expect(r6.perHit["1-hit"]?.critDmgBonusPct).toBe(40);
-    expect(r6.perHit["skill-dmg"]?.critDmgBonusPct).toBe(40);
+    expect(r6.perHit["blazing-threshold-dmg"]?.critDmgBonusPct).toBe(40);
   });
 
   it("Cryo Traveler (Beta) Frostglow stacks, C1, C6 mechanics", () => {
