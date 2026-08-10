@@ -35,6 +35,7 @@ export const travelerHydro: CharacterConfig = {
       hits: [
         { key: "torrent-surge", name: "Torrent Surge DMG", scaling: "atk", hitCategory: "skill", element: "Hydro" },
         { key: "dewdrop", name: "Dewdrop DMG", scaling: "atk", hitCategory: "skill", element: "Hydro" },
+        { key: "spiritbreath-thorn", name: "Spiritbreath Thorn DMG (Arkhe: Pneuma)", scaling: "atk", hitCategory: "skill", element: "Hydro" },
       ]
     },
     {
@@ -47,18 +48,33 @@ export const travelerHydro: CharacterConfig = {
   ],
   mechanicDefs: [
     {
+      id: "a4-clear-waters",
+      label: "A4 Clear Waters (Suffusion HP Consumed Extra DMG on Torrent Surge)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Increases Torrent Surge DMG by 45% of total HP consumed via Suffusion (capped at 5,000 Flat DMG)."
+    },
+    {
       id: "c4-shield",
       label: "C4 Pouring Stream (10% Max HP Shield)",
       control: "toggle",
       defaultValue: 1,
       hint: "Creates a shield absorbing 10% of Max HP when casting Aquacrest Saber."
+    },
+    {
+      id: "c6-tides-of-justice",
+      label: "C6 Tides of Justice (Hydro Infusion & +40% Max HP Flat DMG on Normal Attacks)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Converts Normal Attacks to Hydro DMG and adds flat DMG equal to 40% of Max HP after restoring HP."
     }
   ],
   mechanics: [
-    "Spotless Waters (A1): Drops Sourcewater Droplet when Hold Dewdrop hits.",
-    "Clear Waters (A4): Torrent Surge deals extra DMG based on HP consumed.",
-    "Drowning Swell (C2): Decreases Torrential Deluge bubble speed and extends duration.",
-    "Pouring Stream (C4): Creates a shield absorbing 10% Max HP."
+    "Spotless Waters (A1): Drops Sourcewater Droplet when Hold Dewdrop hits (restores 7% Max HP).",
+    "Clear Waters (A4): Torrent Surge deals extra Flat DMG based on HP consumed (45% of HP consumed, max 5,000).",
+    "Drowning Swell (C2): Decreases Torrential Deluge bubble speed by 30% and extends duration by 3s.",
+    "Pouring Stream (C4): Creates a shield absorbing 10% Max HP upon casting Aquacrest Saber.",
+    "Tides of Justice (C6): Restoring HP converts Normal Attack to Hydro DMG + 40% Max HP Flat DMG."
   ],
   constellations: [
     { level: 1, name: "Swirling Weasel", description: "Picking up Sourcewater Droplet restores 2 Energy.", effects: [{ type: "informational" }] },
@@ -66,6 +82,6 @@ export const travelerHydro: CharacterConfig = {
     { level: 3, name: "Surging City", description: "Increases the Level of Aquacrest Saber by 3.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 4, name: "Pouring Stream", description: "Creates a shield absorbing 10% Max HP upon casting Aquacrest Saber.", effects: [{ type: "informational" }] },
     { level: 5, name: "Churning Whirlpool", description: "Increases the Level of Torrential Deluge by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
-    { level: 6, name: "Tides of Justice", description: "Restoring HP converts next Normal Attack to Hydro DMG.", effects: [{ type: "informational" }] }
+    { level: 6, name: "Tides of Justice", description: "Restoring HP converts next Normal Attack to Hydro DMG and adds 40% Max HP as Flat DMG.", effects: [{ type: "informational" }] }
   ]
 };
