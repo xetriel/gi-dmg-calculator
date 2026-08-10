@@ -6,9 +6,17 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 9, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 10, 2026).
 
 ### New Character Calculators
+- **Traveler Elemental Variants (August 10, 2026)**: Added complete calculator profiles for all 7 Traveler elemental forms (Anemo, Geo, Electro, Dendro, Hydro, Pyro, and Cryo [BETA]):
+  - **Traveler (Anemo)**: C2 ER bonus (+16%), C6 Anemo RES shred (-20%) with dynamic elemental absorption shred (-20% Hydro/Pyro/Cryo/Electro).
+  - **Traveler (Geo)**: C1 Wake of Earth party CRIT Rate (+10%), C2 Rockcore Melt meteor explosion registration.
+  - **Traveler (Electro)**: C2 Electro RES shred (-15%), C6 3rd Falling Thunder independent hit instance (200% DMG multiplier).
+  - **Traveler (Dendro)**: A4 EM scaling (Skill DMG +0.15%/EM, Burst DMG +0.1%/EM), C6 Dendro/elemental DMG bonus (+12%).
+  - **Traveler (Hydro)**: A4 Max HP Torrent Surge DMG scaling, C4 Aquacrest Sabre 10% Max HP shield durability output.
+  - **Traveler (Pyro)**: C1 Nightsoul All DMG Bonus (+6%/+15%), C4 Volcanic Burst Pyro DMG Bonus (+20%), C6 Pyro infusion & +40% Pyro CRIT DMG.
+  - **Traveler (Cryo) [BETA]**: Frostglow stacks (+4.96%/stack Burst DMG), C1 Cryo RES shred (-15%), C6 Cryo infusion & +40% Cryo CRIT DMG.
 - **Yanfei (August 9, 2026)**: Added Yanfei, a 4-star Pyro Catalyst character featuring Scarlet Seals (0–4 stacks) A1 Pyro DMG Bonus (+5% per seal), Burst Brilliance Charged Attack DMG Bonus (+55.8%), C2 CA CRIT Rate (+20% vs <50% HP targets), and C4 45% Max HP Shield durability output.
 - **Xinyan (August 9, 2026)**: Added Xinyan, a 4-star Pyro Claymore character featuring Physical DMG Bonus focus, A4 Shield Physical DMG Bonus (+15%), C2 Burst Physical 100% CRIT Rate, C4 Physical RES shred (-15%), and C6 DEF to ATK conversion (+50% DEF).
 - **Tartaglia (August 9, 2026)**: Added Tartaglia, a 5-star Hydro Bow character featuring Ranged & Melee stance attacks, 4 Riptide variants (Flash, Burst, Slash, Blast), and Master of Weaponry (+1 NA Talent Level) party passive.
@@ -43,6 +51,7 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Character Notes & Damage Table Height Synchronization (August 10, 2026)**: Synchronized layout height formatting between character notes panels and damage output tables across setup cards for consistent card presentation.
 - **Modular Team Support Buff System (August 9, 2026)**: Introduced off-field team support buff engine (`team-buffs.ts`) supporting up to 3 team members (e.g. Ineffa) with off-field stat buffs, Moonsign Lunar Base DMG bonuses, and averaged team CRIT rates/DMGs. Added collapsible `<TeamBuffPanel>` UI component with master "Apply All" toggle, individual support checkboxes, constellation level selectors, and live computed buff previews, fully integrated into `CharacterCalculator.tsx` and formula breakdown source attributions.
 - **Formula Breakdown Mode Lock & Scroll Restoration (August 9, 2026)**: Defaulted initial damage calculation to **Average (`avg`)**, persisting damage mode selection in `localStorage` (`gi_calc_dmg_type`) and URL query parameters (`?mode=nonCrit`). Automatically captures `window.scrollY` prior to opening formula breakdown and restores exact vertical scroll position when returning to the calculator page.
 - **Dynamic Database Connection Probe & Diagnostics Modal (August 4, 2026)**: Added server action `getDbStatus()` with connection racing and latency timing. Created interactive `<DbStatusBadge>` pill displaying real-time DB health (online latency, active build counts, offline/checking statuses) and an accessible `<DbStatusModal>` dialog featuring connection specs, redacted credentials, raw error logs, XAMPP troubleshooting instructions, and live re-check triggers without page reloads.
