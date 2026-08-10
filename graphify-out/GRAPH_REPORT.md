@@ -1,28 +1,28 @@
-# Graph Report - gi-dmg-calculator  (2026-08-10)
+# Graph Report - gi-dmg-calculator  (2026-08-11)
 
 ## Corpus Check
-- 245 files · ~133,960 words
+- 244 files · ~133,686 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 793 nodes · 2677 edges · 42 communities (33 shown, 9 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 44 edges (avg confidence: 0.8)
+- 806 nodes · 2662 edges · 43 communities (32 shown, 11 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 43 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `de7b2e75`
+- Built from commit: `5580fdfa`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- formula-explainer.ts
+- damage.ts
 - mechanics.ts
 - talents/index.ts
-- characters/index.ts
-- HistoryView.tsx
+- registry/types.ts
+- useCalculatorState.ts
 - devDependencies
 - compilerOptions
-- test-helpers.ts
+- characters/index.ts
 - app/page.tsx
 - extract-wiki.ts
 - eslint.config.mjs
@@ -39,33 +39,34 @@
 - talents/durin.ts
 - ineffa.test.ts
 - talents/mavuika.ts
-- talents/skirk.ts
+- HistoryView.tsx
 - CharacterCalculator.tsx
-- DamageStats
+- columbina.test.ts
 - gi_stat_db.sql
 - 0_init/migration.sql
 - AGENTS.md
 - codebase-metrics.md
 - 20260702120000_add_talent_scaling/migration.sql
 - 20260703120000_add_export_log/migration.sql
-- validation.ts
-- useCalculatorState.ts
+- DamageTable.tsx
+- Character Calculator Skill & Implementation Standard
 - team-buffs.ts
-- supports/index.ts
+- varka.test.ts
 - calculator/types.ts
-- damage.ts
+- rules/graphify.md
+- workflows/graphify.md
 
 ## God Nodes (most connected - your core abstractions)
-1. `CharacterConfig` - 110 edges
-2. `addMods()` - 81 edges
+1. `CharacterConfig` - 108 edges
+2. `addMods()` - 79 edges
 3. `fmt()` - 55 edges
-4. `MechanicsCtx` - 54 edges
-5. `MechanicsResult` - 48 edges
-6. `CharacterTalentSeed` - 46 edges
-7. `coreStats()` - 45 edges
-8. `flattenSeed()` - 38 edges
-9. `ctxFor()` - 36 edges
-10. `TALENT_SEED` - 34 edges
+4. `MechanicsCtx` - 53 edges
+5. `MechanicsResult` - 47 edges
+6. `CharacterTalentSeed` - 45 edges
+7. `coreStats()` - 44 edges
+8. `flattenSeed()` - 37 edges
+9. `ctxFor()` - 35 edges
+10. `TALENT_SEED` - 33 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --references--> `@prisma/client`  [EXTRACTED]
@@ -82,27 +83,27 @@
 ## Import Cycles
 - 3-file cycle: `src/data/registry/types.ts -> src/lib/engine/lunar.ts -> src/lib/engine/damage.ts -> src/data/registry/types.ts`
 
-## Communities (42 total, 9 thin omitted)
+## Communities (43 total, 11 thin omitted)
 
-### Community 0 - "formula-explainer.ts"
-Cohesion: 0.15
-Nodes (29): arlecchino, neuvillette, amplifyingMultiplier(), catalyzeAdditive(), computeHit(), defMultiplier(), dmgBonusMultiplier(), resMultiplier() (+21 more)
+### Community 0 - "damage.ts"
+Cohesion: 0.11
+Nodes (39): arlecchino, Element, HitCategory, ScalingSource, activeEffects(), constellationFlatBonus(), constellationStatBonuses(), AMP_BASE (+31 more)
 
 ### Community 1 - "mechanics.ts"
 Cohesion: 0.09
-Nodes (60): resolveAlhaitham(), resolveAloy(), resolveArlecchino(), resolveAyaka(), resolveAyato(), resolveClorinde(), resolveColumbina(), resolveCyno() (+52 more)
+Nodes (59): resolveAlhaitham(), resolveAloy(), resolveArlecchino(), resolveAyaka(), resolveAyato(), resolveClorinde(), resolveColumbina(), resolveCyno() (+51 more)
 
 ### Community 2 - "talents/index.ts"
 Cohesion: 0.06
-Nodes (41): TalentType, aloySeed, arlecchinoSeed, ayatoSeed, clorindeSeed, columbinaSeed, cynoSeed, dehyaSeed (+33 more)
+Nodes (40): TalentType, aloySeed, arlecchinoSeed, ayatoSeed, clorindeSeed, cynoSeed, dehyaSeed, dilucSeed (+32 more)
 
-### Community 3 - "characters/index.ts"
-Cohesion: 0.07
-Nodes (62): alhaitham, aloy, ayaka, ayato, clorinde, columbina, cyno, dehya (+54 more)
-
-### Community 4 - "HistoryView.tsx"
+### Community 3 - "registry/types.ts"
 Cohesion: 0.11
-Nodes (21): FormulaPage(), loadScaling(), loadScaling(), Page(), deleteExportLog(), ExportFormat, ExportLogRow, ExportSummary (+13 more)
+Nodes (26): atk(), atkCharged(), atkPlunge(), def(), defPlunge(), healHp(), hp(), hpCharged() (+18 more)
+
+### Community 4 - "useCalculatorState.ts"
+Cohesion: 0.14
+Nodes (22): deleteBuild(), saveBuild(), FormulaPage(), loadScaling(), loadScaling(), Page(), fmt(), FormulaBreakdownView() (+14 more)
 
 ### Community 5 - "devDependencies"
 Cohesion: 0.04
@@ -112,9 +113,9 @@ Nodes (48): dotenv, eslint, eslint-config-next, html-to-image, next, dependencie
 Cohesion: 0.07
 Nodes (28): dom, dom.iterable, esnext, **/*.mts, .next/dev/types/**/*.ts, next-env.d.ts, .next/types/**/*.ts, node_modules (+20 more)
 
-### Community 7 - "test-helpers.ts"
-Cohesion: 0.17
-Nodes (8): main(), flattenSeed(), TALENT_SEED, baseStats, ctxFor(), scalingFor(), resolveMechanics(), scalingFor()
+### Community 7 - "characters/index.ts"
+Cohesion: 0.09
+Nodes (40): main(), alhaitham, aloy, ayaka, ayato, clorinde, cyno, dehya (+32 more)
 
 ### Community 8 - "app/page.tsx"
 Cohesion: 0.12
@@ -145,16 +146,16 @@ Cohesion: 0.25
 Nodes (4): ALTERNATE_FACTORS, NA_FACTORS, SKILL_BURST_FACTORS, varesaSeed
 
 ### Community 20 - "linnea.test.ts"
-Cohesion: 0.40
-Nodes (3): baseStats, MockCtxOverride, mockScaling
+Cohesion: 0.33
+Nodes (4): linnea, baseStats, MockCtxOverride, mockScaling
 
 ### Community 21 - "talents/alhaitham.ts"
 Cohesion: 0.33
 Nodes (3): alhaithamSeed, ALTERNATE_FACTORS, NA_FACTORS
 
 ### Community 22 - "talents/ayaka.ts"
-Cohesion: 0.33
-Nodes (3): ALTERNATE_FACTORS, ayakaSeed, NA_FACTORS
+Cohesion: 0.15
+Nodes (6): ALTERNATE_FACTORS, ayakaSeed, NA_FACTORS, NA_FACTORS, SKILL_BURST_FACTORS, skirkSeed
 
 ### Community 23 - "talents/durin.ts"
 Cohesion: 0.33
@@ -162,67 +163,63 @@ Nodes (3): ALTERNATE_FACTORS, durinSeed, NA_FACTORS
 
 ### Community 24 - "ineffa.test.ts"
 Cohesion: 0.40
-Nodes (3): ineffaSeed, defaultStats, mockScaling
+Nodes (3): ineffa, defaultStats, mockScaling
 
 ### Community 25 - "talents/mavuika.ts"
 Cohesion: 0.33
 Nodes (3): mavuikaSeed, NA_FACTORS, SKILL_BURST_FACTORS
 
-### Community 26 - "talents/skirk.ts"
-Cohesion: 0.33
-Nodes (3): NA_FACTORS, SKILL_BURST_FACTORS, skirkSeed
+### Community 26 - "HistoryView.tsx"
+Cohesion: 0.20
+Nodes (11): deleteExportLog(), ExportFormat, ExportLogRow, ExportSummary, getExportLogs(), HistoryPage(), ComparePanel(), fmtNum() (+3 more)
 
 ### Community 27 - "CharacterCalculator.tsx"
-Cohesion: 0.17
-Nodes (17): fmt(), StatBreakdownRow(), StatBreakdownRowProps, RotationState, useRotation(), SavedRotation, StatBuffSource, CharacterCalculator() (+9 more)
+Cohesion: 0.16
+Nodes (21): fmt(), StatBreakdownRow(), StatBreakdownRowProps, initialStats, useRotation(), RotationStep, StatBuffSource, CharacterCalculator() (+13 more)
 
-### Community 28 - "DamageStats"
-Cohesion: 0.20
-Nodes (8): baseStats, MockCtxOverride, mockScaling, baseStats, MockCtxOverride, mockScaling, DamageStats, TeamBuffResult
+### Community 28 - "columbina.test.ts"
+Cohesion: 0.29
+Nodes (5): columbina, columbinaSeed, baseStats, MockCtxOverride, mockScaling
 
-### Community 36 - "validation.ts"
+### Community 36 - "DamageTable.tsx"
+Cohesion: 0.13
+Nodes (22): DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), fmt(), HitFormulaTooltip(), HitFormulaTooltipProps, fmt() (+14 more)
+
+### Community 37 - "Character Calculator Skill & Implementation Standard"
 Cohesion: 0.12
-Nodes (28): DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), MechanicsPanel(), MechanicsPanelProps, fmt(), REACTION_LABEL (+20 more)
-
-### Community 37 - "useCalculatorState.ts"
-Cohesion: 0.24
-Nodes (13): deleteBuild(), saveBuild(), fmt(), FormulaBreakdownView(), FormulaBreakdownViewProps, getInitialStats(), hydrateFromBuild(), initialStats (+5 more)
+Nodes (15): 1. File Architecture & Required Modules, 2. Core Formula Interpretations, 3. Reaction Variants, 4. Special Mechanics Patterns, 5. Verification & Checklist, A. Flat DMG Bonus (`flatDmgBonus`), A. Lunar Reactions, B. Base DMG Multiplier (`baseDmgMultiplier`) (+7 more)
 
 ### Community 38 - "team-buffs.ts"
-Cohesion: 0.29
-Nodes (10): fmt(), TeamBuffPanel(), TeamBuffPanelProps, SUPPORT_CONFIGS, supportById(), resolveSupportCtx(), resolveTeamBuffs(), SupportInstance (+2 more)
+Cohesion: 0.17
+Nodes (18): fmt(), TeamBuffPanel(), TeamBuffPanelProps, SUPPORT_CONFIGS, supportById(), ineffaSupport, SupportBuff, SupportConfig (+10 more)
 
-### Community 39 - "supports/index.ts"
-Cohesion: 0.40
-Nodes (7): ineffaSupport, SupportBuff, SupportConfig, SupportCtx, SupportStatField, Constellation, MechanicDef
+### Community 39 - "varka.test.ts"
+Cohesion: 0.33
+Nodes (4): varka, baseStats, MockCtxOverride, mockScaling
 
 ### Community 40 - "calculator/types.ts"
-Cohesion: 0.21
-Nodes (13): fmt(), HitFormulaTooltip(), HitFormulaTooltipProps, fmt(), TransformativePanel(), ReactionExtras, StatBreakdown, LunarResult (+5 more)
-
-### Community 42 - "damage.ts"
-Cohesion: 0.23
-Nodes (13): RotationStep, Element, HitCategory, ReactionType, ScalingSource, AMP_BASE, CATALYZE_BASE, clamp() (+5 more)
+Cohesion: 0.17
+Nodes (19): MechanicsPanel(), MechanicsPanelProps, GROUPS, StatsGrid(), StatsGridProps, fmt(), TransformativePanel(), TransformativePanelProps (+11 more)
 
 ## Knowledge Gaps
-- **157 isolated node(s):** `eslintConfig`, ``Build``, ``Rotation``, `nextConfig`, `name` (+152 more)
+- **169 isolated node(s):** `eslintConfig`, ``Build``, ``Rotation``, `nextConfig`, `name` (+164 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `devDependencies` to `validation.ts`, `useCalculatorState.ts`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
-- **Why does `CharacterConfig` connect `characters/index.ts` to `formula-explainer.ts`, `mechanics.ts`, `validation.ts`, `useCalculatorState.ts`, `calculator/types.ts`, `CharacterCalculator.tsx`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+- **Why does `react` connect `devDependencies` to `useCalculatorState.ts`, `DamageTable.tsx`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+- **Why does `CharacterConfig` connect `registry/types.ts` to `damage.ts`, `mechanics.ts`, `DamageTable.tsx`, `useCalculatorState.ts`, `characters/index.ts`, `calculator/types.ts`, `CharacterCalculator.tsx`?**
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
 - **What connects `eslintConfig`, ``Build``, ``Rotation`` to the rest of the system?**
-  _157 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _169 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `damage.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.11479591836734694 - nodes in this community are weakly interconnected._
 - **Should `mechanics.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.08852054311408923 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09047619047619047 - nodes in this community are weakly interconnected._
 - **Should `talents/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.062317429406037 - nodes in this community are weakly interconnected._
-- **Should `characters/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06965894465894466 - nodes in this community are weakly interconnected._
-- **Should `HistoryView.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.10588235294117647 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06390977443609022 - nodes in this community are weakly interconnected._
+- **Should `registry/types.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.11292114031840059 - nodes in this community are weakly interconnected._
