@@ -5,7 +5,8 @@ import { resolveTravelerElectro } from "./traveler-electro";
 import { resolveTravelerDendro } from "./traveler-dendro";
 import { resolveTravelerHydro } from "./traveler-hydro";
 import { resolveTravelerPyro } from "./traveler-pyro";
-import { travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro } from "../../../data/registry/characters";
+import { resolveTravelerCryo } from "./traveler-cryo";
+import { travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo } from "../../../data/registry/characters";
 import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
@@ -81,8 +82,29 @@ describe("traveler mechanics", () => {
     expect(r6.perHit["skill-dmg"]?.critDmgBonusPct).toBe(40);
   });
 
+  it("Cryo Traveler (Beta) Frostglow stacks, C1, C6 mechanics", () => {
+    const r1 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      inputs: { "frostglow-stacks": 8 },
+    }));
+    expect(r1.perHit["burst-javelin-dmg"]?.bonusDmgPct).toBeCloseTo(39.68);
+
+    const rC1 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      constellationLevel: 1,
+      inputs: { "c1-frost-shred": 1 },
+    }));
+    expect(rC1.statDeltas.enemyRes).toBe(-15);
+
+    const rC6 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      constellationLevel: 6,
+      inputs: { "c6-cryo-infusion": 1 },
+    }));
+    expect(rC6.perHit["1-hit"]?.element).toBe("Cryo");
+    expect(rC6.perHit["1-hit"]?.critDmgBonusPct).toBe(40);
+    expect(rC6.perHit["skill-dmg"]?.critDmgBonusPct).toBe(40);
+  });
+
   it("talent seed row counts for all Traveler forms", () => {
-    const elements = ["traveler-anemo", "traveler-geo", "traveler-electro", "traveler-dendro", "traveler-hydro", "traveler-pyro"];
+    const elements = ["traveler-anemo", "traveler-geo", "traveler-electro", "traveler-dendro", "traveler-hydro", "traveler-pyro", "traveler-cryo"];
     for (const elem of elements) {
       const rows = flattenSeed(TALENT_SEED.filter(x => x.characterId === elem));
       expect(rows.length).toBeGreaterThan(0);

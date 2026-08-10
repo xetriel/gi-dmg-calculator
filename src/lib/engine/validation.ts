@@ -118,9 +118,18 @@ export function validate(
   const errors: Record<string, string> = {};
   const general: string[] = [];
 
-  // Every stat field must be filled with a finite number.
+  // Essential base stats that must be defined if the stat input map is provided
+  const ESSENTIAL_STATS = new Set(["hp.base", "atk.base", "def.base", "levelChar", "levelEnemy"]);
+
+  // Every essential stat field must be filled with a finite number.
+  // Non-essential stat fields only fail validation if explicitly typed as invalid (e.g., empty string or non-numeric).
   for (const id of statInputIds(config)) {
-    if (toNum(raw.stats[id]) === null) errors[id] = "Required";
+    const val = raw.stats[id];
+    if (val !== undefined && toNum(val) === null) {
+      errors[id] = "Required";
+    } else if (val === undefined && ESSENTIAL_STATS.has(id)) {
+      errors[id] = "Required";
+    }
   }
 
   // Character Level range: 0 < level <= 100 (only when the field parses).
