@@ -1,60 +1,64 @@
-# Graph Report - gi-dmg-calculator  (2026-08-11)
+# Graph Report - .  (2026-08-11)
 
 ## Corpus Check
-- 244 files · ~133,686 words
+- 261 files · ~133,256 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 806 nodes · 2662 edges · 43 communities (32 shown, 11 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 43 edges (avg confidence: 0.8)
+- 758 nodes · 2614 edges · 52 communities (31 shown, 21 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 45 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
-## Graph Freshness
-- Built from commit: `5580fdfa`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
-
 ## Community Hubs (Navigation)
-- damage.ts
-- mechanics.ts
-- talents/index.ts
-- registry/types.ts
-- useCalculatorState.ts
-- devDependencies
-- compilerOptions
-- characters/index.ts
-- app/page.tsx
-- extract-wiki.ts
-- eslint.config.mjs
-- next.config.ts
-- postcss.config.mjs
-- Genshin Damage Calculator — Plan 2: Persistence & Rotation Export
-- Setup
-- [v1.2.0-Beta] - Current UI Header Version
-- talents/gaming.ts
-- talents/varesa.ts
-- linnea.test.ts
-- talents/alhaitham.ts
-- talents/ayaka.ts
-- talents/durin.ts
-- ineffa.test.ts
-- talents/mavuika.ts
-- HistoryView.tsx
-- CharacterCalculator.tsx
-- columbina.test.ts
-- gi_stat_db.sql
-- 0_init/migration.sql
-- AGENTS.md
-- codebase-metrics.md
-- 20260702120000_add_talent_scaling/migration.sql
-- 20260703120000_add_export_log/migration.sql
-- DamageTable.tsx
-- Character Calculator Skill & Implementation Standard
-- team-buffs.ts
-- varka.test.ts
-- calculator/types.ts
-- rules/graphify.md
-- workflows/graphify.md
+- Xiao Character Mechanics & Scaling
+- Xiao Character Mechanics & Scaling
+- Xiao Character Mechanics & Scaling
+- Database Schema & Seeds
+- Xiao Character Mechanics & Scaling
+- Damage Core Engine & Formulas
+- Database Schema & Seeds
+- Module Dom Infrastructure
+- Arlecchino Mechanics & Scaling
+- Elemental Reactions Engine
+- Arlecchino Mechanics & Scaling
+- Elemental Reactions Engine
+- Team Buffs & Support Registry
+- Damage Core Engine & Formulas
+- Module Wiki Infrastructure
+- Elemental Reactions Engine
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Database Schema & Seeds
+- Damage Core Engine & Formulas
+- Team Buffs & Support Registry
+- UI Components & Layout
+- Module Test Infrastructure
+- Module Config Infrastructure
+- Module Config Infrastructure
+- Module Config Infrastructure
+- Module Rule Infrastructure
+- Module Workflow Infrastructure
+- Module Rules Infrastructure
+- UI Components & Layout
+- Module Metrics Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Module Webp Infrastructure
+- Weapons Registry
+- Weapons Registry
+- Weapons Registry
+- Weapons Registry
+- Weapons Registry
 
 ## God Nodes (most connected - your core abstractions)
 1. `CharacterConfig` - 108 edges
@@ -69,157 +73,153 @@
 10. `TALENT_SEED` - 33 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `main()` --references--> `@prisma/client`  [EXTRACTED]
-  prisma/seed.ts → package.json
-- `FormulaBreakdownView()` --references--> `react`  [EXTRACTED]
-  src/components/calculator/FormulaBreakdownView.tsx → package.json
-- `renderStyledText()` --references--> `react`  [EXTRACTED]
-  src/components/calculator/utils/colors.ts → package.json
 - `main()` --calls--> `flattenSeed()`  [EXTRACTED]
   prisma/seed.ts → src/data/talents/index.ts
+- `Character Calculator Skill Spec` --conceptually_related_to--> `Development Guide & Architecture`  [INFERRED]
+  .agents/skills/character-calculator/SKILL.md → DEVELOPMENT.md
+- `Initial Project Plan` --conceptually_related_to--> `Development Guide & Architecture`  [INFERRED]
+  initial-plan.md → DEVELOPMENT.md
 - `TeamBuffPanelProps` --references--> `CalcInstance`  [EXTRACTED]
   src/components/calculator/components/TeamBuffPanel.tsx → src/components/calculator/types.ts
+- `MockCtxOverride` --references--> `DamageStats`  [EXTRACTED]
+  src/lib/engine/characters/linnea.test.ts → src/lib/engine/damage.ts
 
 ## Import Cycles
 - 3-file cycle: `src/data/registry/types.ts -> src/lib/engine/lunar.ts -> src/lib/engine/damage.ts -> src/data/registry/types.ts`
 
-## Communities (43 total, 11 thin omitted)
+## Communities (52 total, 21 thin omitted)
 
-### Community 0 - "damage.ts"
-Cohesion: 0.11
-Nodes (39): arlecchino, Element, HitCategory, ScalingSource, activeEffects(), constellationFlatBonus(), constellationStatBonuses(), AMP_BASE (+31 more)
+### Community 0 - "Xiao Character Mechanics & Scaling"
+Cohesion: 0.07
+Nodes (62): alhaitham, aloy, ayaka, ayato, clorinde, columbina, cyno, dehya (+54 more)
 
-### Community 1 - "mechanics.ts"
+### Community 1 - "Xiao Character Mechanics & Scaling"
 Cohesion: 0.09
 Nodes (59): resolveAlhaitham(), resolveAloy(), resolveArlecchino(), resolveAyaka(), resolveAyato(), resolveClorinde(), resolveColumbina(), resolveCyno() (+51 more)
 
-### Community 2 - "talents/index.ts"
-Cohesion: 0.06
-Nodes (40): TalentType, aloySeed, arlecchinoSeed, ayatoSeed, clorindeSeed, cynoSeed, dehyaSeed, dilucSeed (+32 more)
-
-### Community 3 - "registry/types.ts"
-Cohesion: 0.11
-Nodes (26): atk(), atkCharged(), atkPlunge(), def(), defPlunge(), healHp(), hp(), hpCharged() (+18 more)
-
-### Community 4 - "useCalculatorState.ts"
-Cohesion: 0.14
-Nodes (22): deleteBuild(), saveBuild(), FormulaPage(), loadScaling(), loadScaling(), Page(), fmt(), FormulaBreakdownView() (+14 more)
-
-### Community 5 - "devDependencies"
-Cohesion: 0.04
-Nodes (48): dotenv, eslint, eslint-config-next, html-to-image, next, dependencies, html-to-image, next (+40 more)
-
-### Community 6 - "compilerOptions"
+### Community 2 - "Xiao Character Mechanics & Scaling"
 Cohesion: 0.07
-Nodes (28): dom, dom.iterable, esnext, **/*.mts, .next/dev/types/**/*.ts, next-env.d.ts, .next/types/**/*.ts, node_modules (+20 more)
+Nodes (39): TalentType, aloySeed, arlecchinoSeed, ayatoSeed, clorindeSeed, columbinaSeed, cynoSeed, dehyaSeed (+31 more)
 
-### Community 7 - "characters/index.ts"
+### Community 3 - "Database Schema & Seeds"
+Cohesion: 0.04
+Nodes (48): dotenv, eslint, eslint-config-next, next, dependencies, html-to-image, next, @prisma/adapter-mariadb (+40 more)
+
+### Community 4 - "Xiao Character Mechanics & Scaling"
+Cohesion: 0.16
+Nodes (9): main(), flattenSeed(), TALENT_SEED, baseStats, ctxFor(), LV90, scalingFor(), resolveMechanics() (+1 more)
+
+### Community 5 - "Damage Core Engine & Formulas"
 Cohesion: 0.09
-Nodes (40): main(), alhaitham, aloy, ayaka, ayato, clorinde, cyno, dehya (+32 more)
+Nodes (24): dynamic, FormulaPage(), loadScaling(), dynamic, loadScaling(), Page(), deleteExportLog(), ExportFormat (+16 more)
 
-### Community 8 - "app/page.tsx"
+### Community 6 - "Database Schema & Seeds"
 Cohesion: 0.12
 Nodes (22): DbStatusInfo, getDbStatus(), parseDatabaseUrl(), geistMono, geistSans, metadata, RootLayout(), ELEMENTS (+14 more)
 
-### Community 9 - "extract-wiki.ts"
+### Community 7 - "Module Dom Infrastructure"
+Cohesion: 0.07
+Nodes (28): dom, dom.iterable, esnext, **/*.mts, .next/dev/types/**/*.ts, next-env.d.ts, .next/types/**/*.ts, node_modules (+20 more)
+
+### Community 8 - "Arlecchino Mechanics & Scaling"
+Cohesion: 0.19
+Nodes (22): arlecchino, activeEffects(), constellationFlatBonus(), constellationStatBonuses(), AMP_BASE, amplifyingMultiplier(), availableReactions(), CATALYZE_BASE (+14 more)
+
+### Community 9 - "Elemental Reactions Engine"
+Cohesion: 0.17
+Nodes (21): fmt(), TransformativePanel(), TransformativePanelProps, ReactionExtras, StatBreakdown, LEVEL_MULTIPLIERS, levelMultiplier(), clamp() (+13 more)
+
+### Community 10 - "Arlecchino Mechanics & Scaling"
+Cohesion: 0.15
+Nodes (20): DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), fmt(), HitFormulaTooltip(), HitFormulaTooltipProps, fmt() (+12 more)
+
+### Community 11 - "Elemental Reactions Engine"
+Cohesion: 0.15
+Nodes (22): MechanicsPanel(), MechanicsPanelProps, GROUPS, StatsGrid(), StatsGridProps, CharacterCalculator(), DIRECT_TAG, EFFECTIVE_ROWS (+14 more)
+
+### Community 12 - "Team Buffs & Support Registry"
+Cohesion: 0.16
+Nodes (18): fmt(), TeamBuffPanel(), TeamBuffPanelProps, SUPPORT_CONFIGS, supportById(), ineffaSupport, SupportBuff, SupportConfig (+10 more)
+
+### Community 13 - "Damage Core Engine & Formulas"
+Cohesion: 0.20
+Nodes (15): deleteBuild(), saveBuild(), fmt(), FormulaBreakdownView(), FormulaBreakdownViewProps, getInitialStats(), hydrateFromBuild(), initialStats (+7 more)
+
+### Community 14 - "Module Wiki Infrastructure"
 Cohesion: 0.20
 Nodes (12): decode(), dmgPath, extractConstellations(), extractLevelMultipliers(), extractScalingTables(), FILES, found, levelMult (+4 more)
 
-### Community 15 - "Genshin Damage Calculator — Plan 2: Persistence & Rotation Export"
-Cohesion: 0.13
-Nodes (14): 0.1 What Express + Pug is _for_, 0.2 Where the math runs, 0. Two decisions to make up front (read this first), 1. Updated architecture, 2. Data model (MySQL + Prisma), 3. Saving & loading builds (CRUD), 4. Rotations — the core new concept, 5. Export — the cheap formats (client-side, no server) (+6 more)
+### Community 15 - "Elemental Reactions Engine"
+Cohesion: 0.29
+Nodes (8): RotationStep, Element, HitCategory, ReactionType, ScalingSource, HitInput, FormulaBreakdown, RawInputs
 
-### Community 16 - "Setup"
-Cohesion: 0.15
-Nodes (12): 1. Prerequisites, 2. Configure Environment Variables, 3. Install Dependencies, 4. Database Setup & Initialization, 5. Seed the Talent Scaling Data, Deploy on Vercel, Getting Started, Learn More (+4 more)
-
-### Community 17 - "[v1.2.0-Beta] - Current UI Header Version"
-Cohesion: 0.20
-Nodes (9): Added, Changes & Adjustments, Features & Major Additions, Fixed, Fixed, [Initial Phase] (No Version in UI Header), New Character Calculators, Project Development Documentation (+1 more)
-
-### Community 18 - "talents/gaming.ts"
+### Community 16 - "Database Schema & Seeds"
 Cohesion: 0.25
 Nodes (4): ALTERNATE_FACTORS, gamingSeed, NA_FACTORS, SKILL_BURST_FACTORS
 
-### Community 19 - "talents/varesa.ts"
+### Community 17 - "Database Schema & Seeds"
 Cohesion: 0.25
 Nodes (4): ALTERNATE_FACTORS, NA_FACTORS, SKILL_BURST_FACTORS, varesaSeed
 
-### Community 20 - "linnea.test.ts"
+### Community 18 - "Database Schema & Seeds"
 Cohesion: 0.33
-Nodes (4): linnea, baseStats, MockCtxOverride, mockScaling
+Nodes (4): linneaSeed, baseStats, MockCtxOverride, mockScaling
 
-### Community 21 - "talents/alhaitham.ts"
+### Community 19 - "Database Schema & Seeds"
+Cohesion: 0.33
+Nodes (4): varkaSeed, baseStats, MockCtxOverride, mockScaling
+
+### Community 20 - "Database Schema & Seeds"
 Cohesion: 0.33
 Nodes (3): alhaithamSeed, ALTERNATE_FACTORS, NA_FACTORS
 
-### Community 22 - "talents/ayaka.ts"
-Cohesion: 0.15
-Nodes (6): ALTERNATE_FACTORS, ayakaSeed, NA_FACTORS, NA_FACTORS, SKILL_BURST_FACTORS, skirkSeed
+### Community 21 - "Database Schema & Seeds"
+Cohesion: 0.33
+Nodes (3): ALTERNATE_FACTORS, ayakaSeed, NA_FACTORS
 
-### Community 23 - "talents/durin.ts"
+### Community 22 - "Database Schema & Seeds"
 Cohesion: 0.33
 Nodes (3): ALTERNATE_FACTORS, durinSeed, NA_FACTORS
 
-### Community 24 - "ineffa.test.ts"
-Cohesion: 0.40
-Nodes (3): ineffa, defaultStats, mockScaling
-
-### Community 25 - "talents/mavuika.ts"
+### Community 23 - "Database Schema & Seeds"
 Cohesion: 0.33
 Nodes (3): mavuikaSeed, NA_FACTORS, SKILL_BURST_FACTORS
 
-### Community 26 - "HistoryView.tsx"
-Cohesion: 0.20
-Nodes (11): deleteExportLog(), ExportFormat, ExportLogRow, ExportSummary, getExportLogs(), HistoryPage(), ComparePanel(), fmtNum() (+3 more)
-
-### Community 27 - "CharacterCalculator.tsx"
-Cohesion: 0.16
-Nodes (21): fmt(), StatBreakdownRow(), StatBreakdownRowProps, initialStats, useRotation(), RotationStep, StatBuffSource, CharacterCalculator() (+13 more)
-
-### Community 28 - "columbina.test.ts"
-Cohesion: 0.29
-Nodes (5): columbina, columbinaSeed, baseStats, MockCtxOverride, mockScaling
-
-### Community 36 - "DamageTable.tsx"
-Cohesion: 0.13
-Nodes (22): DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), fmt(), HitFormulaTooltip(), HitFormulaTooltipProps, fmt() (+14 more)
-
-### Community 37 - "Character Calculator Skill & Implementation Standard"
-Cohesion: 0.12
-Nodes (15): 1. File Architecture & Required Modules, 2. Core Formula Interpretations, 3. Reaction Variants, 4. Special Mechanics Patterns, 5. Verification & Checklist, A. Flat DMG Bonus (`flatDmgBonus`), A. Lunar Reactions, B. Base DMG Multiplier (`baseDmgMultiplier`) (+7 more)
-
-### Community 38 - "team-buffs.ts"
-Cohesion: 0.17
-Nodes (18): fmt(), TeamBuffPanel(), TeamBuffPanelProps, SUPPORT_CONFIGS, supportById(), ineffaSupport, SupportBuff, SupportConfig (+10 more)
-
-### Community 39 - "varka.test.ts"
+### Community 24 - "Database Schema & Seeds"
 Cohesion: 0.33
-Nodes (4): varka, baseStats, MockCtxOverride, mockScaling
+Nodes (3): NA_FACTORS, SKILL_BURST_FACTORS, skirkSeed
 
-### Community 40 - "calculator/types.ts"
-Cohesion: 0.17
-Nodes (19): MechanicsPanel(), MechanicsPanelProps, GROUPS, StatsGrid(), StatsGridProps, fmt(), TransformativePanel(), TransformativePanelProps (+11 more)
+### Community 25 - "Damage Core Engine & Formulas"
+Cohesion: 0.40
+Nodes (4): baseStats, MockCtxOverride, mockScaling, DamageStats
+
+### Community 26 - "Team Buffs & Support Registry"
+Cohesion: 0.60
+Nodes (4): fmt(), StatBreakdownRow(), StatBreakdownRowProps, StatBuffSource
+
+### Community 27 - "UI Components & Layout"
+Cohesion: 0.50
+Nodes (4): Character Calculator Skill Spec, Development Guide & Architecture, Initial Project Plan, Genshin Impact Damage Calculator Overview
 
 ## Knowledge Gaps
-- **169 isolated node(s):** `eslintConfig`, ``Build``, ``Rotation``, `nextConfig`, `name` (+164 more)
+- **148 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+143 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `devDependencies` to `useCalculatorState.ts`, `DamageTable.tsx`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
-- **Why does `CharacterConfig` connect `registry/types.ts` to `damage.ts`, `mechanics.ts`, `DamageTable.tsx`, `useCalculatorState.ts`, `characters/index.ts`, `calculator/types.ts`, `CharacterCalculator.tsx`?**
-  _High betweenness centrality (0.051) - this node is a cross-community bridge._
-- **What connects `eslintConfig`, ``Build``, ``Rotation`` to the rest of the system?**
-  _169 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `damage.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11479591836734694 - nodes in this community are weakly interconnected._
-- **Should `mechanics.ts` be split into smaller, more focused modules?**
+- **Why does `CharacterConfig` connect `Xiao Character Mechanics & Scaling` to `Xiao Character Mechanics & Scaling`, `Arlecchino Mechanics & Scaling`, `Elemental Reactions Engine`, `Arlecchino Mechanics & Scaling`, `Elemental Reactions Engine`, `Damage Core Engine & Formulas`?**
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
+- **Why does `DamageStats` connect `Damage Core Engine & Formulas` to `Xiao Character Mechanics & Scaling`, `Xiao Character Mechanics & Scaling`, `Arlecchino Mechanics & Scaling`, `Elemental Reactions Engine`, `Arlecchino Mechanics & Scaling`, `Elemental Reactions Engine`, `Team Buffs & Support Registry`, `Database Schema & Seeds`, `Database Schema & Seeds`, `Module Test Infrastructure`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `TalentScalingData` connect `Arlecchino Mechanics & Scaling` to `Xiao Character Mechanics & Scaling`, `Xiao Character Mechanics & Scaling`, `Damage Core Engine & Formulas`, `Arlecchino Mechanics & Scaling`, `Elemental Reactions Engine`, `Elemental Reactions Engine`, `Damage Core Engine & Formulas`, `Database Schema & Seeds`, `Database Schema & Seeds`, `Damage Core Engine & Formulas`, `Module Test Infrastructure`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **What connects `eslintConfig`, `nextConfig`, `name` to the rest of the system?**
+  _148 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Xiao Character Mechanics & Scaling` be split into smaller, more focused modules?**
+  _Cohesion score 0.0701064701064701 - nodes in this community are weakly interconnected._
+- **Should `Xiao Character Mechanics & Scaling` be split into smaller, more focused modules?**
   _Cohesion score 0.09047619047619047 - nodes in this community are weakly interconnected._
-- **Should `talents/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06390977443609022 - nodes in this community are weakly interconnected._
-- **Should `registry/types.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11292114031840059 - nodes in this community are weakly interconnected._
+- **Should `Xiao Character Mechanics & Scaling` be split into smaller, more focused modules?**
+  _Cohesion score 0.06558558558558558 - nodes in this community are weakly interconnected._
