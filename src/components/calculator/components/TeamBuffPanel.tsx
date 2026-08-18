@@ -287,11 +287,11 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
                     🔄 Sync
                   </button>
 
-                  {/* Edit in full calculator */}
+                  {/* Edit in dedicated support builder */}
                   <Link
-                    href={`/characters/${config.characterId}${dpsCharacterId ? `?from=${dpsCharacterId}` : ""}`}
+                    href={`/characters/${config.characterId}/support${dpsCharacterId ? `?from=${dpsCharacterId}` : ""}`}
                     className="text-[10px] px-1.5 py-0.5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-0.5"
-                    title="Open full calculator for this character"
+                    title="Open dedicated support builder for this character"
                   >
                     ✎ Edit Build ↗
                   </Link>

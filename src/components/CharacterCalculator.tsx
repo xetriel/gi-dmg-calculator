@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
@@ -1014,6 +1015,15 @@ export function CharacterCalculator({
             )}
           </button>
 
+          {/* Dedicated Support Build Editor Link */}
+          <Link
+            href={`/characters/${config.id}/support${fromCharacterId ? `?from=${fromCharacterId}` : ""}`}
+            className="rounded-lg border border-amber-300 dark:border-amber-700/60 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300 transition-colors shadow-xs flex items-center gap-1.5"
+            title="Open dedicated Support Build Editor"
+          >
+            <span>🛡️ Support Editor</span>
+          </Link>
+
           {/* Load Build Dropdown */}
           <div className="relative load-dropdown-container">
             <button
@@ -1361,11 +1371,9 @@ export function CharacterCalculator({
                       <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
                         Effective Stats & Buff Breakdown
                       </h2>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
-                          Formula: Raw + Additions = Total
-                        </span>
-                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
+                        Formula: Raw + Additions = Total
+                      </span>
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -1735,12 +1743,14 @@ export function CharacterCalculator({
                         setMechanic={setMechanic}
                       />
 
-                      {/* Team Buffs panel */}
-                      <TeamBuffPanel
-                        inst={inst}
-                        updateInstance={updateInstance}
-                        dpsCharacterId={config.id}
-                      />
+                      {/* Team Buffs panel (hidden in support edit mode to prevent recursion) */}
+                      {!fromCharacterId && (
+                        <TeamBuffPanel
+                          inst={inst}
+                          updateInstance={updateInstance}
+                          dpsCharacterId={config.id}
+                        />
+                      )}
 
                       {/* Core attribute tables */}
                       <StatsGrid
@@ -1781,12 +1791,14 @@ export function CharacterCalculator({
                       setMechanic={setMechanic}
                     />
 
-                    {/* Team Buffs panel */}
-                    <TeamBuffPanel
-                      inst={inst}
-                      updateInstance={updateInstance}
-                      dpsCharacterId={config.id}
-                    />
+                    {/* Team Buffs panel (hidden in support edit mode to prevent recursion) */}
+                    {!fromCharacterId && (
+                      <TeamBuffPanel
+                        inst={inst}
+                        updateInstance={updateInstance}
+                        dpsCharacterId={config.id}
+                      />
+                    )}
 
                     {/* Core attribute tables */}
                     <StatsGrid

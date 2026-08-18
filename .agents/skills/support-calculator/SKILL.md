@@ -54,8 +54,10 @@ Every support implementation and engine extension touches or adheres to the foll
 | `src/lib/engine/team-buffs.ts` | Pure engine resolver: `resolveTeamBuffs(supports, masterEnabled)`, `resolveSupportCtx(inst)`, computing `statDeltas`, `lunarBaseBonusPct`, `sources`, and `teamCrit`. |
 | `src/lib/engine/team-buffs.test.ts` | Vitest test suite testing buff computations, caps, constellation gates, toggle exclusions, ATK/stat zero edge cases, additive stacking, and brief stat formatting. |
 | `src/components/calculator/components/TeamBuffPanel.tsx` | Collapsible UI panel rendering master toggle, add-support selector, support cards with brief stats, setup switcher, draft sync, constellation selectors, mechanic toggles, and live computed buff previews. |
+| `src/components/calculator/SupportBuildEditorView.tsx` | Dedicated support build editor view with multi-setup switcher, core attributes grid, constellation selectors, mechanic toggles, and live provided team buffs output (with zero nested team buffs). |
+| `src/app/characters/[id]/support/page.tsx` | Dedicated support build editor route (`/characters/[id]/support?from=[dpsId]`). |
 | `src/components/calculator/types.ts` | State interfaces: `SupportInstance` (`selectedSetupId`, `selectedSetupName`, `sourceBuildId`) and `CalcInstance` (`teamSupports?: SupportInstance[]`, `teamBuffsEnabled?: boolean`). |
-| `src/components/CharacterCalculator.tsx` | Main calculator integration: damage pipeline, `fromCharacterId` return banner, and `<TeamBuffPanel>` embedding. |
+| `src/components/CharacterCalculator.tsx` | Main calculator integration: damage pipeline, `fromCharacterId` return banner, support editor header link, and conditional `<TeamBuffPanel>` embedding (hidden when editing a support to prevent recursion). |
 | `src/app/characters/[id]/page.tsx` | Character page handler: extracts `?from=` query param and passes `fromCharacterId` to `CharacterCalculator`. |
 | `src/lib/engine/formula-explainer.ts` | Explainer integration: includes math breakdown under "Received Team Buffs" on `/characters/[id]/formula`. |
 
