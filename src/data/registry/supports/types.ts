@@ -31,6 +31,12 @@ export interface SupportStatField {
   hasBaseAndFlat?: boolean;  // if true, renders base/percent/flat triple
 }
 
+// Brief stat pill for the remastered support card UI
+export interface BriefStatPill {
+  label: string;   // e.g., "Total ATK"
+  value: string;   // e.g., "2,180"
+}
+
 // Full support character configuration
 export interface SupportConfig {
   id: string;                // e.g., "ineffa-support"
@@ -43,4 +49,5 @@ export interface SupportConfig {
   constellations?: Constellation[];     // constellation definitions
   buffs: SupportBuff[];                 // the buffs this support provides
   lunarBaseBonusCompute?: (ctx: SupportCtx) => number;  // Moonsign Lunar Base DMG
+  formatBriefStats?: (ctx: SupportCtx) => BriefStatPill[];  // brief info pills for card UI
 }

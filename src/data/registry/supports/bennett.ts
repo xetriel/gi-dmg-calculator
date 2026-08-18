@@ -95,4 +95,13 @@ export const bennettSupport: SupportConfig = {
       },
     },
   ],
+
+  // Brief stat pills for remastered support card UI
+  formatBriefStats: (ctx) => {
+    const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+    return [
+      { label: "Base ATK", value: fmt(ctx.baseAtk) },
+      { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+    ];
+  },
 };

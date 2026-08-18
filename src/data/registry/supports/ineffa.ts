@@ -87,4 +87,13 @@ export const ineffaSupport: SupportConfig = {
 
   // Moonsign Benediction: Lunar-Charged Base DMG +0.7% per 100 ATK (max 14%)
   lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14),
+
+  // Brief stat pills for remastered support card UI
+  formatBriefStats: (ctx) => {
+    const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+    return [
+      { label: "Total ATK", value: fmt(ctx.atk) },
+      { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+    ];
+  },
 };

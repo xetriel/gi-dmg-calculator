@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolveTeamBuffs, type SupportInstance } from "./team-buffs";
+import { resolveTeamBuffs, resolveSupportCtx, type SupportInstance } from "./team-buffs";
+import { supportById } from "../../data/registry/supports";
 
 function makeIneffa(overrides: Partial<SupportInstance> = {}): SupportInstance {
   return {
@@ -237,5 +238,102 @@ describe("team-buffs resolver", () => {
     // Team CRIT: average of (60, 70) = 65, (120, 140) = 130
     expect(r.teamCrit.critRate).toBe(65);
     expect(r.teamCrit.critDmg).toBe(130);
+  });
+});
+
+// ── Remastered: resolveSupportCtx export & formatBriefStats ─────────────
+describe("remastered support system", () => {
+  it("resolveSupportCtx is exported and resolves full stat dictionaries", () => {
+    expect(typeof resolveSupportCtx).toBe("function");
+
+    // Full stat dictionary from character calculator (has atk.base, atk.percent, atk.flat)
+    const inst: SupportInstance = {
+      supportId: "ineffa-support",
+      stats: {
+        "atk.base": "900",
+        "atk.percent": "50",
+        "atk.flat": "500",
+        critRate: "80",
+        critDmg: "200",
+      },
+      mechanicInputs: { "a4-burst-active": "1", "c1-carrier-flow": "0" },
+      constellationLevel: 0,
+      enabled: true,
+    };
+
+    const ctx = resolveSupportCtx(inst);
+    expect(ctx).not.toBeNull();
+    // ATK = 900 * (1 + 50/100) + 500 = 1350 + 500 = 1850
+    expect(ctx!.atk).toBeCloseTo(1850, 1);
+    expect(ctx!.baseAtk).toBe(900);
+    expect(ctx!.critRate).toBe(80);
+    expect(ctx!.critDmg).toBe(200);
+  });
+
+  it("SupportInstance supports selectedSetupId and selectedSetupName", () => {
+    const inst: SupportInstance = {
+      supportId: "ineffa-support",
+      stats: { "atk.base": "700", "atk.percent": "0", "atk.flat": "0", critRate: "70", critDmg: "140" },
+      mechanicInputs: { "a4-burst-active": "1" },
+      constellationLevel: 0,
+      enabled: true,
+      selectedSetupId: "2",
+      selectedSetupName: "Setup 2",
+      sourceBuildId: "build-abc",
+      sourceBuildName: "My Build",
+    };
+
+    // Fields exist and hold values
+    expect(inst.selectedSetupId).toBe("2");
+    expect(inst.selectedSetupName).toBe("Setup 2");
+    expect(inst.sourceBuildId).toBe("build-abc");
+    expect(inst.sourceBuildName).toBe("My Build");
+
+    // Engine still resolves buffs correctly
+    const r = resolveTeamBuffs([inst]);
+    // ATK = 700 * 1 + 0 = 700, EM = 0.06 * 700 = 42
+    expect(r.statDeltas.em).toBeCloseTo(42, 1);
+  });
+
+  it("formatBriefStats produces pills for Ineffa", () => {
+    const config = supportById("ineffa-support");
+    expect(config).toBeDefined();
+    expect(typeof config?.formatBriefStats).toBe("function");
+
+    const inst: SupportInstance = {
+      supportId: "ineffa-support",
+      stats: { "atk.base": "700", "atk.percent": "40", "atk.flat": "1200", critRate: "70", critDmg: "140" },
+      mechanicInputs: {},
+      constellationLevel: 0,
+      enabled: true,
+    };
+
+    const ctx = resolveSupportCtx(inst);
+    const pills = config!.formatBriefStats!(ctx!);
+    expect(pills.length).toBeGreaterThanOrEqual(2);
+    expect(pills[0].label).toBe("Total ATK");
+    expect(pills[0].value).toContain("2,180");
+    expect(pills[1].label).toBe("CRIT");
+  });
+
+  it("formatBriefStats produces pills for Bennett", () => {
+    const config = supportById("bennett-support");
+    expect(config).toBeDefined();
+    expect(typeof config?.formatBriefStats).toBe("function");
+
+    const inst: SupportInstance = {
+      supportId: "bennett-support",
+      stats: { baseAtk: "800", critRate: "60", critDmg: "120" },
+      mechanicInputs: {},
+      constellationLevel: 0,
+      enabled: true,
+    };
+
+    const ctx = resolveSupportCtx(inst);
+    const pills = config!.formatBriefStats!(ctx!);
+    expect(pills.length).toBeGreaterThanOrEqual(2);
+    expect(pills[0].label).toBe("Base ATK");
+    expect(pills[0].value).toBe("800");
+    expect(pills[1].label).toBe("CRIT");
   });
 });

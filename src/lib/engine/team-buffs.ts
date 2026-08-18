@@ -4,10 +4,14 @@ import { supportById, type SupportCtx } from "../../data/registry/supports";
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
   supportId: string;                    // e.g., "ineffa-support"
-  stats: Record<string, string>;       // limited stat inputs
+  stats: Record<string, string>;       // stat inputs (full or limited)
   mechanicInputs: Record<string, string>;
   constellationLevel: number;
   enabled: boolean;                    // per-support toggle
+  selectedSetupId?: string;            // e.g., "1" — references a CalcInstance.id from the support character's working draft
+  selectedSetupName?: string;          // e.g., "Setup 1"
+  sourceBuildId?: string | null;       // DB build ID if loaded from a saved build
+  sourceBuildName?: string | null;     // Build name if loaded from a saved build
 }
 
 // Attribution for a single buff from a support
@@ -33,8 +37,8 @@ function toNum(s: string | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Resolve a SupportInstance's limited stat inputs into a SupportCtx
-function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
+// Resolve a SupportInstance's stat inputs into a SupportCtx
+export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   const config = supportById(inst.supportId);
   if (!config) return null;
 
