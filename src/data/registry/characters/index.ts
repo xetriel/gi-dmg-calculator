@@ -36,6 +36,7 @@ import { xiao } from "./xiao";
 import { tartaglia } from "./tartaglia";
 import { yanfei } from "./yanfei";
 import { xinyan } from "./xinyan";
+import { mizuki } from "./mizuki";
 import { travelerAnemo } from "./traveler-anemo";
 import { travelerGeo } from "./traveler-geo";
 import { travelerElectro } from "./traveler-electro";
@@ -46,6 +47,6 @@ import { travelerCryo } from "./traveler-cryo";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
-export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo };
-export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo];
+export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, mizuki, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo };
+export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, mizuki, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo];
 export const byId = (id: string) => CHARACTERS.find(c => c.id === id);

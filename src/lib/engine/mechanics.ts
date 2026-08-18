@@ -45,6 +45,7 @@ import { resolveXiao } from "./characters/xiao";
 import { resolveTartaglia } from "./characters/tartaglia";
 import { resolveYanfei } from "./characters/yanfei";
 import { resolveXinyan } from "./characters/xinyan";
+import { resolveMizuki } from "./characters/mizuki";
 import { resolveTravelerAnemo } from "./characters/traveler-anemo";
 import { resolveTravelerGeo } from "./characters/traveler-geo";
 import { resolveTravelerElectro } from "./characters/traveler-electro";
@@ -93,6 +94,7 @@ const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "tartaglia": resolveTartaglia,
   "yanfei": resolveYanfei,
   "xinyan": resolveXinyan,
+  "mizuki": resolveMizuki,
   "traveler-anemo": resolveTravelerAnemo,
   "traveler-geo": resolveTravelerGeo,
   "traveler-electro": resolveTravelerElectro,
