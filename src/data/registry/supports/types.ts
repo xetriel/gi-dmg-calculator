@@ -3,8 +3,11 @@ import type { Element, MechanicDef, Constellation } from "../types";
 // Context passed to support buff compute functions
 export interface SupportCtx {
   atk: number;               // support's total ATK
+  baseAtk: number;           // support's base ATK
   hp: number;                // support's total HP
+  baseHp: number;            // support's base HP
   def: number;               // support's total DEF
+  baseDef: number;           // support's base DEF
   em: number;                // support's EM
   critRate: number;          // for team Lunar CRIT calc
   critDmg: number;           // for team Lunar CRIT calc

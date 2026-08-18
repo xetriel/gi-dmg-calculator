@@ -49,8 +49,7 @@ export const travelerDendro: CharacterConfig = {
     {
       id: "a1-lotus-light-stacks",
       label: "A1 Verdant Overgrowth — Lotus Light Stacks (+6 EM / stack, max 10)",
-      control: "slider",
-      min: 0,
+      control: "stacks",
       max: 10,
       defaultValue: 10,
       hint: "Lea Lotus Lamp gains 1 stack per second while active, increasing active character's EM by 6 per stack (max +60 EM)."
@@ -63,17 +62,25 @@ export const travelerDendro: CharacterConfig = {
       hint: "Characters under Lotus Light Transfiguration gain 12% Dendro DMG Bonus."
     },
     {
-      id: "c6-transmuted-element",
-      label: "C6 Transmuted Element DMG Bonus (+12% Hydro / Electro / Pyro DMG Bonus)",
-      control: "select",
-      options: [
-        { label: "None (Dendro Only)", value: "none" },
-        { label: "Hydro (+12% Hydro DMG)", value: "hydro" },
-        { label: "Electro (+12% Electro DMG)", value: "electro" },
-        { label: "Pyro (+12% Pyro DMG)", value: "pyro" },
-      ],
-      defaultValue: "none",
-      hint: "If Lea Lotus Lamp underwent Transfiguration, active character gains an additional 12% DMG Bonus of that element."
+      id: "c6-hydro-buff",
+      label: "C6 Hydro Transfiguration (+12% Hydro DMG)",
+      control: "toggle",
+      defaultValue: 0,
+      hint: "If Lea Lotus Lamp underwent Hydro Transfiguration, active character gains +12% Hydro DMG Bonus."
+    },
+    {
+      id: "c6-electro-buff",
+      label: "C6 Electro Transfiguration (+12% Electro DMG)",
+      control: "toggle",
+      defaultValue: 0,
+      hint: "If Lea Lotus Lamp underwent Electro Transfiguration, active character gains +12% Electro DMG Bonus."
+    },
+    {
+      id: "c6-pyro-buff",
+      label: "C6 Pyro Transfiguration (+12% Pyro DMG)",
+      control: "toggle",
+      defaultValue: 0,
+      hint: "If Lea Lotus Lamp underwent Pyro Transfiguration, active character gains +12% Pyro DMG Bonus."
     }
   ],
   mechanics: [

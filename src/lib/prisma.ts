@@ -23,7 +23,7 @@ export function getPrisma(): PrismaClient {
 // Proxy ensures dynamic dispatch so process.env changes or HMR updates reconnect automatically
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
-    const client = getPrisma() as Record<string, unknown>;
+    const client = getPrisma() as unknown as Record<string, unknown>;
     const val = client[prop as string];
     if (typeof val === "function") {
       return val.bind(client);

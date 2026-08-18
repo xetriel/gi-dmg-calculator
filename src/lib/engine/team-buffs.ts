@@ -49,9 +49,13 @@ function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   // Check which stat fields have base+flat vs scalar
   const hasBaseFlat = (key: string) => config.statFields.some(f => f.key === key && f.hasBaseAndFlat);
 
-  const atk = hasBaseFlat("atk") ? resolveTriple("atk") : toNum(inst.stats["atk"]);
-  const hp = hasBaseFlat("hp") ? resolveTriple("hp") : toNum(inst.stats["hp"]);
-  const def = hasBaseFlat("def") ? resolveTriple("def") : toNum(inst.stats["def"]);
+  const baseAtk = hasBaseFlat("atk") ? toNum(inst.stats["atk.base"]) : toNum(inst.stats["baseAtk"]) || toNum(inst.stats["atk"]);
+  const baseHp = hasBaseFlat("hp") ? toNum(inst.stats["hp.base"]) : toNum(inst.stats["baseHp"]) || toNum(inst.stats["hp"]);
+  const baseDef = hasBaseFlat("def") ? toNum(inst.stats["def.base"]) : toNum(inst.stats["baseDef"]) || toNum(inst.stats["def"]);
+
+  const atk = hasBaseFlat("atk") ? resolveTriple("atk") : toNum(inst.stats["atk"]) || toNum(inst.stats["baseAtk"]);
+  const hp = hasBaseFlat("hp") ? resolveTriple("hp") : toNum(inst.stats["hp"]) || toNum(inst.stats["baseHp"]);
+  const def = hasBaseFlat("def") ? resolveTriple("def") : toNum(inst.stats["def"]) || toNum(inst.stats["baseDef"]);
   const em = toNum(inst.stats["em"]);
   const critRate = toNum(inst.stats["critRate"]);
   const critDmg = toNum(inst.stats["critDmg"]);
@@ -63,7 +67,7 @@ function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   }
 
   return {
-    atk, hp, def, em, critRate, critDmg,
+    atk, baseAtk, hp, baseHp, def, baseDef, em, critRate, critDmg,
     constellationLevel: inst.constellationLevel,
     talentLevels: {},
     inputs,

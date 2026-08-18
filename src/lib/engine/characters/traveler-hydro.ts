@@ -10,7 +10,7 @@ export function resolveTravelerHydro(config: CharacterConfig, ctx: MechanicsCtx)
   // A4 Clear Waters: Torrent Surge deals extra Flat DMG based on HP consumed (45% of consumed HP, capped at 5,000)
   if (on("a4-clear-waters")) {
     const flatExtra = Math.min(5000, 0.45 * (stats.hp * 0.24));
-    addMods(res.perHit, "torrent-surge", { flatDmg: flatExtra });
+    addMods(res.perHit, "torrent-surge", { flatDmgBonus: flatExtra });
     res.notes.push(`Clear Waters (A4): Torrent Surge deals +${flatExtra.toFixed(0)} Extra Flat DMG (45% of HP consumed via Suffusion, cap 5,000).`);
   }
 
@@ -25,7 +25,7 @@ export function resolveTravelerHydro(config: CharacterConfig, ctx: MechanicsCtx)
     const naKeys = hitKeysOf(config, "normal");
     const bonusFlat = 0.40 * stats.hp;
     for (const key of naKeys) {
-      addMods(res.perHit, key, { element: "Hydro", flatDmg: bonusFlat });
+      addMods(res.perHit, key, { element: "Hydro", flatDmgBonus: bonusFlat });
     }
     res.notes.push(`Tides of Justice (C6): Normal Attacks converted to Hydro DMG + ${bonusFlat.toFixed(0)} Flat DMG (40% Max HP) after restoring HP.`);
   }
