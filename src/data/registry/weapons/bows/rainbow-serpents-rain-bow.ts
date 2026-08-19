@@ -5,27 +5,38 @@ export const rainbowSerpentsRainBow: WeaponConfig = {
   name: "Rainbow Serpent's Rain Bow",
   type: "Bow",
   rarity: 4,
-  baseAtk: 565,
-  lvl1BaseAtk: 44,
+  baseAtk: 510,
+  lvl1BaseAtk: 42,
   subStat: {
-    type: "em",
-    label: "Elemental Mastery",
-    value: 110,
-    baseValue: 24,
+    type: "energyRecharge",
+    label: "Energy Recharge%",
+    value: 45.9,
+    baseValue: 10,
   },
-  passiveName: "Prismatic Rain",
+  passiveName: "Astral Whispers Beyond the Sacred Throne",
   passiveDesc:
-    "Triggering an Elemental Reaction increases All Elemental DMG Bonus by 12~24% for 8s.",
+    "ATK is increased by 28~56% for 8s after the equipping character's attacks hit an opponent while they are off-field.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "rainbow-serpent-offfield-hit",
+      label: "Off-Field Attack Hit Active (+28~56% ATK)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+28~56% ATK for 8s",
+    }
+  ],
   buffs: [
     {
-      id: "rainbow-serpent-elem",
-      label: "All Elemental DMG Bonus",
-      stat: "dmgBonus",
-      refinementValues: [12, 15, 18, 21, 24],
+      id: "rainbow-serpent-atk",
+      label: "ATK% (Rainbow Serpent's Rain Bow)",
+      stat: "atk",
+      refinementValues: [28, 35, 42, 49, 56],
       isTeamBuff: false,
-      compute: (r) => [12, 15, 18, 21, 24][r - 1],
+      isPercent: true,
+      conditionKey: "rainbow-serpent-offfield-hit",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['rainbow-serpent-offfield-hit'] ?? '1') === '1' || Number(ctx.inputs?.['rainbow-serpent-offfield-hit'] ?? 1) > 0; return on ? ([28, 35, 42, 49, 56][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   

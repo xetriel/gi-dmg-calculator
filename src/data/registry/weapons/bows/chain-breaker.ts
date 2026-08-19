@@ -13,19 +13,19 @@ export const chainBreaker: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Flowers on the Iron Anchor",
+  passiveName: "Flower-Feather Song",
   passiveDesc:
-    "For every party member from Natlan or who has a different Elemental Type from the wielder, the wielder gains 4.8~9.6% increased ATK. When there are at least 3 such characters, Elemental Mastery is increased by 24~48.",
+    "For every party member from Natlan or with a different Elemental Type than the wielder, gains +4.8~9.6% ATK (max 3 stacks = +14.4~28.8% ATK). If >= 3 stacks, gains +24~48 Elemental Mastery.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "chain-breaker-members",
-      label: "Eligible Members (0-3)",
+      id: "chain-breaker-stacks",
+      label: "Natlan/Different Element Teammates (0-3)",
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      hint: "+4.8~9.6% ATK per member; +24~48 EM at 3 members",
+      hint: "+4.8~9.6% ATK per stack. At 3 stacks, +24~48 EM.",
     }
   ],
   buffs: [
@@ -36,17 +36,17 @@ export const chainBreaker: WeaponConfig = {
       refinementValues: [14.4, 18, 21.6, 25.2, 28.8],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "chain-breaker-members",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["chain-breaker-members"]??3);return s*[4.8,6,7.2,8.4,9.6][r-1]/100*ctx.baseAtk},
+      conditionKey: "chain-breaker-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['chain-breaker-stacks'] ?? 3); const perStack = [4.8, 6.0, 7.2, 8.4, 9.6][r - 1]; return ((s * perStack) / 100) * ctx.baseAtk; },
     },
     {
       id: "chain-breaker-em",
-      label: "Elemental Mastery (Chain Breaker 3 Members)",
+      label: "Elemental Mastery at 3 Stacks (Chain Breaker)",
       stat: "em",
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
-      conditionKey: "chain-breaker-members",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["chain-breaker-members"]??3);return s>=3?[24,30,36,42,48][r-1]:0},
+      conditionKey: "chain-breaker-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['chain-breaker-stacks'] ?? 3); return s >= 3 ? [24, 30, 36, 42, 48][r - 1] : 0; },
     }
   ],
   

@@ -21,7 +21,7 @@ export const prototypeCrescent: WeaponConfig = {
   mechanicDefs: [
     {
       id: "crescent-weakpoint-hit",
-      label: "Weak Point Hit Triggered",
+      label: "Charged Attack Hit on Weak Point (+36~72% ATK)",
       control: "toggle",
       defaultValue: 1,
       hint: "+36~72% ATK for 10s",
@@ -36,7 +36,7 @@ export const prototypeCrescent: WeaponConfig = {
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "crescent-weakpoint-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["crescent-weakpoint-hit"]??"1")==="1"||Number(ctx.inputs?.["crescent-weakpoint-hit"]??1)>0;return on?[36,45,54,63,72][r-1]/100*ctx.baseAtk:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['crescent-weakpoint-hit'] ?? '1') === '1' || Number(ctx.inputs?.['crescent-weakpoint-hit'] ?? 1) > 0; return on ? ([36, 45, 54, 63, 72][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   

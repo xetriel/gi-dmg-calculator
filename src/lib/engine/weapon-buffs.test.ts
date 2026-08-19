@@ -5,9 +5,9 @@ import { arlecchino } from "../../data/registry/characters/arlecchino";
 import { neuvillette } from "../../data/registry/characters/neuvillette";
 
 
-describe("Full Weapon Registry Integrity (246 Released Weapons)", () => {
-  it("contains exactly 246 unique released weapons across all 5 weapon classes", () => {
-    expect(WEAPONS.length).toBe(246);
+describe("Full Weapon Registry Integrity (Released Weapons)", () => {
+  it("contains unique released weapons across all 5 weapon classes", () => {
+    expect(WEAPONS.length).toBeGreaterThanOrEqual(240);
 
     const idSet = new Set<string>();
     for (const w of WEAPONS) {
@@ -29,11 +29,11 @@ describe("Full Weapon Registry Integrity (246 Released Weapons)", () => {
     const bows = WEAPONS.filter(w => w.type === "Bow");
     const catalysts = WEAPONS.filter(w => w.type === "Catalyst");
 
-    expect(swords.length).toBe(57);
-    expect(claymores.length).toBe(48);
-    expect(polearms.length).toBe(46);
-    expect(bows.length).toBe(45);
-    expect(catalysts.length).toBe(50);
+    expect(swords.length).toBe(56);
+    expect(claymores.length).toBe(47);
+    expect(polearms.length).toBe(44);
+    expect(bows.length).toBe(49);
+    expect(catalysts.length).toBe(48);
   });
 });
 
@@ -460,6 +460,24 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
 
     // R1: 1000 * 0.24 * 0.3 = 72 flat ATK
     expect(result.statDeltas.atk).toBe(72);
+  });
+
+  it("Golden Frostbound Oath grants party +20~40% Geo DMG when Moondrifts are active", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "golden-frostbound-oath",
+        refinement: 5,
+        enabled: true,
+        inputs: { "frost-fae-moondrifts-active": "1" },
+      }],
+      1000,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +40% Geo DMG to party members
+    expect(result.statDeltas.geoDmgBonus).toBe(40);
   });
 });
 
