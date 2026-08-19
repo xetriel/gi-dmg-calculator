@@ -15,7 +15,7 @@ export const skywardAtlas: WeaponConfig = {
   },
   passiveName: "Wandering Clouds",
   passiveDesc:
-    "Increases Elemental DMG Bonus by 12~24%. Normal Attack hits have a 50% chance to earn the favor of the clouds, actively seeking surrounding opponents to deal 160~320% ATK DMG for 15s.",
+    "Increases All Elemental DMG Bonus by 12~24%. Normal Attack hits have a 50% chance to earn the favor of the clouds, dealing 160~320% ATK DMG.",
   isSupport: false,
   buffType: "self",
   buffs: [

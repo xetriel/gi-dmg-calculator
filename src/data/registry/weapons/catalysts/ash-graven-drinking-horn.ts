@@ -13,9 +13,9 @@ export const ashGravenDrinkingHorn: WeaponConfig = {
     value: 41.3,
     baseValue: 9,
   },
-  passiveName: "Roaring Fire",
+  passiveName: "Tuco's Grace",
   passiveDesc:
-    "When hitting an opponent, deal AoE DMG equal to 40~80% of Max HP. Can only occur once every 15s.",
+    "When hitting an opponent, deals 40~80% Max HP as AoE DMG at the target location. Can occur once every 15s.",
   isSupport: false,
   buffType: "self",
   buffs: [

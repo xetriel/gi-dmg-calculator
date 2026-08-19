@@ -407,6 +407,60 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
     // R5 gives +32% ATK = 320 to Neuvillette (Catalyst wielder)
     expect(result.statDeltas.atk).toBe(320);
   });
+
+  it("Crane's Echoing Call grants party +28~56% Plunging Attack DMG", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "cranes-echoing-call",
+        refinement: 5,
+        enabled: true,
+        inputs: { "cranes-plunge-hit": "1" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +56% Plunging Attack DMG to Arlecchino
+    expect(result.statDeltas.plungeDmgBonus).toBe(56);
+  });
+
+  it("Hakushin Ring grants party +10~20% Elemental DMG on Electro reaction", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "hakushin-ring",
+        refinement: 5,
+        enabled: true,
+        inputs: { "hakushin-reaction-active": "1" },
+      }],
+      1000,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +20% Elemental DMG Bonus
+    expect(result.statDeltas.dmgBonus).toBe(20);
+  });
+
+  it("Wandering Evenstar shares 30% of wielder EM-based ATK to party", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "wandering-evenstar",
+        refinement: 1,
+        enabled: true,
+        inputs: { "evenstar-wielder-em": "1000" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R1: 1000 * 0.24 * 0.3 = 72 flat ATK
+    expect(result.statDeltas.atk).toBe(72);
+  });
 });
 
 describe("Stacking and Master Toggle Control", () => {

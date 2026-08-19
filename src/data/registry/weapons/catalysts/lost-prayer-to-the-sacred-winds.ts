@@ -15,23 +15,23 @@ export const lostPrayerToTheSacredWinds: WeaponConfig = {
   },
   passiveName: "Boundless Blessing",
   passiveDesc:
-    "Increases Movement SPD by 10%. When in battle, gain an 8~16% Elemental DMG Bonus every 4s. Max 4 stacks. Lasts until the character falls or leaves combat.",
+    "Increases Movement SPD by 10%. When in battle, gain an 8~16% Elemental DMG Bonus every 4s. Max 4 stacks (+32~64% Elemental DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
       id: "lost-prayer-stacks",
-      label: "On-Field Time Stacks (0-4)",
+      label: "In-Battle Blessing Stacks (0-4)",
       control: "stacks",
       defaultValue: 4,
       max: 4,
-      hint: "+8~16% Elemental DMG Bonus every 4s (up to +32~64%)",
+      hint: "+8~16% All Elemental DMG Bonus per 4s (up to +32~64%)",
     }
   ],
   buffs: [
     {
       id: "lost-prayer-elem-dmg",
-      label: "Elemental DMG Bonus (Lost Prayer)",
+      label: "All Elemental DMG Bonus (Lost Prayer)",
       stat: "dmgBonus",
       refinementValues: [32, 40, 48, 56, 64],
       isTeamBuff: false,

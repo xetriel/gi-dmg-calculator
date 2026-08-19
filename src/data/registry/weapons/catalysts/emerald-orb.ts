@@ -13,20 +13,30 @@ export const emeraldOrb: WeaponConfig = {
     value: 94,
     baseValue: 20,
   },
-  passiveName: "Rapid",
+  passiveName: "Rapids",
   passiveDesc:
-    "Upon causing an Electro-Charged, Superconduct, Overloaded, Bloom, or Hydro-infused Swirl reaction, increases ATK by 20~40% for 12s.",
+    "Upon triggering a Vaporize, Electro-Charged, Frozen, Bloom, or a Hydro-infused Swirl reaction, ATK is increased by 20~40% for 12s.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "emerald-reaction-active",
+      label: "Hydro Reaction Triggered (+20~40% ATK)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+20~40% ATK for 12s",
+    }
+  ],
   buffs: [
     {
-      id: "emerald-orb-atk",
+      id: "emerald-atk",
       label: "ATK% (Emerald Orb)",
       stat: "atk",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r,ctx)=>[20,25,30,35,40][r-1]/100*ctx.baseAtk,
+      conditionKey: "emerald-reaction-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['emerald-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['emerald-reaction-active'] ?? 1) > 0; return on ? ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   

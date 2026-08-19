@@ -21,10 +21,10 @@ export const oathswornEye: WeaponConfig = {
   mechanicDefs: [
     {
       id: "oathsworn-skill-active",
-      label: "Post-Skill ER Buff Active",
+      label: "Elemental Skill Used (+24~48% Energy Recharge)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+24~48% Energy Recharge",
+      hint: "+24~48% ER for 10s",
     }
   ],
   buffs: [
@@ -35,7 +35,7 @@ export const oathswornEye: WeaponConfig = {
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
       conditionKey: "oathsworn-skill-active",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["oathsworn-skill-active"]??"1")==="1"||Number(ctx.inputs?.["oathsworn-skill-active"]??1)>0;return on?[24,30,36,42,48][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['oathsworn-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['oathsworn-skill-active'] ?? 1) > 0; return on ? [24, 30, 36, 42, 48][r - 1] : 0; },
     }
   ],
   

@@ -8,25 +8,52 @@ export const starcallersWatch: WeaponConfig = {
   baseAtk: 542,
   lvl1BaseAtk: 44,
   subStat: {
-    type: "critDmg",
-    label: "CRIT DMG%",
-    value: 88.2,
-    baseValue: 19.2,
+    type: "defPct",
+    label: "DEF%",
+    value: 82.7,
+    baseValue: 18,
   },
-  passiveName: "Starlight Navigation",
+  passiveName: "Star Caller",
   passiveDesc:
-    "Shield Strength is increased by 20~40%. When the wielder creates a shield or Geo Construct, All Elemental DMG Bonus is increased by 20~40% for 15s.",
+    "After using an Elemental Skill, gain +24~48% DEF for 15s. If triggering an Elemental Reaction, gain +120~240 Elemental Mastery for 15s.",
   isSupport: false,
   buffType: "self",
-  buffs: [
+  mechanicDefs: [
     {
-      id: "starcaller-elem-dmg",
-      label: "All Elemental DMG Bonus (Starcaller's Watch)",
-      stat: "dmgBonus",
-      refinementValues: [20, 25, 30, 35, 40],
-      isTeamBuff: false,
-      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+      id: "starcaller-skill-active",
+      label: "Elemental Skill Used (+24~48% DEF)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+24~48% DEF for 15s",
+    },
+    {
+      id: "starcaller-reaction-active",
+      label: "Reaction Triggered (+120~240 EM)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+120~240 EM for 15s",
     }
   ],
-  signatureFor: ["kachina"],
+  buffs: [
+    {
+      id: "starcaller-def",
+      label: "DEF% (Starcaller's Watch)",
+      stat: "def",
+      refinementValues: [24, 30, 36, 42, 48],
+      isTeamBuff: false,
+      isPercent: true,
+      conditionKey: "starcaller-skill-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['starcaller-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['starcaller-skill-active'] ?? 1) > 0; return on ? [24, 30, 36, 42, 48][r - 1] : 0; },
+    },
+    {
+      id: "starcaller-em",
+      label: "Elemental Mastery (Starcaller's Watch)",
+      stat: "em",
+      refinementValues: [120, 150, 180, 210, 240],
+      isTeamBuff: false,
+      conditionKey: "starcaller-reaction-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['starcaller-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['starcaller-reaction-active'] ?? 1) > 0; return on ? [120, 150, 180, 210, 240][r - 1] : 0; },
+    }
+  ],
+  signatureFor: ["citlali"],
 };

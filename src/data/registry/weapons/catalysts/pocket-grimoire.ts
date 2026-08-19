@@ -10,7 +10,7 @@ export const pocketGrimoire: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A carefully compiled grimoire containing various elemental notes.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

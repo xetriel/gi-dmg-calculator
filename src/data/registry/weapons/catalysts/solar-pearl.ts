@@ -24,14 +24,14 @@ export const solarPearl: WeaponConfig = {
       label: "Normal Attack Hit (+20~40% Skill/Burst DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~40% Skill and Burst DMG",
+      hint: "+20~40% Skill and Burst DMG for 6s",
     },
     {
-      id: "solar-skill-hit",
-      label: "Skill/Burst Hit (+20~40% NA DMG)",
+      id: "solar-skill-burst-hit",
+      label: "Skill/Burst Hit (+20~40% Normal Attack DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~40% Normal Attack DMG",
+      hint: "+20~40% Normal Attack DMG for 6s",
     }
   ],
   buffs: [
@@ -42,7 +42,7 @@ export const solarPearl: WeaponConfig = {
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       conditionKey: "solar-na-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["solar-na-hit"]??"1")==="1"||Number(ctx.inputs?.["solar-na-hit"]??1)>0;return on?[20,25,30,35,40][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['solar-na-hit'] ?? '1') === '1' || Number(ctx.inputs?.['solar-na-hit'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
     },
     {
       id: "solar-burst-dmg",
@@ -51,7 +51,7 @@ export const solarPearl: WeaponConfig = {
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       conditionKey: "solar-na-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["solar-na-hit"]??"1")==="1"||Number(ctx.inputs?.["solar-na-hit"]??1)>0;return on?[20,25,30,35,40][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['solar-na-hit'] ?? '1') === '1' || Number(ctx.inputs?.['solar-na-hit'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
     },
     {
       id: "solar-na-dmg",
@@ -59,8 +59,8 @@ export const solarPearl: WeaponConfig = {
       stat: "normalDmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
-      conditionKey: "solar-skill-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["solar-skill-hit"]??"1")==="1"||Number(ctx.inputs?.["solar-skill-hit"]??1)>0;return on?[20,25,30,35,40][r-1]:0},
+      conditionKey: "solar-skill-burst-hit",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['solar-skill-burst-hit'] ?? '1') === '1' || Number(ctx.inputs?.['solar-skill-burst-hit'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
     }
   ],
   

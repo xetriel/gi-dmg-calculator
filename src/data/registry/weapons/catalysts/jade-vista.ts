@@ -8,24 +8,23 @@ export const jadeVista: WeaponConfig = {
   baseAtk: 510,
   lvl1BaseAtk: 42,
   subStat: {
-    type: "hpPct",
-    label: "HP%",
-    value: 41.3,
-    baseValue: 9,
+    type: "critRate",
+    label: "CRIT Rate%",
+    value: 27.6,
+    baseValue: 6,
   },
-  passiveName: "Jade Sight",
+  passiveName: "Jade Light",
   passiveDesc:
-    "Increases Max HP by 16~32%.",
+    "Normal Attack DMG is increased by 16~32%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "jade-vista-hp",
-      label: "HP%",
-      stat: "hp",
+      id: "jade-vista-na",
+      label: "Normal Attack DMG Bonus (Jade Vista)",
+      stat: "normalDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      isPercent: true,
       compute: (r) => [16, 20, 24, 28, 32][r - 1],
     }
   ],
