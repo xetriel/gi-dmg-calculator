@@ -15,17 +15,17 @@ export const akuoumaru: WeaponConfig = {
   },
   passiveName: "Watatsumi Wavewalker",
   passiveDesc:
-    "For every point of the entire party's combined maximum Energy capacity, the Elemental Burst DMG of the character equipping this weapon is increased by 0.12~0.24%. A maximum of 40~80% increased Elemental Burst DMG can be achieved this way.",
+    "For every point of the entire party's combined maximum Energy capacity, Elemental Burst DMG is increased by 0.12~0.24% (up to 40~80%).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "party-energy-capacity",
-      label: "Combined Party Energy Capacity (e.g. 240-330)",
+      id: "akuoumaru-party-energy",
+      label: "Party Total Energy Capacity (e.g. 300)",
       control: "stacks",
-      defaultValue: 280,
+      defaultValue: 300,
       max: 400,
-      hint: "Total Energy of party (e.g. 80+80+60+60 = 280)",
+      hint: "+0.12~0.24% Burst DMG per total party energy capacity point",
     }
   ],
   buffs: [
@@ -35,7 +35,8 @@ export const akuoumaru: WeaponConfig = {
       stat: "burstDmgBonus",
       refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const energy=Number(ctx.inputs?.["party-energy-capacity"]??280);const ratio=[.0012,.0015,.0018,.0021,.0024][r-1];const cap=[40,50,60,70,80][r-1];return Math.min(energy*ratio*100,cap)},
+      conditionKey: "akuoumaru-party-energy",
+      compute: (r, ctx) => { const energy = Number(ctx.inputs?.['akuoumaru-party-energy'] ?? 300); const ratio = [0.0012, 0.0015, 0.0018, 0.0021, 0.0024][r - 1]; const cap = [40, 50, 60, 70, 80][r - 1]; return Math.min(energy * ratio * 100, cap); },
     }
   ],
   

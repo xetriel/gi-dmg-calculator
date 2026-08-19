@@ -20,22 +20,22 @@ export const rainslasher: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "rainslasher-target",
-      label: "Target Affected by Hydro/Electro",
+      id: "rainslasher-target-affected",
+      label: "Target Affected by Hydro or Electro",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~36% All DMG bonus vs Hydro/Electro targets",
+      hint: "+20~36% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "rainslasher-dmg",
-      label: "All DMG Bonus (Rainslasher)",
+      label: "All DMG Bonus vs Hydro/Electro (Rainslasher)",
       stat: "dmgBonus",
       refinementValues: [20, 24, 28, 32, 36],
       isTeamBuff: false,
-      conditionKey: "rainslasher-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["rainslasher-target"]??"1")==="1"||Number(ctx.inputs?.["rainslasher-target"]??1)>0;return on?[20,24,28,32,36][r-1]:0},
+      conditionKey: "rainslasher-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['rainslasher-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['rainslasher-target-affected'] ?? 1) > 0; return on ? [20, 24, 28, 32, 36][r - 1] : 0; },
     }
   ],
   

@@ -21,7 +21,7 @@ export const songOfTheVigil: WeaponConfig = {
   buffs: [
     {
       id: "vigil-elem-dmg",
-      label: "All Elemental DMG Bonus",
+      label: "All Elemental DMG Bonus (Song of the Vigil)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,

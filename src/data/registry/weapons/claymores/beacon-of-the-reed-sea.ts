@@ -24,21 +24,21 @@ export const beaconOfTheReedSea: WeaponConfig = {
       label: "Skill Hit Opponent (+20~40% ATK)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~40% ATK",
+      hint: "+20~40% ATK for 8s",
     },
     {
       id: "beacon-took-dmg",
-      label: "Character Took DMG (+20~40% ATK)",
+      label: "Took DMG (+20~40% ATK)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~40% ATK",
+      hint: "+20~40% ATK for 8s",
     },
     {
       id: "beacon-unshielded",
       label: "Unshielded (+32~64% Max HP)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+32~64% Max HP",
+      hint: "+32~64% Max HP when not protected by shield",
     }
   ],
   buffs: [

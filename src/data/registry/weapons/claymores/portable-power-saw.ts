@@ -25,7 +25,7 @@ export const portablePowerSaw: WeaponConfig = {
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      hint: "+40~80 EM per symbol",
+      hint: "+40~80 EM per symbol (up to +120~240 EM)",
     }
   ],
   buffs: [

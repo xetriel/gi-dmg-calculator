@@ -29,6 +29,7 @@ import { RotationModal } from "./calculator/components/RotationModal";
 import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
 import { TeamBuffPanel } from "./calculator/components/TeamBuffPanel";
 import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponBuffPanel";
+import { ExternalWeaponBuffModal } from "./calculator/components/ExternalWeaponBuffModal";
 
 
 const REACTION_LABEL: Record<ReactionType, string> = {
@@ -207,6 +208,8 @@ export function CharacterCalculator({
   const [showSharedBanner, setShowSharedBanner] = useState(isSharedBuild);
   const [isRotationOpen, setIsRotationOpen] = useState(false);
   const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
+  const [isWeaponModalOpen, setIsWeaponModalOpen] = useState(false);
+  const [activeWeaponModalSetupId, setActiveWeaponModalSetupId] = useState<string>("");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);
@@ -1029,6 +1032,25 @@ export function CharacterCalculator({
             )}
           </button>
 
+          {/* External Weapon Buffs Modal Button */}
+          {!fromCharacterId && (
+            <button
+              onClick={() => {
+                setActiveWeaponModalSetupId(instances[0]?.id || "");
+                setIsWeaponModalOpen(true);
+              }}
+              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+              title="Configure External Weapon Buffs for team & wielder"
+            >
+              <span>⚔️ Weapon Buffs</span>
+              {instances.some((inst) => (inst.externalWeapons ?? []).length > 0) && (
+                <span className="bg-amber-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">
+                  {instances.reduce((acc, inst) => acc + (inst.externalWeapons ?? []).filter((w) => w.enabled).length, 0)}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Dedicated Support Build Editor Link */}
           <Link
             href={`/characters/${config.id}/support${fromCharacterId ? `?from=${fromCharacterId}` : ""}`}
@@ -1787,6 +1809,10 @@ export function CharacterCalculator({
                           config={config}
                           inst={inst}
                           updateInstance={updateInstance}
+                          onOpenModal={() => {
+                            setActiveWeaponModalSetupId(inst.id);
+                            setIsWeaponModalOpen(true);
+                          }}
                         />
                       )}
 
@@ -1844,6 +1870,10 @@ export function CharacterCalculator({
                         config={config}
                         inst={inst}
                         updateInstance={updateInstance}
+                        onOpenModal={() => {
+                          setActiveWeaponModalSetupId(inst.id);
+                          setIsWeaponModalOpen(true);
+                        }}
                       />
                     )}
 
@@ -1877,6 +1907,17 @@ export function CharacterCalculator({
           )}
         </div>
       </div>
+
+      {/* External Weapon Buffs Dialog Overlay popup */}
+      <ExternalWeaponBuffModal
+        isOpen={isWeaponModalOpen}
+        setIsOpen={setIsWeaponModalOpen}
+        config={config}
+        instances={instances}
+        activeInstanceId={activeWeaponModalSetupId || instances[0]?.id || ""}
+        setActiveInstanceId={setActiveWeaponModalSetupId}
+        updateInstance={updateInstance}
+      />
 
       {/* Rotation Builder Dialog Overlay popup */}
       <RotationModal

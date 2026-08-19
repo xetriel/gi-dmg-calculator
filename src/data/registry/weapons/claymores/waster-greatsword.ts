@@ -10,7 +10,7 @@ export const wasterGreatsword: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A sturdy, heavy piece of iron with an edge on one side.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

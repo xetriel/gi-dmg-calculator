@@ -21,7 +21,7 @@ export const serenitysCall: WeaponConfig = {
   buffs: [
     {
       id: "serenity-burst-dmg",
-      label: "Elemental Burst DMG Bonus",
+      label: "Elemental Burst DMG Bonus (Serenity's Call)",
       stat: "burstDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

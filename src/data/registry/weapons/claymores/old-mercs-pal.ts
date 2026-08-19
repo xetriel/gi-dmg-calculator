@@ -10,7 +10,7 @@ export const oldMercsPal: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A battle-tested greatsword that has seen better days.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

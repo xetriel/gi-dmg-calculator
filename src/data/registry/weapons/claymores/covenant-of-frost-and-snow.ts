@@ -20,8 +20,8 @@ export const covenantOfFrostAndSnow: WeaponConfig = {
   buffType: "self",
   buffs: [
     {
-      id: "frost-covenant-phys",
-      label: "Physical DMG Bonus",
+      id: "covenant-phys-dmg",
+      label: "Physical DMG Bonus (Covenant of Frost & Snow)",
       stat: "physicalDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

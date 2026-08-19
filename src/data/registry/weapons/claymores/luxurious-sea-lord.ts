@@ -15,7 +15,7 @@ export const luxuriousSeaLord: WeaponConfig = {
   },
   passiveName: "Oceanic Victory",
   passiveDesc:
-    "Increases Elemental Burst DMG by 12~24%. When Elemental Burst hits opponents, summons a titanic tuna that deals 100~200% ATK as AoE DMG.",
+    "Increases Elemental Burst DMG by 12~24%. When Elemental Burst hits opponents, summons a titanic tuna that deals 100~200% ATK as AoE DMG every 15s.",
   isSupport: false,
   buffType: "self",
   buffs: [
@@ -25,7 +25,7 @@ export const luxuriousSeaLord: WeaponConfig = {
       stat: "burstDmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      compute: r=>[12,15,18,21,24][r-1],
+      compute: (r) => [12, 15, 18, 21, 24][r - 1],
     }
   ],
   
