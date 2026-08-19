@@ -13,9 +13,9 @@ export const endOfTheLine: WeaponConfig = {
     value: 45.9,
     baseValue: 10,
   },
-  passiveName: "Net Snapper",
+  passiveName: "Net Snare",
   passiveDesc:
-    "Triggers Flowrider effect after using an Elemental Skill, dealing 80~160% ATK as AoE DMG on hit for 15s or 3 instances.",
+    "Using an Elemental Skill triggers Flowrider effect, dealing 80~160% ATK as AoE DMG on hit.",
   isSupport: false,
   buffType: "self",
   buffs: [

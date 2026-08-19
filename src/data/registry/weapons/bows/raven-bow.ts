@@ -20,22 +20,22 @@ export const ravenBow: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "raven-bow-target",
-      label: "Target Affected by Hydro/Pyro",
+      id: "raven-bow-affected",
+      label: "Opponent Affected by Hydro/Pyro (+12~24% DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+12~24% All DMG bonus",
+      hint: "+12~24% All DMG bonus vs Hydro/Pyro affected enemies",
     }
   ],
   buffs: [
     {
       id: "raven-bow-dmg",
-      label: "All DMG Bonus (Raven Bow)",
+      label: "All DMG Bonus vs Hydro/Pyro (Raven Bow)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      conditionKey: "raven-bow-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["raven-bow-target"]??"1")==="1"||Number(ctx.inputs?.["raven-bow-target"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      conditionKey: "raven-bow-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['raven-bow-affected'] ?? '1') === '1' || Number(ctx.inputs?.['raven-bow-affected'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

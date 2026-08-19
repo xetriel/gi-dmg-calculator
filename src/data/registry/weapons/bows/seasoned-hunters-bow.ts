@@ -10,7 +10,7 @@ export const seasonedHuntersBow: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A bow that has accompanied its master through countless hunts.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

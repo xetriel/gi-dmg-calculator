@@ -15,13 +15,13 @@ export const windblumeOde: WeaponConfig = {
   },
   passiveName: "Windblume Wish",
   passiveDesc:
-    "After using an Elemental Skill, receive a boon from the ancient wish of the Windblume, increasing ATK by 16~32% for 6s.",
+    "After using an Elemental Skill, receives a blessing of the Windblume that increases ATK by 16~32% for 6s.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
       id: "windblume-skill-active",
-      label: "Post-Skill ATK Buff Active",
+      label: "Elemental Skill Used (+16~32% ATK)",
       control: "toggle",
       defaultValue: 1,
       hint: "+16~32% ATK for 6s",
@@ -36,7 +36,7 @@ export const windblumeOde: WeaponConfig = {
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "windblume-skill-active",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["windblume-skill-active"]??"1")==="1"||Number(ctx.inputs?.["windblume-skill-active"]??1)>0;return on?[16,20,24,28,32][r-1]/100*ctx.baseAtk:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['windblume-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['windblume-skill-active'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   

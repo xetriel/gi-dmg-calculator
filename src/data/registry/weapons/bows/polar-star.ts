@@ -13,19 +13,19 @@ export const polarStar: WeaponConfig = {
     value: 33.1,
     baseValue: 7.2,
   },
-  passiveName: "Daylight's Augur",
+  passiveName: "Daylight's Augury",
   passiveDesc:
-    "Elemental Skill and Elemental Burst DMG increased by 12~24%. Normal Attack, Charged Attack, Elemental Skill, and Elemental Burst each grant 1 stack of Ashen Nightstar on hit for 12s. At 1/2/3/4 stacks, ATK is increased by 10/20/30/48% ~ 20/40/60/96%.",
+    "Elemental Skill and Elemental Burst DMG increased by 12~24%. When Normal Attack, Charged Attack, Elemental Skill, or Elemental Burst hits an opponent, gain 1 stack of Ashen Nightstar (max 4 stacks = +48~96% ATK).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "polar-star-stacks",
+      id: "polar-nightstar-stacks",
       label: "Ashen Nightstar Stacks (0-4)",
       control: "stacks",
       defaultValue: 4,
       max: 4,
-      hint: "Tiered ATK% bonus (10/20/30/48% at R1, up to 20/40/60/96% at R5)",
+      hint: "1: +10/12.5%, 2: +20/25%, 3: +30/37.5%, 4: +48/96% ATK",
     }
   ],
   buffs: [
@@ -47,13 +47,13 @@ export const polarStar: WeaponConfig = {
     },
     {
       id: "polar-atk",
-      label: "ATK% (Polar Star Nightstar Stacks)",
+      label: "ATK% from Nightstar Stacks (Polar Star)",
       stat: "atk",
       refinementValues: [48, 60, 72, 84, 96],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "polar-star-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['polar-star-stacks'] ?? 4); const tiers: Record<number, [number, number, number, number, number]> = { 0: [0, 0, 0, 0, 0], 1: [10, 12.5, 15, 17.5, 20], 2: [20, 25, 30, 35, 40], 3: [30, 37.5, 45, 52.5, 60], 4: [48, 60, 72, 84, 96] }; const pct = (tiers[s] ?? tiers[4])[r - 1]; return (pct / 100) * ctx.baseAtk; },
+      conditionKey: "polar-nightstar-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['polar-nightstar-stacks'] ?? 4); const rMap: Record<number, number[]> = { 1: [10, 12.5, 15, 17.5, 20], 2: [20, 25, 30, 35, 40], 3: [30, 37.5, 45, 52.5, 60], 4: [48, 60, 72, 84, 96] }; const pct = (rMap[s] || [0, 0, 0, 0, 0])[r - 1] || 0; return (pct / 100) * ctx.baseAtk; },
     }
   ],
   signatureFor: ["tartaglia"],

@@ -15,16 +15,16 @@ export const hamayumi: WeaponConfig = {
   },
   passiveName: "Full Draw",
   passiveDesc:
-    "Increases Normal Attack DMG by 16~32% and Charged Attack DMG by 12~24%. When the character's Energy reaches 100%, this effect is increased by 100%.",
+    "Increases Normal Attack DMG by 16~32% and Charged Attack DMG by 12~24%. When 100% Energy, this effect is increased by 100% (+32~64% NA, +24~48% CA).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "hamayumi-100-energy",
-      label: "100% Energy Full (2x DMG Buff)",
+      id: "hamayumi-full-energy",
+      label: "Character Energy is 100% (2x Buff)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Doubles Normal and Charged DMG bonuses",
+      hint: "Doubles NA and CA DMG bonuses",
     }
   ],
   buffs: [
@@ -32,17 +32,19 @@ export const hamayumi: WeaponConfig = {
       id: "hamayumi-na-dmg",
       label: "Normal Attack DMG Bonus (Hamayumi)",
       stat: "normalDmgBonus",
-      refinementValues: [16, 20, 24, 28, 32],
+      refinementValues: [32, 40, 48, 56, 64],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const full=(ctx.inputs?.["hamayumi-100-energy"]??"1")==="1"||Number(ctx.inputs?.["hamayumi-100-energy"]??1)>0;return[16,20,24,28,32][r-1]*(full?2:1)},
+      conditionKey: "hamayumi-full-energy",
+      compute: (r, ctx) => { const full = (ctx.inputs?.['hamayumi-full-energy'] ?? '1') === '1' || Number(ctx.inputs?.['hamayumi-full-energy'] ?? 1) > 0; const mult = full ? 2 : 1; return [16, 20, 24, 28, 32][r - 1] * mult; },
     },
     {
       id: "hamayumi-ca-dmg",
       label: "Charged Attack DMG Bonus (Hamayumi)",
       stat: "chargedDmgBonus",
-      refinementValues: [12, 15, 18, 21, 24],
+      refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const full=(ctx.inputs?.["hamayumi-100-energy"]??"1")==="1"||Number(ctx.inputs?.["hamayumi-100-energy"]??1)>0;return[12,15,18,21,24][r-1]*(full?2:1)},
+      conditionKey: "hamayumi-full-energy",
+      compute: (r, ctx) => { const full = (ctx.inputs?.['hamayumi-full-energy'] ?? '1') === '1' || Number(ctx.inputs?.['hamayumi-full-energy'] ?? 1) > 0; const mult = full ? 2 : 1; return [12, 15, 18, 21, 24][r - 1] * mult; },
     }
   ],
   

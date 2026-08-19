@@ -15,18 +15,17 @@ export const fadingTwilight: WeaponConfig = {
   },
   passiveName: "Radiance Infusion",
   passiveDesc:
-    "Has 3 states: Evengleam, Afterglow, and Dawnblaze, which increase DMG dealt by 6/10/14% ~ 12/20/28% respectively. State changes upon hitting opponents every 7s.",
+    "Has 3 states: Evengleam (+6~12% DMG), Afterglow (+10~20% DMG), Dawnblaze (+14~28% DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "twilight-state",
-      label: "Twilight State (1=Evengleam, 2=Afterglow, 3=Dawnblaze)",
+      id: "fading-twilight-state",
+      label: "Radiance Infusion State (1: Evengleam, 2: Afterglow, 3: Dawnblaze)",
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      min: 1,
-      hint: "Tiered All DMG Bonus (+6/10/14% at R1, up to +12/20/28% at R5)",
+      hint: "1: +6~12% DMG, 2: +10~20% DMG, 3: +14~28% DMG",
     }
   ],
   buffs: [
@@ -36,8 +35,8 @@ export const fadingTwilight: WeaponConfig = {
       stat: "dmgBonus",
       refinementValues: [14, 17.5, 21, 24.5, 28],
       isTeamBuff: false,
-      conditionKey: "twilight-state",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.["twilight-state"] ?? 3); const tiers: Record<number, number[]> = { 1: [6, 7.5, 9, 10.5, 12], 2: [10, 12.5, 15, 17.5, 20], 3: [14, 17.5, 21, 24.5, 28] }; return (tiers[s] ?? tiers[3])[r - 1]; },
+      conditionKey: "fading-twilight-state",
+      compute: (r, ctx) => { const state = Number(ctx.inputs?.['fading-twilight-state'] ?? 3); const map: Record<number, number[]> = { 1: [6, 7.5, 9, 10.5, 12], 2: [10, 12.5, 15, 17.5, 20], 3: [14, 17.5, 21, 24.5, 28] }; return (map[state] || [0, 0, 0, 0, 0])[r - 1] || 0; },
     }
   ],
   

@@ -10,7 +10,7 @@ export const huntersBow: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A standard hunter's bow that is sturdy and reliable.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

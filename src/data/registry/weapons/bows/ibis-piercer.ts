@@ -13,15 +13,15 @@ export const ibisPiercer: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Secret Wisdom's Favor",
+  passiveName: "Crumbling Mast",
   passiveDesc:
-    "The character's Elemental Mastery will be increased by 40~80 within 6s after Charged Attacks hit opponents. Max 2 stacks.",
+    "Charged Attacks hitting opponents increase Elemental Mastery by 40~80 for 6s. Max 2 stacks (+80~160 EM).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
       id: "ibis-stacks",
-      label: "Charged Hit Stacks (0-2)",
+      label: "Crumbling Mast Stacks (0-2)",
       control: "stacks",
       defaultValue: 2,
       max: 2,
@@ -36,7 +36,7 @@ export const ibisPiercer: WeaponConfig = {
       refinementValues: [80, 100, 120, 140, 160],
       isTeamBuff: false,
       conditionKey: "ibis-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["ibis-stacks"]??2);return s*[40,50,60,70,80][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['ibis-stacks'] ?? 2); return s * [40, 50, 60, 70, 80][r - 1]; },
     }
   ],
   
