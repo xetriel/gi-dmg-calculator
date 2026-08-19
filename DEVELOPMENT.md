@@ -6,7 +6,7 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 10, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 19, 2026).
 
 ### New Character Calculators
 - **Traveler Elemental Variants (August 10, 2026)**: Added complete calculator profiles for all 7 Traveler elemental forms (Anemo, Geo, Electro, Dendro, Hydro, Pyro, and Cryo [BETA]):
@@ -51,7 +51,15 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
-- **External Weapon Team Buff Source System (August 19, 2026)**: Implemented toggleable external weapon buff support with character-specific & supportive weapon filtering (`getWeaponsForCharacter`), extensible weapon database registry (`src/data/registry/weapons/`), database alteration (`model Weapon` in Prisma schema & MySQL `gi_stat_db.sql`), pure calculation engine (`src/lib/engine/weapon-buffs.ts`), comprehensive Vitest suite (15 unit tests), formula breakdown integration (`Received Team Buffs`), and interactive collapsible UI panel (`<ExternalWeaponBuffPanel>`) with refinement selectors (R1–R5), mechanic controls, and live buff previews.
+- **Complete 244-Weapon Database & Weapon Role Separation (August 19, 2026)**: Completed the entire weapon database across all 5 weapon classes (56 Swords, 47 Claymores, 44 Polearms, 49 Bows, 48 Catalysts) in modular 1-file-per-weapon registries (`src/data/registry/weapons/`):
+  - **Role Separation Standard**: Categorized all weapons into **Party Support** (`isSupport: true, buffType: "team" | "both"`) vs **Own Wielder** (`isSupport: false, buffType: "self"`).
+    - *Party Support Weapons* (e.g. *Freedom-Sworn, Key of Khaj-Nisut, Peak Patrol Song, Song of Broken Pines, Wolf's Gravestone, Makhaira Aquamarine, Forest Regalia, Moonpiercer, A Thousand Floating Dreams, Crane's Echoing Call, TTDS, Hakushin Ring, Wandering Evenstar, Elegy for the End, Golden Frostbound Oath, Favonius Series*) can be equipped as external team buff sources for any character in the party regardless of weapon type.
+    - *Own Wielder Weapons* (e.g. *Staff of Homa, Tome of the Eternal Flow, Crimson Moon's Semblance, The Daybreak Chronicles, Surf's Up, Thundering Pulse, The First Great Magic, Calamity Queller, Kagura's Verity, The Widsith*) are filtered strictly to characters matching the weapon class.
+  - **High-Fidelity Scaling & Mechanics**: Full R1–R5 mathematical refinement curves, dynamic condition sliders/toggles (`mechanicDefs`), and context-aware computation closures (`compute(r, ctx)`).
+  - **External Weapon Buffs Popup Modal (`<ExternalWeaponBuffModal>`)**: Overhauled UX flow with a dedicated popup modal (modeled after *Rotation Builder*) accessible via toolbar button `⚔️ Weapon Buffs` with an active buff badge. Includes real-time search, multi-axis filtering (Current Wielder Type, Party Support Only, Weapon Category, Rarity), multi-setup switcher tabs (A/B/C/D), refinement selector, interactive mechanic controls, and live aggregate stat delta preview.
+  - **Compact In-Card Summary (`<ExternalWeaponBuffPanel>`)**: Streamlined the setup card into an interactive compact pill cloud displaying active weapons with quick `⚙️ Edit` trigger.
+  - **Calculation Engine & Formula Breakdown Alignment**: Pure mathematical resolution in `src/lib/engine/weapon-buffs.ts` with master toggle bypass, integrated directly into `/characters/[id]/formula` calculation derivations with explicit source attributions (`Received Team Buffs`).
+  - **Comprehensive Quality Verification**: 45 test files (335 test cases) passing in Vitest, 0 TypeScript errors, 0 duplicate IDs, and verified production Next.js compilation in Turbopack.
 - **Character Notes & Damage Table Height Synchronization (August 10, 2026)**: Synchronized layout height formatting between character notes panels and damage output tables across setup cards for consistent card presentation.
 
 - **Modular Team Support Buff System (August 9, 2026)**: Introduced off-field team support buff engine (`team-buffs.ts`) supporting up to 3 team members (e.g. Ineffa) with off-field stat buffs, Moonsign Lunar Base DMG bonuses, and averaged team CRIT rates/DMGs. Added collapsible `<TeamBuffPanel>` UI component with master "Apply All" toggle, individual support checkboxes, constellation level selectors, and live computed buff previews, fully integrated into `CharacterCalculator.tsx` and formula breakdown source attributions.
