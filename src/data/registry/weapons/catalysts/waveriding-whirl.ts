@@ -10,23 +10,40 @@ export const waveridingWhirl: WeaponConfig = {
   subStat: {
     type: "energyRecharge",
     label: "Energy Recharge%",
-    value: 45.9,
-    baseValue: 10,
+    value: 61.3,
+    baseValue: 13.3,
   },
-  passiveName: "Water Strider",
+  passiveName: "Wave Rider",
   passiveDesc:
-    "Swimming Stamina Consumption is decreased by 15%. Max HP is increased by 20~40% for 10s after using an Elemental Skill.",
+    "Decreases swimming Stamina consumption by 15%. After using an Elemental Skill, Max HP is increased by 20~40% for 15s (2x during Nightsoul's Blessing = +40~80% Max HP).",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "waveriding-skill-active",
+      label: "Elemental Skill Used Active (+20~40% Max HP)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+20~40% Max HP for 15s",
+    },
+    {
+      id: "waveriding-nightsoul",
+      label: "In Nightsoul's Blessing (2x HP Buff)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Doubles Max HP bonus (up to +40~80%)",
+    }
+  ],
   buffs: [
     {
       id: "waveriding-hp",
       label: "Max HP% (Waveriding Whirl)",
       stat: "hp",
-      refinementValues: [20, 25, 30, 35, 40],
+      refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
       isPercent: true,
-      compute: r=>[20,25,30,35,40][r-1],
+      conditionKey: "waveriding-skill-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['waveriding-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['waveriding-skill-active'] ?? 1) > 0; if (!on) return 0; const nightsoul = (ctx.inputs?.['waveriding-nightsoul'] ?? '1') === '1' || Number(ctx.inputs?.['waveriding-nightsoul'] ?? 1) > 0; const mult = nightsoul ? 2 : 1; return [20, 25, 30, 35, 40][r - 1] * mult; },
     }
   ],
   

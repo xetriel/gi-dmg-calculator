@@ -15,7 +15,7 @@ export const eyeOfPerception: WeaponConfig = {
   },
   passiveName: "Echo",
   passiveDesc:
-    "Normal and Charged Attacks have a 50% chance to fire a Bolt of Perception dealing 240~360% ATK as DMG.",
+    "Normal and Charged Attacks have a 50% chance to fire a Bolt of Perception, dealing 240~360% ATK as DMG.",
   isSupport: false,
   buffType: "self",
   buffs: [

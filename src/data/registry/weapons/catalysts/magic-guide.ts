@@ -20,22 +20,22 @@ export const magicGuide: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "magic-guide-target",
-      label: "Target Affected by Hydro/Electro",
+      id: "magic-guide-target-affected",
+      label: "Target Affected by Hydro or Electro (+12~24% DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+12~24% All DMG bonus",
+      hint: "+12~24% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "magic-guide-dmg",
-      label: "All DMG Bonus (Magic Guide)",
+      label: "All DMG Bonus vs Hydro/Electro (Magic Guide)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      conditionKey: "magic-guide-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["magic-guide-target"]??"1")==="1"||Number(ctx.inputs?.["magic-guide-target"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      conditionKey: "magic-guide-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['magic-guide-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['magic-guide-target-affected'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

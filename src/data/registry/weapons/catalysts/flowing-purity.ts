@@ -15,35 +15,43 @@ export const flowingPurity: WeaponConfig = {
   },
   passiveName: "Unfinished Masterpiece",
   passiveDesc:
-    "When using an Elemental Skill, All Elemental DMG Bonus is increased by 8~16% for 15s and grants a Bond of Life equal to 24% of Max HP. When cleared, each 1,000 BoL cleared grants 2~4% All Elemental DMG Bonus (up to 12~24%).",
+    "Using an Elemental Skill increases All Elemental DMG Bonus by 8~16% for 15s and grants a Bond of Life equal to 24% of Max HP. When BoL is cleared, grants +2~4% All Elemental DMG Bonus per 1,000 HP cleared (up to +12~24%).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "flowing-purity-cleared-bol",
-      label: "Bond of Life Cleared (+12~24% Elem DMG)",
+      id: "flowing-purity-skill",
+      label: "Elemental Skill Used (+8~16% Elem DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Max cleared BoL bonus",
+      hint: "+8~16% All Elemental DMG Bonus for 15s",
+    },
+    {
+      id: "flowing-purity-bol-cleared",
+      label: "Bond of Life Cleared Max Stack (+12~24% Elem DMG)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+12~24% All Elemental DMG Bonus when BoL is cleared",
     }
   ],
   buffs: [
     {
-      id: "flowing-base-elem",
-      label: "All Elemental DMG Bonus (Flowing Purity Base)",
+      id: "flowing-purity-skill-dmg",
+      label: "All Elemental DMG Bonus (Flowing Purity Skill)",
       stat: "dmgBonus",
       refinementValues: [8, 10, 12, 14, 16],
       isTeamBuff: false,
-      compute: r=>[8,10,12,14,16][r-1],
+      conditionKey: "flowing-purity-skill",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['flowing-purity-skill'] ?? '1') === '1' || Number(ctx.inputs?.['flowing-purity-skill'] ?? 1) > 0; return on ? [8, 10, 12, 14, 16][r - 1] : 0; },
     },
     {
-      id: "flowing-bol-elem",
-      label: "All Elemental DMG Bonus from Cleared BoL",
+      id: "flowing-purity-bol-dmg",
+      label: "All Elemental DMG Bonus (Flowing Purity BoL Cleared)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      conditionKey: "flowing-purity-cleared-bol",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["flowing-purity-cleared-bol"]??"1")==="1"||Number(ctx.inputs?.["flowing-purity-cleared-bol"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      conditionKey: "flowing-purity-bol-cleared",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['flowing-purity-bol-cleared'] ?? '1') === '1' || Number(ctx.inputs?.['flowing-purity-bol-cleared'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

@@ -13,27 +13,35 @@ export const reliquaryOfTruth: WeaponConfig = {
     value: 33.1,
     baseValue: 7.2,
   },
-  passiveName: "Truth Seeker",
+  passiveName: "Ancient Truth",
   passiveDesc:
-    "Increases All Elemental DMG Bonus by 12~24%. When triggering an Elemental Reaction, increases Elemental Mastery by 80~160 for 10s.",
+    "All Elemental DMG Bonus is increased by 12~24%. Elemental Skill and Burst DMG is increased by 16~32%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
       id: "reliquary-elem-dmg",
-      label: "All Elemental DMG Bonus",
+      label: "All Elemental DMG Bonus (Reliquary of Truth)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       compute: (r) => [12, 15, 18, 21, 24][r - 1],
     },
     {
-      id: "reliquary-em",
-      label: "Elemental Mastery",
-      stat: "em",
-      refinementValues: [80, 100, 120, 140, 160],
+      id: "reliquary-skill-dmg",
+      label: "Elemental Skill DMG Bonus (Reliquary of Truth)",
+      stat: "skillDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      compute: (r) => [80, 100, 120, 140, 160][r - 1],
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+    },
+    {
+      id: "reliquary-burst-dmg",
+      label: "Elemental Burst DMG Bonus (Reliquary of Truth)",
+      stat: "burstDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: false,
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
     }
   ],
   

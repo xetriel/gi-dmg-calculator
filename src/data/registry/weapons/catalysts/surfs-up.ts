@@ -13,9 +13,9 @@ export const surfsUp: WeaponConfig = {
     value: 88.2,
     baseValue: 19.2,
   },
-  passiveName: "Aqua-Bound Wave",
+  passiveName: "Aqua Serenity",
   passiveDesc:
-    "Max HP is increased by 20~40%. Using an Elemental Skill grants 4 stacks of Scorching Summer: increases Normal Attack DMG by 12~24% per stack. Every 1.5s after Normal Attack hits, 1 stack is lost; after triggering Vaporize on an opponent, 1 stack is added. Max 4 stacks.",
+    "Max HP is increased by 20~40%. Once every 15s for 14s after using an Elemental Skill, gain 4 Scorching Summer stacks: each stack increases Normal Attack DMG by 12~24% (up to +48~96% NA DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,7 +25,7 @@ export const surfsUp: WeaponConfig = {
       control: "stacks",
       defaultValue: 4,
       max: 4,
-      hint: "+12~24% Normal Attack DMG per stack (up to +48~96%)",
+      hint: "+12~24% NA DMG per stack (up to +48~96%)",
     }
   ],
   buffs: [

@@ -15,7 +15,7 @@ export const frostbearer: WeaponConfig = {
   },
   passiveName: "Frost Burial",
   passiveDesc:
-    "Hitting an opponent with Normal and Charged Attacks has a 60~100% chance of forming and dropping an Everfrost Icicle dealing 80~140% AoE ATK DMG. Opponents affected by Cryo take 200~360% ATK DMG.",
+    "Hitting an opponent with Normal and Charged Attacks has a 60~100% chance of dropping an Everfrost Icicle above them, dealing 80~140% AoE ATK DMG (200~360% on Cryo affected).",
   isSupport: false,
   buffType: "self",
   buffs: [

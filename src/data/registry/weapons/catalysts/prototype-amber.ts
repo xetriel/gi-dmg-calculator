@@ -19,14 +19,7 @@ export const prototypeAmber: WeaponConfig = {
   isSupport: true,
   buffType: "team",
   buffs: [
-    {
-      id: "amber-healing",
-      label: "Team HP Regen% (Prototype Amber)",
-      stat: "healingBonus",
-      refinementValues: [12, 13.5, 15, 16.5, 18],
-      isTeamBuff: true,
-      compute: r=>[12,13.5,15,16.5,18][r-1],
-    }
+
   ],
   
 };
