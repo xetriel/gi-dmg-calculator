@@ -9,13 +9,13 @@ describe("aloy mechanics", () => {
     // At level 10 skill: coil-1 = 9.54%, coil-2 = 19.08%, coil-3 = 28.62%
     const r1 = resolveAloy(aloy, ctxFor("aloy", {
       inputs: { "coil-stacks": 1 },
-      levels: { skill: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r1.statDeltas.normalDmgBonus).toBeCloseTo(9.54);
 
     const r3 = resolveAloy(aloy, ctxFor("aloy", {
       inputs: { "coil-stacks": 3 },
-      levels: { skill: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r3.statDeltas.normalDmgBonus).toBeCloseTo(28.62);
   });
@@ -28,7 +28,7 @@ describe("aloy mechanics", () => {
 
     const r4 = resolveAloy(aloy, ctxFor("aloy", {
       inputs: { "coil-stacks": 4 },
-      levels: { skill: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r4.statDeltas.normalDmgBonus).toBeCloseTo(47.65);
     expect(r4.perHit["1-hit-a"]?.element).toBe("Cryo");

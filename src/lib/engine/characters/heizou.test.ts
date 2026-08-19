@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveHeizou } from "./heizou";
 import { heizou } from "../../../data/registry/characters";
-import { ctxFor } from "./test-helpers";
+import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
 describe("heizou mechanics", () => {
@@ -11,9 +11,9 @@ describe("heizou mechanics", () => {
     // baseAtk = 225, stats.atk = 775 -> totalAtk = 1000 -> flatDmgBonus = 6142.9
     const r4 = resolveHeizou(heizou, ctxFor("heizou", {
       inputs: { "declension-stacks": 4 },
-      levels: { skill: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
       baseAtk: 225,
-      stats: { atk: 775 },
+      stats: { ...baseStats, atk: 775 },
     }));
     expect(r4.perHit["skill-dmg"]?.flatDmgBonus).toBeCloseTo(6142.9);
   });

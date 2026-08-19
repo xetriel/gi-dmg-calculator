@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveDehya } from "./dehya";
 import { dehya } from "../../../data/registry/characters";
-import { ctxFor } from "./test-helpers";
+import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
 describe("dehya mechanics", () => {
@@ -9,8 +9,8 @@ describe("dehya mechanics", () => {
     // At level 10 skill: indomitable-flame-hp = 10.16% HP.
     // HP = 20,000 -> 10.16% of 20,000 = 2032 flat DMG.
     const r1 = resolveDehya(dehya, ctxFor("dehya", {
-      stats: { hp: 20000, atk: 1500 },
-      levels: { skill: "10", burst: "10" },
+      stats: { ...baseStats, hp: 20000, atk: 1500 },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r1.perHit["indomitable-flame"]?.flatDmgBonus).toBeCloseTo(2032);
     // At level 10 burst: flame-manes-fist-hp = 10.15% HP -> 2030 flat DMG.
@@ -25,9 +25,9 @@ describe("dehya mechanics", () => {
     const r1 = resolveDehya(dehya, ctxFor("dehya", {
       constellationLevel: 1,
       inputs: { "c1-hp-buff": 1 },
-      stats: { hp: 20000, atk: 1500 },
+      stats: { ...baseStats, hp: 20000, atk: 1500 },
       baseHp: 15675,
-      levels: { skill: "10", burst: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r1.statDeltas.hp).toBe(3135);
     expect(r1.perHit["indomitable-flame"]?.flatDmgBonus).toBeCloseTo(3183.376, 2);

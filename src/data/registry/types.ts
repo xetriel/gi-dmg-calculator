@@ -56,6 +56,7 @@ export interface MechanicDef {
   id: string;                                  // e.g. "bond-of-life", "paramita", "draconic-stacks"
   label: string;
   control: "toggle" | "percent" | "stacks";
+  min?: number;                                // min stacks or range
   max?: number;                                // percent cap (e.g. 200) or max stacks (e.g. 3)
   defaultValue?: number;                       // toggle: 1 = on; percent/stacks initial value
   hint?: string;                               // short explanation shown next to the control

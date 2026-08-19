@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveEula } from "./eula";
 import { eula } from "../../../data/registry/characters";
-import { ctxFor } from "./test-helpers";
+import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
 describe("eula mechanics", () => {
@@ -39,9 +39,9 @@ describe("eula mechanics", () => {
     // 15 energy stacks: flatDmgBonus = 15 * 1.35 * totalAtk (342 base + 1000 atk = 1342 totalAtk -> 15 * 1.35 * 1342 = 27175.5)
     const r15 = resolveEula(eula, ctxFor("eula", {
       inputs: { "lightfall-energy-stacks": 15 },
-      levels: { burst: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
       baseAtk: 342,
-      stats: { atk: 1000 },
+      stats: { ...baseStats, atk: 1000 },
     }));
     expect(r15.perHit["lightfall-base"]?.flatDmgBonus).toBeCloseTo(27175.5);
   });

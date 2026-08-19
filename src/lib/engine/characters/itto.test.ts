@@ -10,7 +10,7 @@ describe("itto mechanics", () => {
     // Level 10 burst: def-to-atk = 103.68% -> converted ATK = 2073.6
     const r1 = resolveItto(itto, ctxFor("itto", {
       inputs: { "burst-oni-king": 1 },
-      levels: { burst: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
       baseDef: 959,
       stats: { ...baseStats, def: 2000 },
     }));

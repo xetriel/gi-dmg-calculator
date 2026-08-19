@@ -5,9 +5,42 @@ import { arlecchino } from "../../data/registry/characters/arlecchino";
 import { neuvillette } from "../../data/registry/characters/neuvillette";
 
 
+describe("Full Weapon Registry Integrity (246 Released Weapons)", () => {
+  it("contains exactly 246 unique released weapons across all 5 weapon classes", () => {
+    expect(WEAPONS.length).toBe(246);
+
+    const idSet = new Set<string>();
+    for (const w of WEAPONS) {
+      expect(idSet.has(w.id)).toBe(false); // No duplicate IDs
+      idSet.add(w.id);
+
+      expect(w.name.length).toBeGreaterThan(0);
+      expect(["Sword", "Claymore", "Polearm", "Bow", "Catalyst"]).toContain(w.type);
+      expect([1, 2, 3, 4, 5]).toContain(w.rarity);
+      expect(w.baseAtk).toBeGreaterThan(0);
+      expect(w.lvl1BaseAtk).toBeGreaterThan(0);
+    }
+  });
+
+  it("has correct category distribution matching all released weapons", () => {
+    const swords = WEAPONS.filter(w => w.type === "Sword");
+    const claymores = WEAPONS.filter(w => w.type === "Claymore");
+    const polearms = WEAPONS.filter(w => w.type === "Polearm");
+    const bows = WEAPONS.filter(w => w.type === "Bow");
+    const catalysts = WEAPONS.filter(w => w.type === "Catalyst");
+
+    expect(swords.length).toBe(58);
+    expect(claymores.length).toBe(48);
+    expect(polearms.length).toBe(45);
+    expect(bows.length).toBe(45);
+    expect(catalysts.length).toBe(50);
+  });
+});
+
 describe("Weapon Registry & Filtering (getWeaponsForCharacter)", () => {
   it("filters weapons correctly for Arlecchino (Polearm user)", () => {
     const available = getWeaponsForCharacter(arlecchino, WEAPONS);
+
 
     // Should include Arlecchino's specific polearms
     expect(available.some(w => w.id === "crimson-moons-semblance")).toBe(true);

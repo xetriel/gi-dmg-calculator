@@ -1,0 +1,62 @@
+import type { WeaponConfig } from "../types";
+
+export const elegyForTheEnd: WeaponConfig = {
+  id: "elegy-for-the-end",
+  name: "Elegy for the End",
+  type: "Bow",
+  rarity: 5,
+  baseAtk: 608,
+  lvl1BaseAtk: 46,
+  subStat: {
+    type: "energyRecharge",
+    label: "Energy Recharge%",
+    value: 55.1,
+    baseValue: 12,
+  },
+  passiveName: "The Parting Refrain",
+  passiveDesc:
+    "Increases Elemental Mastery by 60~120. When Elemental Skill/Burst hits 4 times, gain Millennial Movement: Farewell Song: increases Elemental Mastery by 100~200 and ATK by 20~40% for all party members for 12s.",
+  isSupport: true,
+  buffType: "both",
+  mechanicDefs: [
+    {
+      id: "elegy-sigils-active",
+      label: "Farewell Song Active (4 Sigils)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Team buff: +100~200 EM and +20~40% ATK for 12s",
+    }
+  ],
+  buffs: [
+    {
+      id: "elegy-party-em",
+      label: "Party EM (Elegy for the End)",
+      description: "Nearby party members gain +100~200 Elemental Mastery",
+      stat: "em",
+      refinementValues: [100, 125, 150, 175, 200],
+      isTeamBuff: true,
+      conditionKey: "elegy-sigils-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['elegy-sigils-active'] ?? '1') === '1' || Number(ctx.inputs?.['elegy-sigils-active'] ?? 1) > 0; return on ? [100, 125, 150, 175, 200][r - 1] : 0; },
+    },
+    {
+      id: "elegy-party-atk",
+      label: "Party ATK% (Elegy for the End)",
+      description: "Nearby party members gain +20~40% ATK",
+      stat: "atk",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: true,
+      isPercent: true,
+      conditionKey: "elegy-sigils-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['elegy-sigils-active'] ?? '1') === '1' || Number(ctx.inputs?.['elegy-sigils-active'] ?? 1) > 0; return on ? ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk : 0; },
+    },
+    {
+      id: "elegy-self-em",
+      label: "Self EM (Elegy for the End Base)",
+      stat: "em",
+      refinementValues: [60, 75, 90, 105, 120],
+      isTeamBuff: false,
+      compute: (r) => [60, 75, 90, 105, 120][r - 1],
+    }
+  ],
+  signatureFor: ["venti"],
+};

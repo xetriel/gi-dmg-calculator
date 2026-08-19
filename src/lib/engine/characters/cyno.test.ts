@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveCyno } from "./cyno";
 import { cyno } from "../../../data/registry/characters";
-import { ctxFor } from "./test-helpers";
+import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
 describe("cyno mechanics", () => {
@@ -17,7 +17,7 @@ describe("cyno mechanics", () => {
     // Pactsworn NA flat DMG = 1.5 * 300 = 450 flat DMG.
     // Duststalker Bolt flat DMG = 2.5 * 300 = 750 flat DMG.
     const r1 = resolveCyno(cyno, ctxFor("cyno", {
-      stats: { em: 200 },
+      stats: { ...baseStats, em: 200 },
       inputs: { "pactsworn-state": 1 },
     }));
     expect(r1.perHit["pactsworn-1"]?.flatDmgBonus).toBe(450);

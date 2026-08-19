@@ -1,0 +1,25 @@
+import type { WeaponConfig } from "../types";
+
+export const prototypeArchaic: WeaponConfig = {
+  id: "prototype-archaic",
+  name: "Prototype Archaic",
+  type: "Claymore",
+  rarity: 4,
+  baseAtk: 565,
+  lvl1BaseAtk: 44,
+  subStat: {
+    type: "atkPct",
+    label: "ATK%",
+    value: 27.6,
+    baseValue: 6,
+  },
+  passiveName: "Crush",
+  passiveDesc:
+    "On hit, Normal or Charged Attacks have a 50% chance to deal an additional 240~480% ATK DMG to opponents in a small AoE. Can only occur once every 15s.",
+  isSupport: false,
+  buffType: "self",
+  buffs: [
+
+  ],
+  
+};

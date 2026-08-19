@@ -1,0 +1,20 @@
+import type { WeaponConfig } from "../types";
+
+export const silverSword: WeaponConfig = {
+  id: "silver-sword",
+  name: "Silver Sword",
+  type: "Sword",
+  rarity: 2,
+  baseAtk: 243,
+  lvl1BaseAtk: 33,
+  
+  passiveName: "",
+  passiveDesc:
+    "A traditional sword with a silver-plated blade. Light, sharp, and easy to wield.",
+  isSupport: false,
+  buffType: "self",
+  buffs: [
+
+  ],
+  
+};

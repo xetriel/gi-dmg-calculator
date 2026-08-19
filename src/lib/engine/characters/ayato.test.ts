@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveAyato } from "./ayato";
 import { ayato } from "../../../data/registry/characters";
-import { ctxFor } from "./test-helpers";
+import { ctxFor, baseStats } from "./test-helpers";
 import { flattenSeed, TALENT_SEED } from "../../../data/talents";
 
 describe("ayato mechanics", () => {
@@ -11,8 +11,8 @@ describe("ayato mechanics", () => {
     // 4 stacks -> 4 * 112 = 448 flat DMG to Shunsuiken.
     const r1 = resolveAyato(ayato, ctxFor("ayato", {
       inputs: { "namisen-stacks": 4 },
-      stats: { hp: 20000 },
-      levels: { skill: "10" },
+      stats: { ...baseStats, hp: 20000 },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r1.perHit["shunsuiken-1"]?.flatDmgBonus).toBeCloseTo(448);
     expect(r1.perHit["shunsuiken-2"]?.flatDmgBonus).toBeCloseTo(448);
@@ -21,8 +21,8 @@ describe("ayato mechanics", () => {
     // 0 stacks -> 0 flat DMG
     const r2 = resolveAyato(ayato, ctxFor("ayato", {
       inputs: { "namisen-stacks": 0 },
-      stats: { hp: 20000 },
-      levels: { skill: "10" },
+      stats: { ...baseStats, hp: 20000 },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r2.perHit["shunsuiken-1"]?.flatDmgBonus).toBeUndefined();
   });
@@ -56,7 +56,7 @@ describe("ayato mechanics", () => {
   it("Suiyuu Burst Field NA DMG Bonus", () => {
     const r1 = resolveAyato(ayato, ctxFor("ayato", {
       inputs: { "burst-na-buff": 1 },
-      levels: { burst: "10" },
+      talentLevels: { normal: 10, skill: 10, burst: 10 },
     }));
     expect(r1.statDeltas.normalDmgBonus).toBe(11);
   });
