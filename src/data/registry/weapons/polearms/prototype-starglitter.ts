@@ -15,7 +15,7 @@ export const prototypeStarglitter: WeaponConfig = {
   },
   passiveName: "Magic Affinity",
   passiveDesc:
-    "After using an Elemental Skill, increases Normal and Charged Attack DMG by 8~16% for 12s. Max 2 stacks.",
+    "After using an Elemental Skill, increases Normal and Charged Attack DMG by 8~16% for 12s. Max 2 stacks (up to +16~32% NA/CA DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,7 +25,7 @@ export const prototypeStarglitter: WeaponConfig = {
       control: "stacks",
       defaultValue: 2,
       max: 2,
-      hint: "+8~16% Normal & Charged Attack DMG per stack",
+      hint: "+8~16% NA & CA DMG per stack (up to +16~32%)",
     }
   ],
   buffs: [
@@ -36,7 +36,7 @@ export const prototypeStarglitter: WeaponConfig = {
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       conditionKey: "starglitter-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["starglitter-stacks"]??2);return s*[8,10,12,14,16][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['starglitter-stacks'] ?? 2); return s * [8, 10, 12, 14, 16][r - 1]; },
     },
     {
       id: "starglitter-ca-dmg",
@@ -45,7 +45,7 @@ export const prototypeStarglitter: WeaponConfig = {
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       conditionKey: "starglitter-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["starglitter-stacks"]??2);return s*[8,10,12,14,16][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['starglitter-stacks'] ?? 2); return s * [8, 10, 12, 14, 16][r - 1]; },
     }
   ],
   

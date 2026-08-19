@@ -388,6 +388,25 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
     // R5 gives +120 EM
     expect(result.statDeltas.em).toBe(120);
   });
+
+  it("Moonpiercer grants +16~32% ATK to team on Leaf of Revival pickup", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "moonpiercer",
+        refinement: 5,
+        enabled: true,
+        inputs: { "moonpiercer-leaf-picked": "1" },
+      }],
+      baseAtk,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +32% ATK = 320 to Neuvillette (Catalyst wielder)
+    expect(result.statDeltas.atk).toBe(320);
+  });
 });
 
 describe("Stacking and Master Toggle Control", () => {

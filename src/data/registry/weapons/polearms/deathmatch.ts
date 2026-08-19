@@ -20,22 +20,34 @@ export const deathmatch: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "deathmatch-single-target",
-      label: "Fewer than 2 opponents (<2 targets)",
-      control: "toggle",
+      id: "deathmatch-enemy-count",
+      label: "Opponents Nearby (1 = <2, 2 = >=2)",
+      control: "stacks",
       defaultValue: 1,
-      hint: "Increases ATK by 24~48% (instead of 16~32% ATK/DEF)",
+      max: 2,
+      hint: "1: <2 opponents (+24~48% ATK), 2: >=2 opponents (+16~32% ATK & DEF)",
     }
   ],
   buffs: [
     {
       id: "deathmatch-atk",
-      label: "ATK% (Deathmatch Gladiator)",
+      label: "ATK% (Deathmatch)",
       stat: "atk",
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r,ctx)=>{const single=(ctx.inputs?.["deathmatch-single-target"]??"1")==="1"||Number(ctx.inputs?.["deathmatch-single-target"]??1)>0;const pct=single?[24,30,36,42,48][r-1]:[16,20,24,28,32][r-1];return pct/100*ctx.baseAtk},
+      conditionKey: "deathmatch-enemy-count",
+      compute: (r, ctx) => { const count = Number(ctx.inputs?.['deathmatch-enemy-count'] ?? 1); const pct = count >= 2 ? [16, 20, 24, 28, 32][r - 1] : [24, 30, 36, 42, 48][r - 1]; return (pct / 100) * ctx.baseAtk; },
+    },
+    {
+      id: "deathmatch-def",
+      label: "DEF% (Deathmatch >=2 opponents)",
+      stat: "def",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: false,
+      isPercent: true,
+      conditionKey: "deathmatch-enemy-count",
+      compute: (r, ctx) => { const count = Number(ctx.inputs?.['deathmatch-enemy-count'] ?? 1); return count >= 2 ? [16, 20, 24, 28, 32][r - 1] : 0; },
     }
   ],
   

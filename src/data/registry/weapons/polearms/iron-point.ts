@@ -10,7 +10,7 @@ export const ironPoint: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A sharp polearm with a pointed iron tip. Light and easy to use.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

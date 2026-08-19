@@ -20,22 +20,22 @@ export const balladOfTheFjords: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "fjords-3-elements",
-      label: ">= 3 Different Elements in Party",
+      id: "ballad-elements-met",
+      label: "Party has >= 3 Different Elements (+120~240 EM)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+120~240 Elemental Mastery",
+      hint: "+120~240 EM when 3+ elements in team",
     }
   ],
   buffs: [
     {
-      id: "fjords-em",
-      label: "EM (Ballad of the Fjords)",
+      id: "ballad-em",
+      label: "Elemental Mastery (Ballad of the Fjords)",
       stat: "em",
       refinementValues: [120, 150, 180, 210, 240],
       isTeamBuff: false,
-      conditionKey: "fjords-3-elements",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["fjords-3-elements"]??"1")==="1"||Number(ctx.inputs?.["fjords-3-elements"]??1)>0;if(!on)return 0;return[120,150,180,210,240][r-1]},
+      conditionKey: "ballad-elements-met",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['ballad-elements-met'] ?? '1') === '1' || Number(ctx.inputs?.['ballad-elements-met'] ?? 1) > 0; return on ? [120, 150, 180, 210, 240][r - 1] : 0; },
     }
   ],
   

@@ -20,33 +20,33 @@ export const lithicSpear: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "lithic-spear-liyue-members",
-      label: "Liyue Characters in Party (0-4)",
+      id: "lithic-spear-liyue-count",
+      label: "Liyue Party Members (1-4)",
       control: "stacks",
-      defaultValue: 2,
+      defaultValue: 1,
       max: 4,
-      hint: "+7~11% ATK & +3~7% CRIT Rate per Liyue character",
+      hint: "+7~11% ATK and +3~7% CRIT Rate per Liyue member",
     }
   ],
   buffs: [
     {
       id: "lithic-spear-atk",
-      label: "ATK% (Lithic Spear)",
+      label: "ATK% from Liyue Members (Lithic Spear)",
       stat: "atk",
       refinementValues: [28, 32, 36, 40, 44],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "lithic-spear-liyue-members",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["lithic-spear-liyue-members"]??2);return s*[7,8,9,10,11][r-1]/100*ctx.baseAtk},
+      conditionKey: "lithic-spear-liyue-count",
+      compute: (r, ctx) => { const count = Number(ctx.inputs?.['lithic-spear-liyue-count'] ?? 1); const perStack = [7, 8, 9, 10, 11][r - 1]; return ((count * perStack) / 100) * ctx.baseAtk; },
     },
     {
       id: "lithic-spear-crit",
-      label: "CRIT Rate% (Lithic Spear)",
+      label: "CRIT Rate% from Liyue Members (Lithic Spear)",
       stat: "critRate",
       refinementValues: [12, 16, 20, 24, 28],
       isTeamBuff: false,
-      conditionKey: "lithic-spear-liyue-members",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["lithic-spear-liyue-members"]??2);return s*[3,4,5,6,7][r-1]},
+      conditionKey: "lithic-spear-liyue-count",
+      compute: (r, ctx) => { const count = Number(ctx.inputs?.['lithic-spear-liyue-count'] ?? 1); const perStack = [3, 4, 5, 6, 7][r - 1]; return count * perStack; },
     }
   ],
   

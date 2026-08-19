@@ -13,7 +13,7 @@ export const etherlightSpindlelute: WeaponConfig = {
     value: 45.9,
     baseValue: 10,
   },
-  passiveName: "Spindle Melody",
+  passiveName: "Etherlight Resonator",
   passiveDesc:
     "Elemental Burst DMG is increased by 16~32%.",
   isSupport: false,
@@ -21,7 +21,7 @@ export const etherlightSpindlelute: WeaponConfig = {
   buffs: [
     {
       id: "spindlelute-burst-dmg",
-      label: "Elemental Burst DMG Bonus",
+      label: "Elemental Burst DMG Bonus (Etherlight Spindlelute)",
       stat: "burstDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

@@ -15,7 +15,7 @@ export const dialoguesOfTheDesertSages: WeaponConfig = {
   },
   passiveName: "Principle of Equilibrium",
   passiveDesc:
-    "When the wielder performs healing, restores 8~16 Energy. Can trigger once every 10s even if off-field.",
+    "When the wielder is healed, restores 8~16 Energy. Can occur once every 10s even when character is off-field.",
   isSupport: false,
   buffType: "self",
   buffs: [
