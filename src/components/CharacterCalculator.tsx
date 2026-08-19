@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
@@ -11,6 +12,7 @@ import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
 import { encodeBuild } from "@/lib/engine/share";
 import { resolveTeamBuffs, type TeamBuffSource } from "@/lib/engine/team-buffs";
+import { byId as characterById } from "@/data/registry/characters";
 import { renderStyledText } from "./calculator/utils/colors";
 
 // Import custom hooks and components
@@ -88,12 +90,14 @@ export function CharacterCalculator({
   initialBuild,
   savedBuilds = [],
   isSharedBuild = false,
+  fromCharacterId,
 }: {
   config: CharacterConfig;
   scaling: TalentScalingData;
   initialBuild?: { id: string | null; name: string | null; data: unknown } | null;
   savedBuilds?: SavedBuild[];
   isSharedBuild?: boolean;
+  fromCharacterId?: string | null;
 }) {
   const router = useRouter();
 
@@ -930,8 +934,25 @@ export function CharacterCalculator({
       });
   };
 
+  // Resolve "editing support for X" banner context
+  const fromCharConfig = fromCharacterId ? characterById(fromCharacterId) : null;
+
   return (
     <div className="flex flex-col h-full w-full">
+      {/* Support editing banner */}
+      {fromCharConfig && (
+        <div className="shrink-0 mb-3 flex items-center justify-between px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/60">
+          <span className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+            🛠️ Editing support build for <strong>{fromCharConfig.name}</strong>
+          </span>
+          <a
+            href={`/characters/${fromCharacterId}`}
+            className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors flex items-center gap-1"
+          >
+            ← Back to {fromCharConfig.name} Calculator
+          </a>
+        </div>
+      )}
       <header className="mb-6 shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-4">
         <div>
           <div className="flex items-center gap-3">
@@ -993,6 +1014,15 @@ export function CharacterCalculator({
               </span>
             )}
           </button>
+
+          {/* Dedicated Support Build Editor Link */}
+          <Link
+            href={`/characters/${config.id}/support${fromCharacterId ? `?from=${fromCharacterId}` : ""}`}
+            className="rounded-lg border border-amber-300 dark:border-amber-700/60 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300 transition-colors shadow-xs flex items-center gap-1.5"
+            title="Open dedicated Support Build Editor"
+          >
+            <span>🛡️ Support Editor</span>
+          </Link>
 
           {/* Load Build Dropdown */}
           <div className="relative load-dropdown-container">
@@ -1341,11 +1371,9 @@ export function CharacterCalculator({
                       <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
                         Effective Stats & Buff Breakdown
                       </h2>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
-                          Formula: Raw + Additions = Total
-                        </span>
-                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
+                        Formula: Raw + Additions = Total
+                      </span>
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -1715,11 +1743,14 @@ export function CharacterCalculator({
                         setMechanic={setMechanic}
                       />
 
-                      {/* Team Buffs panel */}
-                      <TeamBuffPanel
-                        inst={inst}
-                        updateInstance={updateInstance}
-                      />
+                      {/* Team Buffs panel (hidden in support edit mode to prevent recursion) */}
+                      {!fromCharacterId && (
+                        <TeamBuffPanel
+                          inst={inst}
+                          updateInstance={updateInstance}
+                          dpsCharacterId={config.id}
+                        />
+                      )}
 
                       {/* Core attribute tables */}
                       <StatsGrid
@@ -1760,11 +1791,14 @@ export function CharacterCalculator({
                       setMechanic={setMechanic}
                     />
 
-                    {/* Team Buffs panel */}
-                    <TeamBuffPanel
-                      inst={inst}
-                      updateInstance={updateInstance}
-                    />
+                    {/* Team Buffs panel (hidden in support edit mode to prevent recursion) */}
+                    {!fromCharacterId && (
+                      <TeamBuffPanel
+                        inst={inst}
+                        updateInstance={updateInstance}
+                        dpsCharacterId={config.id}
+                      />
+                    )}
 
                     {/* Core attribute tables */}
                     <StatsGrid

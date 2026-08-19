@@ -1,12 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import type { CalcInstance, SupportInstance } from "../types";
 import { SUPPORT_CONFIGS, supportById } from "@/data/registry/supports";
-import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
+import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
+import { byId as characterById } from "@/data/registry/characters";
 
 interface TeamBuffPanelProps {
   inst: CalcInstance;
   updateInstance: (id: string, updater: (inst: CalcInstance) => Partial<CalcInstance>) => void;
+  dpsCharacterId?: string; // ID of the active DPS character for "Edit Build" navigation
 }
 
 const MAX_SUPPORTS = 3;
@@ -14,7 +17,23 @@ const MAX_SUPPORTS = 3;
 const fmt = (n: number, decimals = 1) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 
-export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstance }) => {
+// Reads the support character's working draft from localStorage
+function readSupportDraft(characterId: string): { instances: Array<{ id: string; stats: Record<string, string>; mechanicInputs: Record<string, string>; constellationLevel: number }>; } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(`gi_calc_working_draft_${characterId}`);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (Array.isArray(draft.instances) && draft.instances.length > 0) {
+      return { instances: draft.instances };
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstance, dpsCharacterId }) => {
   const [collapsed, setCollapsed] = useState(false);
   const supports = inst.teamSupports ?? [];
   const masterEnabled = inst.teamBuffsEnabled !== false;
@@ -43,12 +62,31 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
       initMechanics[m.id] = String(m.defaultValue ?? 0);
     }
 
+    // Try to hydrate from the support character's working draft
+    const draft = readSupportDraft(config.characterId);
+    let finalStats = initStats;
+    let finalMechanics = initMechanics;
+    let finalConstellation = 0;
+    let setupId: string | undefined;
+    let setupName: string | undefined;
+
+    if (draft && draft.instances.length > 0) {
+      const firstInst = draft.instances[0];
+      finalStats = firstInst.stats ?? initStats;
+      finalMechanics = firstInst.mechanicInputs ?? initMechanics;
+      finalConstellation = firstInst.constellationLevel ?? 0;
+      setupId = firstInst.id;
+      setupName = `Setup ${firstInst.id}`;
+    }
+
     const newSupport: SupportInstance = {
       supportId,
-      stats: initStats,
-      mechanicInputs: initMechanics,
-      constellationLevel: 0,
+      stats: finalStats,
+      mechanicInputs: finalMechanics,
+      constellationLevel: finalConstellation,
       enabled: true,
+      selectedSetupId: setupId,
+      selectedSetupName: setupName,
     };
 
     updateInstance(inst.id, () => ({
@@ -72,7 +110,50 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
     updateInstance(inst.id, () => ({ teamBuffsEnabled: !masterEnabled }));
   };
 
-  const inputCls = "w-16 border rounded px-1.5 py-0.5 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all text-right";
+  // Sync support stats from the character's working draft in localStorage
+  const syncFromDraft = useCallback((index: number) => {
+    const sup = supports[index];
+    if (!sup) return;
+    const config = supportById(sup.supportId);
+    if (!config) return;
+
+    const draft = readSupportDraft(config.characterId);
+    if (!draft || !draft.instances.length) return;
+
+    // Find the currently selected setup, or fallback to the first
+    const targetInst = draft.instances.find(i => i.id === sup.selectedSetupId) ?? draft.instances[0];
+    if (!targetInst) return;
+
+    updateSupport(index, () => ({
+      stats: targetInst.stats,
+      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+      selectedSetupId: targetInst.id,
+      selectedSetupName: `Setup ${targetInst.id}`,
+    }));
+  }, [supports, updateSupport]);
+
+  // Switch to a different setup from the support character's working draft
+  const switchSetup = useCallback((index: number, setupId: string) => {
+    const sup = supports[index];
+    if (!sup) return;
+    const config = supportById(sup.supportId);
+    if (!config) return;
+
+    const draft = readSupportDraft(config.characterId);
+    if (!draft) return;
+
+    const targetInst = draft.instances.find(i => i.id === setupId);
+    if (!targetInst) return;
+
+    updateSupport(index, () => ({
+      stats: targetInst.stats,
+      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+      selectedSetupId: targetInst.id,
+      selectedSetupName: `Setup ${targetInst.id}`,
+    }));
+  }, [supports, updateSupport]);
 
   // Available supports not yet added
   const addedIds = new Set(supports.map(s => s.supportId));
@@ -115,8 +196,16 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
             if (!config) return null;
             const isActive = masterEnabled && sup.enabled;
 
+            // Resolve context for brief stats and buff preview
+            const ctx = resolveSupportCtx({ ...sup, enabled: true });
+            const briefStats = ctx && config.formatBriefStats ? config.formatBriefStats(ctx) : [];
+
             // Compute individual support preview
             const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true);
+
+            // Get available setups from working draft
+            const draft = readSupportDraft(config.characterId);
+            const availableSetups = draft?.instances ?? [];
 
             return (
               <div
@@ -152,58 +241,60 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
                   </button>
                 </div>
 
-                {/* Stat inputs */}
-                <div className="space-y-1.5 mb-2">
-                  {config.statFields.map(f => (
-                    <div key={f.key} className="flex items-center gap-2">
-                      {f.hasBaseAndFlat ? (
-                        <>
-                          <span className="text-[10px] text-gray-500 dark:text-zinc-400 w-12 shrink-0">{f.label}</span>
-                          <div className="flex items-center gap-1 flex-1">
-                            <span className="text-[9px] text-gray-400">Base</span>
-                            <input
-                              className={inputCls}
-                              type="number"
-                              value={sup.stats[`${f.key}.base`] ?? f.defaultValue}
-                              onChange={e => updateSupport(index, s => ({
-                                stats: { ...s.stats, [`${f.key}.base`]: e.target.value }
-                              }))}
-                            />
-                            <span className="text-[9px] text-gray-400">%</span>
-                            <input
-                              className={inputCls}
-                              type="number"
-                              value={sup.stats[`${f.key}.percent`] ?? "0"}
-                              onChange={e => updateSupport(index, s => ({
-                                stats: { ...s.stats, [`${f.key}.percent`]: e.target.value }
-                              }))}
-                            />
-                            <span className="text-[9px] text-gray-400">Flat</span>
-                            <input
-                              className={inputCls}
-                              type="number"
-                              value={sup.stats[`${f.key}.flat`] ?? "0"}
-                              onChange={e => updateSupport(index, s => ({
-                                stats: { ...s.stats, [`${f.key}.flat`]: e.target.value }
-                              }))}
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[10px] text-gray-500 dark:text-zinc-400 w-20 shrink-0">{f.label}</span>
-                          <input
-                            className={inputCls}
-                            type="number"
-                            value={sup.stats[f.key] ?? f.defaultValue}
-                            onChange={e => updateSupport(index, s => ({
-                              stats: { ...s.stats, [f.key]: e.target.value }
-                            }))}
-                          />
-                        </>
-                      )}
-                    </div>
-                  ))}
+                {/* Brief Info Stats Pills */}
+                {briefStats.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {briefStats.map((pill, pi) => (
+                      <span
+                        key={pi}
+                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-medium border border-zinc-200 dark:border-zinc-700"
+                      >
+                        <span className="text-gray-400 dark:text-zinc-500">{pill.label}:</span>
+                        <span className="font-semibold">{pill.value}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Setup Switcher & Actions */}
+                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                  {/* Setup dropdown */}
+                  {availableSetups.length > 1 && (
+                    <select
+                      className="text-[10px] border rounded px-1.5 py-0.5 bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      value={sup.selectedSetupId ?? ""}
+                      onChange={e => switchSetup(index, e.target.value)}
+                    >
+                      {availableSetups.map(s => (
+                        <option key={s.id} value={s.id}>
+                          Setup {s.id}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {availableSetups.length <= 1 && sup.selectedSetupName && (
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 italic">
+                      {sup.selectedSetupName}
+                    </span>
+                  )}
+
+                  {/* Sync button */}
+                  <button
+                    onClick={() => syncFromDraft(index)}
+                    className="text-[10px] px-1.5 py-0.5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-amber-400 transition-all"
+                    title="Sync latest stats from this character's calculator"
+                  >
+                    🔄 Sync
+                  </button>
+
+                  {/* Edit in dedicated support builder */}
+                  <Link
+                    href={`/characters/${config.characterId}/support${dpsCharacterId ? `?from=${dpsCharacterId}` : ""}`}
+                    className="text-[10px] px-1.5 py-0.5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-0.5"
+                    title="Open dedicated support builder for this character"
+                  >
+                    ✎ Edit Build ↗
+                  </Link>
                 </div>
 
                 {/* Constellation selector */}
@@ -229,20 +320,22 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstan
                 {/* Mechanic toggles */}
                 {(config.mechanicDefs ?? []).map(m => {
                   const mechVal = Number(sup.mechanicInputs[m.id] ?? "0") > 0;
-                  // Gate C1-dependent mechanics
-                  const isC1Gated = m.id.includes("c1") && sup.constellationLevel < 1;
+                  // Gate constellation-dependent mechanics
+                  const conMatch = m.id.match(/c(\d+)/);
+                  const requiredCon = conMatch ? Number(conMatch[1]) : 0;
+                  const isGated = requiredCon > 0 && sup.constellationLevel < requiredCon;
                   return (
                     <div key={m.id} className="flex items-center gap-2 mb-1" title={m.hint}>
                       <input
                         type="checkbox"
                         className="h-3.5 w-3.5 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-40"
-                        checked={mechVal && !isC1Gated}
-                        disabled={isC1Gated}
+                        checked={mechVal && !isGated}
+                        disabled={isGated}
                         onChange={e => updateSupport(index, s => ({
                           mechanicInputs: { ...s.mechanicInputs, [m.id]: e.target.checked ? "1" : "0" }
                         }))}
                       />
-                      <span className={`text-[10px] ${isC1Gated ? "text-gray-400 dark:text-zinc-600" : "text-gray-600 dark:text-zinc-300"}`}>
+                      <span className={`text-[10px] ${isGated ? "text-gray-400 dark:text-zinc-600" : "text-gray-600 dark:text-zinc-300"}`}>
                         {m.label}
                       </span>
                     </div>

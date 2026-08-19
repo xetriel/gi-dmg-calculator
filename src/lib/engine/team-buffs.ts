@@ -4,10 +4,14 @@ import { supportById, type SupportCtx } from "../../data/registry/supports";
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
   supportId: string;                    // e.g., "ineffa-support"
-  stats: Record<string, string>;       // limited stat inputs
+  stats: Record<string, string>;       // stat inputs (full or limited)
   mechanicInputs: Record<string, string>;
   constellationLevel: number;
   enabled: boolean;                    // per-support toggle
+  selectedSetupId?: string;            // e.g., "1" — references a CalcInstance.id from the support character's working draft
+  selectedSetupName?: string;          // e.g., "Setup 1"
+  sourceBuildId?: string | null;       // DB build ID if loaded from a saved build
+  sourceBuildName?: string | null;     // Build name if loaded from a saved build
 }
 
 // Attribution for a single buff from a support
@@ -33,8 +37,8 @@ function toNum(s: string | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Resolve a SupportInstance's limited stat inputs into a SupportCtx
-function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
+// Resolve a SupportInstance's stat inputs into a SupportCtx
+export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   const config = supportById(inst.supportId);
   if (!config) return null;
 
@@ -49,9 +53,13 @@ function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   // Check which stat fields have base+flat vs scalar
   const hasBaseFlat = (key: string) => config.statFields.some(f => f.key === key && f.hasBaseAndFlat);
 
-  const atk = hasBaseFlat("atk") ? resolveTriple("atk") : toNum(inst.stats["atk"]);
-  const hp = hasBaseFlat("hp") ? resolveTriple("hp") : toNum(inst.stats["hp"]);
-  const def = hasBaseFlat("def") ? resolveTriple("def") : toNum(inst.stats["def"]);
+  const baseAtk = hasBaseFlat("atk") ? toNum(inst.stats["atk.base"]) : toNum(inst.stats["baseAtk"]) || toNum(inst.stats["atk"]);
+  const baseHp = hasBaseFlat("hp") ? toNum(inst.stats["hp.base"]) : toNum(inst.stats["baseHp"]) || toNum(inst.stats["hp"]);
+  const baseDef = hasBaseFlat("def") ? toNum(inst.stats["def.base"]) : toNum(inst.stats["baseDef"]) || toNum(inst.stats["def"]);
+
+  const atk = hasBaseFlat("atk") ? resolveTriple("atk") : toNum(inst.stats["atk"]) || toNum(inst.stats["baseAtk"]);
+  const hp = hasBaseFlat("hp") ? resolveTriple("hp") : toNum(inst.stats["hp"]) || toNum(inst.stats["baseHp"]);
+  const def = hasBaseFlat("def") ? resolveTriple("def") : toNum(inst.stats["def"]) || toNum(inst.stats["baseDef"]);
   const em = toNum(inst.stats["em"]);
   const critRate = toNum(inst.stats["critRate"]);
   const critDmg = toNum(inst.stats["critDmg"]);
@@ -63,7 +71,7 @@ function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   }
 
   return {
-    atk, hp, def, em, critRate, critDmg,
+    atk, baseAtk, hp, baseHp, def, baseDef, em, critRate, critDmg,
     constellationLevel: inst.constellationLevel,
     talentLevels: {},
     inputs,

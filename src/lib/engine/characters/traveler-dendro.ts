@@ -33,14 +33,15 @@ export function resolveTravelerDendro(config: CharacterConfig, ctx: MechanicsCtx
     res.statDeltas.dendroDmgBonus = (res.statDeltas.dendroDmgBonus ?? 0) + 12;
     res.notes.push("Moment of Respite (C6): +12% Dendro DMG Bonus under Lotus Light Transfiguration.");
 
-    const transmuted = str("c6-transmuted-element");
-    if (transmuted === "hydro") {
+    if (on("c6-hydro-buff")) {
       res.statDeltas.hydroDmgBonus = (res.statDeltas.hydroDmgBonus ?? 0) + 12;
       res.notes.push("Moment of Respite (C6): +12% Hydro DMG Bonus (Hydro Transfiguration).");
-    } else if (transmuted === "electro") {
+    }
+    if (on("c6-electro-buff")) {
       res.statDeltas.electroDmgBonus = (res.statDeltas.electroDmgBonus ?? 0) + 12;
       res.notes.push("Moment of Respite (C6): +12% Electro DMG Bonus (Electro Transfiguration).");
-    } else if (transmuted === "pyro") {
+    }
+    if (on("c6-pyro-buff")) {
       res.statDeltas.pyroDmgBonus = (res.statDeltas.pyroDmgBonus ?? 0) + 12;
       res.notes.push("Moment of Respite (C6): +12% Pyro DMG Bonus (Pyro Transfiguration).");
     }

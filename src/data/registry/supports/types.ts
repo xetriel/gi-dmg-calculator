@@ -3,8 +3,11 @@ import type { Element, MechanicDef, Constellation } from "../types";
 // Context passed to support buff compute functions
 export interface SupportCtx {
   atk: number;               // support's total ATK
+  baseAtk: number;           // support's base ATK
   hp: number;                // support's total HP
+  baseHp: number;            // support's base HP
   def: number;               // support's total DEF
+  baseDef: number;           // support's base DEF
   em: number;                // support's EM
   critRate: number;          // for team Lunar CRIT calc
   critDmg: number;           // for team Lunar CRIT calc
@@ -28,6 +31,12 @@ export interface SupportStatField {
   hasBaseAndFlat?: boolean;  // if true, renders base/percent/flat triple
 }
 
+// Brief stat pill for the remastered support card UI
+export interface BriefStatPill {
+  label: string;   // e.g., "Total ATK"
+  value: string;   // e.g., "2,180"
+}
+
 // Full support character configuration
 export interface SupportConfig {
   id: string;                // e.g., "ineffa-support"
@@ -40,4 +49,5 @@ export interface SupportConfig {
   constellations?: Constellation[];     // constellation definitions
   buffs: SupportBuff[];                 // the buffs this support provides
   lunarBaseBonusCompute?: (ctx: SupportCtx) => number;  // Moonsign Lunar Base DMG
+  formatBriefStats?: (ctx: SupportCtx) => BriefStatPill[];  // brief info pills for card UI
 }
