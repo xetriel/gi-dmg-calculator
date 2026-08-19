@@ -166,8 +166,11 @@ export function useCalculatorState({
       constellationLevel: 0,
       teamSupports: [],
       teamBuffsEnabled: true,
+      externalWeapons: [],
+      externalWeaponBuffsEnabled: true,
     };
   };
+
 
   const [isMounted, setIsMounted] = useState(false);
 

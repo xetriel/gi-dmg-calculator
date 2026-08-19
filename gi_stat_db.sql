@@ -60,6 +60,30 @@ CREATE TABLE IF NOT EXISTS `Rotation` (
     CHECK (`totalTime` IS NULL OR `totalTime` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---------------------------------------------------------------------
+--  Weapon — weapon definitions, base stats at Lv90, passives & support buffs
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Weapon` (
+  `id`           VARCHAR(191)  NOT NULL,          -- e.g. 'crimson-moons-semblance'
+  `name`         VARCHAR(191)  NOT NULL,
+  `type`         VARCHAR(32)   NOT NULL,          -- 'Sword' | 'Claymore' | 'Polearm' | 'Bow' | 'Catalyst'
+  `rarity`       INT           NOT NULL,          -- 1..5
+  `baseAtk`      DOUBLE        NOT NULL,          -- Lv90 Base ATK
+  `subStatType`  VARCHAR(64)   NULL,              -- 'em' | 'critRate' | 'critDmg' | 'atkPct' | etc.
+  `subStatValue` DOUBLE        NULL,              -- Lv90 Substat value
+  `passiveName`  VARCHAR(191)  NULL,
+  `passiveDesc`  TEXT          NULL,
+  `isSupport`    BOOLEAN       NOT NULL DEFAULT FALSE,
+  `buffType`     VARCHAR(32)   NULL DEFAULT 'self', -- 'team' | 'self' | 'both'
+  `buffConfig`   JSON          NULL,
+  `createdAt`    DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt`    DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `Weapon_type_idx` (`type`),
+  INDEX `Weapon_isSupport_idx` (`isSupport`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- =====================================================================
 --  OPTIONAL — smoke-test seed (matches Phase-1 Task T7). Safe to skip.
 --  Uses explicit ids so the Rotation can reference the Build.
@@ -84,6 +108,15 @@ INSERT INTO `Rotation` (`id`, `name`, `buildId`, `steps`, `totalTime`) VALUES
      JSON_OBJECT('id','s3','talentKey','burst.skillDmg','label','Skill DMG','count',1,'reaction','none',    'critMode','avg')
    ),
    12.5);
+
+INSERT INTO `Weapon` (`id`, `name`, `type`, `rarity`, `baseAtk`, `subStatType`, `subStatValue`, `passiveName`, `passiveDesc`, `isSupport`, `buffType`, `buffConfig`) VALUES
+  ('crimson-moons-semblance', 'Crimson Moon''s Semblance', 'Polearm', 5, 674, 'critRate', 22.1, 'Ashen Sun''s Shadow',
+   'Grants a Bond of Life equal to 25% of Max HP when a Charged Attack hits an opponent. This effect can be triggered up to once every 14s. In addition, when the equipping character has a Bond of Life, they gain a 12~28% DMG Bonus; if the value of the Bond of Life is greater than or equal to 30% of Max HP, then gain an additional 24~56% DMG.',
+   FALSE, 'self', JSON_OBJECT('dmgBonusWithBol', JSON_ARRAY(12,16,20,24,28), 'dmgBonusBol30', JSON_ARRAY(24,32,40,48,56))),
+  ('a-thousand-floating-dreams', 'A Thousand Floating Dreams', 'Catalyst', 5, 542, 'em', 265, 'A Thousand Nights'' Dawnsong',
+   'Party members other than the equipping character will provide the equipping character with buffs based on whether their Elemental Type is the same as the latter or not. If their Elemental Types are the same, increase Elemental Mastery by 32~64. If not, increase the equipping character''s DMG Bonus from their Elemental Type by 10~26%. Each of the aforementioned effects can have up to 3 stacks. Additionally, all nearby party members other than the equipping character will have their Elemental Mastery increased by 40~48. Multiple such effects from multiple such weapons can stack.',
+   TRUE, 'both', JSON_OBJECT('partyEm', JSON_ARRAY(40,42,44,46,48), 'sameElementEm', JSON_ARRAY(32,40,48,56,64), 'diffElementDmgBonus', JSON_ARRAY(10,14,18,22,26)));
+
 
 -- ---- Verify ----
 SHOW TABLES;

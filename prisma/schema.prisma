@@ -70,3 +70,27 @@ model TalentScaling {
   @@unique([characterId, talentType, hitKey, level])
   @@index([characterId])
 }
+
+// Weapon definitions table. Stores weapon metadata, base stats at Lv90,
+// passive descriptions, support capabilities, and refinement buff configurations.
+// Designed to store all weapons for team buffs and informational lookups.
+model Weapon {
+  id           String   @id // e.g. "crimson-moons-semblance", "a-thousand-floating-dreams"
+  name         String
+  type         String   // "Sword" | "Claymore" | "Polearm" | "Bow" | "Catalyst"
+  rarity       Int      // 1..5
+  baseAtk      Float    // Lv90 Base ATK
+  subStatType  String?  // "em" | "critRate" | "critDmg" | "atkPct" | "energyRecharge" | "hpPct" | "defPct" | "physicalDmgBonus"
+  subStatValue Float?   // Lv90 Sub-stat value
+  passiveName  String?
+  passiveDesc  String?  @db.Text
+  isSupport    Boolean  @default(false)
+  buffType     String?  @default("self") // "team" | "self" | "both"
+  buffConfig   Json?    // Structured refinement and stat scaling configuration
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([type])
+  @@index([isSupport])
+}
+

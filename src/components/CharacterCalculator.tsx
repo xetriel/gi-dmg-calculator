@@ -12,6 +12,7 @@ import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
 import { encodeBuild } from "@/lib/engine/share";
 import { resolveTeamBuffs, type TeamBuffSource } from "@/lib/engine/team-buffs";
+import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { byId as characterById } from "@/data/registry/characters";
 import { renderStyledText } from "./calculator/utils/colors";
 
@@ -27,6 +28,8 @@ import { TransformativePanel } from "./calculator/components/TransformativePanel
 import { RotationModal } from "./calculator/components/RotationModal";
 import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
 import { TeamBuffPanel } from "./calculator/components/TeamBuffPanel";
+import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponBuffPanel";
+
 
 const REACTION_LABEL: Record<ReactionType, string> = {
   none: "None",
@@ -418,6 +421,17 @@ export function CharacterCalculator({
       }
       lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
     }
+
+    // Apply external weapon team buffs
+    if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
+      const weaponResult = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+      for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
+        if (key in s && typeof val === "number") {
+          (s as unknown as Record<string, number>)[key] += val;
+        }
+      }
+    }
+
 
     const healingBonus = toNum(inst.stats["healingBonus"]) ?? 0;
     const out: Record<string, HitResult> = {};
@@ -1439,6 +1453,21 @@ export function CharacterCalculator({
                           }
                         }
 
+                        // Add external weapon buff sources
+                        if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
+                          const weaponRes = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+                          for (const src of weaponRes.sources) {
+                            if (src.stat === row.key) {
+                              additions.push({
+                                source: `${src.weaponName} (Weapon)`,
+                                value: src.value,
+                                description: src.label,
+                              });
+                            }
+                          }
+                        }
+
+
                         // Generic fallback addition if total differs from raw but no source was explicitly captured
                         const recordedSum = additions.reduce((acc, curr) => acc + curr.value, 0);
                         const unrecordedDelta = delta - recordedSum;
@@ -1752,6 +1781,15 @@ export function CharacterCalculator({
                         />
                       )}
 
+                      {/* External Weapon Buffs panel */}
+                      {!fromCharacterId && (
+                        <ExternalWeaponBuffPanel
+                          config={config}
+                          inst={inst}
+                          updateInstance={updateInstance}
+                        />
+                      )}
+
                       {/* Core attribute tables */}
                       <StatsGrid
                         inst={inst}
@@ -1800,6 +1838,15 @@ export function CharacterCalculator({
                       />
                     )}
 
+                    {/* External Weapon Buffs panel */}
+                    {!fromCharacterId && (
+                      <ExternalWeaponBuffPanel
+                        config={config}
+                        inst={inst}
+                        updateInstance={updateInstance}
+                      />
+                    )}
+
                     {/* Core attribute tables */}
                     <StatsGrid
                       inst={inst}
@@ -1807,6 +1854,7 @@ export function CharacterCalculator({
                       validation={validation}
                       setStat={setStat}
                     />
+
 
                     {renderOutputs()}
                   </div>

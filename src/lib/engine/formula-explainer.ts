@@ -26,6 +26,8 @@ import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL }
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
 import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
 import { resolveTeamBuffs } from "./team-buffs";
+import { resolveExternalWeaponBuffs } from "./weapon-buffs";
+
 
 export interface FormulaBreakdown {
   id: string;
@@ -123,6 +125,19 @@ export function explainHitFormulas(
     }
     lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
   }
+
+  // Apply external weapon team buffs
+  const weaponResult = (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length)
+    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true)
+    : null;
+  if (weaponResult) {
+    for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
+      if (key in effectiveStats && typeof val === "number") {
+        (effectiveStats as unknown as Record<string, number>)[key] += val;
+      }
+    }
+  }
+
 
   const resolvedMultipliers = resolveHitMultipliers(
     config,
@@ -506,16 +521,28 @@ export function explainHitFormulas(
     teamBuffsLines.push(`Team Enemy ${config.element} DMG RES ${fmtPct(-resShredSum)} = ${resBuffs.map(b => `Enemy ${config.element} DMG RES (${b.source}) ${fmtPct(-b.value)}`).join(" + ")}`);
   }
 
-  // Add team support buff sources
+  // Add team support and external weapon buff sources
+  const allBuffSources: { name: string; label: string; stat: string; value: number }[] = [];
   if (teamResult && teamResult.sources.length > 0) {
+    for (const s of teamResult.sources) {
+      allBuffSources.push({ name: s.supportName, label: s.label, stat: s.stat, value: s.value });
+    }
+  }
+  if (weaponResult && weaponResult.sources.length > 0) {
+    for (const s of weaponResult.sources) {
+      allBuffSources.push({ name: s.weaponName, label: s.label, stat: s.stat, value: s.value });
+    }
+  }
+
+  if (allBuffSources.length > 0) {
     // Group by stat
     const byStatMap = new Map<string, { stat: string; sources: { name: string; label: string; value: number }[] }>();
-    for (const s of teamResult.sources) {
+    for (const s of allBuffSources) {
       const existing = byStatMap.get(s.stat);
       if (existing) {
-        existing.sources.push({ name: s.supportName, label: s.label, value: s.value });
+        existing.sources.push({ name: s.name, label: s.label, value: s.value });
       } else {
-        byStatMap.set(s.stat, { stat: s.stat, sources: [{ name: s.supportName, label: s.label, value: s.value }] });
+        byStatMap.set(s.stat, { stat: s.stat, sources: [{ name: s.name, label: s.label, value: s.value }] });
       }
     }
     for (const [stat, group] of byStatMap) {
@@ -526,10 +553,15 @@ export function explainHitFormulas(
       const statLabel = stat === "em" ? "Elemental Mastery" 
         : stat === "lunarChargedDmgBonus" ? "Lunar-Charged DMG Bonus" 
         : stat === "lunarBaseBonusPct" ? "Lunar Base DMG"
+        : stat === "normalDmgBonus" ? "Normal Attack DMG Bonus"
+        : stat === "chargedDmgBonus" ? "Charged Attack DMG Bonus"
+        : stat === "plungeDmgBonus" ? "Plunging Attack DMG Bonus"
+        : stat === "dmgBonus" ? "All DMG Bonus"
         : stat.charAt(0).toUpperCase() + stat.slice(1);
       teamBuffsLines.push(`Team ${statLabel} ${fmtVal} = ${parts.join(" + ")}`);
     }
   }
+
 
   if (teamBuffsLines.length > 0) {
     breakdowns.push({
