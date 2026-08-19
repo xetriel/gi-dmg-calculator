@@ -20,22 +20,22 @@ export const lionsRoar: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "lions-roar-target",
-      label: "Target Affected by Pyro/Electro",
+      id: "lions-roar-target-affected",
+      label: "Target Affected by Pyro or Electro",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~36% All DMG bonus vs Pyro/Electro targets",
+      hint: "+20~36% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "lions-roar-dmg",
-      label: "All DMG Bonus (Lion's Roar)",
+      label: "All DMG Bonus vs Pyro/Electro (Lion's Roar)",
       stat: "dmgBonus",
       refinementValues: [20, 24, 28, 32, 36],
       isTeamBuff: false,
-      conditionKey: "lions-roar-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["lions-roar-target"]??"1")==="1"||Number(ctx.inputs?.["lions-roar-target"]??1)>0;return on?[20,24,28,32,36][r-1]:0},
+      conditionKey: "lions-roar-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['lions-roar-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['lions-roar-target-affected'] ?? 1) > 0; return on ? [20, 24, 28, 32, 36][r - 1] : 0; },
     }
   ],
   

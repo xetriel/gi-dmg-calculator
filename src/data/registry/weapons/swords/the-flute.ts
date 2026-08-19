@@ -15,7 +15,7 @@ export const theFlute: WeaponConfig = {
   },
   passiveName: "Chord",
   passiveDesc:
-    "Normal or Charged Attacks grant a Harmonic on hit. Gaining 5 Harmonics triggers the power of music and deals 100~200% ATK DMG to surrounding opponents.",
+    "Normal or Charged Attacks grant Harmonics on hits (max 5). At 5 Harmonics, deals 100~200% ATK DMG to surrounding opponents.",
   isSupport: false,
   buffType: "self",
   buffs: [

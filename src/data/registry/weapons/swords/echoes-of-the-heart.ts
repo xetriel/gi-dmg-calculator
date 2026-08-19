@@ -21,7 +21,7 @@ export const echoesOfTheHeart: WeaponConfig = {
   buffs: [
     {
       id: "echoes-heart-skill",
-      label: "Elemental Skill DMG Bonus",
+      label: "Elemental Skill DMG Bonus (Echoes of the Heart)",
       stat: "skillDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

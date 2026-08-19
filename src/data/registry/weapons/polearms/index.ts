@@ -43,6 +43,7 @@ import { halberd } from "./halberd";
 import { whiteTassel } from "./white-tassel";
 import { ironPoint } from "./iron-point";
 import { beginnersProtector } from "./beginners-protector";
+import { tamayurateiNoOhanashi } from "./tamayuratei-no-ohanashi";
 import type { WeaponConfig } from "../types";
 
 export {
@@ -91,6 +92,7 @@ export {
   whiteTassel,
   ironPoint,
   beginnersProtector,
+  tamayurateiNoOhanashi,
 };
 
 export const POLEARMS: WeaponConfig[] = [
@@ -139,4 +141,5 @@ export const POLEARMS: WeaponConfig[] = [
   whiteTassel,
   ironPoint,
   beginnersProtector,
+  tamayurateiNoOhanashi,
 ];

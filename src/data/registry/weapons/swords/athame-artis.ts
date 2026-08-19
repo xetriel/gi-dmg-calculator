@@ -15,26 +15,47 @@ export const athameArtis: WeaponConfig = {
   },
   passiveName: "Ritual Cleaving",
   passiveDesc:
-    "Increases Normal and Charged Attack DMG by 20~40%. When an Elemental Burst is used, increases ATK by 20~40% for 12s.",
-  isSupport: false,
-  buffType: "self",
+    "Increases Normal and Charged Attack DMG by 20~40%. When the equipping character triggers an Elemental Reaction, nearby party members gain 12~24% All Elemental DMG Bonus and 16~32% ATK for 12s.",
+  isSupport: true,
+  buffType: "both",
+  mechanicDefs: [
+    {
+      id: "athame-reaction-active",
+      label: "Party Buff: Reaction Triggered Active",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Team buff: +12~24% All Elemental DMG and +16~32% ATK for 12s",
+    }
+  ],
   buffs: [
     {
+      id: "athame-party-elem-dmg",
+      label: "Party All Elemental DMG Bonus (Athame Artis)",
+      description: "Nearby party members gain +12~24% All Elemental DMG Bonus for 12s",
+      stat: "dmgBonus",
+      refinementValues: [12, 15, 18, 21, 24],
+      isTeamBuff: true,
+      conditionKey: "athame-reaction-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['athame-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['athame-reaction-active'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
+    },
+    {
+      id: "athame-party-atk",
+      label: "Party ATK% (Athame Artis)",
+      description: "Nearby party members gain +16~32% ATK for 12s",
+      stat: "atk",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: true,
+      isPercent: true,
+      conditionKey: "athame-reaction-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['athame-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['athame-reaction-active'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
+    },
+    {
       id: "athame-na-ca-dmg",
-      label: "Normal/Charged Attack DMG Bonus",
+      label: "Normal/Charged Attack DMG Bonus (Athame Artis)",
       stat: "normalDmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       compute: (r) => [20, 25, 30, 35, 40][r - 1],
-    },
-    {
-      id: "athame-atk",
-      label: "ATK%",
-      stat: "atk",
-      refinementValues: [20, 25, 30, 35, 40],
-      isTeamBuff: false,
-      isPercent: true,
-      compute: (r, ctx) => ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk,
     }
   ],
   

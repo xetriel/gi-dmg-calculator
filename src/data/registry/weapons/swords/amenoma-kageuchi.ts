@@ -15,7 +15,7 @@ export const amenomaKageuchi: WeaponConfig = {
   },
   passiveName: "Iwakura Succession",
   passiveDesc:
-    "After casting an Elemental Skill, gain 1 Succession Seed. Max 3 seeds. Using an Elemental Burst consumes all seeds and regenerates 6~12 Energy per seed.",
+    "After casting an Elemental Skill, gain 1 Succession Seed (max 3). After using an Elemental Burst, all Succession Seeds are consumed, restoring 6~12 Energy per seed after 2s.",
   isSupport: false,
   buffType: "self",
   buffs: [

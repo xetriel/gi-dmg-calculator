@@ -25,7 +25,7 @@ export const festeringDesire: WeaponConfig = {
       stat: "skillDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      compute: r=>[16,20,24,28,32][r-1],
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
     },
     {
       id: "festering-skill-crit",
@@ -33,7 +33,7 @@ export const festeringDesire: WeaponConfig = {
       stat: "critRate",
       refinementValues: [6, 7.5, 9, 10.5, 12],
       isTeamBuff: false,
-      compute: r=>[6,7.5,9,10.5,12][r-1],
+      compute: (r) => [6, 7.5, 9, 10.5, 12][r - 1],
     }
   ],
   

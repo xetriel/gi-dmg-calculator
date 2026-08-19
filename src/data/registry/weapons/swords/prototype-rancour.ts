@@ -15,7 +15,7 @@ export const prototypeRancour: WeaponConfig = {
   },
   passiveName: "Smashed Stone",
   passiveDesc:
-    "On hit, Normal or Charged Attacks increase ATK and DEF by 4~8% for 6s. Max 4 stacks.",
+    "On hit, Normal or Charged Attacks increase ATK and DEF by 4~8% for 6s. Max 4 stacks. Can only occur once every 0.3s.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,29 +25,29 @@ export const prototypeRancour: WeaponConfig = {
       control: "stacks",
       defaultValue: 4,
       max: 4,
-      hint: "+4~8% ATK & DEF per stack",
+      hint: "+4~8% ATK and DEF per stack (up to +16~32%)",
     }
   ],
   buffs: [
     {
       id: "rancour-atk",
-      label: "ATK% (Prototype Rancour)",
+      label: "ATK% (Prototype Rancour Stacks)",
       stat: "atk",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "rancour-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["rancour-stacks"]??4);return s*[4,5,6,7,8][r-1]/100*ctx.baseAtk},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['rancour-stacks'] ?? 4); return ((s * [4, 5, 6, 7, 8][r - 1]) / 100) * ctx.baseAtk; },
     },
     {
       id: "rancour-def",
-      label: "DEF% (Prototype Rancour)",
+      label: "DEF% (Prototype Rancour Stacks)",
       stat: "def",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "rancour-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["rancour-stacks"]??4);return s*[4,5,6,7,8][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['rancour-stacks'] ?? 4); return s * [4, 5, 6, 7, 8][r - 1]; },
     }
   ],
   

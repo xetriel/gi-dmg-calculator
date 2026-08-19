@@ -20,9 +20,17 @@ export const sequenceOfSolitude: WeaponConfig = {
   buffType: "self",
   buffs: [
     {
-      id: "solitude-na-ca-dmg",
-      label: "Normal/Charged Attack DMG Bonus",
+      id: "solitude-na-dmg",
+      label: "Normal Attack DMG Bonus (Sequence of Solitude)",
       stat: "normalDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: false,
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+    },
+    {
+      id: "solitude-ca-dmg",
+      label: "Charged Attack DMG Bonus (Sequence of Solitude)",
+      stat: "chargedDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       compute: (r) => [16, 20, 24, 28, 32][r - 1],

@@ -15,36 +15,45 @@ export const finaleOfTheDeep: WeaponConfig = {
   },
   passiveName: "An End Sublime",
   passiveDesc:
-    "When using an Elemental Skill, ATK will be increased by 12~24% for 15s, and a Bond of Life equal to 25% of Max HP will be granted. When cleared, grants 150~300 flat ATK.",
+    "When using an Elemental Skill, ATK is increased by 12~24% for 15s, and a Bond of Life equal to 25% of Max HP is granted. When the Bond of Life is cleared, a maximum of 150~300 ATK is gained based on 2.4~4.8% of the cleared Bond of Life value for 15s.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "finale-cleared-bol",
-      label: "Bond of Life Cleared (Flat ATK Buff)",
+      id: "finale-skill-active",
+      label: "Skill Used (+12~24% ATK)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+150~300 Flat ATK for 15s",
+      hint: "+12~24% ATK for 15s",
+    },
+    {
+      id: "finale-bol-cleared-atk",
+      label: "Cleared BoL Flat ATK (0-300)",
+      control: "stacks",
+      defaultValue: 150,
+      max: 300,
+      hint: "Flat ATK gained when Bond of Life is cleared (up to 150 at R1, up to 300 at R5)",
     }
   ],
   buffs: [
     {
-      id: "finale-atk-pct",
-      label: "ATK% (Finale of the Deep)",
+      id: "finale-skill-atk",
+      label: "ATK% (Finale of the Deep Skill)",
       stat: "atk",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r,ctx)=>[12,15,18,21,24][r-1]/100*ctx.baseAtk,
+      conditionKey: "finale-skill-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['finale-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['finale-skill-active'] ?? 1) > 0; return on ? ([12, 15, 18, 21, 24][r - 1] / 100) * ctx.baseAtk : 0; },
     },
     {
-      id: "finale-flat-atk",
-      label: "Flat ATK from Cleared BoL (Finale of the Deep)",
+      id: "finale-cleared-flat-atk",
+      label: "Flat ATK from Cleared BoL (Finale)",
       stat: "atk",
       refinementValues: [150, 187.5, 225, 262.5, 300],
       isTeamBuff: false,
-      conditionKey: "finale-cleared-bol",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["finale-cleared-bol"]??"1")==="1"||Number(ctx.inputs?.["finale-cleared-bol"]??1)>0;return on?[150,187.5,225,262.5,300][r-1]:0},
+      conditionKey: "finale-bol-cleared-atk",
+      compute: (r, ctx) => { const input = Number(ctx.inputs?.['finale-bol-cleared-atk'] ?? 150); const cap = [150, 187.5, 225, 262.5, 300][r - 1]; return Math.min(input, cap); },
     }
   ],
   

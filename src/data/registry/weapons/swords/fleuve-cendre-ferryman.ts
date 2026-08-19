@@ -20,11 +20,11 @@ export const fleuveCendreFerryman: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "fleuve-er-active",
-      label: "Post-Skill ER Buff Active",
+      id: "fleuve-post-skill-er",
+      label: "Post-Skill +16~32% ER Active",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% Energy Recharge for 5s",
+      hint: "+16~32% Energy Recharge for 5s after casting Elemental Skill",
     }
   ],
   buffs: [
@@ -34,16 +34,16 @@ export const fleuveCendreFerryman: WeaponConfig = {
       stat: "critRate",
       refinementValues: [8, 10, 12, 14, 16],
       isTeamBuff: false,
-      compute: r=>[8,10,12,14,16][r-1],
+      compute: (r) => [8, 10, 12, 14, 16][r - 1],
     },
     {
       id: "fleuve-er-buff",
-      label: "Energy Recharge% (Fleuve Cendre)",
+      label: "Energy Recharge% (Fleuve Cendre Post-Skill)",
       stat: "energyRecharge",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      conditionKey: "fleuve-er-active",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["fleuve-er-active"]??"1")==="1"||Number(ctx.inputs?.["fleuve-er-active"]??1)>0;return on?[16,20,24,28,32][r-1]:0},
+      conditionKey: "fleuve-post-skill-er",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['fleuve-post-skill-er'] ?? '1') === '1' || Number(ctx.inputs?.['fleuve-post-skill-er'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
     }
   ],
   

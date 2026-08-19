@@ -10,7 +10,7 @@ export const silverSword: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A traditional sword with a silver-plated blade. Light, sharp, and easy to wield.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

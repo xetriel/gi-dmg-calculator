@@ -40,7 +40,6 @@ import { sequenceOfSolitude } from "./sequence-of-solitude";
 import { sturdyBone } from "./sturdy-bone";
 import { swordOfDescension } from "./sword-of-descension";
 import { swordOfNarzissenkreuzPneuma } from "./sword-of-narzissenkreuz-pneuma";
-import { tamayurateiNoOhanashi } from "./tamayuratei-no-ohanashi";
 import { theAlleyFlash } from "./the-alley-flash";
 import { theBlackSword } from "./the-black-sword";
 import { theDockhandsAssistant } from "./the-dockhands-assistant";
@@ -101,7 +100,6 @@ export {
   sturdyBone,
   swordOfDescension,
   swordOfNarzissenkreuzPneuma,
-  tamayurateiNoOhanashi,
   theAlleyFlash,
   theBlackSword,
   theDockhandsAssistant,
@@ -162,7 +160,6 @@ export const SWORDS: WeaponConfig[] = [
   sturdyBone,
   swordOfDescension,
   swordOfNarzissenkreuzPneuma,
-  tamayurateiNoOhanashi,
   theAlleyFlash,
   theBlackSword,
   theDockhandsAssistant,

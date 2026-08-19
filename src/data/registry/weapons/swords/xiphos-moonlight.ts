@@ -13,29 +13,38 @@ export const xiphosMoonlight: WeaponConfig = {
     value: 165,
     baseValue: 36,
   },
-  passiveName: "Jinni's Whisper",
+  passiveName: "Jinni's Whispers",
   passiveDesc:
-    "The equipping character will gain 0.036~0.072% Energy Recharge for each point of Elemental Mastery they possess for 12s. Nearby party members will gain 30% of this buff for the same duration.",
+    "The following effect will trigger every 10s: The equipping character will gain 0.036~0.072% Energy Recharge for each point of Elemental Mastery they possess for 12s, with nearby party members gaining 30% of this buff for the same duration.",
   isSupport: true,
   buffType: "both",
   mechanicDefs: [
     {
-      id: "wielder-em",
-      label: "Wielder EM",
+      id: "xiphos-wielder-em",
+      label: "Wielder's Elemental Mastery (e.g. 1000)",
       control: "stacks",
-      defaultValue: 900,
+      defaultValue: 1000,
       max: 2000,
-      hint: "EM of the character equipping Xiphos (e.g. Kazuha)",
+      hint: "Used to compute ER% gained by wielder and party",
     }
   ],
   buffs: [
     {
+      id: "xiphos-self-er",
+      label: "Self Energy Recharge% (Xiphos' Moonlight)",
+      stat: "energyRecharge",
+      refinementValues: [36, 45, 54, 63, 72],
+      isTeamBuff: false,
+      compute: (r, ctx) => { const em = Number(ctx.inputs?.['xiphos-wielder-em'] ?? 1000); const perEm = [0.00036, 0.00045, 0.00054, 0.00063, 0.00072][r - 1]; return em * perEm * 100; },
+    },
+    {
       id: "xiphos-party-er",
       label: "Party Energy Recharge% (Xiphos' Moonlight)",
+      description: "Nearby party members gain 30% of the wielder's Energy Recharge buff",
       stat: "energyRecharge",
-      refinementValues: [0.0108, 0.0135, 0.0162, 0.0189, 0.0216],
+      refinementValues: [10.8, 13.5, 16.2, 18.9, 21.6],
       isTeamBuff: true,
-      compute: (r,ctx)=>{const wielderEm=Number(ctx.inputs?.["wielder-em"]??900);const perEm=[36e-5*.3,45e-5*.3,54e-5*.3,63e-5*.3,72e-5*.3][r-1];return wielderEm*perEm*100},
+      compute: (r, ctx) => { const em = Number(ctx.inputs?.['xiphos-wielder-em'] ?? 1000); const perEm = [0.00036, 0.00045, 0.00054, 0.00063, 0.00072][r - 1]; return em * perEm * 0.3 * 100; },
     }
   ],
   

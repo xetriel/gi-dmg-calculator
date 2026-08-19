@@ -15,7 +15,7 @@ export const theDockhandsAssistant: WeaponConfig = {
   },
   passiveName: "Sea Shanty",
   passiveDesc:
-    "When the wielder is healed or heals all party members, gain a Stoic's Symbol for 30s. Max 3 symbols. Using an Elemental Skill or Burst consumes all symbols and increases Elemental Mastery by 40~80 and regenerates 2~4 Energy per symbol for 10s.",
+    "When the equipping character is healed or heals others, gain a Stoic's Symbol for 30s (max 3). Using an Elemental Skill or Burst consumes all symbols to grant 40~80 EM per symbol for 10s and restore 2~4 Energy per symbol.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,18 +25,18 @@ export const theDockhandsAssistant: WeaponConfig = {
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      hint: "+40~80 EM per symbol (Total +120~240 EM)",
+      hint: "+40~80 EM per symbol (up to +120~240 EM)",
     }
   ],
   buffs: [
     {
       id: "dockhand-em",
-      label: "EM (The Dockhand's Assistant)",
+      label: "Elemental Mastery (The Dockhand's Assistant)",
       stat: "em",
       refinementValues: [120, 150, 180, 210, 240],
       isTeamBuff: false,
       conditionKey: "dockhand-symbols",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["dockhand-symbols"]??3);return s*[40,50,60,70,80][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['dockhand-symbols'] ?? 3); return s * [40, 50, 60, 70, 80][r - 1]; },
     }
   ],
   

@@ -20,23 +20,23 @@ export const royalLongsword: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "royal-stacks",
-      label: "Royal Focus Stacks (0-5)",
+      id: "royal-focus-stacks",
+      label: "Focus Stacks (0-5)",
       control: "stacks",
-      defaultValue: 3,
+      defaultValue: 5,
       max: 5,
-      hint: "+8~16% CRIT Rate per stack",
+      hint: "+8~16% CRIT Rate per stack (up to +40~80%)",
     }
   ],
   buffs: [
     {
-      id: "royal-crit-rate",
-      label: "CRIT Rate% (Royal Longsword)",
+      id: "royal-focus-crit",
+      label: "CRIT Rate% (Royal Longsword Focus)",
       stat: "critRate",
-      refinementValues: [24, 30, 36, 42, 48],
+      refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      conditionKey: "royal-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["royal-stacks"]??3);return s*[8,10,12,14,16][r-1]},
+      conditionKey: "royal-focus-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['royal-focus-stacks'] ?? 5); return s * [8, 10, 12, 14, 16][r - 1]; },
     }
   ],
   
