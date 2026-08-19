@@ -5,27 +5,27 @@ export const snareHook: WeaponConfig = {
   name: "Snare Hook",
   type: "Polearm",
   rarity: 4,
-  baseAtk: 565,
-  lvl1BaseAtk: 44,
+  baseAtk: 510,
+  lvl1BaseAtk: 42,
   subStat: {
     type: "atkPct",
     label: "ATK%",
-    value: 27.6,
-    baseValue: 6,
+    value: 41.3,
+    baseValue: 9,
   },
-  passiveName: "Snaring Strike",
+  passiveName: "Snaring Point",
   passiveDesc:
-    "Charged Attack DMG is increased by 20~40%.",
+    "Normal Attack DMG is increased by 16~32%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "snare-hook-ca-dmg",
-      label: "Charged Attack DMG Bonus",
-      stat: "chargedDmgBonus",
-      refinementValues: [20, 25, 30, 35, 40],
+      id: "snare-hook-na",
+      label: "Normal Attack DMG Bonus (Snare Hook)",
+      stat: "normalDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
     }
   ],
   

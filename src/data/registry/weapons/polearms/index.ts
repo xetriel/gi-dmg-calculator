@@ -37,13 +37,13 @@ import { rightfulReward } from "./rightful-reward";
 import { royalSpear } from "./royal-spear";
 import { sacrificersStaff } from "./sacrificers-staff";
 import { snareHook } from "./snare-hook";
+import { tamayurateiNoOhanashi } from "./tamayuratei-no-ohanashi";
 import { wavebreakersFin } from "./wavebreakers-fin";
 import { blackTassel } from "./black-tassel";
 import { halberd } from "./halberd";
 import { whiteTassel } from "./white-tassel";
 import { ironPoint } from "./iron-point";
 import { beginnersProtector } from "./beginners-protector";
-import { tamayurateiNoOhanashi } from "./tamayuratei-no-ohanashi";
 import type { WeaponConfig } from "../types";
 
 export {
@@ -86,13 +86,13 @@ export {
   royalSpear,
   sacrificersStaff,
   snareHook,
+  tamayurateiNoOhanashi,
   wavebreakersFin,
   blackTassel,
   halberd,
   whiteTassel,
   ironPoint,
   beginnersProtector,
-  tamayurateiNoOhanashi,
 };
 
 export const POLEARMS: WeaponConfig[] = [
@@ -135,11 +135,11 @@ export const POLEARMS: WeaponConfig[] = [
   royalSpear,
   sacrificersStaff,
   snareHook,
+  tamayurateiNoOhanashi,
   wavebreakersFin,
   blackTassel,
   halberd,
   whiteTassel,
   ironPoint,
   beginnersProtector,
-  tamayurateiNoOhanashi,
 ];

@@ -2,7 +2,7 @@ import type { WeaponConfig } from "../types";
 
 export const theCatch: WeaponConfig = {
   id: "the-catch",
-  name: "The Catch",
+  name: "\"The Catch\"",
   type: "Polearm",
   rarity: 4,
   baseAtk: 510,
@@ -21,7 +21,7 @@ export const theCatch: WeaponConfig = {
   buffs: [
     {
       id: "catch-burst-dmg",
-      label: "Elemental Burst DMG Bonus (The Catch)",
+      label: "Elemental Burst DMG Bonus (\"The Catch\")",
       stat: "burstDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
@@ -29,7 +29,7 @@ export const theCatch: WeaponConfig = {
     },
     {
       id: "catch-burst-crit",
-      label: "Elemental Burst CRIT Rate% (The Catch)",
+      label: "Elemental Burst CRIT Rate% (\"The Catch\")",
       stat: "critRate",
       refinementValues: [6, 7.5, 9, 10.5, 12],
       isTeamBuff: false,

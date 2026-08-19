@@ -13,19 +13,19 @@ export const moonweaversDawn: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Moonweave",
+  passiveName: "Moonweaver's Light",
   passiveDesc:
-    "Normal and Charged Attack DMG is increased by 16~32%.",
+    "All Elemental DMG Bonus is increased by 12~24%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "moonweaver-na-ca",
-      label: "Normal/Charged Attack DMG Bonus",
-      stat: "normalDmgBonus",
-      refinementValues: [16, 20, 24, 28, 32],
+      id: "moonweaver-elem-dmg",
+      label: "All Elemental DMG Bonus (Moonweaver's Dawn)",
+      stat: "dmgBonus",
+      refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+      compute: (r) => [12, 15, 18, 21, 24][r - 1],
     }
   ],
   

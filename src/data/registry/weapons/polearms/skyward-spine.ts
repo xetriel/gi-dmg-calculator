@@ -15,7 +15,7 @@ export const skywardSpine: WeaponConfig = {
   },
   passiveName: "Black Wing",
   passiveDesc:
-    "Increases CRIT Rate by 8~16% and increases Normal ATK SPD by 12%. Normal and Charged Attacks on hit have a 50% chance to trigger a vacuum blade dealing 40~100% of ATK as DMG.",
+    "Increases CRIT Rate by 8~16% and increases Normal ATK SPD by 12%. Normal and Charged Attacks have a 50% chance to trigger a vacuum blade dealing 40~100% ATK as DMG.",
   isSupport: false,
   buffType: "self",
   buffs: [
