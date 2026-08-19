@@ -21,7 +21,7 @@ export const prospectorsShovel: WeaponConfig = {
   buffs: [
     {
       id: "prospector-shovel-def",
-      label: "DEF%",
+      label: "DEF% (Prospector's Shovel)",
       stat: "def",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

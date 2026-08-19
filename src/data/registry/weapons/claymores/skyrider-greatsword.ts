@@ -15,29 +15,29 @@ export const skyriderGreatsword: WeaponConfig = {
   },
   passiveName: "Courage",
   passiveDesc:
-    "On hit, Normal or Charged Attacks increase ATK by 6~10% for 6s. Max 4 stacks.",
+    "On hit, Normal or Charged Attacks increase ATK by 6~10% for 6s. Max 4 stacks (up to +24~40%).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "skyrider-stacks",
+      id: "skyrider-courage-stacks",
       label: "Courage Stacks (0-4)",
       control: "stacks",
       defaultValue: 4,
       max: 4,
-      hint: "+6~10% ATK per hit stack",
+      hint: "+6~10% ATK per hit stack (up to +24~40%)",
     }
   ],
   buffs: [
     {
-      id: "skyrider-claymore-atk",
-      label: "ATK% (Skyrider Greatsword)",
+      id: "skyrider-courage-atk",
+      label: "ATK% (Skyrider Greatsword Courage)",
       stat: "atk",
       refinementValues: [24, 28, 32, 36, 40],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "skyrider-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["skyrider-stacks"]??4);return s*[6,7,8,9,10][r-1]/100*ctx.baseAtk},
+      conditionKey: "skyrider-courage-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['skyrider-courage-stacks'] ?? 4); return ((s * [6, 7, 8, 9, 10][r - 1]) / 100) * ctx.baseAtk; },
     }
   ],
   

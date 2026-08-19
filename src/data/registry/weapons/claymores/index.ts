@@ -9,7 +9,6 @@ import { songOfBrokenPines } from "./song-of-broken-pines";
 import { theUnforged } from "./the-unforged";
 import { verdict } from "./verdict";
 import { wolfsGravestone } from "./wolfs-gravestone";
-import { ultimateOverlordsMegaMagicSword } from "./ultimate-overlords-mega-magic-sword";
 import { akuoumaru } from "./akuoumaru";
 import { blackcliffSlasher } from "./blackcliff-slasher";
 import { bladeOfAtonement } from "./blade-of-atonement";
@@ -38,6 +37,7 @@ import { songOfTheVigil } from "./song-of-the-vigil";
 import { talkingStick } from "./talking-stick";
 import { theBell } from "./the-bell";
 import { tidalShadow } from "./tidal-shadow";
+import { ultimateOverlordsMegaMagicSword } from "./ultimate-overlords-mega-magic-sword";
 import { whiteblind } from "./whiteblind";
 import { bloodtaintedGreatsword } from "./bloodtainted-greatsword";
 import { debateClub } from "./debate-club";
@@ -60,7 +60,6 @@ export {
   theUnforged,
   verdict,
   wolfsGravestone,
-  ultimateOverlordsMegaMagicSword,
   akuoumaru,
   blackcliffSlasher,
   bladeOfAtonement,
@@ -89,6 +88,7 @@ export {
   talkingStick,
   theBell,
   tidalShadow,
+  ultimateOverlordsMegaMagicSword,
   whiteblind,
   bloodtaintedGreatsword,
   debateClub,
@@ -111,7 +111,6 @@ export const CLAYMORES: WeaponConfig[] = [
   theUnforged,
   verdict,
   wolfsGravestone,
-  ultimateOverlordsMegaMagicSword,
   akuoumaru,
   blackcliffSlasher,
   bladeOfAtonement,
@@ -140,6 +139,7 @@ export const CLAYMORES: WeaponConfig[] = [
   talkingStick,
   theBell,
   tidalShadow,
+  ultimateOverlordsMegaMagicSword,
   whiteblind,
   bloodtaintedGreatsword,
   debateClub,

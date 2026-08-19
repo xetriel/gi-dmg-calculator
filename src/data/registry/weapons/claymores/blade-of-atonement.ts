@@ -21,7 +21,7 @@ export const bladeOfAtonement: WeaponConfig = {
   buffs: [
     {
       id: "atonement-na-dmg",
-      label: "Normal Attack DMG Bonus",
+      label: "Normal Attack DMG Bonus (Blade of Atonement)",
       stat: "normalDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

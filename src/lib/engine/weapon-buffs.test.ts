@@ -313,6 +313,81 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
     // R5: 1000 * 0.00072 * 0.3 * 100 = 21.6% ER
     expect(result.statDeltas.energyRecharge).toBeCloseTo(21.6, 1);
   });
+
+  it("Song of Broken Pines provides party NA/CA/Plunge DMG and ATK% on banner trigger", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "song-of-broken-pines",
+        refinement: 1,
+        enabled: true,
+        inputs: { "pines-banner-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // +16% NA/CA/Plunge DMG and +20% ATK
+    expect(result.statDeltas.normalDmgBonus).toBe(16);
+    expect(result.statDeltas.atk).toBe(200); // 20% of 1000
+  });
+
+  it("Wolf's Gravestone grants +40~80% ATK to team when target HP < 30%", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "wolfs-gravestone",
+        refinement: 5,
+        enabled: true,
+        inputs: { "wgs-party-buff-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +80% ATK = 800
+    expect(result.statDeltas.atk).toBe(800);
+  });
+
+  it("Makhaira Aquamarine shares 30% of wielder EM-based ATK to party", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "makhaira-aquamarine",
+        refinement: 1,
+        enabled: true,
+        inputs: { "makhaira-wielder-em": "1000" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R1: 1000 * 0.24 * 0.3 = 72 flat ATK
+    expect(result.statDeltas.atk).toBe(72);
+  });
+
+  it("Forest Regalia grants +60~120 EM on Leaf of Consciousness pickup", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "forest-regalia",
+        refinement: 5,
+        enabled: true,
+        inputs: { "regalia-leaf-picked": "1" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +120 EM
+    expect(result.statDeltas.em).toBe(120);
+  });
 });
 
 describe("Stacking and Master Toggle Control", () => {

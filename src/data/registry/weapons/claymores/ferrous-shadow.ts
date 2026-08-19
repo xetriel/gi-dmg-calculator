@@ -15,16 +15,16 @@ export const ferrousShadow: WeaponConfig = {
   },
   passiveName: "Unbending",
   passiveDesc:
-    "When HP falls below 70~90%, increases Charged Attack DMG by 30~50%, and Charged Attacks become harder to interrupt.",
+    "When HP falls below 70~90%, increases Charged Attack DMG by 30~50% and makes Charged Attacks harder to interrupt.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "ferrous-low-hp",
-      label: "HP Below 70~90%",
+      id: "ferrous-hp-low",
+      label: "HP below 70~90% (+30~50% Charged DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+30~50% Charged Attack DMG",
+      hint: "+30~50% Charged Attack DMG when low HP",
     }
   ],
   buffs: [
@@ -34,8 +34,8 @@ export const ferrousShadow: WeaponConfig = {
       stat: "chargedDmgBonus",
       refinementValues: [30, 35, 40, 45, 50],
       isTeamBuff: false,
-      conditionKey: "ferrous-low-hp",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["ferrous-low-hp"]??"1")==="1"||Number(ctx.inputs?.["ferrous-low-hp"]??1)>0;return on?[30,35,40,45,50][r-1]:0},
+      conditionKey: "ferrous-hp-low",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['ferrous-hp-low'] ?? '1') === '1' || Number(ctx.inputs?.['ferrous-hp-low'] ?? 1) > 0; return on ? [30, 35, 40, 45, 50][r - 1] : 0; },
     }
   ],
   

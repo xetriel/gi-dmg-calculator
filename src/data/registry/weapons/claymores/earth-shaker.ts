@@ -13,18 +13,18 @@ export const earthShaker: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Oath of the Far-Flung Sands",
+  passiveName: "Oath of the Earth-Ender",
   passiveDesc:
-    "After a party member triggers a Pyro-related reaction, the equipping character's Elemental Skill DMG is increased by 16~32% for 8s.",
+    "After a party member triggers a Pyro-related reaction, the equipping character's Elemental Skill DMG is increased by 16~32% for 8s. This effect can be triggered even when the character is off-field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "earth-shaker-pyro-proc",
-      label: "Pyro Reaction Triggered",
+      id: "earth-shaker-reaction-active",
+      label: "Pyro Reaction Triggered (+16~32% Skill DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% Skill DMG bonus",
+      hint: "+16~32% Elemental Skill DMG for 8s",
     }
   ],
   buffs: [
@@ -34,8 +34,8 @@ export const earthShaker: WeaponConfig = {
       stat: "skillDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      conditionKey: "earth-shaker-pyro-proc",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["earth-shaker-pyro-proc"]??"1")==="1"||Number(ctx.inputs?.["earth-shaker-pyro-proc"]??1)>0;return on?[16,20,24,28,32][r-1]:0},
+      conditionKey: "earth-shaker-reaction-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['earth-shaker-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['earth-shaker-reaction-active'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
     }
   ],
   
