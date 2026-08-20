@@ -6,6 +6,22 @@ export const bennettSupport: SupportConfig = {
   name: "Bennett",
   rarity: 4,
   element: "Pyro",
+  weapon: "Sword",
+  description: "Premier Pyro ATK buffer and healer. Fantastic Voyage provides a massive Flat ATK bonus based on Bennett's Base ATK, and C6 grants +15% Pyro DMG Bonus with Pyro Infusion to melee characters.",
+  buffExplanations: [
+    {
+      name: "Fantastic Voyage (Burst)",
+      brief: "Up to 119% Base ATK as Flat ATK (+20% from C1)",
+      full: "Fantastic Voyage: Inspiration Field grants active characters an ATK Bonus scaling with Bennett's Base ATK (100.8% at Lv10, 119.0% at Lv13). C1 Grand Expectation adds an extra +20% Base ATK ratio and removes the HP restriction.",
+      category: "flat_dmg",
+    },
+    {
+      name: "C6: Fire Ventures with Me",
+      brief: "+15% Pyro DMG Bonus & Pyro Infusion",
+      full: "Fire Ventures with Me: Sword, Claymore, and Polearm characters within Fantastic Voyage's Inspiration Field gain a +15% Pyro DMG Bonus and have their normal/charged/plunge attacks infused with Pyro. Requires C6.",
+      category: "dmg_bonus",
+    },
+  ],
 
   // Limited stat inputs — only stats that affect Bennett's support output
   statFields: [

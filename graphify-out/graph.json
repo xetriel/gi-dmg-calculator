@@ -626,7 +626,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "prisma_seed",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "seed.ts"
     },
@@ -638,7 +638,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "prisma_seed_main",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "main()"
     },
@@ -650,7 +650,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "build_full_registry.ts"
     },
     {
@@ -661,7 +661,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_weaponmap",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "weaponmap"
     },
     {
@@ -672,7 +672,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_extra_4_star_weapons",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "extra_4_star_weapons"
     },
     {
@@ -683,7 +683,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_categories",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "categories"
     },
     {
@@ -694,7 +694,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_existingdir",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "existingdir"
     },
     {
@@ -705,7 +705,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_categoryfolders",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "categoryfolders"
     },
     {
@@ -717,7 +717,7 @@
       "_origin": "ast",
       "id": "scratch_build_full_registry_generatefilecontent",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "generatefilecontent()"
     },
     {
@@ -925,8 +925,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scratch_compare_weapons",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "compare_weapons.ts"
     },
     {
@@ -936,8 +936,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "scratch_compare_weapons_userlist",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "userlist"
     },
     {
@@ -948,8 +948,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "scratch_compare_weapons_norm",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "norm()"
     },
     {
@@ -959,8 +959,8 @@
       "source_location": "L267",
       "_origin": "ast",
       "id": "scratch_compare_weapons_codebasenormmap",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "codebasenormmap"
     },
     {
@@ -970,8 +970,8 @@
       "source_location": "L272",
       "_origin": "ast",
       "id": "scratch_compare_weapons_matched",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "matched"
     },
     {
@@ -981,8 +981,8 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "scratch_compare_weapons_missingincodebase",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "missingincodebase"
     },
     {
@@ -992,8 +992,8 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "scratch_compare_weapons_usernormset",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "usernormset"
     },
     {
@@ -1003,8 +1003,8 @@
       "source_location": "L289",
       "_origin": "ast",
       "id": "scratch_compare_weapons_extraincodebase",
-      "community": 6,
-      "community_name": "weapons/index.ts",
+      "community": 251,
+      "community_name": "compare_weapons.ts",
       "norm_label": "extraincodebase"
     },
     {
@@ -1015,7 +1015,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "execute_sync.ts"
     },
     {
@@ -1027,7 +1027,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_norm",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "norm()"
     },
     {
@@ -1038,7 +1038,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_masterdefsmap",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "masterdefsmap"
     },
     {
@@ -1049,7 +1049,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_extra4star",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "extra4star"
     },
     {
@@ -1060,7 +1060,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_codebasemap",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "codebasemap"
     },
     {
@@ -1072,7 +1072,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_generateweaponcode",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "generateweaponcode()"
     },
     {
@@ -1083,7 +1083,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_categoryplural",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "categoryplural"
     },
     {
@@ -1094,7 +1094,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_categoryexports",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "categoryexports"
     },
     {
@@ -1105,7 +1105,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_processedslugs",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "processedslugs"
     },
     {
@@ -1116,7 +1116,7 @@
       "_origin": "ast",
       "id": "scratch_execute_sync_basedir",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "basedir"
     },
     {
@@ -2174,7 +2174,7 @@
       "_origin": "ast",
       "id": "scratch_master_definitions",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "master_definitions.ts"
     },
     {
@@ -2186,7 +2186,7 @@
       "_origin": "ast",
       "id": "scratch_master_definitions_toslug",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "toslug()"
     },
     {
@@ -2198,7 +2198,7 @@
       "_origin": "ast",
       "id": "scratch_master_definitions_tovarname",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "tovarname()"
     },
     {
@@ -2211,7 +2211,7 @@
       "_origin": "ast",
       "id": "scratch_master_definitions_weapondef",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "weapondef"
     },
     {
@@ -2222,7 +2222,7 @@
       "_origin": "ast",
       "id": "scratch_master_definitions_all_246_weapons",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "all_246_weapons"
     },
     {
@@ -2233,7 +2233,7 @@
       "_origin": "ast",
       "id": "scratch_sync_exact_246",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "sync_exact_246.ts"
     },
     {
@@ -2244,7 +2244,7 @@
       "_origin": "ast",
       "id": "scratch_sync_exact_246_user_246_names",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "user_246_names"
     },
     {
@@ -2256,7 +2256,7 @@
       "_origin": "ast",
       "id": "scratch_sync_exact_246_toslug",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "toslug()"
     },
     {
@@ -2268,7 +2268,7 @@
       "_origin": "ast",
       "id": "scratch_sync_exact_246_tovarname",
       "community": 6,
-      "community_name": "weapons/index.ts",
+      "community_name": "execute_sync.ts",
       "norm_label": "tovarname()"
     },
     {
@@ -2300,7 +2300,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scratch_verify_all_weapons",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "verify_all_weapons.ts"
     },
@@ -2311,7 +2311,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "scratch_verify_all_weapons_idset",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "idset"
     },
@@ -2487,7 +2487,7 @@
       "_origin": "ast",
       "id": "src_app_actions_db_status",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "db-status.ts"
     },
     {
@@ -2500,7 +2500,7 @@
       "_origin": "ast",
       "id": "src_app_actions_db_status_dbstatusinfo",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusinfo"
     },
     {
@@ -2512,7 +2512,7 @@
       "_origin": "ast",
       "id": "src_app_actions_db_status_parsedatabaseurl",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "parsedatabaseurl()"
     },
     {
@@ -2524,7 +2524,7 @@
       "_origin": "ast",
       "id": "src_app_actions_db_status_getdbstatus",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "getdbstatus()"
     },
     {
@@ -2558,7 +2558,7 @@
       "_origin": "ast",
       "id": "src_app_builds_actions",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "builds/actions.ts"
     },
     {
@@ -2570,7 +2570,7 @@
       "_origin": "ast",
       "id": "src_app_builds_actions_createdemobuild",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "createdemobuild()"
     },
     {
@@ -2582,7 +2582,7 @@
       "_origin": "ast",
       "id": "src_app_builds_actions_countbuilds",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "countbuilds()"
     },
     {
@@ -2594,7 +2594,7 @@
       "_origin": "ast",
       "id": "src_app_builds_actions_getbuildsforcharacter",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "getbuildsforcharacter()"
     },
     {
@@ -2605,7 +2605,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_builds_actions_savebuild",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "savebuild()"
     },
@@ -2617,7 +2617,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_builds_actions_deletebuild",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "deletebuild()"
     },
@@ -2628,8 +2628,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_characters_id_formula_page",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "formula/page.tsx"
     },
     {
@@ -2639,8 +2639,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_app_characters_id_formula_page_dynamic",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "dynamic"
     },
     {
@@ -2651,8 +2651,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_characters_id_formula_page_loadscaling",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "loadscaling()"
     },
     {
@@ -2663,8 +2663,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_characters_id_formula_page_formulapage",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "formulapage()"
     },
     {
@@ -2675,7 +2675,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_page",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "[id]/page.tsx"
     },
     {
@@ -2686,7 +2686,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_page_dynamic",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "dynamic"
     },
     {
@@ -2698,7 +2698,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_page_loadscaling",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "loadscaling()"
     },
     {
@@ -2710,7 +2710,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_page_page",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "page()"
     },
     {
@@ -2721,7 +2721,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_support_page",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "support/page.tsx"
     },
     {
@@ -2732,7 +2732,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_support_page_dynamic",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "dynamic"
     },
     {
@@ -2744,7 +2744,7 @@
       "_origin": "ast",
       "id": "src_app_characters_id_support_page_supportpage",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "supportpage()"
     },
     {
@@ -2754,8 +2754,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_history_actions",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "history/actions.ts"
     },
     {
@@ -2767,8 +2767,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_app_history_actions_exportformat",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "exportformat"
     },
     {
@@ -2780,8 +2780,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_app_history_actions_exportsummary",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "exportsummary"
     },
     {
@@ -2793,8 +2793,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_app_history_actions_exportlogrow",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "exportlogrow"
     },
     {
@@ -2805,8 +2805,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_history_actions_logexport",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "logexport()"
     },
     {
@@ -2817,8 +2817,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_history_actions_getexportlogs",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "getexportlogs()"
     },
     {
@@ -2829,8 +2829,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_history_actions_deleteexportlog",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "deleteexportlog()"
     },
     {
@@ -2840,8 +2840,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_history_page",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "history/page.tsx"
     },
     {
@@ -2851,8 +2851,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_app_history_page_dynamic",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "dynamic"
     },
     {
@@ -2863,8 +2863,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_history_page_historypage",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "historypage()"
     },
     {
@@ -2875,7 +2875,7 @@
       "_origin": "ast",
       "id": "src_app_layout",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "layout.tsx"
     },
     {
@@ -2886,7 +2886,7 @@
       "_origin": "ast",
       "id": "src_app_layout_geistsans",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "geistsans"
     },
     {
@@ -2897,7 +2897,7 @@
       "_origin": "ast",
       "id": "src_app_layout_geistmono",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "geistmono"
     },
     {
@@ -2908,7 +2908,7 @@
       "_origin": "ast",
       "id": "src_app_layout_metadata",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "metadata"
     },
     {
@@ -2920,7 +2920,7 @@
       "_origin": "ast",
       "id": "src_app_layout_rootlayout",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "rootlayout()"
     },
     {
@@ -2930,8 +2930,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_page",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "app/page.tsx"
     },
     {
@@ -2941,8 +2941,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_app_page_elements",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "elements"
     },
     {
@@ -2952,8 +2952,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_app_page_weapons",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "weapons"
     },
     {
@@ -2964,8 +2964,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_app_page_home",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "home()"
     },
     {
@@ -2975,7 +2975,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_charactercalculator",
-      "community": 55,
+      "community": 245,
       "community_name": "CharacterCalculator.tsx",
       "norm_label": "charactercalculator.tsx"
     },
@@ -2983,10 +2983,10 @@
       "label": "REACTION_LABEL",
       "file_type": "code",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L38",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "src_components_charactercalculator_reaction_label",
-      "community": 55,
+      "community": 245,
       "community_name": "CharacterCalculator.tsx",
       "norm_label": "reaction_label"
     },
@@ -2994,10 +2994,10 @@
       "label": "DIRECT_TAG",
       "file_type": "code",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L45",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "src_components_charactercalculator_direct_tag",
-      "community": 55,
+      "community": 245,
       "community_name": "CharacterCalculator.tsx",
       "norm_label": "direct_tag"
     },
@@ -3005,11 +3005,11 @@
       "label": "fmt()",
       "file_type": "code",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L58",
+      "source_location": "L59",
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_charactercalculator_fmt",
-      "community": 55,
+      "community": 245,
       "community_name": "CharacterCalculator.tsx",
       "norm_label": "fmt()"
     },
@@ -3017,10 +3017,10 @@
       "label": "EFFECTIVE_ROWS",
       "file_type": "code",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L61",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "src_components_charactercalculator_effective_rows",
-      "community": 55,
+      "community": 245,
       "community_name": "CharacterCalculator.tsx",
       "norm_label": "effective_rows"
     },
@@ -3028,12 +3028,12 @@
       "label": "CharacterCalculator()",
       "file_type": "code",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L94",
+      "source_location": "L95",
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_charactercalculator_charactercalculator",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "charactercalculator()"
     },
     {
@@ -3055,7 +3055,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusbadge",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusbadge.tsx"
     },
     {
@@ -3068,7 +3068,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusbadge_dbstatusbadgeprops",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusbadgeprops"
     },
     {
@@ -3080,7 +3080,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusbadge_dbstatusbadge",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusbadge()"
     },
     {
@@ -3092,7 +3092,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusbadge_savedbuildsbadge",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "savedbuildsbadge()"
     },
     {
@@ -3103,7 +3103,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusmodal",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusmodal.tsx"
     },
     {
@@ -3116,7 +3116,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusmodal_dbstatusmodalprops",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusmodalprops"
     },
     {
@@ -3128,7 +3128,7 @@
       "_origin": "ast",
       "id": "src_components_dbstatusmodal_dbstatusmodal",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "dbstatusmodal()"
     },
     {
@@ -3138,8 +3138,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_historyview",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "historyview.tsx"
     },
     {
@@ -3150,8 +3150,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_fmtnum",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "fmtnum()"
     },
     {
@@ -3162,8 +3162,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_fmttime",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "fmttime()"
     },
     {
@@ -3173,8 +3173,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_components_historyview_format_style",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "format_style"
     },
     {
@@ -3185,8 +3185,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_delta",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "delta()"
     },
     {
@@ -3197,8 +3197,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_sparkline",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "sparkline()"
     },
     {
@@ -3209,8 +3209,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_historyview",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "historyview()"
     },
     {
@@ -3221,8 +3221,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_historyview_comparepanel",
-      "community": 26,
-      "community_name": "HistoryView.tsx",
+      "community": 5,
+      "community_name": "formula/page.tsx",
       "norm_label": "comparepanel()"
     },
     {
@@ -3233,7 +3233,7 @@
       "_origin": "ast",
       "id": "src_components_sidebar",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "sidebar.tsx"
     },
     {
@@ -3244,7 +3244,7 @@
       "_origin": "ast",
       "id": "src_components_sidebar_elements",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "elements"
     },
     {
@@ -3255,7 +3255,7 @@
       "_origin": "ast",
       "id": "src_components_sidebar_weapons",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "weapons"
     },
     {
@@ -3267,7 +3267,7 @@
       "_origin": "ast",
       "id": "src_components_sidebar_sidebar",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "sidebar()"
     },
     {
@@ -3277,7 +3277,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_formulabreakdownview",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "formulabreakdownview.tsx"
     },
@@ -3289,7 +3289,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_formulabreakdownview_fmt",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "fmt()"
     },
@@ -3302,8 +3302,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_formulabreakdownview_formulabreakdownviewprops",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 26,
+      "community_name": "useCalculatorState.ts",
       "norm_label": "formulabreakdownviewprops"
     },
     {
@@ -3314,7 +3314,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_formulabreakdownview_formulabreakdownview",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "formulabreakdownview()"
     },
@@ -3325,7 +3325,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_supportbuildeditorview",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "supportbuildeditorview.tsx"
     },
@@ -3338,7 +3338,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_supportbuildeditorview_supportbuildeditorviewprops",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "supportbuildeditorviewprops"
     },
@@ -3350,7 +3350,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_supportbuildeditorview_fmt",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "fmt()"
     },
@@ -3362,7 +3362,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_supportbuildeditorview_supportbuildeditorview",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "supportbuildeditorview()"
     },
@@ -3374,7 +3374,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_damagetable",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "damagetable.tsx"
     },
     {
@@ -3385,7 +3385,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_damagetable_direct_tag",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "direct_tag"
     },
     {
@@ -3397,7 +3397,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_damagetable_fmt",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "fmt()"
     },
     {
@@ -3410,7 +3410,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_damagetable_damagetableprops",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "damagetableprops"
     },
     {
@@ -3422,7 +3422,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_damagetable_damagetable",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "damagetable()"
     },
     {
@@ -3433,7 +3433,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffmodal",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffmodal.tsx"
     },
     {
@@ -3446,7 +3446,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffmodal_externalartifactbuffmodalprops",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffmodalprops"
     },
     {
@@ -3458,7 +3458,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffmodal_fmt",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "fmt()"
     },
     {
@@ -3469,7 +3469,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffmodal_rarity_colors",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "rarity_colors"
     },
     {
@@ -3481,7 +3481,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffmodal_externalartifactbuffmodal",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffmodal()"
     },
     {
@@ -3492,7 +3492,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffpanel",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffpanel.tsx"
     },
     {
@@ -3505,7 +3505,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffpanel_externalartifactbuffpanelprops",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffpanelprops"
     },
     {
@@ -3517,7 +3517,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffpanel_fmt",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "fmt()"
     },
     {
@@ -3529,7 +3529,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalartifactbuffpanel_externalartifactbuffpanel",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalartifactbuffpanel()"
     },
     {
@@ -3540,7 +3540,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffmodal",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffmodal.tsx"
     },
     {
@@ -3552,8 +3552,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffmodal_externalweaponbuffmodalprops",
-      "community": 15,
-      "community_name": "CalcInstance",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "externalweaponbuffmodalprops"
     },
     {
@@ -3565,7 +3565,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffmodal_fmt",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "fmt()"
     },
     {
@@ -3576,7 +3576,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffmodal_rarity_colors",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "rarity_colors"
     },
     {
@@ -3588,7 +3588,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffmodal_externalweaponbuffmodal",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffmodal()"
     },
     {
@@ -3599,7 +3599,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffpanel",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffpanel.tsx"
     },
     {
@@ -3612,7 +3612,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffpanel_externalweaponbuffpanelprops",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffpanelprops"
     },
     {
@@ -3624,7 +3624,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffpanel_fmt",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "fmt()"
     },
     {
@@ -3636,7 +3636,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_externalweaponbuffpanel_externalweaponbuffpanel",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffpanel()"
     },
     {
@@ -3646,7 +3646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_components_hitformulatooltip",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "hitformulatooltip.tsx"
     },
@@ -3658,7 +3658,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_hitformulatooltip_fmt",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "fmt()"
     },
@@ -3671,7 +3671,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_hitformulatooltip_hitformulatooltipprops",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "hitformulatooltipprops"
     },
@@ -3683,7 +3683,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_hitformulatooltip_hitformulatooltip",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "hitformulatooltip()"
     },
@@ -3694,8 +3694,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_components_mechanicspanel",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "mechanicspanel.tsx"
     },
     {
@@ -3707,8 +3707,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_mechanicspanel_mechanicspanelprops",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "mechanicspanelprops"
     },
     {
@@ -3719,8 +3719,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_mechanicspanel_mechanicspanel",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "mechanicspanel()"
     },
     {
@@ -3731,7 +3731,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_rotationmodal",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "rotationmodal.tsx"
     },
     {
@@ -3743,7 +3743,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_rotationmodal_fmt",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "fmt()"
     },
     {
@@ -3754,7 +3754,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_rotationmodal_reaction_label",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "reaction_label"
     },
     {
@@ -3767,7 +3767,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_rotationmodal_rotationmodalprops",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "rotationmodalprops"
     },
     {
@@ -3779,7 +3779,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_rotationmodal_rotationmodal",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "rotationmodal()"
     },
     {
@@ -3790,7 +3790,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_statbreakdownrow",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "statbreakdownrow.tsx"
     },
     {
@@ -3802,7 +3802,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_statbreakdownrow_fmt",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "fmt()"
     },
     {
@@ -3815,7 +3815,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_statbreakdownrow_statbreakdownrowprops",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "statbreakdownrowprops"
     },
     {
@@ -3827,7 +3827,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_statbreakdownrow_statbreakdownrow",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "statbreakdownrow()"
     },
     {
@@ -3837,8 +3837,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_components_statsgrid",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "statsgrid.tsx"
     },
     {
@@ -3848,8 +3848,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_components_calculator_components_statsgrid_groups",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "groups"
     },
     {
@@ -3861,8 +3861,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_statsgrid_statsgridprops",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "statsgridprops"
     },
     {
@@ -3873,9 +3873,91 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_statsgrid_statsgrid",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "statsgrid()"
+    },
+    {
+      "label": "TeamBuffModal.tsx",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "teambuffmodal.tsx"
+    },
+    {
+      "label": "TeamBuffModalProps",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_teambuffmodalprops",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
+      "norm_label": "teambuffmodalprops"
+    },
+    {
+      "label": "fmt()",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L22",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_fmt",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "fmt()"
+    },
+    {
+      "label": "RARITY_COLORS",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_rarity_colors",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "rarity_colors"
+    },
+    {
+      "label": "ELEMENT_BADGES",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_element_badges",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "element_badges"
+    },
+    {
+      "label": "readSupportDraft()",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L41",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_readsupportdraft",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "readsupportdraft()"
+    },
+    {
+      "label": "TeamBuffModal()",
+      "file_type": "code",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L56",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
+      "norm_label": "teambuffmodal()"
     },
     {
       "label": "TeamBuffPanel.tsx",
@@ -3885,20 +3967,20 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_teambuffpanel",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "teambuffpanel.tsx"
     },
     {
       "label": "TeamBuffPanelProps",
       "file_type": "code",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L9",
+      "source_location": "L8",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_teambuffpanel_teambuffpanelprops",
-      "community": 15,
-      "community_name": "CalcInstance",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "teambuffpanelprops"
     },
     {
@@ -3910,31 +3992,19 @@
       "_origin": "ast",
       "id": "src_components_calculator_components_teambuffpanel_fmt",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "fmt()"
-    },
-    {
-      "label": "readSupportDraft()",
-      "file_type": "code",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L21",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_components_calculator_components_teambuffpanel_readsupportdraft",
-      "community": 12,
-      "community_name": "team-buffs.ts",
-      "norm_label": "readsupportdraft()"
     },
     {
       "label": "TeamBuffPanel()",
       "file_type": "code",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L36",
+      "source_location": "L20",
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_teambuffpanel_teambuffpanel",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "teambuffpanel()"
     },
     {
@@ -3944,7 +4014,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_components_transformativepanel",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "transformativepanel.tsx"
     },
@@ -3956,7 +4026,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_transformativepanel_fmt",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "fmt()"
     },
@@ -3969,7 +4039,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_transformativepanel_transformativepanelprops",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "transformativepanelprops"
     },
@@ -3981,7 +4051,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_components_transformativepanel_transformativepanel",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "transformativepanel()"
     },
@@ -3992,7 +4062,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "usecalculatorstate.ts"
     },
@@ -4003,7 +4073,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate_initialstats",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "initialstats"
     },
@@ -4015,7 +4085,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate_getinitialstats",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "getinitialstats()"
     },
@@ -4027,7 +4097,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate_hydratefrombuild",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "hydratefrombuild()"
     },
@@ -4040,8 +4110,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate_usecalculatorstateprops",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 26,
+      "community_name": "useCalculatorState.ts",
       "norm_label": "usecalculatorstateprops"
     },
     {
@@ -4052,7 +4122,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_hooks_usecalculatorstate_usecalculatorstate",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "usecalculatorstate()"
     },
@@ -4063,7 +4133,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_hooks_userotation",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "userotation.ts"
     },
@@ -4076,7 +4146,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_hooks_userotation_rotationstate",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "rotationstate"
     },
@@ -4089,7 +4159,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_hooks_userotation_userotation",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "userotation()"
     },
     {
@@ -4099,7 +4169,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_calculator_types",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "calculator/types.ts"
     },
@@ -4112,8 +4182,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_types_savedbuild",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 26,
+      "community_name": "useCalculatorState.ts",
       "norm_label": "savedbuild"
     },
     {
@@ -4125,8 +4195,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_types_calcinstance",
-      "community": 15,
-      "community_name": "CalcInstance",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "calcinstance"
     },
     {
@@ -4139,7 +4209,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_types_rotationstep",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "rotationstep"
     },
     {
@@ -4151,7 +4221,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_types_savedrotation",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "savedrotation"
     },
@@ -4164,7 +4234,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_types_reactionextras",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "reactionextras"
     },
@@ -4178,7 +4248,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_types_statbuffsource",
       "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community_name": "calculator/types.ts",
       "norm_label": "statbuffsource"
     },
     {
@@ -4190,7 +4260,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_components_calculator_types_statbreakdown",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "statbreakdown"
     },
@@ -4204,7 +4274,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_types_computedinstance",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "computedinstance"
     },
     {
@@ -4215,7 +4285,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_utils_colors",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "colors.ts"
     },
     {
@@ -4226,7 +4296,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_utils_colors_dmg_colors",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "dmg_colors"
     },
     {
@@ -4237,7 +4307,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_utils_colors_keywords",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "keywords"
     },
     {
@@ -4248,8 +4318,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_calculator_utils_colors_renderstyledtext",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "renderstyledtext()"
     },
     {
@@ -4261,7 +4331,7 @@
       "_origin": "ast",
       "id": "src_components_calculator_utils_colors_gethitcolor",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "gethitcolor()"
     },
     {
@@ -4271,8 +4341,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_icons",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "icons.tsx"
     },
     {
@@ -4282,8 +4352,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_components_icons_element_colors",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "element_colors"
     },
     {
@@ -4294,8 +4364,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_icons_elementicon",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "elementicon()"
     },
     {
@@ -4306,8 +4376,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_components_icons_weaponicon",
-      "community": 11,
-      "community_name": "app/page.tsx",
+      "community": 12,
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "weaponicon()"
     },
     {
@@ -4361,8 +4431,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_archaic_petra",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "archaic-petra.ts"
     },
     {
@@ -4372,8 +4442,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_archaic_petra_archaicpetra",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "archaicpetra"
     },
     {
@@ -4383,8 +4453,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_aubade_of_morningstar_and_moon",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 258,
+      "community_name": "aubade-of-morningstar-and-moon.ts",
       "norm_label": "aubade-of-morningstar-and-moon.ts"
     },
     {
@@ -4394,8 +4464,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_aubade_of_morningstar_and_moon_aubadeofmorningstarandmoon",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 258,
+      "community_name": "aubade-of-morningstar-and-moon.ts",
       "norm_label": "aubadeofmorningstarandmoon"
     },
     {
@@ -4427,8 +4497,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_blizzard_strayer",
-      "community": 260,
-      "community_name": "blizzard-strayer.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "blizzard-strayer.ts"
     },
     {
@@ -4438,8 +4508,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_blizzard_strayer_blizzardstrayer",
-      "community": 260,
-      "community_name": "blizzard-strayer.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "blizzardstrayer"
     },
     {
@@ -4537,8 +4607,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_deepwood_memories",
-      "community": 264,
-      "community_name": "deepwood-memories.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "deepwood-memories.ts"
     },
     {
@@ -4548,8 +4618,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_deepwood_memories_deepwoodmemories",
-      "community": 264,
-      "community_name": "deepwood-memories.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "deepwoodmemories"
     },
     {
@@ -4581,8 +4651,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_desert_pavilion_chronicle",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 260,
+      "community_name": "desert-pavilion-chronicle.ts",
       "norm_label": "desert-pavilion-chronicle.ts"
     },
     {
@@ -4592,8 +4662,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_desert_pavilion_chronicle_desertpavilionchronicle",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 260,
+      "community_name": "desert-pavilion-chronicle.ts",
       "norm_label": "desertpavilionchronicle"
     },
     {
@@ -4603,8 +4673,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_disenchantment_in_deep_shadow",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "disenchantment-in-deep-shadow.ts"
     },
     {
@@ -4614,8 +4684,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_disenchantment_in_deep_shadow_disenchantmentindeepshadow",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "disenchantmentindeepshadow"
     },
     {
@@ -4647,8 +4717,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_emblem_of_severed_fate",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "emblem-of-severed-fate.ts"
     },
     {
@@ -4658,8 +4728,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_emblem_of_severed_fate_emblemofseveredfate",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "emblemofseveredfate"
     },
     {
@@ -4757,8 +4827,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_gilded_dreams",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "gilded-dreams.ts"
     },
     {
@@ -4768,8 +4838,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_gilded_dreams_gildeddreams",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "gildeddreams"
     },
     {
@@ -4779,8 +4849,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_gladiators_finale",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 264,
+      "community_name": "gladiators-finale.ts",
       "norm_label": "gladiators-finale.ts"
     },
     {
@@ -4790,8 +4860,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_gladiators_finale_gladiatorsfinale",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 264,
+      "community_name": "gladiators-finale.ts",
       "norm_label": "gladiatorsfinale"
     },
     {
@@ -4823,8 +4893,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_heart_of_depth",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "heart-of-depth.ts"
     },
     {
@@ -4834,8 +4904,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_heart_of_depth_heartofdepth",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "heartofdepth"
     },
     {
@@ -4867,8 +4937,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_husk_of_opulent_dreams",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "husk-of-opulent-dreams.ts"
     },
     {
@@ -4878,8 +4948,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_husk_of_opulent_dreams_huskofopulentdreams",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "huskofopulentdreams"
     },
     {
@@ -4924,7 +4994,7 @@
       "_origin": "ast",
       "id": "src_data_registry_artifacts_index_artifactbyid",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "artifactbyid()"
     },
     {
@@ -4978,8 +5048,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_instructor",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "instructor.ts"
     },
     {
@@ -4989,8 +5059,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_instructor_instructor",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "instructor"
     },
     {
@@ -5000,8 +5070,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_lavawalker",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "lavawalker.ts"
     },
     {
@@ -5011,8 +5081,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_lavawalker_lavawalker",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "lavawalker"
     },
     {
@@ -5022,8 +5092,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_long_nights_oath",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "long-nights-oath.ts"
     },
     {
@@ -5033,8 +5103,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_long_nights_oath_longnightsoath",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "longnightsoath"
     },
     {
@@ -5132,8 +5202,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_night_of_the_skys_unveiling",
-      "community": 274,
-      "community_name": "night-of-the-skys-unveiling.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "night-of-the-skys-unveiling.ts"
     },
     {
@@ -5143,8 +5213,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_night_of_the_skys_unveiling_nightoftheskysunveiling",
-      "community": 274,
-      "community_name": "night-of-the-skys-unveiling.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "nightoftheskysunveiling"
     },
     {
@@ -5154,8 +5224,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_nighttime_whispers_in_the_echoing_woods",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 274,
+      "community_name": "nighttime-whispers-in-the-echoing-woods.ts",
       "norm_label": "nighttime-whispers-in-the-echoing-woods.ts"
     },
     {
@@ -5165,8 +5235,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_nighttime_whispers_in_the_echoing_woods_nighttimewhispersintheechoingwoods",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 274,
+      "community_name": "nighttime-whispers-in-the-echoing-woods.ts",
       "norm_label": "nighttimewhispersintheechoingwoods"
     },
     {
@@ -5176,8 +5246,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_noblesse_oblige",
-      "community": 275,
-      "community_name": "noblesse-oblige.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "noblesse-oblige.ts"
     },
     {
@@ -5187,8 +5257,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_noblesse_oblige_noblesseoblige",
-      "community": 275,
-      "community_name": "noblesse-oblige.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "noblesseoblige"
     },
     {
@@ -5220,8 +5290,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_obsidian_codex",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "obsidian-codex.ts"
     },
     {
@@ -5231,8 +5301,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_obsidian_codex_obsidiancodex",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "obsidiancodex"
     },
     {
@@ -5286,8 +5356,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_for_destiny",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 275,
+      "community_name": "prayers-for-destiny.ts",
       "norm_label": "prayers-for-destiny.ts"
     },
     {
@@ -5297,8 +5367,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_for_destiny_prayersfordestiny",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 275,
+      "community_name": "prayers-for-destiny.ts",
       "norm_label": "prayersfordestiny"
     },
     {
@@ -5330,8 +5400,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_for_wisdom",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "prayers-for-wisdom.ts"
     },
     {
@@ -5341,8 +5411,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_for_wisdom_prayersforwisdom",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "prayersforwisdom"
     },
     {
@@ -5352,8 +5422,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_to_springtime",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "prayers-to-springtime.ts"
     },
     {
@@ -5363,8 +5433,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_prayers_to_springtime_prayerstospringtime",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "prayerstospringtime"
     },
     {
@@ -5374,8 +5444,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_resolution_of_sojourner",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "resolution-of-sojourner.ts"
     },
     {
@@ -5385,8 +5455,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_resolution_of_sojourner_resolutionofsojourner",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "resolutionofsojourner"
     },
     {
@@ -5440,8 +5510,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_scholar",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 280,
+      "community_name": "scholar.ts",
       "norm_label": "scholar.ts"
     },
     {
@@ -5451,8 +5521,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_scholar_scholar",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 280,
+      "community_name": "scholar.ts",
       "norm_label": "scholar"
     },
     {
@@ -5462,8 +5532,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_scroll_of_the_hero_of_cinder_city",
-      "community": 280,
-      "community_name": "scroll-of-the-hero-of-cinder-city.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "scroll-of-the-hero-of-cinder-city.ts"
     },
     {
@@ -5473,8 +5543,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_scroll_of_the_hero_of_cinder_city_scrolloftheheroofcindercity",
-      "community": 280,
-      "community_name": "scroll-of-the-hero-of-cinder-city.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "scrolloftheheroofcindercity"
     },
     {
@@ -5484,8 +5554,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_shimenawas_reminiscence",
-      "community": 281,
-      "community_name": "shimenawas-reminiscence.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "shimenawas-reminiscence.ts"
     },
     {
@@ -5495,8 +5565,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_shimenawas_reminiscence_shimenawasreminiscence",
-      "community": 281,
-      "community_name": "shimenawas-reminiscence.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "shimenawasreminiscence"
     },
     {
@@ -5506,8 +5576,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_silken_moons_serenade",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 281,
+      "community_name": "silken-moons-serenade.ts",
       "norm_label": "silken-moons-serenade.ts"
     },
     {
@@ -5517,8 +5587,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_silken_moons_serenade_silkenmoonsserenade",
-      "community": 248,
-      "community_name": "ArtifactConfig",
+      "community": 281,
+      "community_name": "silken-moons-serenade.ts",
       "norm_label": "silkenmoonsserenade"
     },
     {
@@ -5550,8 +5620,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_tenacity_of_the_millelith",
-      "community": 283,
-      "community_name": "tenacity-of-the-millelith.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "tenacity-of-the-millelith.ts"
     },
     {
@@ -5561,8 +5631,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_tenacity_of_the_millelith_tenacityofthemillelith",
-      "community": 283,
-      "community_name": "tenacity-of-the-millelith.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "tenacityofthemillelith"
     },
     {
@@ -5572,8 +5642,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_the_exile",
-      "community": 284,
-      "community_name": "the-exile.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "the-exile.ts"
     },
     {
@@ -5583,8 +5653,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_the_exile_theexile",
-      "community": 284,
-      "community_name": "the-exile.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "theexile"
     },
     {
@@ -5616,8 +5686,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_thundersoother",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "thundersoother.ts"
     },
     {
@@ -5627,8 +5697,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_thundersoother_thundersoother",
-      "community": 10,
-      "community_name": "artifacts/index.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "thundersoother"
     },
     {
@@ -5638,8 +5708,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_tiny_miracle",
-      "community": 286,
-      "community_name": "tiny-miracle.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "tiny-miracle.ts"
     },
     {
@@ -5649,8 +5719,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_tiny_miracle_tinymiracle",
-      "community": 286,
-      "community_name": "tiny-miracle.ts",
+      "community": 10,
+      "community_name": "artifacts/index.ts",
       "norm_label": "tinymiracle"
     },
     {
@@ -5660,8 +5730,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_traveling_doctor",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 283,
+      "community_name": "traveling-doctor.ts",
       "norm_label": "traveling-doctor.ts"
     },
     {
@@ -5671,8 +5741,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_traveling_doctor_travelingdoctor",
-      "community": 247,
-      "community_name": "artifacts/types.ts",
+      "community": 283,
+      "community_name": "traveling-doctor.ts",
       "norm_label": "travelingdoctor"
     },
     {
@@ -5708,8 +5778,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_artifacts_types_artifactpiececount",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "artifactpiececount"
     },
     {
@@ -5721,8 +5791,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_artifacts_types_artifactslot",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "artifactslot"
     },
     {
@@ -5773,8 +5843,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_artifacts_types_externalartifactinstance",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "externalartifactinstance"
     },
     {
@@ -5786,7 +5856,7 @@
       "_origin": "ast",
       "id": "src_data_registry_artifacts_types_filterartifacts",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "filterartifacts()"
     },
     {
@@ -5862,8 +5932,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_vourukashas_glow",
-      "community": 290,
-      "community_name": "vourukashas-glow.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "vourukashas-glow.ts"
     },
     {
@@ -5873,8 +5943,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_vourukashas_glow_vourukashasglow",
-      "community": 290,
-      "community_name": "vourukashas-glow.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "vourukashasglow"
     },
     {
@@ -5884,8 +5954,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_wanderers_troupe",
-      "community": 291,
-      "community_name": "wanderers-troupe.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "wanderers-troupe.ts"
     },
     {
@@ -5895,8 +5965,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_artifacts_wanderers_troupe_wandererstroupe",
-      "community": 291,
-      "community_name": "wanderers-troupe.ts",
+      "community": 248,
+      "community_name": "ArtifactConfig",
       "norm_label": "wandererstroupe"
     },
     {
@@ -6447,7 +6517,7 @@
       "_origin": "ast",
       "id": "src_data_registry_characters_index_characters",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "characters"
     },
     {
@@ -6459,7 +6529,7 @@
       "_origin": "ast",
       "id": "src_data_registry_characters_index_byid",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "byid()"
     },
     {
@@ -6734,8 +6804,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_data_registry_characters_neuvillette_neuvillette",
-      "community": 15,
-      "community_name": "CalcInstance",
+      "community": 0,
+      "community_name": "registry/types.ts",
       "norm_label": "neuvillette"
     },
     {
@@ -7132,7 +7202,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_supports_bennett",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "bennett.ts"
     },
@@ -7143,7 +7213,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_supports_bennett_bennettsupport",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "bennettsupport"
     },
@@ -7154,7 +7224,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_supports_index",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supports/index.ts"
     },
@@ -7165,8 +7235,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_data_registry_supports_index_support_configs",
-      "community": 12,
-      "community_name": "team-buffs.ts",
+      "community": 11,
+      "community_name": "supports/index.ts",
       "norm_label": "support_configs"
     },
     {
@@ -7178,7 +7248,7 @@
       "_origin": "ast",
       "id": "src_data_registry_supports_index_supportbyid",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "supportbyid()"
     },
     {
@@ -7188,7 +7258,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_supports_ineffa",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supports/ineffa.ts"
     },
@@ -7199,7 +7269,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_registry_supports_ineffa_ineffasupport",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "ineffasupport"
     },
@@ -7210,7 +7280,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_supports_types",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supports/types.ts"
     },
@@ -7223,7 +7293,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_supports_types_supportctx",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supportctx"
     },
@@ -7236,20 +7306,33 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_supports_types_supportbuff",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supportbuff"
     },
     {
-      "label": "SupportStatField",
+      "label": "SupportBuffExplanation",
       "file_type": "code",
       "source_file": "src/data/registry/supports/types.ts",
       "source_location": "L27",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
+      "id": "src_data_registry_supports_types_supportbuffexplanation",
+      "community": 11,
+      "community_name": "supports/index.ts",
+      "norm_label": "supportbuffexplanation"
+    },
+    {
+      "label": "SupportStatField",
+      "file_type": "code",
+      "source_file": "src/data/registry/supports/types.ts",
+      "source_location": "L35",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
       "id": "src_data_registry_supports_types_supportstatfield",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supportstatfield"
     },
@@ -7257,12 +7340,12 @@
       "label": "BriefStatPill",
       "file_type": "code",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L35",
+      "source_location": "L43",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_supports_types_briefstatpill",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "briefstatpill"
     },
@@ -7270,12 +7353,12 @@
       "label": "SupportConfig",
       "file_type": "code",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L41",
+      "source_location": "L49",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_supports_types_supportconfig",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "supportconfig"
     },
@@ -7326,7 +7409,7 @@
       "_origin": "ast",
       "id": "src_data_registry_types_weapon",
       "community": 11,
-      "community_name": "app/page.tsx",
+      "community_name": "supports/index.ts",
       "norm_label": "weapon"
     },
     {
@@ -7339,7 +7422,7 @@
       "_origin": "ast",
       "id": "src_data_registry_types_reactiontype",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "reactiontype"
     },
     {
@@ -7429,7 +7512,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_types_mechanicdef",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "mechanicdef"
     },
@@ -7468,7 +7551,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_types_constellation",
-      "community": 251,
+      "community": 11,
       "community_name": "supports/index.ts",
       "norm_label": "constellation"
     },
@@ -7921,7 +8004,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "src_data_registry_weapons_bows_index_bows",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "bows"
     },
@@ -8977,7 +9060,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "src_data_registry_weapons_catalysts_index_catalysts",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "catalysts"
     },
@@ -10055,7 +10138,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "src_data_registry_weapons_claymores_index_claymores",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "claymores"
     },
@@ -10726,7 +10809,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_registry_weapons_index",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "weapons/index.ts"
     },
@@ -10737,7 +10820,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_data_registry_weapons_index_weapons",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "weapons"
     },
@@ -10748,7 +10831,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_data_registry_weapons_index_weapon_registry",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "weapon_registry"
     },
@@ -10761,7 +10844,7 @@
       "_origin": "ast",
       "id": "src_data_registry_weapons_index_weaponbyid",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "weaponbyid()"
     },
     {
@@ -10772,7 +10855,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_data_registry_weapons_index_weaponsbytype",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "weaponsbytype()"
     },
@@ -10784,7 +10867,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_data_registry_weapons_index_supportweapons",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "supportweapons()"
     },
@@ -11290,7 +11373,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "src_data_registry_weapons_polearms_index_polearms",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "polearms"
     },
@@ -12324,7 +12407,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "src_data_registry_weapons_swords_index_swords",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "swords"
     },
@@ -13052,7 +13135,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_weapons_types_weapontype",
-      "community": 6,
+      "community": 15,
       "community_name": "weapons/index.ts",
       "norm_label": "weapontype"
     },
@@ -13091,8 +13174,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_registry_weapons_types_weaponbuffcontext",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 15,
+      "community_name": "weapons/index.ts",
       "norm_label": "weaponbuffcontext"
     },
     {
@@ -13131,7 +13214,7 @@
       "_origin": "ast",
       "id": "src_data_registry_weapons_types_externalweaponinstance",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponinstance"
     },
     {
@@ -13143,7 +13226,7 @@
       "_origin": "ast",
       "id": "src_data_registry_weapons_types_getweaponsforcharacter",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "getweaponsforcharacter()"
     },
     {
@@ -13243,8 +13326,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_arlecchino",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/arlecchino.ts"
     },
     {
@@ -13254,8 +13337,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_data_talents_arlecchino_arlecchinoseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "arlecchinoseed"
     },
     {
@@ -13377,8 +13460,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_columbina",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 284,
+      "community_name": "talents/columbina.ts",
       "norm_label": "talents/columbina.ts"
     },
     {
@@ -13388,8 +13471,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_columbina_columbinaseed",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 284,
+      "community_name": "talents/columbina.ts",
       "norm_label": "columbinaseed"
     },
     {
@@ -13443,8 +13526,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_diluc",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/diluc.ts"
     },
     {
@@ -13454,8 +13537,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_diluc_dilucseed",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "dilucseed"
     },
     {
@@ -13712,8 +13795,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_hu_tao",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 286,
+      "community_name": "talents/hu-tao.ts",
       "norm_label": "talents/hu-tao.ts"
     },
     {
@@ -13723,8 +13806,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_data_talents_hu_tao_hutaoseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 286,
+      "community_name": "talents/hu-tao.ts",
       "norm_label": "hutaoseed"
     },
     {
@@ -13781,8 +13864,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_ineffa",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 2,
+      "community_name": "talents/index.ts",
       "norm_label": "talents/ineffa.ts"
     },
     {
@@ -13792,8 +13875,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_ineffa_ineffaseed",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 2,
+      "community_name": "talents/index.ts",
       "norm_label": "ineffaseed"
     },
     {
@@ -13825,8 +13908,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_kaveh",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 290,
+      "community_name": "talents/kaveh.ts",
       "norm_label": "talents/kaveh.ts"
     },
     {
@@ -13836,8 +13919,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_kaveh_kavehseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 290,
+      "community_name": "talents/kaveh.ts",
       "norm_label": "kavehseed"
     },
     {
@@ -13847,8 +13930,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_keqing",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/keqing.ts"
     },
     {
@@ -13858,8 +13941,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_keqing_keqingseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "keqingseed"
     },
     {
@@ -13869,8 +13952,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_klee",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/klee.ts"
     },
     {
@@ -13880,8 +13963,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_klee_kleeseed",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "kleeseed"
     },
     {
@@ -13891,8 +13974,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_linnea",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "talents/linnea.ts"
     },
     {
@@ -13902,8 +13985,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_linnea_linneaseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "linneaseed"
     },
     {
@@ -13913,8 +13996,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_lyney",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/lyney.ts"
     },
     {
@@ -13924,8 +14007,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_lyney_lyneyseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "lyneyseed"
     },
     {
@@ -14071,8 +14154,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_mualani",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "talents/mualani.ts"
     },
     {
@@ -14082,8 +14165,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_mualani_mualaniseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "mualaniseed"
     },
     {
@@ -14137,8 +14220,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_sandrone",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "talents/sandrone.ts"
     },
     {
@@ -14148,8 +14231,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_data_talents_sandrone_sandroneseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "sandroneseed"
     },
     {
@@ -14249,8 +14332,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_traveler_anemo",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 291,
+      "community_name": "talents/traveler-anemo.ts",
       "norm_label": "talents/traveler-anemo.ts"
     },
     {
@@ -14260,8 +14343,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_traveler_anemo_traveleranemoseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 291,
+      "community_name": "talents/traveler-anemo.ts",
       "norm_label": "traveleranemoseed"
     },
     {
@@ -14442,8 +14525,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_data_talents_types_charactertalentseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "charactertalentseed"
     },
     {
@@ -14566,8 +14649,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_xiao",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/xiao.ts"
     },
     {
@@ -14577,8 +14660,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_xiao_xiaoseed",
-      "community": 57,
-      "community_name": "talents/types.ts",
+      "community": 9,
+      "community_name": "CharacterTalentSeed",
       "norm_label": "xiaoseed"
     },
     {
@@ -14589,7 +14672,7 @@
       "_origin": "ast",
       "id": "src_data_talents_xinyan",
       "community": 9,
-      "community_name": "talents/xinyan.ts",
+      "community_name": "CharacterTalentSeed",
       "norm_label": "talents/xinyan.ts"
     },
     {
@@ -14600,7 +14683,7 @@
       "_origin": "ast",
       "id": "src_data_talents_xinyan_skill_burst_factors",
       "community": 9,
-      "community_name": "talents/xinyan.ts",
+      "community_name": "CharacterTalentSeed",
       "norm_label": "skill_burst_factors"
     },
     {
@@ -14612,7 +14695,7 @@
       "_origin": "ast",
       "id": "src_data_talents_xinyan_scaleskillburst",
       "community": 9,
-      "community_name": "talents/xinyan.ts",
+      "community_name": "CharacterTalentSeed",
       "norm_label": "scaleskillburst()"
     },
     {
@@ -14623,7 +14706,7 @@
       "_origin": "ast",
       "id": "src_data_talents_xinyan_xinyanseed",
       "community": 9,
-      "community_name": "talents/xinyan.ts",
+      "community_name": "CharacterTalentSeed",
       "norm_label": "xinyanseed"
     },
     {
@@ -14633,8 +14716,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_talents_yanfei",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "talents/yanfei.ts"
     },
     {
@@ -14644,8 +14727,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_data_talents_yanfei_yanfeiseed",
-      "community": 2,
-      "community_name": "talents/index.ts",
+      "community": 57,
+      "community_name": "talents/types.ts",
       "norm_label": "yanfeiseed"
     },
     {
@@ -14721,8 +14804,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_artifact_buffs",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "artifact-buffs.ts"
     },
     {
@@ -14734,8 +14817,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_artifact_buffs_externalartifactbuffsource",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "externalartifactbuffsource"
     },
     {
@@ -14747,8 +14830,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_artifact_buffs_externalartifactbuffresult",
-      "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community": 247,
+      "community_name": "artifacts/types.ts",
       "norm_label": "externalartifactbuffresult"
     },
     {
@@ -14760,7 +14843,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_artifact_buffs_resolveexternalartifactbuffs",
       "community": 245,
-      "community_name": "artifact-buffs.ts",
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "resolveexternalartifactbuffs()"
     },
     {
@@ -15406,8 +15489,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_characters_ineffa_test",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 25,
+      "community_name": "DamageStats",
       "norm_label": "ineffa.test.ts"
     },
     {
@@ -15417,8 +15500,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_lib_engine_characters_ineffa_test_mockscaling",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 25,
+      "community_name": "DamageStats",
       "norm_label": "mockscaling"
     },
     {
@@ -15428,8 +15511,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_lib_engine_characters_ineffa_test_defaultstats",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 25,
+      "community_name": "DamageStats",
       "norm_label": "defaultstats"
     },
     {
@@ -15440,8 +15523,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_characters_ineffa_test_createctx",
-      "community": 258,
-      "community_name": "ineffa.test.ts",
+      "community": 25,
+      "community_name": "DamageStats",
       "norm_label": "createctx()"
     },
     {
@@ -16521,8 +16604,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_constellations",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "constellations.ts"
     },
     {
@@ -16533,8 +16616,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_constellations_activeeffects",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "activeeffects()"
     },
     {
@@ -16545,8 +16628,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_constellations_constellationflatbonus",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "constellationflatbonus()"
     },
     {
@@ -16557,8 +16640,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_constellations_constellationstatbonuses",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "constellationstatbonuses()"
     },
     {
@@ -16568,8 +16651,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_damage_test",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "damage.test.ts"
     },
     {
@@ -16580,8 +16663,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_damage_test_manualresolved",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "manualresolved()"
     },
     {
@@ -16591,8 +16674,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_lib_engine_damage_test_basestats",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "basestats"
     },
     {
@@ -16603,8 +16686,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_damage_test_fullraw",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "fullraw()"
     },
     {
@@ -16667,7 +16750,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_damage_hitresult",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "hitresult"
     },
     {
@@ -16690,8 +16773,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_damage_scalingtotal",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "scalingtotal()"
     },
     {
@@ -16760,8 +16843,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_damage_availablereactions",
-      "community": 55,
-      "community_name": "CharacterCalculator.tsx",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "availablereactions()"
     },
     {
@@ -16972,7 +17055,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_lunar_lunartype",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "lunartype"
     },
@@ -16983,8 +17066,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_lib_engine_lunar_lunar_label",
-      "community": 54,
-      "community_name": "calculator/types.ts",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "lunar_label"
     },
     {
@@ -17029,7 +17112,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_lunar_lunarresult",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "lunarresult"
     },
@@ -17233,8 +17316,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_mechanics_resolvemechanics",
-      "community": 1,
-      "community_name": "mechanics.ts",
+      "community": 8,
+      "community_name": "damage.ts",
       "norm_label": "resolvemechanics()"
     },
     {
@@ -17278,7 +17361,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_share",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "share.ts"
     },
@@ -17290,7 +17373,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_share_encodebuild",
-      "community": 5,
+      "community": 26,
       "community_name": "useCalculatorState.ts",
       "norm_label": "encodebuild()"
     },
@@ -17303,7 +17386,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_share_decodebuild",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "decodebuild()"
     },
     {
@@ -17314,7 +17397,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_test",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "team-buffs.test.ts"
     },
     {
@@ -17326,7 +17409,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_test_makeineffa",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "makeineffa()"
     },
     {
@@ -17338,7 +17421,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_test_makebennett",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "makebennett()"
     },
     {
@@ -17349,7 +17432,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "team-buffs.ts"
     },
     {
@@ -17362,7 +17445,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_supportinstance",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "supportinstance"
     },
     {
@@ -17375,7 +17458,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_teambuffsource",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "teambuffsource"
     },
     {
@@ -17400,7 +17483,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_tonum",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "tonum()"
     },
     {
@@ -17412,7 +17495,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_resolvesupportctx",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "resolvesupportctx()"
     },
     {
@@ -17424,7 +17507,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_team_buffs_resolveteambuffs",
       "community": 12,
-      "community_name": "team-buffs.ts",
+      "community_name": "TeamBuffModal.tsx",
       "norm_label": "resolveteambuffs()"
     },
     {
@@ -17447,7 +17530,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_transformative_transformativetype",
-      "community": 54,
+      "community": 55,
       "community_name": "calculator/types.ts",
       "norm_label": "transformativetype"
     },
@@ -17503,8 +17586,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_engine_validation",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "validation.ts"
     },
     {
@@ -17516,8 +17599,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_rawinputs",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "rawinputs"
     },
     {
@@ -17529,8 +17612,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_validationresult",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "validationresult"
     },
     {
@@ -17541,8 +17624,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_hitid",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "hitid()"
     },
     {
@@ -17553,8 +17636,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_tonum",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 245,
+      "community_name": "CharacterCalculator.tsx",
       "norm_label": "tonum()"
     },
     {
@@ -17565,8 +17648,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_statinputids",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "statinputids()"
     },
     {
@@ -17576,8 +17659,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_lib_engine_validation_level_fields",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "level_fields"
     },
     {
@@ -17588,8 +17671,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_talentlevelbonuses",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "talentlevelbonuses()"
     },
     {
@@ -17600,8 +17683,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_effectivetalentlevels",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "effectivetalentlevels()"
     },
     {
@@ -17612,8 +17695,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_resolvehitmultipliers",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "resolvehitmultipliers()"
     },
     {
@@ -17625,7 +17708,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_validation_validate",
       "community": 54,
-      "community_name": "calculator/types.ts",
+      "community_name": "validation.ts",
       "norm_label": "validate()"
     },
     {
@@ -17636,8 +17719,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_engine_validation_resolvestats",
-      "community": 8,
-      "community_name": "damage.ts",
+      "community": 54,
+      "community_name": "validation.ts",
       "norm_label": "resolvestats()"
     },
     {
@@ -17648,7 +17731,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_weapon_buffs_test",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "weapon-buffs.test.ts"
     },
     {
@@ -17659,7 +17742,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_weapon_buffs",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "weapon-buffs.ts"
     },
     {
@@ -17672,7 +17755,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_weapon_buffs_externalweaponbuffsource",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffsource"
     },
     {
@@ -17684,8 +17767,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "src_lib_engine_weapon_buffs_externalweaponbuffresult",
-      "community": 25,
-      "community_name": "DamageStats",
+      "community": 15,
+      "community_name": "weapons/index.ts",
       "norm_label": "externalweaponbuffresult"
     },
     {
@@ -17697,7 +17780,7 @@
       "_origin": "ast",
       "id": "src_lib_engine_weapon_buffs_resolveexternalweaponbuffs",
       "community": 15,
-      "community_name": "CalcInstance",
+      "community_name": "weapons/index.ts",
       "norm_label": "resolveexternalweaponbuffs()"
     },
     {
@@ -17708,7 +17791,7 @@
       "_origin": "ast",
       "id": "src_lib_prisma",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "prisma.ts"
     },
     {
@@ -17719,7 +17802,7 @@
       "_origin": "ast",
       "id": "src_lib_prisma_g",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "g"
     },
     {
@@ -17731,7 +17814,7 @@
       "_origin": "ast",
       "id": "src_lib_prisma_createprismaclient",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "createprismaclient()"
     },
     {
@@ -17743,7 +17826,7 @@
       "_origin": "ast",
       "id": "src_lib_prisma_getprisma",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "getprisma()"
     },
     {
@@ -17754,7 +17837,7 @@
       "_origin": "ast",
       "id": "src_lib_prisma_prisma",
       "community": 5,
-      "community_name": "useCalculatorState.ts",
+      "community_name": "formula/page.tsx",
       "norm_label": "prisma"
     },
     {
@@ -22805,7 +22888,7 @@
       "deferred": true,
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L600",
+      "source_location": "L603",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -23216,7 +23299,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L35",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23228,7 +23311,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L35",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23240,7 +23323,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23252,7 +23335,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23264,7 +23347,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23276,7 +23359,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23288,7 +23371,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L32",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23300,7 +23383,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L32",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23401,6 +23484,30 @@
       "_origin": "ast",
       "source": "src_components_charactercalculator",
       "target": "src_components_calculator_components_statsgrid_statsgrid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/CharacterCalculator.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_charactercalculator",
+      "target": "src_components_calculator_components_teambuffmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/CharacterCalculator.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_charactercalculator",
+      "target": "src_components_calculator_components_teambuffmodal_teambuffmodal",
       "confidence_score": 1.0
     },
     {
@@ -23623,7 +23730,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L94",
+      "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23634,7 +23741,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L45",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23645,7 +23752,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23656,7 +23763,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L58",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23667,7 +23774,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L38",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23763,7 +23870,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23775,7 +23882,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23787,7 +23894,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -23799,7 +23906,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator",
@@ -24243,7 +24350,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L1729",
+      "source_location": "L1732",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24256,7 +24363,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L136",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24268,7 +24375,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L140",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24280,7 +24387,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L139",
+      "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24292,7 +24399,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L1287",
+      "source_location": "L1290",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24304,7 +24411,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L445",
+      "source_location": "L448",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24316,7 +24423,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L415",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24328,7 +24435,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L462",
+      "source_location": "L465",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24340,7 +24447,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L416",
+      "source_location": "L419",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24352,7 +24459,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L1319",
+      "source_location": "L1322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24364,7 +24471,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L472",
+      "source_location": "L475",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24376,7 +24483,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L463",
+      "source_location": "L466",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24388,7 +24495,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L1344",
+      "source_location": "L1347",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24400,7 +24507,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L501",
+      "source_location": "L504",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24412,7 +24519,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L401",
+      "source_location": "L404",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24424,7 +24531,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L1349",
+      "source_location": "L1352",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24436,7 +24543,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L424",
+      "source_location": "L427",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24448,7 +24555,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L497",
+      "source_location": "L500",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24460,7 +24567,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L407",
+      "source_location": "L410",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24472,7 +24579,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L458",
+      "source_location": "L461",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24484,7 +24591,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L380",
+      "source_location": "L383",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24496,7 +24603,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L394",
+      "source_location": "L397",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24508,7 +24615,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L399",
+      "source_location": "L402",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24520,7 +24627,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L381",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -24532,7 +24639,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/CharacterCalculator.tsx",
-      "source_location": "L435",
+      "source_location": "L438",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_charactercalculator_charactercalculator",
@@ -27787,6 +27894,336 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_element_badges",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_fmt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_rarity_colors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_readsupportdraft",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_teambuffmodalprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_types",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_calculator_types_calcinstance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_icons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_icons_elementicon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_components_icons_weaponicon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_supports_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_supports_index_support_configs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_supports_index_supportbyid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_types",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_types_characterconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_data_registry_types_element",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_lib_engine_team_buffs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_lib_engine_team_buffs_resolvesupportctx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_lib_engine_team_buffs_resolveteambuffs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal",
+      "target": "src_lib_engine_team_buffs_supportinstance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodalprops",
+      "target": "src_components_calculator_types_calcinstance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodalprops",
+      "target": "src_data_registry_types_characterconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L703",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_fmt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "target": "src_components_calculator_components_teambuffmodal_readsupportdraft",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "target": "src_data_registry_supports_index_supportbyid"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L516",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "target": "src_lib_engine_team_buffs_resolvesupportctx"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/calculator/components/TeamBuffModal.tsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_calculator_components_teambuffmodal_teambuffmodal",
+      "target": "src_lib_engine_team_buffs_resolveteambuffs"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
       "source_location": "L17",
       "weight": 1.0,
@@ -27799,18 +28236,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_components_calculator_components_teambuffpanel_readsupportdraft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L36",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27821,7 +28247,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27833,7 +28259,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L4",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27845,7 +28271,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L4",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27857,11 +28283,11 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L7",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_data_registry_characters_index",
+      "target": "src_components_icons",
       "confidence_score": 1.0
     },
     {
@@ -27869,11 +28295,11 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L7",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_data_registry_characters_index_byid",
+      "target": "src_components_icons_elementicon",
       "confidence_score": 1.0
     },
     {
@@ -27881,7 +28307,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L5",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27893,19 +28319,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_data_registry_supports_index_support_configs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L5",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27917,7 +28331,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L6",
+      "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27929,19 +28343,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_lib_engine_team_buffs_resolvesupportctx",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L6",
+      "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel",
@@ -27949,23 +28351,11 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel",
-      "target": "src_lib_engine_team_buffs_supportinstance",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "references",
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L11",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel_teambuffpanelprops",
@@ -27977,7 +28367,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L356",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel_teambuffpanel",
@@ -27988,21 +28378,9 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L66",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel_teambuffpanel",
-      "target": "src_components_calculator_components_teambuffpanel_readsupportdraft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L46",
+      "source_location": "L83",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel_teambuffpanel",
@@ -28014,19 +28392,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L200",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_components_calculator_components_teambuffpanel_teambuffpanel",
-      "target": "src_lib_engine_team_buffs_resolvesupportctx"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/calculator/components/TeamBuffPanel.tsx",
-      "source_location": "L42",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_components_calculator_components_teambuffpanel_teambuffpanel",
@@ -40063,6 +40429,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_index",
+      "target": "src_data_registry_supports_types_supportbuffexplanation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/data/registry/supports/index.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_data_registry_supports_index",
       "target": "src_data_registry_supports_types_supportconfig",
       "confidence_score": 1.0
     },
@@ -40201,7 +40579,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L35",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types",
@@ -40223,7 +40601,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L41",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_data_registry_supports_types",
+      "target": "src_data_registry_supports_types_supportbuffexplanation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/data/registry/supports/types.ts",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types",
@@ -40245,7 +40634,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L27",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types",
@@ -40304,6 +40693,18 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/data/registry/supports/types.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_data_registry_supports_types",
+      "target": "src_data_registry_types_weapon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/lib/engine/team-buffs.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -40317,7 +40718,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L49",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types_supportconfig",
@@ -40329,7 +40730,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L46",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types_supportconfig",
@@ -40341,11 +40742,23 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/data/registry/supports/types.ts",
-      "source_location": "L48",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_data_registry_supports_types_supportconfig",
       "target": "src_data_registry_types_mechanicdef",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/data/registry/supports/types.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_data_registry_supports_types_supportconfig",
+      "target": "src_data_registry_types_weapon",
       "confidence_score": 1.0
     },
     {
@@ -75144,5 +75557,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "bb5cd5feee07164d4c2562a55f7cafaddf3c3237"
+  "built_at_commit": "9026eacb24a6a186bb94601d6c568f9892bfc396"
 }

@@ -29,6 +29,7 @@ import { TransformativePanel } from "./calculator/components/TransformativePanel
 import { RotationModal } from "./calculator/components/RotationModal";
 import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
 import { TeamBuffPanel } from "./calculator/components/TeamBuffPanel";
+import { TeamBuffModal } from "./calculator/components/TeamBuffModal";
 import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponBuffPanel";
 import { ExternalWeaponBuffModal } from "./calculator/components/ExternalWeaponBuffModal";
 import { ExternalArtifactBuffPanel } from "./calculator/components/ExternalArtifactBuffPanel";
@@ -215,6 +216,8 @@ export function CharacterCalculator({
   const [activeWeaponModalSetupId, setActiveWeaponModalSetupId] = useState<string>("");
   const [isArtifactModalOpen, setIsArtifactModalOpen] = useState(false);
   const [activeArtifactModalSetupId, setActiveArtifactModalSetupId] = useState<string>("");
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [activeTeamModalSetupId, setActiveTeamModalSetupId] = useState<string>("");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);
@@ -1829,6 +1832,10 @@ export function CharacterCalculator({
                           inst={inst}
                           updateInstance={updateInstance}
                           dpsCharacterId={config.id}
+                          onOpenModal={() => {
+                            setActiveTeamModalSetupId(inst.id);
+                            setIsTeamModalOpen(true);
+                          }}
                         />
                       )}
 
@@ -1903,6 +1910,10 @@ export function CharacterCalculator({
                         inst={inst}
                         updateInstance={updateInstance}
                         dpsCharacterId={config.id}
+                        onOpenModal={() => {
+                          setActiveTeamModalSetupId(inst.id);
+                          setIsTeamModalOpen(true);
+                        }}
                       />
                     )}
 
@@ -1982,6 +1993,17 @@ export function CharacterCalculator({
         instances={instances}
         activeInstanceId={activeArtifactModalSetupId || instances[0]?.id || ""}
         setActiveInstanceId={setActiveArtifactModalSetupId}
+        updateInstance={updateInstance}
+      />
+
+      {/* Team Support Buffs Dialog Overlay popup */}
+      <TeamBuffModal
+        isOpen={isTeamModalOpen}
+        setIsOpen={setIsTeamModalOpen}
+        config={config}
+        instances={instances}
+        activeInstanceId={activeTeamModalSetupId || instances[0]?.id || ""}
+        setActiveInstanceId={setActiveTeamModalSetupId}
         updateInstance={updateInstance}
       />
 

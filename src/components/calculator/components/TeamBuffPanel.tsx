@@ -1,15 +1,15 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import type { CalcInstance, SupportInstance } from "../types";
-import { SUPPORT_CONFIGS, supportById } from "@/data/registry/supports";
-import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
-import { byId as characterById } from "@/data/registry/characters";
+import React from "react";
+import type { CalcInstance } from "../types";
+import { supportById } from "@/data/registry/supports";
+import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
+import { ElementIcon } from "@/components/icons";
 
 interface TeamBuffPanelProps {
   inst: CalcInstance;
   updateInstance: (id: string, updater: (inst: CalcInstance) => Partial<CalcInstance>) => void;
-  dpsCharacterId?: string; // ID of the active DPS character for "Edit Build" navigation
+  dpsCharacterId?: string; // ID of the active DPS character
+  onOpenModal?: () => void;
 }
 
 const MAX_SUPPORTS = 3;
@@ -17,406 +17,128 @@ const MAX_SUPPORTS = 3;
 const fmt = (n: number, decimals = 1) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 
-// Reads the support character's working draft from localStorage
-function readSupportDraft(characterId: string): { instances: Array<{ id: string; stats: Record<string, string>; mechanicInputs: Record<string, string>; constellationLevel: number }>; } | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(`gi_calc_working_draft_${characterId}`);
-    if (!raw) return null;
-    const draft = JSON.parse(raw);
-    if (Array.isArray(draft.instances) && draft.instances.length > 0) {
-      return { instances: draft.instances };
-    }
-  } catch {
-    // Ignore parse errors
-  }
-  return null;
-}
-
-export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({ inst, updateInstance, dpsCharacterId }) => {
-  const [collapsed, setCollapsed] = useState(false);
+export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
+  inst,
+  updateInstance,
+  onOpenModal,
+}) => {
   const supports = inst.teamSupports ?? [];
   const masterEnabled = inst.teamBuffsEnabled !== false;
 
   // Compute live preview of all team buffs
   const teamResult = resolveTeamBuffs(supports, masterEnabled);
 
-  const addSupport = (supportId: string) => {
-    if (supports.length >= MAX_SUPPORTS) return;
-    const config = supportById(supportId);
-    if (!config) return;
-
-    const initStats: Record<string, string> = {};
-    for (const f of config.statFields) {
-      if (f.hasBaseAndFlat) {
-        initStats[`${f.key}.base`] = f.defaultValue;
-        initStats[`${f.key}.percent`] = "0";
-        initStats[`${f.key}.flat`] = "0";
-      } else {
-        initStats[f.key] = f.defaultValue;
-      }
-    }
-
-    const initMechanics: Record<string, string> = {};
-    for (const m of config.mechanicDefs ?? []) {
-      initMechanics[m.id] = String(m.defaultValue ?? 0);
-    }
-
-    // Try to hydrate from the support character's working draft
-    const draft = readSupportDraft(config.characterId);
-    let finalStats = initStats;
-    let finalMechanics = initMechanics;
-    let finalConstellation = 0;
-    let setupId: string | undefined;
-    let setupName: string | undefined;
-
-    if (draft && draft.instances.length > 0) {
-      const firstInst = draft.instances[0];
-      finalStats = firstInst.stats ?? initStats;
-      finalMechanics = firstInst.mechanicInputs ?? initMechanics;
-      finalConstellation = firstInst.constellationLevel ?? 0;
-      setupId = firstInst.id;
-      setupName = `Setup ${firstInst.id}`;
-    }
-
-    const newSupport: SupportInstance = {
-      supportId,
-      stats: finalStats,
-      mechanicInputs: finalMechanics,
-      constellationLevel: finalConstellation,
-      enabled: true,
-      selectedSetupId: setupId,
-      selectedSetupName: setupName,
-    };
-
-    updateInstance(inst.id, () => ({
-      teamSupports: [...supports, newSupport],
-    }));
-  };
-
-  const removeSupport = (index: number) => {
-    updateInstance(inst.id, () => ({
-      teamSupports: supports.filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateSupport = (index: number, updater: (s: SupportInstance) => Partial<SupportInstance>) => {
-    const updated = [...supports];
-    updated[index] = { ...updated[index], ...updater(updated[index]) };
-    updateInstance(inst.id, () => ({ teamSupports: updated }));
-  };
+  const activeCount = supports.filter((s) => s.enabled).length;
 
   const toggleMaster = () => {
     updateInstance(inst.id, () => ({ teamBuffsEnabled: !masterEnabled }));
   };
 
-  // Sync support stats from the character's working draft in localStorage
-  const syncFromDraft = useCallback((index: number) => {
-    const sup = supports[index];
-    if (!sup) return;
-    const config = supportById(sup.supportId);
-    if (!config) return;
-
-    const draft = readSupportDraft(config.characterId);
-    if (!draft || !draft.instances.length) return;
-
-    // Find the currently selected setup, or fallback to the first
-    const targetInst = draft.instances.find(i => i.id === sup.selectedSetupId) ?? draft.instances[0];
-    if (!targetInst) return;
-
-    updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Setup ${targetInst.id}`,
-    }));
-  }, [supports, updateSupport]);
-
-  // Switch to a different setup from the support character's working draft
-  const switchSetup = useCallback((index: number, setupId: string) => {
-    const sup = supports[index];
-    if (!sup) return;
-    const config = supportById(sup.supportId);
-    if (!config) return;
-
-    const draft = readSupportDraft(config.characterId);
-    if (!draft) return;
-
-    const targetInst = draft.instances.find(i => i.id === setupId);
-    if (!targetInst) return;
-
-    updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Setup ${targetInst.id}`,
-    }));
-  }, [supports, updateSupport]);
-
-  // Available supports not yet added
-  const addedIds = new Set(supports.map(s => s.supportId));
-  const available = SUPPORT_CONFIGS.filter(c => !addedIds.has(c.id));
-
   return (
     <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
-      {/* Header */}
+      {/* Header with Quick Action */}
       <div className="flex items-center justify-between mb-2">
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          type="button"
+          onClick={onOpenModal}
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-800 dark:text-zinc-200 hover:text-amber-500 dark:hover:text-amber-400 transition-colors cursor-pointer group"
+          title="Open Team Support Buffs configuration modal"
         >
-          <span className={`text-[8px] transform transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}>
-            ▼
+          <span className="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 group-hover:scale-105 transition-transform text-xs">
+            👥
           </span>
-          Team Buffs
+          <span>Team Support Buffs</span>
           {supports.length > 0 && (
-            <span className="text-[10px] font-normal normal-case tracking-normal text-gray-400 dark:text-zinc-500">
-              ({supports.filter(s => s.enabled).length}/{supports.length} active)
+            <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              {activeCount}/{supports.length} (Max {MAX_SUPPORTS})
             </span>
           )}
         </button>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <span className="text-[10px] text-gray-500 dark:text-zinc-400">Apply All</span>
-          <input
-            type="checkbox"
-            className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
-            checked={masterEnabled}
-            onChange={toggleMaster}
-          />
-        </label>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenModal}
+            className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-amber-400 font-semibold shadow-2xs cursor-pointer transition-colors"
+          >
+            ⚙️ Edit
+          </button>
+          <label className="flex items-center gap-1.5 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[10px] text-gray-500 dark:text-zinc-400">Apply</span>
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+              checked={masterEnabled}
+              onChange={toggleMaster}
+            />
+          </label>
+        </div>
       </div>
 
-      {!collapsed && (
-        <div className="space-y-3">
-          {/* Support cards */}
-          {supports.map((sup, index) => {
-            const config = supportById(sup.supportId);
-            if (!config) return null;
-            const isActive = masterEnabled && sup.enabled;
+      {/* Configured Support Characters Preview / Pill Cloud */}
+      {supports.length > 0 ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {supports.map((sup, idx) => {
+              const sConfig = supportById(sup.supportId);
+              if (!sConfig) return null;
+              const isActive = masterEnabled && sup.enabled;
 
-            // Resolve context for brief stats and buff preview
-            const ctx = resolveSupportCtx({ ...sup, enabled: true });
-            const briefStats = ctx && config.formatBriefStats ? config.formatBriefStats(ctx) : [];
-
-            // Compute individual support preview
-            const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true);
-
-            // Get available setups from working draft
-            const draft = readSupportDraft(config.characterId);
-            const availableSetups = draft?.instances ?? [];
-
-            return (
-              <div
-                key={`${sup.supportId}-${index}`}
-                className={`rounded-lg border p-3 transition-all ${
-                  isActive
-                    ? "border-amber-400/60 dark:border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/15"
-                    : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 opacity-60"
-                }`}
-              >
-                {/* Card header */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
-                      checked={sup.enabled}
-                      onChange={() => updateSupport(index, () => ({ enabled: !sup.enabled }))}
-                    />
-                    <span className="text-xs font-bold text-gray-800 dark:text-zinc-200">
-                      {config.name}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 font-medium">
-                      C{sup.constellationLevel}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => removeSupport(index)}
-                    className="text-xs text-gray-400 hover:text-red-500 transition-colors px-1"
-                    title="Remove support"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Brief Info Stats Pills */}
-                {briefStats.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {briefStats.map((pill, pi) => (
-                      <span
-                        key={pi}
-                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-medium border border-zinc-200 dark:border-zinc-700"
-                      >
-                        <span className="text-gray-400 dark:text-zinc-500">{pill.label}:</span>
-                        <span className="font-semibold">{pill.value}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Setup Switcher & Actions */}
-                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                  {/* Setup dropdown */}
-                  {availableSetups.length > 1 && (
-                    <select
-                      className="text-[10px] border rounded px-1.5 py-0.5 bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                      value={sup.selectedSetupId ?? ""}
-                      onChange={e => switchSetup(index, e.target.value)}
-                    >
-                      {availableSetups.map(s => (
-                        <option key={s.id} value={s.id}>
-                          Setup {s.id}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  {availableSetups.length <= 1 && sup.selectedSetupName && (
-                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 italic">
+              return (
+                <div
+                  key={sup.supportId ? `${sup.supportId}-${idx}` : idx}
+                  onClick={onOpenModal}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
+                    isActive
+                      ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200"
+                      : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
+                  }`}
+                  title={`${sConfig.name} (C${sup.constellationLevel}${sup.selectedSetupName ? `, ${sup.selectedSetupName}` : ""}) - Click to configure`}
+                >
+                  <ElementIcon element={sConfig.element} className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-[11px] truncate max-w-[120px]">{sConfig.name}</span>
+                  <span className="text-[10px] font-bold px-1 py-0.2 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                    C{sup.constellationLevel}
+                  </span>
+                  {sup.selectedSetupName && (
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
                       {sup.selectedSetupName}
                     </span>
                   )}
-
-                  {/* Sync button */}
-                  <button
-                    onClick={() => syncFromDraft(index)}
-                    className="text-[10px] px-1.5 py-0.5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-amber-400 transition-all"
-                    title="Sync latest stats from this character's calculator"
-                  >
-                    🔄 Sync
-                  </button>
-
-                  {/* Edit in dedicated support builder */}
-                  <Link
-                    href={`/characters/${config.characterId}/support${dpsCharacterId ? `?from=${dpsCharacterId}` : ""}`}
-                    className="text-[10px] px-1.5 py-0.5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-0.5"
-                    title="Open dedicated support builder for this character"
-                  >
-                    ✎ Edit Build ↗
-                  </Link>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Constellation selector */}
-                <div className="flex items-center gap-1 mb-2">
-                  <span className="text-[10px] text-gray-500 dark:text-zinc-400 mr-1">Const.</span>
-                  {[0, 1, 2, 3, 4, 5, 6].map(lvl => (
-                    <button
-                      key={lvl}
-                      onClick={() => updateSupport(index, () => ({
-                        constellationLevel: sup.constellationLevel === lvl ? Math.max(0, lvl - 1) : lvl
-                      }))}
-                      className={`px-1.5 py-0.5 text-[10px] font-semibold rounded cursor-pointer transition-all border ${
-                        sup.constellationLevel >= lvl
-                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
-                          : "bg-white dark:bg-zinc-800 text-gray-400 dark:text-gray-500 border-gray-300 dark:border-zinc-700 hover:border-gray-400"
-                      }`}
-                    >
-                      C{lvl}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Mechanic toggles */}
-                {(config.mechanicDefs ?? []).map(m => {
-                  const mechVal = Number(sup.mechanicInputs[m.id] ?? "0") > 0;
-                  // Gate constellation-dependent mechanics
-                  const conMatch = m.id.match(/c(\d+)/);
-                  const requiredCon = conMatch ? Number(conMatch[1]) : 0;
-                  const isGated = requiredCon > 0 && sup.constellationLevel < requiredCon;
-                  return (
-                    <div key={m.id} className="flex items-center gap-2 mb-1" title={m.hint}>
-                      <input
-                        type="checkbox"
-                        className="h-3.5 w-3.5 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-40"
-                        checked={mechVal && !isGated}
-                        disabled={isGated}
-                        onChange={e => updateSupport(index, s => ({
-                          mechanicInputs: { ...s.mechanicInputs, [m.id]: e.target.checked ? "1" : "0" }
-                        }))}
-                      />
-                      <span className={`text-[10px] ${isGated ? "text-gray-400 dark:text-zinc-600" : "text-gray-600 dark:text-zinc-300"}`}>
-                        {m.label}
-                      </span>
-                    </div>
-                  );
-                })}
-
-                {/* Computed buff preview */}
-                <div className="mt-2 pt-2 border-t border-gray-200/60 dark:border-zinc-700/60">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
-                    Computed Buffs
-                  </span>
-                  <div className="mt-1 space-y-0.5">
-                    {preview.sources.map((s, i) => (
-                      <div key={i} className="flex items-center justify-between text-[10px]">
-                        <span className="text-gray-500 dark:text-zinc-400">{s.label}</span>
-                        <span className={`font-semibold ${isActive ? "text-amber-600 dark:text-amber-400" : "text-gray-400 dark:text-zinc-600"}`}>
-                          +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                            ? fmt(s.value)
-                            : `${fmt(s.value)}%`}
-                        </span>
-                      </div>
-                    ))}
-                    {preview.sources.length === 0 && (
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-600 italic">No active buffs</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Add support button */}
-          {supports.length < MAX_SUPPORTS && available.length > 0 && (
-            <div className="flex items-center gap-2">
-              <select
-                className="flex-1 border rounded px-2 py-1 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                defaultValue=""
-                onChange={e => {
-                  if (e.target.value) {
-                    addSupport(e.target.value);
-                    e.target.value = "";
-                  }
-                }}
-              >
-                <option value="" disabled>+ Add Support ({MAX_SUPPORTS - supports.length} remaining)</option>
-                {available.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.element})</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {supports.length >= MAX_SUPPORTS && (
-            <div className="text-[10px] text-gray-400 dark:text-zinc-600 text-center italic">
-              Maximum {MAX_SUPPORTS} supports reached
-            </div>
-          )}
-
-          {/* Aggregated team buff summary */}
+          {/* Aggregated Team Buffs Pill Breakdown */}
           {teamResult.sources.length > 0 && (
-            <div className="mt-1 pt-2 border-t border-dashed border-gray-200 dark:border-zinc-700">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-500 dark:text-amber-400">
-                Total Team Buffs {!masterEnabled && "(Disabled)"}
-              </span>
-              <div className="mt-1 space-y-0.5">
-                {teamResult.sources.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between text-[10px]">
-                    <span className="text-gray-500 dark:text-zinc-400">
-                      {s.label}
-                    </span>
-                    <span className={`font-semibold ${masterEnabled ? "text-amber-600 dark:text-amber-400" : "text-gray-400 line-through"}`}>
-                      +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                        ? fmt(s.value)
-                        : `${fmt(s.value)}%`}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <div className="pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 flex items-center gap-1.5 flex-wrap">
+              {teamResult.sources.map((s, i) => (
+                <span
+                  key={i}
+                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                    masterEnabled
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                      : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
+                  }`}
+                >
+                  {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
+                    ? fmt(s.value)
+                    : `${fmt(s.value)}%`}
+                </span>
+              ))}
             </div>
           )}
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpenModal}
+          className="w-full py-1.5 px-2 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-500 text-gray-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-400 text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-gray-50/50 dark:bg-zinc-900/30"
+        >
+          <span>➕</span>
+          <span>Add Team Support Buffs (Max {MAX_SUPPORTS})</span>
+        </button>
       )}
     </div>
   );
