@@ -50,7 +50,7 @@
     "semantic_hash": ""
   },
   "prisma/seed.ts": {
-    "mtime": 1787227204.602082,
+    "mtime": 1787231605.745683,
     "ast_hash": "85b85a462bdb6ef8efb5387670e97997",
     "semantic_hash": ""
   },
@@ -100,7 +100,7 @@
     "semantic_hash": "8f946014397accdeafae44c53d2a38c5"
   },
   "src/components/CharacterCalculator.tsx": {
-    "mtime": 1787230536.3633206,
+    "mtime": 1787231605.7723439,
     "ast_hash": "d06be93609c442c5773f4eeb2706c03d",
     "semantic_hash": ""
   },
@@ -155,7 +155,7 @@
     "semantic_hash": "b78fcbbdcf1e73ad02a99e8be3934378"
   },
   "src/components/calculator/hooks/useCalculatorState.ts": {
-    "mtime": 1787227204.62513,
+    "mtime": 1787231605.7813756,
     "ast_hash": "0351253af4b50f8b14a5dbac6e301769",
     "semantic_hash": ""
   },
@@ -165,7 +165,7 @@
     "semantic_hash": "eab2abcdb53d6c68933ec8e832e835dc"
   },
   "src/components/calculator/types.ts": {
-    "mtime": 1787227204.6261284,
+    "mtime": 1787231605.782377,
     "ast_hash": "92eb5c749db08f846437cd801a75c653",
     "semantic_hash": ""
   },
@@ -230,14 +230,14 @@
     "semantic_hash": "56bea7a1486a8963e4230b8592630a6e"
   },
   "src/data/registry/characters/index.ts": {
-    "mtime": 1787038313.2106557,
-    "ast_hash": "2c77ad0934457abf4194cecf50abed18",
+    "mtime": 1787231848.754459,
+    "ast_hash": "b158c81975109a62438b6594e3847597",
     "semantic_hash": ""
   },
   "src/data/registry/characters/ineffa.ts": {
-    "mtime": 1786450157.6930866,
-    "ast_hash": "890ca6fc94076b71164ec6071dcd645c",
-    "semantic_hash": "890ca6fc94076b71164ec6071dcd645c"
+    "mtime": 1787231781.3693638,
+    "ast_hash": "ccdd844667c0b92934ff7966b8b8d6dd",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/linnea.ts": {
     "mtime": 1786450157.6936243,
@@ -285,8 +285,8 @@
     "semantic_hash": "889d1f0bbd79a86be80dee16541d3454"
   },
   "src/data/registry/types.ts": {
-    "mtime": 1787227204.6311295,
-    "ast_hash": "71093e006c494b9ef6e470aff8e55953",
+    "mtime": 1787231767.256405,
+    "ast_hash": "68bf27a006eea5dd52c3ebf43dab2bc9",
     "semantic_hash": ""
   },
   "src/data/talents/alhaitham.ts": {
@@ -335,8 +335,8 @@
     "semantic_hash": "1f02783616b2b0fe229cede24399eae8"
   },
   "src/data/talents/index.ts": {
-    "mtime": 1787038321.977564,
-    "ast_hash": "bf288bd04109d097b34fbe7b0d04d42a",
+    "mtime": 1787231815.6625524,
+    "ast_hash": "b7c947e015cdbedbb57bc3bbc73207bf",
     "semantic_hash": ""
   },
   "src/data/talents/ineffa.ts": {
@@ -590,7 +590,7 @@
     "semantic_hash": "64e0a071b43d000b07d885bfe5831846"
   },
   "src/lib/engine/damage.ts": {
-    "mtime": 1787227204.7672255,
+    "mtime": 1787231606.0073805,
     "ast_hash": "8d3f691e4206b936123fe29897ac16ef",
     "semantic_hash": ""
   },
@@ -600,7 +600,7 @@
     "semantic_hash": "126574c0e4e3e96fc6dc988e9ecd3c48"
   },
   "src/lib/engine/formula-explainer.ts": {
-    "mtime": 1787227204.7682276,
+    "mtime": 1787231606.008389,
     "ast_hash": "2de73bf0989b0de6e253cc35209e19e2",
     "semantic_hash": ""
   },
@@ -620,8 +620,8 @@
     "semantic_hash": "038c60b268feb733ecf826b2a9155638"
   },
   "src/lib/engine/mechanics.ts": {
-    "mtime": 1787038332.275111,
-    "ast_hash": "81158638ddcad4525f942d1df918cdf2",
+    "mtime": 1787231838.0705483,
+    "ast_hash": "c5c4e8cc54629889e4fa96699e53e445",
     "semantic_hash": ""
   },
   "src/lib/engine/reactions-mechanics.test.ts": {
@@ -715,7 +715,7 @@
     "semantic_hash": "6a324834e5352729562bf7dbd57595f6"
   },
   "src/lib/engine/characters/ayato.test.ts": {
-    "mtime": 1787227204.764088,
+    "mtime": 1787231605.9985979,
     "ast_hash": "2e9a7cf6ce916c3bfb614f6de7df181e",
     "semantic_hash": ""
   },
@@ -725,7 +725,7 @@
     "semantic_hash": "2b30c60824d7a02912d0f07df6c35329"
   },
   "src/lib/engine/characters/dehya.test.ts": {
-    "mtime": 1787227204.7652266,
+    "mtime": 1787231606.0013812,
     "ast_hash": "77dc01a61d861441942a42893d14bdf4",
     "semantic_hash": ""
   },
@@ -765,7 +765,7 @@
     "semantic_hash": "5c27369b226fcf2be8a6cfe52224e767"
   },
   "DEVELOPMENT.md": {
-    "mtime": 1787227204.5887384,
+    "mtime": 1787231605.730649,
     "ast_hash": "2f83760195cc31f0417d81cbd35f362f",
     "semantic_hash": ""
   },
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "src/components/calculator/components/TeamBuffPanel.tsx": {
-    "mtime": 1787230507.919945,
-    "ast_hash": "5b75bc18b71a5d49d17bc4b5429fafe1",
+    "mtime": 1787231877.2833056,
+    "ast_hash": "7af17079a6ac1a27cb504389dfbda04a",
     "semantic_hash": ""
   },
   "src/data/registry/characters/aloy.ts": {
@@ -924,21 +924,6 @@
     "ast_hash": "514c136e146955f9966a4b024adea43d",
     "semantic_hash": "514c136e146955f9966a4b024adea43d"
   },
-  "src/data/registry/supports/index.ts": {
-    "mtime": 1787230450.2148266,
-    "ast_hash": "d19fe3e84ac5edc54233dbdd9cc7f471",
-    "semantic_hash": ""
-  },
-  "src/data/registry/supports/ineffa.ts": {
-    "mtime": 1787230456.476908,
-    "ast_hash": "d401ee11aedbc9af357169ca5d8f1e33",
-    "semantic_hash": ""
-  },
-  "src/data/registry/supports/types.ts": {
-    "mtime": 1787230444.727196,
-    "ast_hash": "9bb90742fe48d70d9dc7b181b5830d69",
-    "semantic_hash": ""
-  },
   "src/data/talents/aloy.ts": {
     "mtime": 1786450402.2227523,
     "ast_hash": "b20f66a271db754e17ea6461c2ce10f4",
@@ -995,7 +980,7 @@
     "semantic_hash": "1e94b830369cb9e4169bbb03fb05d6bc"
   },
   "src/lib/engine/characters/aloy.test.ts": {
-    "mtime": 1787227204.763093,
+    "mtime": 1787231605.9975865,
     "ast_hash": "b5bc19f3784ec42b78ade37ef0f8e170",
     "semantic_hash": ""
   },
@@ -1005,7 +990,7 @@
     "semantic_hash": "8bbeef22721e6fe8325353535a776ecc"
   },
   "src/lib/engine/characters/cyno.test.ts": {
-    "mtime": 1787227204.764088,
+    "mtime": 1787231605.999867,
     "ast_hash": "58fb605a61f513174a614a8701e49016",
     "semantic_hash": ""
   },
@@ -1015,7 +1000,7 @@
     "semantic_hash": "b0cacf519aa4a6d93b001071df3ff6ca"
   },
   "src/lib/engine/characters/eula.test.ts": {
-    "mtime": 1787227204.7652266,
+    "mtime": 1787231606.0023837,
     "ast_hash": "0715ba0dec6b97bb483593c9fb1bacd1",
     "semantic_hash": ""
   },
@@ -1035,7 +1020,7 @@
     "semantic_hash": "cad60ec73675ae1ae3ce9492922fdeaf"
   },
   "src/lib/engine/characters/heizou.test.ts": {
-    "mtime": 1787227204.7662263,
+    "mtime": 1787231606.0033817,
     "ast_hash": "4c9ca99134932b41e41f5d685dfc393a",
     "semantic_hash": ""
   },
@@ -1045,7 +1030,7 @@
     "semantic_hash": "c7d68f70c2bd839a40da9c472cc63709"
   },
   "src/lib/engine/characters/itto.test.ts": {
-    "mtime": 1787227204.7662263,
+    "mtime": 1787231606.0043817,
     "ast_hash": "88040108a777e8a100cf72249fef4d7c",
     "semantic_hash": ""
   },
@@ -1095,7 +1080,7 @@
     "semantic_hash": "d03b7c6f2cc4380a03c61597077ef491"
   },
   "src/lib/engine/characters/mualani.test.ts": {
-    "mtime": 1787227204.7672255,
+    "mtime": 1787231606.0053818,
     "ast_hash": "e90b765279be249530ee6d24e30ab510",
     "semantic_hash": ""
   },
@@ -1105,13 +1090,13 @@
     "semantic_hash": "1183b8c1a2cbdec3bf546f1f6454fb9f"
   },
   "src/lib/engine/team-buffs.test.ts": {
-    "mtime": 1787051550.3707306,
-    "ast_hash": "4ecd4e5b682a65acad1ea9e8eaa64ec9",
+    "mtime": 1787231863.7696588,
+    "ast_hash": "3197af62432daa1b7c2e79b4f64afc98",
     "semantic_hash": ""
   },
   "src/lib/engine/team-buffs.ts": {
-    "mtime": 1787049012.7561786,
-    "ast_hash": "80436a74cb7baed1e9db4f2e1a48fb7e",
+    "mtime": 1787232176.281826,
+    "ast_hash": "e5f9c720e28ce61d6f159c9633153297",
     "semantic_hash": ""
   },
   "src/data/registry/characters/tartaglia.ts": {
@@ -1125,8 +1110,8 @@
     "semantic_hash": "ee483f3d588512625e1dda4432883d06"
   },
   "src/data/registry/characters/traveler-cryo.ts": {
-    "mtime": 1787227996.512626,
-    "ast_hash": "fe293a8065a485912420c9af0a11274e",
+    "mtime": 1787231605.818064,
+    "ast_hash": "882f1b5b16c470038d1eaaa1bccf5e74",
     "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-dendro.ts": {
@@ -1230,8 +1215,8 @@
     "semantic_hash": "f4ad32cfefc773de8a961bb117feec28"
   },
   "src/lib/engine/characters/traveler-cryo.ts": {
-    "mtime": 1787227371.964136,
-    "ast_hash": "dc55ab15c4874814b059f029e1f43b16",
+    "mtime": 1787231606.0063813,
+    "ast_hash": "7797b642e36e5b2372c071cfbe007a78",
     "semantic_hash": ""
   },
   "src/lib/engine/characters/traveler-dendro.ts": {
@@ -1260,7 +1245,7 @@
     "semantic_hash": "1b00c38c17b0c1920abc36d220d346fd"
   },
   "src/lib/engine/characters/traveler.test.ts": {
-    "mtime": 1787227400.3506484,
+    "mtime": 1787231606.0063813,
     "ast_hash": "3a81390296f2eab0b90572228f0d358e",
     "semantic_hash": ""
   },
@@ -1325,12 +1310,12 @@
     "semantic_hash": ""
   },
   "src/components/calculator/SupportBuildEditorView.tsx": {
-    "mtime": 1787053087.4242508,
-    "ast_hash": "00c4b493bb1727bb67141e055624bef8",
+    "mtime": 1787231871.0164313,
+    "ast_hash": "68198b93c52ce7088e2f9483219413ab",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalWeaponBuffPanel.tsx": {
-    "mtime": 1787227204.6241236,
+    "mtime": 1787231605.777346,
     "ast_hash": "9b56c598b6257c6f093f95cc6e0b5916",
     "semantic_hash": ""
   },
@@ -1339,18 +1324,13 @@
     "ast_hash": "c6e75a00e8ec23d4b31236113d12b89b",
     "semantic_hash": ""
   },
-  "src/data/registry/supports/bennett.ts": {
-    "mtime": 1787230463.9571047,
-    "ast_hash": "bd7c96495cb672df66563fe58a594563",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/index.ts": {
-    "mtime": 1787227204.7108264,
+    "mtime": 1787231605.928583,
     "ast_hash": "9b9a0dbbf5836e13b4e4bf342bc1d827",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/types.ts": {
-    "mtime": 1787227204.7610874,
+    "mtime": 1787231605.9955997,
     "ast_hash": "fa487a0c1cde5012d690fa3dca1d49a4",
     "semantic_hash": ""
   },
@@ -1370,12 +1350,12 @@
     "semantic_hash": ""
   },
   "src/lib/engine/weapon-buffs.test.ts": {
-    "mtime": 1787227204.7692282,
+    "mtime": 1787231606.008389,
     "ast_hash": "4c2969b3f4e39f26a86e36666a4d8b8e",
     "semantic_hash": ""
   },
   "src/lib/engine/weapon-buffs.ts": {
-    "mtime": 1787227204.7692282,
+    "mtime": 1787231606.0096116,
     "ast_hash": "bd2485ce6a0d9ee3b3f7b47a56528fb1",
     "semantic_hash": ""
   },
@@ -1385,1738 +1365,1758 @@
     "semantic_hash": ""
   },
   ".agents/skills/support-calculator/SKILL.md": {
-    "mtime": 1787053152.878144,
-    "ast_hash": "c0a4e48796124a968cd38ac90ecd9607",
+    "mtime": 1787231890.574883,
+    "ast_hash": "2f4bba4599995eeb59b68d94fba09f5d",
     "semantic_hash": ""
   },
   "scratch/build_full_registry.ts": {
-    "mtime": 1787227204.6030822,
+    "mtime": 1787231605.7467387,
     "ast_hash": "2548881eebda9c2d7382eafb0be58275",
     "semantic_hash": ""
   },
   "scratch/check_types.ts": {
-    "mtime": 1787227204.6030822,
+    "mtime": 1787231605.7477913,
     "ast_hash": "5c7f99e3d4eaae821996a487acc6a5e2",
     "semantic_hash": ""
   },
   "scratch/clean_weapon_categories.ts": {
-    "mtime": 1787227204.6045907,
+    "mtime": 1787231605.748833,
     "ast_hash": "17b38e9fdf42cf4e56d25a6cad197116",
     "semantic_hash": ""
   },
   "scratch/compare_weapons.ts": {
-    "mtime": 1787227204.6045907,
+    "mtime": 1787231605.7498846,
     "ast_hash": "52db6f1e919e768eb82e000764d41307",
     "semantic_hash": ""
   },
   "scratch/execute_sync.ts": {
-    "mtime": 1787227204.6060991,
+    "mtime": 1787231605.7509546,
     "ast_hash": "f974a2b72be5be584a0db63084530e28",
     "semantic_hash": ""
   },
   "scratch/generate_all_246.ts": {
-    "mtime": 1787227204.6071072,
+    "mtime": 1787231605.7520113,
     "ast_hash": "bae2d25786dd86725a881495f090dfbd",
     "semantic_hash": ""
   },
   "scratch/generate_bows.ts": {
-    "mtime": 1787227204.6081066,
+    "mtime": 1787231605.7542658,
     "ast_hash": "898b69efae15971c749a34fff1a14956",
     "semantic_hash": ""
   },
   "scratch/generate_catalysts.ts": {
-    "mtime": 1787227204.609107,
+    "mtime": 1787231605.7552717,
     "ast_hash": "fdfc40650641e94aca5f2144e63880db",
     "semantic_hash": ""
   },
   "scratch/generate_claymores.ts": {
-    "mtime": 1787227204.6101089,
+    "mtime": 1787231605.7562737,
     "ast_hash": "206bd360e25b37c7caf105dad683fb4b",
     "semantic_hash": ""
   },
   "scratch/generate_complete_bows.ts": {
-    "mtime": 1787227204.611107,
+    "mtime": 1787231605.7572725,
     "ast_hash": "da5b9c5f8264a19b33a3601e1ef670b4",
     "semantic_hash": ""
   },
   "scratch/generate_complete_catalysts.ts": {
-    "mtime": 1787227204.6121159,
+    "mtime": 1787231605.7593167,
     "ast_hash": "d544fcedab7ed155ee0a73e5199ddee3",
     "semantic_hash": ""
   },
   "scratch/generate_complete_claymores.ts": {
-    "mtime": 1787227204.6131072,
+    "mtime": 1787231605.760317,
     "ast_hash": "331817ba8a699122eb871f03da80b6e6",
     "semantic_hash": ""
   },
   "scratch/generate_complete_polearms.ts": {
-    "mtime": 1787227204.614107,
+    "mtime": 1787231605.761328,
     "ast_hash": "fa7bbe186b99d8ff8c45dce0bd1cb1ec",
     "semantic_hash": ""
   },
   "scratch/generate_complete_swords.ts": {
-    "mtime": 1787227204.614615,
+    "mtime": 1787231605.7623167,
     "ast_hash": "bc58e7502d7214f2529da36cca618c1f",
     "semantic_hash": ""
   },
   "scratch/generate_polearms.ts": {
-    "mtime": 1787227204.6156182,
+    "mtime": 1787231605.763317,
     "ast_hash": "e43d4d09a6537b8c9b8ddbbf11fa7e2f",
     "semantic_hash": ""
   },
   "scratch/generate_swords.ts": {
-    "mtime": 1787227204.6166174,
+    "mtime": 1787231605.7653182,
     "ast_hash": "1437945b75a2eac225ff8009179b340a",
     "semantic_hash": ""
   },
   "scratch/master_definitions.ts": {
-    "mtime": 1787227204.6166174,
+    "mtime": 1787231605.7663167,
     "ast_hash": "1dce3fed0897c8dfeafb09772a33cb89",
     "semantic_hash": ""
   },
   "scratch/sync_exact_246.ts": {
-    "mtime": 1787227204.618618,
+    "mtime": 1787231605.7673213,
     "ast_hash": "49abf039c21639476a58143ecb330010",
     "semantic_hash": ""
   },
   "scratch/test_init.ts": {
-    "mtime": 1787227204.6196165,
+    "mtime": 1787231605.7688265,
     "ast_hash": "05b23a71f63dcce664d682bf672d231c",
     "semantic_hash": ""
   },
   "scratch/verify_all_weapons.ts": {
-    "mtime": 1787227204.6206193,
+    "mtime": 1787231605.770333,
     "ast_hash": "8562f4715712c52623e0ee39e05953b5",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalWeaponBuffModal.tsx": {
-    "mtime": 1787227204.6241236,
+    "mtime": 1787231605.776346,
     "ast_hash": "671443c5f2ec9afcdae16e086f01a97f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/alley-hunter.ts": {
-    "mtime": 1787227204.6326363,
+    "mtime": 1787231605.8216183,
     "ast_hash": "3b96ffea69a6cf529a64105e1698b114",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/amos-bow.ts": {
-    "mtime": 1787227204.6326363,
+    "mtime": 1787231605.8226285,
     "ast_hash": "26711d2d24cd35e5df5e4811ff8aab49",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/aqua-simulacra.ts": {
-    "mtime": 1787227204.6326363,
+    "mtime": 1787231605.8231337,
     "ast_hash": "9d9fc8e9d815f5e83cc6286e56d57bc0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/astral-vultures-crimson-plumage.ts": {
-    "mtime": 1787227204.633643,
+    "mtime": 1787231605.8246562,
     "ast_hash": "2ab75cd37478f7945ac3dda5a59e4d4c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/blackcliff-warbow.ts": {
-    "mtime": 1787227204.6341727,
+    "mtime": 1787231605.8246562,
     "ast_hash": "537563c2c04bb2c475bf2f6642a67c46",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/chain-breaker.ts": {
-    "mtime": 1787227204.6341727,
+    "mtime": 1787231605.826178,
     "ast_hash": "245fd42b9649c4c5c6c99a9cbf4b9c70",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/cloudforged.ts": {
-    "mtime": 1787227204.6341727,
+    "mtime": 1787231605.826178,
     "ast_hash": "110c30c9d383e4c1bb0f4b4d48b8e46c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/compound-bow.ts": {
-    "mtime": 1787227204.6356802,
+    "mtime": 1787231605.8271835,
     "ast_hash": "78b508bf1afc00ce29d655a131bf365e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/covenant-of-frost-and-snow.ts": {
-    "mtime": 1787227204.6366875,
+    "mtime": 1787231605.8282242,
     "ast_hash": "15c799b49060eeb8c57d774d641b6cc4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/elegy-for-the-end.ts": {
-    "mtime": 1787227204.6366875,
+    "mtime": 1787231605.8287644,
     "ast_hash": "37f5fabfdb9a988c791156d377020fe0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/end-of-the-line.ts": {
-    "mtime": 1787227204.6376872,
+    "mtime": 1787231605.8287644,
     "ast_hash": "ba6c41c8e93b1943c27e21b376a5fbed",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/fading-twilight.ts": {
-    "mtime": 1787227204.6376872,
+    "mtime": 1787231605.8297722,
     "ast_hash": "b7862c0a2b576144ac4d5dfb3795f3d3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/favonius-warbow.ts": {
-    "mtime": 1787227204.6386862,
+    "mtime": 1787231605.8302758,
     "ast_hash": "818af6c864a7a539c36fbe87214a928c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/flower-wreathed-feathers.ts": {
-    "mtime": 1787227204.6386862,
+    "mtime": 1787231605.831283,
     "ast_hash": "9847c368f1dcafc74940a7544a3bded0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/golden-frostbound-oath.ts": {
-    "mtime": 1787227204.6396866,
+    "mtime": 1787231605.831788,
     "ast_hash": "242e0074c8330d2c75a76775fe57e784",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/hamayumi.ts": {
-    "mtime": 1787227204.6396866,
+    "mtime": 1787231605.832805,
     "ast_hash": "f6a4e3895588d88961508db3eac073a6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/hunters-bow.ts": {
-    "mtime": 1787227204.640687,
+    "mtime": 1787231605.8333097,
     "ast_hash": "1e8265a827587a214c0acb52c7c4f930",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/hunters-path.ts": {
-    "mtime": 1787227204.640687,
+    "mtime": 1787231605.8333097,
     "ast_hash": "b0c1c0d3a9d39c7456e210763f242d8d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/ibis-piercer.ts": {
-    "mtime": 1787227204.6416874,
+    "mtime": 1787231605.834824,
     "ast_hash": "da88b3b8380ab3920415e04ee563454b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/index.ts": {
-    "mtime": 1787227204.6416874,
+    "mtime": 1787231605.835833,
     "ast_hash": "16dfe91d27ea8e3679d065ce1c0fa170",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/jade-vista.ts": {
-    "mtime": 1787227204.6426866,
+    "mtime": 1787231605.8363369,
     "ast_hash": "da997a420034456dcc561035c73d6db3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/kings-squire.ts": {
-    "mtime": 1787227204.6426866,
+    "mtime": 1787231605.8363369,
     "ast_hash": "4960ab999e4d31ffa612cdacfe73522b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/messenger.ts": {
-    "mtime": 1787227204.6436872,
+    "mtime": 1787231605.8373404,
     "ast_hash": "0063b159099b3cf7c9289a9c9fe7fcf6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/mitternachts-waltz.ts": {
-    "mtime": 1787227204.6441922,
+    "mtime": 1787231605.8383687,
     "ast_hash": "56577189d28247dbd3acf75587c85489",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/mouuns-moon.ts": {
-    "mtime": 1787227204.6441922,
+    "mtime": 1787231605.8383687,
     "ast_hash": "affb5d1e71054434643116ca5f2c8e99",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/polar-star.ts": {
-    "mtime": 1787227204.6441922,
+    "mtime": 1787231605.8398795,
     "ast_hash": "6023c2cfd66cc515bfc0c0f7aee97a89",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/predator.ts": {
-    "mtime": 1787227204.6456978,
+    "mtime": 1787231605.8398795,
     "ast_hash": "53d6db12e2ccf3423d63d1653ee193d1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/prototype-crescent.ts": {
-    "mtime": 1787227204.6456978,
+    "mtime": 1787231605.841388,
     "ast_hash": "5755f86fc87d41b959cd9c687efc0429",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/rainbow-serpents-rain-bow.ts": {
-    "mtime": 1787227204.6456978,
+    "mtime": 1787231605.841388,
     "ast_hash": "0758c6416c6c5e1d7711bf0d40fd1cfa",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/range-gauge.ts": {
-    "mtime": 1787227204.6467056,
+    "mtime": 1787231605.8429036,
     "ast_hash": "45b5b89ec5f70b2eace7a18e9eaa4583",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/raven-bow.ts": {
-    "mtime": 1787227204.6477065,
+    "mtime": 1787231605.84392,
     "ast_hash": "db6888fc9d6742247f66ee7571adc81d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/recurve-bow.ts": {
-    "mtime": 1787227204.6477065,
+    "mtime": 1787231605.844425,
     "ast_hash": "ed741c6033bf192c17153d71e6906263",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/royal-bow.ts": {
-    "mtime": 1787227204.6487055,
+    "mtime": 1787231605.844425,
     "ast_hash": "ca5839716fb8c3fc8813864498dfbfcb",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/rust.ts": {
-    "mtime": 1787227204.6487055,
+    "mtime": 1787231605.8454378,
     "ast_hash": "b943217b67d82778ca7e5a7f2fe4b606",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/sacrificial-bow.ts": {
-    "mtime": 1787227204.6497066,
+    "mtime": 1787231605.845943,
     "ast_hash": "955008e76ac54769697d22ef4a7c7e24",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/scion-of-the-blazing-sun.ts": {
-    "mtime": 1787227204.6497066,
+    "mtime": 1787231605.845943,
     "ast_hash": "36a77645826f72f4549204e08aa776b1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/seasoned-hunters-bow.ts": {
-    "mtime": 1787227204.6507077,
+    "mtime": 1787231605.8469565,
     "ast_hash": "f8be2dd26eea19612baf3844ed52f003",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/sequence-of-solitude.ts": {
-    "mtime": 1787227204.6507077,
+    "mtime": 1787231605.847461,
     "ast_hash": "bea0905f7f5068fa2088253d6880d879",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/sharpshooters-oath.ts": {
-    "mtime": 1787227204.6517074,
+    "mtime": 1787231605.8484666,
     "ast_hash": "ed6437a4787d13128b0de638503d33a0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/silvershower-heartstrings.ts": {
-    "mtime": 1787227204.6517074,
+    "mtime": 1787231605.848971,
     "ast_hash": "a391656373feea71fbf4b7c13183fe90",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/skyward-harp.ts": {
-    "mtime": 1787227204.6527078,
+    "mtime": 1787231605.8499765,
     "ast_hash": "4d2f88441266bc1c5eee0caa3791872d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/slingshot.ts": {
-    "mtime": 1787227204.6537068,
+    "mtime": 1787231605.8504925,
     "ast_hash": "9d38fc428a04d54733ea3d88858ae4ea",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/snare-hook.ts": {
-    "mtime": 1787227204.6537068,
+    "mtime": 1787231605.8504925,
     "ast_hash": "fd894d8d634aa4fd271b48bbcc1017c6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/song-of-stillness.ts": {
-    "mtime": 1787227204.6547315,
+    "mtime": 1787231605.8520045,
     "ast_hash": "09a3e296804a916032e717ca1846c583",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/the-daybreak-chronicles.ts": {
-    "mtime": 1787227204.6547315,
+    "mtime": 1787231605.8520045,
     "ast_hash": "5a9fe632bf639631f584a45592c8a84b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/the-first-great-magic.ts": {
-    "mtime": 1787227204.6557336,
+    "mtime": 1787231605.8535228,
     "ast_hash": "804467a0b25bd622260caedd5542b1a2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/the-stringless.ts": {
-    "mtime": 1787227204.6562424,
+    "mtime": 1787231605.8535228,
     "ast_hash": "8e6e9107e595ecae2ff639f2b46a567e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/the-viridescent-hunt.ts": {
-    "mtime": 1787227204.657243,
+    "mtime": 1787231605.8545346,
     "ast_hash": "e258d1d508c09fc700700dab5032b16f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/thundering-pulse.ts": {
-    "mtime": 1787227204.657243,
+    "mtime": 1787231605.8550394,
     "ast_hash": "4317ecc06ebf142f776d8185870f8424",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/windblume-ode.ts": {
-    "mtime": 1787227204.6582446,
+    "mtime": 1787231605.856044,
     "ast_hash": "0439cc847154bf64690813f7dd30a72c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/a-teaspoon-of-transcendence.ts": {
-    "mtime": 1787227204.6582446,
+    "mtime": 1787231605.8565583,
     "ast_hash": "03e1f7b8903a73320e52ea39d6358391",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/a-thousand-floating-dreams.ts": {
-    "mtime": 1787227204.6592443,
+    "mtime": 1787231605.8575754,
     "ast_hash": "ac4872656a6b5b2d4e6c8b9d41865c2f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/apprentices-notes.ts": {
-    "mtime": 1787227204.6592443,
+    "mtime": 1787231605.8580792,
     "ast_hash": "e8624df3ea7f7b4f48878c711f5c85c6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/ash-graven-drinking-horn.ts": {
-    "mtime": 1787227204.6602442,
+    "mtime": 1787231605.858592,
     "ast_hash": "db9226c3d59838088b38dcc154b53691",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/ballad-of-the-boundless-blue.ts": {
-    "mtime": 1787227204.6612456,
+    "mtime": 1787231605.8590996,
     "ast_hash": "05a3689e52e767cffaeba7bc15017aa6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/blackcliff-agate.ts": {
-    "mtime": 1787227204.6612456,
+    "mtime": 1787231605.8596275,
     "ast_hash": "b1fa2364cb16b4e5f78d8907ceca266b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/cashflow-supervision.ts": {
-    "mtime": 1787227204.6612456,
+    "mtime": 1787231605.8606443,
     "ast_hash": "f11530fd9ffcc9184f6e6a099b4cb819",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/cranes-echoing-call.ts": {
-    "mtime": 1787227204.662245,
+    "mtime": 1787231605.8611503,
     "ast_hash": "8c753119e3197586db066b536d4bcbd3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/dodoco-tales.ts": {
-    "mtime": 1787227204.662245,
+    "mtime": 1787231605.8611503,
     "ast_hash": "e8495ec9ef82666427c4adf601bbf274",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/emerald-orb.ts": {
-    "mtime": 1787227204.6637518,
+    "mtime": 1787231605.8626592,
     "ast_hash": "c234e87d85dc7ba09cfb34e4c71684a7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/everlasting-moonglow.ts": {
-    "mtime": 1787227204.6637518,
+    "mtime": 1787231605.8626592,
     "ast_hash": "d28d8b2980e69ca835c757c58775298b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/eye-of-perception.ts": {
-    "mtime": 1787227204.66476,
+    "mtime": 1787231605.8636637,
     "ast_hash": "220ada9d96ce927b8a88c9f1643a5584",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/favonius-codex.ts": {
-    "mtime": 1787227204.6657584,
+    "mtime": 1787231605.8641686,
     "ast_hash": "c2c3de0a3a30b720693d44c3d66434d9",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/flowing-purity.ts": {
-    "mtime": 1787227204.6657584,
+    "mtime": 1787231605.8651729,
     "ast_hash": "ec7404814e202e170ff6c309c646cc34",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/frostbearer.ts": {
-    "mtime": 1787227204.6657584,
+    "mtime": 1787231605.8651729,
     "ast_hash": "fba62bb87d39c74367d0c0600b06f48d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/fruit-of-fulfillment.ts": {
-    "mtime": 1787227204.6672728,
+    "mtime": 1787231605.8661723,
     "ast_hash": "5b14e25999d9e34fcf43fc6ceb3cd36d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/hakushin-ring.ts": {
-    "mtime": 1787227204.6672728,
+    "mtime": 1787231605.8661723,
     "ast_hash": "f7d889dae4e2b3a13f813255854bb231",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/index.ts": {
-    "mtime": 1787227204.6687963,
+    "mtime": 1787231605.8671722,
     "ast_hash": "62b88149d339d0a093e9af732f92241b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/jadefalls-splendor.ts": {
-    "mtime": 1787227204.6687963,
+    "mtime": 1787231605.868173,
     "ast_hash": "77a2bd9d69410335daa714d73b0bad4d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/kaguras-verity.ts": {
-    "mtime": 1787227204.6698039,
+    "mtime": 1787231605.8692257,
     "ast_hash": "2752f51daf809cef1612bb7eb5012568",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/lost-prayer-to-the-sacred-winds.ts": {
-    "mtime": 1787227204.6698039,
+    "mtime": 1787231605.8692257,
     "ast_hash": "8e7e2c1ab926036c34ab940a3e900bf0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/magic-guide.ts": {
-    "mtime": 1787227204.670804,
+    "mtime": 1787231605.8702362,
     "ast_hash": "86e2ccd4446df4e91b9ef14a4da36ee7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/mappa-mare.ts": {
-    "mtime": 1787227204.670804,
+    "mtime": 1787231605.8712335,
     "ast_hash": "e467a6f52d6f999448e98e02e16557f5",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/memory-of-dust.ts": {
-    "mtime": 1787227204.6718037,
+    "mtime": 1787231605.8712335,
     "ast_hash": "0bbb31fe510f869bd767363c1314f3e3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/nightweavers-looking-glass.ts": {
-    "mtime": 1787227204.6718037,
+    "mtime": 1787231605.8722248,
     "ast_hash": "8009939f53dd6ec72b21c7e758de2b90",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/nocturnes-curtain-call.ts": {
-    "mtime": 1787227204.6728053,
+    "mtime": 1787231605.873226,
     "ast_hash": "8fe0c7fb3cf0bd45dddde47f166ea572",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/oathsworn-eye.ts": {
-    "mtime": 1787227204.6738029,
+    "mtime": 1787231605.873226,
     "ast_hash": "79079b4fa0cd186426e384a89d60c7df",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/otherworldly-story.ts": {
-    "mtime": 1787227204.6738029,
+    "mtime": 1787231605.8742344,
     "ast_hash": "aea45f6fe096869396451926ca3d9c18",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/pocket-grimoire.ts": {
-    "mtime": 1787227204.6748924,
+    "mtime": 1787231605.8742344,
     "ast_hash": "811cd9d9272b55ce24e2a8d0e96e87a4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/prototype-amber.ts": {
-    "mtime": 1787227204.6748924,
+    "mtime": 1787231605.8752246,
     "ast_hash": "b281128b4f1db7a51e093898790589f4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/reliquary-of-truth.ts": {
-    "mtime": 1787227204.6748924,
+    "mtime": 1787231605.8752246,
     "ast_hash": "c8ce127c10f96b74f59885b09d8bf921",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/ring-of-yaxche.ts": {
-    "mtime": 1787227204.6758933,
+    "mtime": 1787231605.8762243,
     "ast_hash": "c48aaf7504fc8df29ab4edc86549d4f0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/royal-grimoire.ts": {
-    "mtime": 1787227204.6758933,
+    "mtime": 1787231605.8762243,
     "ast_hash": "1442603c65b4bdd5cc8c36475582b464",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/sacrificial-fragments.ts": {
-    "mtime": 1787227204.6768947,
+    "mtime": 1787231605.8772268,
     "ast_hash": "3d3de49c9b52a84a7de284f474fb24d4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/sacrificial-jade.ts": {
-    "mtime": 1787227204.6778948,
+    "mtime": 1787231605.878759,
     "ast_hash": "bbc88777681ca2cd07d10783bc4eb70a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/skyward-atlas.ts": {
-    "mtime": 1787227204.6778948,
+    "mtime": 1787231605.878759,
     "ast_hash": "8277733e732c0af1beb320a9b32970c3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/solar-pearl.ts": {
-    "mtime": 1787227204.6788924,
+    "mtime": 1787231605.880275,
     "ast_hash": "d143e66014218c134ed15fde5641841d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/starcallers-watch.ts": {
-    "mtime": 1787227204.6788924,
+    "mtime": 1787231605.8812864,
     "ast_hash": "c1e9c4e25c9d3f4c160cb6fd820f10a7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/sunny-morning-sleep-in.ts": {
-    "mtime": 1787227204.679893,
+    "mtime": 1787231605.8822844,
     "ast_hash": "0437d6e6d4051df52728407c661a9af6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/surfs-up.ts": {
-    "mtime": 1787227204.679893,
+    "mtime": 1787231605.8832836,
     "ast_hash": "35dabc50193300f0b215a629f9570569",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/the-widsith.ts": {
-    "mtime": 1787227204.681559,
+    "mtime": 1787231605.8842833,
     "ast_hash": "c86cb0d637298253c7004e5ea812c044",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/thrilling-tales-of-dragon-slayers.ts": {
-    "mtime": 1787227204.6825686,
+    "mtime": 1787231605.8852837,
     "ast_hash": "daf363a35fe9b099362a9966f4e9b597",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/tome-of-the-eternal-flow.ts": {
-    "mtime": 1787227204.6825686,
+    "mtime": 1787231605.8862834,
     "ast_hash": "f458464f4ec3772f5345f80e07f565c4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/tulaytullahs-remembrance.ts": {
-    "mtime": 1787227204.6825686,
+    "mtime": 1787231605.8872845,
     "ast_hash": "de1e88d86413f485356aa214cdb82a69",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/twin-nephrite.ts": {
-    "mtime": 1787227204.684087,
+    "mtime": 1787231605.8882854,
     "ast_hash": "acf2a45a519404b52f7d478dae2d1dbf",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/vivid-notions.ts": {
-    "mtime": 1787227204.6851034,
+    "mtime": 1787231605.8893523,
     "ast_hash": "129bce2954edeae7194bfadb6a29fcb9",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/wandering-evenstar.ts": {
-    "mtime": 1787227204.6851034,
+    "mtime": 1787231605.8903522,
     "ast_hash": "087cdfb234e4c572e2912d034d22037c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/waveriding-whirl.ts": {
-    "mtime": 1787227204.6861115,
+    "mtime": 1787231605.8903522,
     "ast_hash": "9108966400b22c43a6a83c98953f3483",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/wine-and-song.ts": {
-    "mtime": 1787227204.6861115,
+    "mtime": 1787231605.891352,
     "ast_hash": "092afc55d1760f72ca05dbe6d9434549",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/a-thousand-blazing-suns.ts": {
-    "mtime": 1787227204.6871102,
+    "mtime": 1787231605.8923533,
     "ast_hash": "83ed1b85e8bf7c6aaed971aa2623863b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/akuoumaru.ts": {
-    "mtime": 1787227204.6871102,
+    "mtime": 1787231605.893352,
     "ast_hash": "4a0f8b3acfced31f5c92e5f25d7df517",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/beacon-of-the-reed-sea.ts": {
-    "mtime": 1787227204.688108,
+    "mtime": 1787231605.894353,
     "ast_hash": "2f924c77976aca832b96d500c11ccf01",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/blackcliff-slasher.ts": {
-    "mtime": 1787227204.6891108,
+    "mtime": 1787231605.8953521,
     "ast_hash": "f3c763a81da7bcdcff5202e6033910df",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/blade-of-atonement.ts": {
-    "mtime": 1787227204.6891108,
+    "mtime": 1787231605.8953521,
     "ast_hash": "b57cd9615a60272a28e2934d8a9ca769",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/bloodsoaked-ruins.ts": {
-    "mtime": 1787227204.6901135,
+    "mtime": 1787231605.8963535,
     "ast_hash": "e61b1136c84c5cbed1bbadbf55f0bdeb",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/bloodtainted-greatsword.ts": {
-    "mtime": 1787227204.6901135,
+    "mtime": 1787231605.8973606,
     "ast_hash": "0eff769cbc37918fe78ba51496af73de",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/debate-club.ts": {
-    "mtime": 1787227204.6911123,
+    "mtime": 1787231605.8973606,
     "ast_hash": "49057814ea9ccfc5d11854a348adc56d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/earth-shaker.ts": {
-    "mtime": 1787227204.6911123,
+    "mtime": 1787231605.8988588,
     "ast_hash": "ca8f7560ec8892c4cdc0a0686207c15e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/emberwell.ts": {
-    "mtime": 1787227204.692114,
+    "mtime": 1787231605.8988588,
     "ast_hash": "1e2810d5dd58f9a1ef44b7fd96326044",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/fang-of-the-mountain-king.ts": {
-    "mtime": 1787227204.692114,
+    "mtime": 1787231605.9003634,
     "ast_hash": "41c9f04a62e23e400076d46cb28f2289",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/favonius-greatsword.ts": {
-    "mtime": 1787227204.692114,
+    "mtime": 1787231605.9003634,
     "ast_hash": "01b12503ad2342a4696e64fbc762849f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/ferrous-shadow.ts": {
-    "mtime": 1787227204.692114,
+    "mtime": 1787231605.9013717,
     "ast_hash": "41109a74971eea631e18a8397c6fb4df",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/forest-regalia.ts": {
-    "mtime": 1787227204.693624,
+    "mtime": 1787231605.9013717,
     "ast_hash": "34fb24e274c81049fa4c4266579fe8a2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/fruitful-hook.ts": {
-    "mtime": 1787227204.693624,
+    "mtime": 1787231605.9023714,
     "ast_hash": "1ca475d070f7c24655562faa99d3781d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/gest-of-the-mighty-wolf.ts": {
-    "mtime": 1787227204.6946342,
+    "mtime": 1787231605.9033701,
     "ast_hash": "e1dea528d5c3d242dc57430728346aa7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/heretics-molten-blade.ts": {
-    "mtime": 1787227204.6946342,
+    "mtime": 1787231605.9033701,
     "ast_hash": "bbf53fa469656a53f38ff3d8b9eb7134",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/index.ts": {
-    "mtime": 1787227204.6956306,
+    "mtime": 1787231605.9043696,
     "ast_hash": "9901c6f935eefcc6982db2275ce5388e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/katsuragikiri-nagamasa.ts": {
-    "mtime": 1787227204.696629,
+    "mtime": 1787231605.9053705,
     "ast_hash": "a7e0fa2d982487620961918922e341a9",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/lithic-blade.ts": {
-    "mtime": 1787227204.696629,
+    "mtime": 1787231605.906371,
     "ast_hash": "fa1cb1c91cbef1558bb5556717d4b7be",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/luxurious-sea-lord.ts": {
-    "mtime": 1787227204.6976311,
+    "mtime": 1787231605.906371,
     "ast_hash": "ec7510f7da66cf3c826d717a093f219e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/mailed-flower.ts": {
-    "mtime": 1787227204.6976311,
+    "mtime": 1787231605.9073715,
     "ast_hash": "0e3d5cfea54f6b1583b86eac2e312f28",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/makhaira-aquamarine.ts": {
-    "mtime": 1787227204.6976311,
+    "mtime": 1787231605.90837,
     "ast_hash": "d66bce7e265852f10e78c5fc55aa4d25",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/old-mercs-pal.ts": {
-    "mtime": 1787227204.698631,
+    "mtime": 1787231605.90837,
     "ast_hash": "5d0f65f6aed65eb7d89d8436b4a8b4e6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/portable-power-saw.ts": {
-    "mtime": 1787227204.698631,
+    "mtime": 1787231605.909443,
     "ast_hash": "938ec125b43865737583c60a5afb769e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/prospectors-shovel.ts": {
-    "mtime": 1787227204.6996293,
+    "mtime": 1787231605.9114447,
     "ast_hash": "cd9782d86ac0305f7717a99126175c7d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/prototype-archaic.ts": {
-    "mtime": 1787227204.6996293,
+    "mtime": 1787231605.9124444,
     "ast_hash": "a4aef922e2d72571d21ecf748abb5940",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/rainslasher.ts": {
-    "mtime": 1787227204.7006285,
+    "mtime": 1787231605.9134436,
     "ast_hash": "909dbf8b90b63f230218e15eae17491d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/redhorn-stonethresher.ts": {
-    "mtime": 1787227204.7006285,
+    "mtime": 1787231605.9134436,
     "ast_hash": "df3c5c4a1dc7c6d901569d4009029f4a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/royal-greatsword.ts": {
-    "mtime": 1787227204.7016315,
+    "mtime": 1787231605.9144435,
     "ast_hash": "18fa698f318942c23260eb93b8f8f7b2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/sacrificial-greatsword.ts": {
-    "mtime": 1787227204.7016315,
+    "mtime": 1787231605.915443,
     "ast_hash": "b95c9811628e842059c5f3b12e3ee104",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/serenitys-call.ts": {
-    "mtime": 1787227204.70263,
+    "mtime": 1787231605.9164436,
     "ast_hash": "a3fec2a96c4b32b50c6c33d4a239b915",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/serpent-spine.ts": {
-    "mtime": 1787227204.70263,
+    "mtime": 1787231605.917444,
     "ast_hash": "7364438602c829f61e3718ff75672338",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/skyrider-greatsword.ts": {
-    "mtime": 1787227204.70263,
+    "mtime": 1787231605.917444,
     "ast_hash": "1184ccc91b3329d909c93827a4c91ee8",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/skyward-pride.ts": {
-    "mtime": 1787227204.70363,
+    "mtime": 1787231605.9184444,
     "ast_hash": "7273fb0ca083f561d0dadd0c09d700f0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/snow-tombed-starsilver.ts": {
-    "mtime": 1787227204.70363,
+    "mtime": 1787231605.9184444,
     "ast_hash": "d36c339f596110dd9f7eb638b2143962",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/song-of-broken-pines.ts": {
-    "mtime": 1787227204.7048233,
+    "mtime": 1787231605.920541,
     "ast_hash": "1ad1c0c9b5340e11cca6c2266306623d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/song-of-the-vigil.ts": {
-    "mtime": 1787227204.7048233,
+    "mtime": 1787231605.920541,
     "ast_hash": "79aa173c9de9c0f33c99de70eed0923f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/talking-stick.ts": {
-    "mtime": 1787227204.7058253,
+    "mtime": 1787231605.920541,
     "ast_hash": "ba698ea0024045fea999ab7cbfd9e0e2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/the-bell.ts": {
-    "mtime": 1787227204.7058253,
+    "mtime": 1787231605.922057,
     "ast_hash": "093331b89715b4555884e9973592c7a1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/the-unforged.ts": {
-    "mtime": 1787227204.7068238,
+    "mtime": 1787231605.923069,
     "ast_hash": "b8d1b2480cf0fa527dab738988ad9a2f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/tidal-shadow.ts": {
-    "mtime": 1787227204.7068238,
+    "mtime": 1787231605.924079,
     "ast_hash": "c7d77133ef264fe74196b46ea060b3f2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/ultimate-overlords-mega-magic-sword.ts": {
-    "mtime": 1787227204.7078226,
+    "mtime": 1787231605.924079,
     "ast_hash": "d8acacc850fa74973ac631003709a9f1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/verdict.ts": {
-    "mtime": 1787227204.7078226,
+    "mtime": 1787231605.9250665,
     "ast_hash": "564d221085850f277d212af14560eebd",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/waster-greatsword.ts": {
-    "mtime": 1787227204.7078226,
+    "mtime": 1787231605.9260657,
     "ast_hash": "d69a384143adf04ccecc72836c46b2ee",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/white-iron-greatsword.ts": {
-    "mtime": 1787227204.708822,
+    "mtime": 1787231605.9260657,
     "ast_hash": "b25430e2f98e8c48dee8c404668cddad",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/whiteblind.ts": {
-    "mtime": 1787227204.7098231,
+    "mtime": 1787231605.9270675,
     "ast_hash": "01c11c1a00ba9abe792b81c4516e20a7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/wolfs-gravestone.ts": {
-    "mtime": 1787227204.7098231,
+    "mtime": 1787231605.9270675,
     "ast_hash": "a1757cf8b3e517cabcf4788566fe420b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/ballad-of-the-fjords.ts": {
-    "mtime": 1787227204.7108264,
+    "mtime": 1787231605.9296012,
     "ast_hash": "e0f337b5c591f240a791241ccc6e361b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/beginners-protector.ts": {
-    "mtime": 1787227204.7118227,
+    "mtime": 1787231605.9296012,
     "ast_hash": "145e5773e31c3b1e87c940b15e3b9d91",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/black-tassel.ts": {
-    "mtime": 1787227204.7118227,
+    "mtime": 1787231605.9306035,
     "ast_hash": "cbed41653d36249cdcbb0f48046d14a1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/blackcliff-pole.ts": {
-    "mtime": 1787227204.7128232,
+    "mtime": 1787231605.931602,
     "ast_hash": "af8e19285ff6ce4d5fc327c031864a23",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/blackmarrow-lantern.ts": {
-    "mtime": 1787227204.7128232,
+    "mtime": 1787231605.9326012,
     "ast_hash": "9f223011ed14c6e213f078c8a32bb2c0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/calamity-queller.ts": {
-    "mtime": 1787227204.7138236,
+    "mtime": 1787231605.9326012,
     "ast_hash": "b48ac8d76536f290caf40d7dacd44850",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/crescent-pike.ts": {
-    "mtime": 1787227204.7138236,
+    "mtime": 1787231605.933594,
     "ast_hash": "72bcf47b53f235104e9cebdde583bda4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/crimson-moons-semblance.ts": {
-    "mtime": 1787227204.7138236,
+    "mtime": 1787231605.933594,
     "ast_hash": "6a31cdd799e7ede4e9bb72001a3a2674",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/dawning-frost.ts": {
-    "mtime": 1787227204.7149324,
+    "mtime": 1787231605.933594,
     "ast_hash": "351d8a8c25a6e10fbf9662a79ed23363",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/deathmatch.ts": {
-    "mtime": 1787227204.7149324,
+    "mtime": 1787231605.9351,
     "ast_hash": "293308ee442fc78585c0b24d7912a5ba",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/dialogues-of-the-desert-sages.ts": {
-    "mtime": 1787227204.715932,
+    "mtime": 1787231605.9361057,
     "ast_hash": "a569cd44a5862c5ea6eb46ec56286715",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/disaster-and-remorse.ts": {
-    "mtime": 1787227204.715932,
+    "mtime": 1787231605.9371047,
     "ast_hash": "fddaf4c2a9197141c85eb03aa74030f5",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/dragons-bane.ts": {
-    "mtime": 1787227204.715932,
+    "mtime": 1787231605.9371047,
     "ast_hash": "c59e279a1ccaadf34c80828ea67bcf90",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/dragonspine-spear.ts": {
-    "mtime": 1787227204.7169397,
+    "mtime": 1787231605.9371047,
     "ast_hash": "ef1ee7fb26134ae14fbca86af0e75476",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/engulfing-lightning.ts": {
-    "mtime": 1787227204.7169397,
+    "mtime": 1787231605.9386108,
     "ast_hash": "341f0d954a24ecc023f4e5923828196c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/etherlight-spindlelute.ts": {
-    "mtime": 1787227204.7179337,
+    "mtime": 1787231605.9396174,
     "ast_hash": "a161b2d09169bd5723a0b906b8819ec3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/favonius-lance.ts": {
-    "mtime": 1787227204.7179337,
+    "mtime": 1787231605.9396174,
     "ast_hash": "73e8dd9b25855016d6b3c935fa9b8fe2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/flame-forged-insight.ts": {
-    "mtime": 1787227204.7189329,
+    "mtime": 1787231605.9406161,
     "ast_hash": "3f5dea2b0a100e164d92c30c9f05ac77",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/footprint-of-the-rainbow.ts": {
-    "mtime": 1787227204.7189329,
+    "mtime": 1787231605.9406161,
     "ast_hash": "48f6c43865e4a1b92fb29d015d8feedf",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/forged-by-the-golden-melody.ts": {
-    "mtime": 1787227204.7199442,
+    "mtime": 1787231605.9416165,
     "ast_hash": "a6b6aab39f738a396a2ec821b44de68a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/fractured-halo.ts": {
-    "mtime": 1787227204.7199442,
+    "mtime": 1787231605.9416165,
     "ast_hash": "124359bbf4cf6bf16d6f9d22a48432c9",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/halberd.ts": {
-    "mtime": 1787227204.7209315,
+    "mtime": 1787231605.9426157,
     "ast_hash": "187fdcecc4ae5737c1b4b463e14c788b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/index.ts": {
-    "mtime": 1787227204.7209315,
+    "mtime": 1787231605.943616,
     "ast_hash": "b5e2deffb9d06fee02ef6163c1abec2d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/iron-point.ts": {
-    "mtime": 1787227204.7209315,
+    "mtime": 1787231605.943616,
     "ast_hash": "462e1e89111c0f930f833e357caffaec",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/kitain-cross-spear.ts": {
-    "mtime": 1787227204.721933,
+    "mtime": 1787231605.9446154,
     "ast_hash": "92a7a336d0ac29353f3ee5bfa9792221",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/lithic-spear.ts": {
-    "mtime": 1787227204.7229323,
+    "mtime": 1787231605.9446154,
     "ast_hash": "02eb0a23009d32a5877b1adaa960edf3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/lumidouce-elegy.ts": {
-    "mtime": 1787227204.7229323,
+    "mtime": 1787231605.9456158,
     "ast_hash": "33c1e7586e7d2e8eb63af7ca8ed72018",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/missive-windspear.ts": {
-    "mtime": 1787227204.7239325,
+    "mtime": 1787231605.9466262,
     "ast_hash": "47d42e7cbb018ea1ec2e9d43df9c2639",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/moonpiercer.ts": {
-    "mtime": 1787227204.7239325,
+    "mtime": 1787231605.9466262,
     "ast_hash": "051215ccad5856daf10955135e2d37b4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/moonweavers-dawn.ts": {
-    "mtime": 1787227204.7239325,
+    "mtime": 1787231605.94814,
     "ast_hash": "6573e841df2c170d11674fcf352a9a7c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/mountain-bracing-bolt.ts": {
-    "mtime": 1787227204.72518,
+    "mtime": 1787231605.94814,
     "ast_hash": "b508577975882698c6fb118871fc0de4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/primordial-jade-winged-spear.ts": {
-    "mtime": 1787227204.72518,
+    "mtime": 1787231605.9491446,
     "ast_hash": "dd7b279066abbae229d33a9324355b02",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/prospectors-drill.ts": {
-    "mtime": 1787227204.726343,
+    "mtime": 1787231605.9491446,
     "ast_hash": "755258865fe82d6ef4953e2cf6a5dc54",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/prototype-starglitter.ts": {
-    "mtime": 1787227204.726343,
+    "mtime": 1787231605.9506617,
     "ast_hash": "0db21eb8b0f4f65298fbaf34891fef40",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/rightful-reward.ts": {
-    "mtime": 1787227204.7273488,
+    "mtime": 1787231605.9506617,
     "ast_hash": "60875b8d45e2d86c2c8a98e247d4a4bb",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/royal-spear.ts": {
-    "mtime": 1787227204.7273488,
+    "mtime": 1787231605.9516723,
     "ast_hash": "10b0cb8cd4b03767eecef8cfc4a40f85",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/sacrificers-staff.ts": {
-    "mtime": 1787227204.728349,
+    "mtime": 1787231605.9516723,
     "ast_hash": "57fc3cc9cf102f0ad92e13635a95c732",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/skyward-spine.ts": {
-    "mtime": 1787227204.728349,
+    "mtime": 1787231605.9526706,
     "ast_hash": "cc2222d03deef543655e112ef7ff1af3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/staff-of-homa.ts": {
-    "mtime": 1787227204.7293477,
+    "mtime": 1787231605.9536722,
     "ast_hash": "3ab110a75adfb71060461017c488717e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/staff-of-the-scarlet-sands.ts": {
-    "mtime": 1787227204.7293477,
+    "mtime": 1787231605.9536722,
     "ast_hash": "1aeb2be18741a3a98f6f49020aa518a0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/tamayuratei-no-ohanashi.ts": {
-    "mtime": 1787227204.73035,
+    "mtime": 1787231605.9546723,
     "ast_hash": "eceba34242eb1a8337a7baf5f6679458",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/the-catch.ts": {
-    "mtime": 1787227204.731352,
+    "mtime": 1787231605.9556706,
     "ast_hash": "55842f157ce16cebe9e47eb9bb11616c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/vortex-vanquisher.ts": {
-    "mtime": 1787227204.731352,
+    "mtime": 1787231605.9556706,
     "ast_hash": "6bd947a0aecf2b954e09d90b03da9180",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/wavebreakers-fin.ts": {
-    "mtime": 1787227204.731352,
+    "mtime": 1787231605.9566715,
     "ast_hash": "732c3eac9262a6453ae9840fd7a8c3e1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/white-tassel.ts": {
-    "mtime": 1787227204.731352,
+    "mtime": 1787231605.9566715,
     "ast_hash": "3d11ac84e317268c8fe9c6a1a46df849",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/absolution.ts": {
-    "mtime": 1787227204.732857,
+    "mtime": 1787231605.9581745,
     "ast_hash": "609f0cb383c5e6946cf85d1a609a7a30",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/amenoma-kageuchi.ts": {
-    "mtime": 1787227204.732857,
+    "mtime": 1787231605.9581745,
     "ast_hash": "4bae019096e08090d75352187c478bce",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/angelos-heptades.ts": {
-    "mtime": 1787227204.7338734,
+    "mtime": 1787231605.9591784,
     "ast_hash": "7db33310fc8fe53d22d8e1385ed53d05",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/aquila-favonia.ts": {
-    "mtime": 1787227204.7338734,
+    "mtime": 1787231605.9601796,
     "ast_hash": "d277757f7b23d9f245b4a78de827614a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/athame-artis.ts": {
-    "mtime": 1787227204.7351353,
+    "mtime": 1787231605.9611793,
     "ast_hash": "d32cdd474afd563d87b440fb548cbfd8",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/azurelight.ts": {
-    "mtime": 1787227204.735642,
+    "mtime": 1787231605.9611793,
     "ast_hash": "10acee8d8a410e4de62bc82915c530d6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/blackcliff-longsword.ts": {
-    "mtime": 1787227204.735642,
+    "mtime": 1787231605.9621813,
     "ast_hash": "6097938fca0499bf8e025fc939bb9590",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/calamity-of-eshu.ts": {
-    "mtime": 1787227204.736649,
+    "mtime": 1787231605.963181,
     "ast_hash": "72d8b59b9f862f09aa9eca61f2ed0d7a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/cinnabar-spindle.ts": {
-    "mtime": 1787227204.736649,
+    "mtime": 1787231605.9641807,
     "ast_hash": "64e1d07537807e29d44b989e4046f7f3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/clash-of-kings.ts": {
-    "mtime": 1787227204.7376482,
+    "mtime": 1787231605.9641807,
     "ast_hash": "a49dfd01cc62a9eb5c9d3d834b6a9c2e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/cool-steel.ts": {
-    "mtime": 1787227204.7376482,
+    "mtime": 1787231605.9651911,
     "ast_hash": "eab127ee2f8bfba509d4d0f426f798e7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/dark-iron-sword.ts": {
-    "mtime": 1787227204.7386484,
+    "mtime": 1787231605.9651911,
     "ast_hash": "62720f9e86fb88b9ebb7e69357d5bddd",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/dull-blade.ts": {
-    "mtime": 1787227204.7386484,
+    "mtime": 1787231605.9661784,
     "ast_hash": "cf674cc692155c0211680a142776d05a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/echoes-of-the-heart.ts": {
-    "mtime": 1787227204.7396483,
+    "mtime": 1787231605.9661784,
     "ast_hash": "6a662b37114ed5e90691b112bb94a3ac",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/exaiphanes-blade.ts": {
-    "mtime": 1787227204.7396483,
+    "mtime": 1787231605.9671865,
     "ast_hash": "efd432d32d95ebadea7b266ab64c2630",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/favonius-sword.ts": {
-    "mtime": 1787227204.7396483,
+    "mtime": 1787231605.9671865,
     "ast_hash": "3d7f7ceb8c5ba17a756996ad4c1cb5b4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/festering-desire.ts": {
-    "mtime": 1787227204.7406478,
+    "mtime": 1787231605.9681878,
     "ast_hash": "417a7fc65a9c3c9c9ac454e6bf12d116",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/fillet-blade.ts": {
-    "mtime": 1787227204.7406478,
+    "mtime": 1787231605.9681878,
     "ast_hash": "52a3dc55526ce9c257267fea49dc8c24",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/finale-of-the-deep.ts": {
-    "mtime": 1787227204.7416477,
+    "mtime": 1787231605.969407,
     "ast_hash": "8f79e601bdf32cbfeb6ef0311b902ed6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/fleuve-cendre-ferryman.ts": {
-    "mtime": 1787227204.7416477,
+    "mtime": 1787231605.9704084,
     "ast_hash": "152437dadd7eca736d07950d8abb9a72",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/flute-of-ezpitzal.ts": {
-    "mtime": 1787227204.7426467,
+    "mtime": 1787231605.9704084,
     "ast_hash": "9ae31ddd7bbb9b5e62ba087a6091ea41",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/freedom-sworn.ts": {
-    "mtime": 1787227204.7426467,
+    "mtime": 1787231605.9714146,
     "ast_hash": "a9b2a908bd76a4fa9f1e41fa7d04cb83",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/haran-geppaku-futsu.ts": {
-    "mtime": 1787227204.7436492,
+    "mtime": 1787231605.9724064,
     "ast_hash": "18076228def4bef468dc220a824061c0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/harbinger-of-dawn.ts": {
-    "mtime": 1787227204.7436492,
+    "mtime": 1787231605.9724064,
     "ast_hash": "9783332ff0432b41d3fe44c2fcba2560",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/index.ts": {
-    "mtime": 1787227204.7436492,
+    "mtime": 1787231605.9734068,
     "ast_hash": "92c52fa822a19c9be799345a0da4309a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/iron-sting.ts": {
-    "mtime": 1787227204.7449985,
+    "mtime": 1787231605.9744067,
     "ast_hash": "5937ee1f5e50693ea8a8a0c906bb5932",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/kagotsurube-isshin.ts": {
-    "mtime": 1787227204.7449985,
+    "mtime": 1787231605.9744067,
     "ast_hash": "d63f798dc4545a29847d72f718aa8668",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/key-of-khaj-nisut.ts": {
-    "mtime": 1787227204.7469976,
+    "mtime": 1787231605.9754057,
     "ast_hash": "f253dc8225666cd4449c24cd2520a2c3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/light-of-foliar-incision.ts": {
-    "mtime": 1787227204.7479978,
+    "mtime": 1787231605.9764056,
     "ast_hash": "2a1da58c6029052951b022fad8712bc0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/lightbearing-moonshard.ts": {
-    "mtime": 1787227204.7479978,
+    "mtime": 1787231605.9774141,
     "ast_hash": "d251acef2ba75db410c105e9365b0f73",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/lions-roar.ts": {
-    "mtime": 1787227204.7490096,
+    "mtime": 1787231605.9774141,
     "ast_hash": "4cc70df18f67faa287614bd43f865cc5",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/master-key.ts": {
-    "mtime": 1787227204.7490096,
+    "mtime": 1787231605.978406,
     "ast_hash": "6a6b715f2e12240bceede3cdd15f523f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/mistsplitter-reforged.ts": {
-    "mtime": 1787227204.750007,
+    "mtime": 1787231605.978406,
     "ast_hash": "da48ca67dd873e45cc7e9ceac2f74024",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/peak-patrol-song.ts": {
-    "mtime": 1787227204.750007,
+    "mtime": 1787231605.979789,
     "ast_hash": "ddd4706645f04d5c989b351c649ce02a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/primordial-jade-cutter.ts": {
-    "mtime": 1787227204.750007,
+    "mtime": 1787231605.979789,
     "ast_hash": "35213cd8f33fcd64390aada24e86454e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/prototype-rancour.ts": {
-    "mtime": 1787227204.751007,
+    "mtime": 1787231605.9810674,
     "ast_hash": "15a7930be18c2327177db8c9af2037dc",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/royal-longsword.ts": {
-    "mtime": 1787227204.7519987,
+    "mtime": 1787231605.9820778,
     "ast_hash": "65d54c35edeb125ead82f7f9e35f09dc",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sacrificial-sword.ts": {
-    "mtime": 1787227204.7519987,
+    "mtime": 1787231605.9820778,
     "ast_hash": "375a0036382afd327c471a4861724704",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sapwood-blade.ts": {
-    "mtime": 1787227204.7519987,
+    "mtime": 1787231605.9830759,
     "ast_hash": "9f0e12055b0549db9125e6f95885ee69",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/silver-sword.ts": {
-    "mtime": 1787227204.7529974,
+    "mtime": 1787231605.9840763,
     "ast_hash": "218d36ab21e1ba3bafdb00e3cc13ad8a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/skyrider-sword.ts": {
-    "mtime": 1787227204.7529974,
+    "mtime": 1787231605.9840763,
     "ast_hash": "a12996ea9492860bdcf395cbc66e353a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/skyward-blade.ts": {
-    "mtime": 1787227204.7539966,
+    "mtime": 1787231605.985068,
     "ast_hash": "37ce7733a3f7d5e21610591e203fdc84",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/splendor-of-tranquil-waters.ts": {
-    "mtime": 1787227204.7539966,
+    "mtime": 1787231605.9860673,
     "ast_hash": "a4aa868fd1af9923461ecf4b153d4c6c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sturdy-bone.ts": {
-    "mtime": 1787227204.7550938,
+    "mtime": 1787231605.9860673,
     "ast_hash": "1c96d0fe148887087a5fbf67d7fab8e8",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/summit-shaper.ts": {
-    "mtime": 1787227204.7550938,
+    "mtime": 1787231605.9870756,
     "ast_hash": "ebd0e2b567c0134277abca780abcc8d0",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sword-of-descension.ts": {
-    "mtime": 1787227204.7560878,
+    "mtime": 1787231605.9870756,
     "ast_hash": "d3f3d32da7729329982b76847d337419",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sword-of-narzissenkreuz-pneuma.ts": {
-    "mtime": 1787227204.7560878,
+    "mtime": 1787231605.9870756,
     "ast_hash": "2f76330b7116ab48a4a7ce383fec9340",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/symphonist-of-scents.ts": {
-    "mtime": 1787227204.757087,
+    "mtime": 1787231605.9885802,
     "ast_hash": "25aea50e37c6cc588a0e39224c2ccecb",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/the-alley-flash.ts": {
-    "mtime": 1787227204.757087,
+    "mtime": 1787231605.9895854,
     "ast_hash": "99dadc2bc33745caa230abb000bd2b72",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/the-black-sword.ts": {
-    "mtime": 1787227204.758098,
+    "mtime": 1787231605.9895854,
     "ast_hash": "4f73b4bc9e853e19ae815ec5ee388dd5",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/the-dockhands-assistant.ts": {
-    "mtime": 1787227204.758098,
+    "mtime": 1787231605.9906006,
     "ast_hash": "67ba45c5baa2ea236f5b4ab195cd5f9a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/the-flute.ts": {
-    "mtime": 1787227204.758098,
+    "mtime": 1787231605.9906006,
     "ast_hash": "2e70d1bdefbc7cca2bc7ce529d98589a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/toukabou-shigure.ts": {
-    "mtime": 1787227204.7590864,
+    "mtime": 1787231605.9915853,
     "ast_hash": "0418681fb474f0f452b447d8f3231432",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/travelers-handy-sword.ts": {
-    "mtime": 1787227204.7590864,
+    "mtime": 1787231605.9915853,
     "ast_hash": "4d59d6c1cda5de582fe46775a4dc34fe",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/uraku-misugiri.ts": {
-    "mtime": 1787227204.7600865,
+    "mtime": 1787231605.9925988,
     "ast_hash": "ee6cf0e13cd3a9ce9cc5a2ba3b0d2b0b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/wolf-fang.ts": {
-    "mtime": 1787227204.7600865,
+    "mtime": 1787231605.993586,
     "ast_hash": "0487ccdb0427075559d7e6c6e010205a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/xiphos-moonlight.ts": {
-    "mtime": 1787227204.7610874,
+    "mtime": 1787231605.994586,
     "ast_hash": "d675750ad2dc2c575b1d7bf7b040b9cf",
     "semantic_hash": ""
   },
   ".agents/skills/external-weapon-buffs/SKILL.md": {
-    "mtime": 1787227204.5867395,
+    "mtime": 1787231605.7289836,
     "ast_hash": "d8ce0fa903b5879a839ef8dacc0f1748",
     "semantic_hash": ""
   },
   ".agents/skills/weapon-role-consideration/SKILL.md": {
-    "mtime": 1787227204.5877385,
+    "mtime": 1787231605.7295403,
     "ast_hash": "263a3d922a1ff0d80481e5f82aaa299b",
     "semantic_hash": ""
   },
   "scratch/generate_all_artifacts.ts": {
-    "mtime": 1787228844.852663,
-    "ast_hash": "89f42b2a0a565e144d91e305ce8ac247",
+    "mtime": 1787231605.7530768,
+    "ast_hash": "7190eb2127686a85cebdef5f65f041e2",
     "semantic_hash": ""
   },
   "scratch/generate_artifact_sql.ts": {
-    "mtime": 1787229241.4368725,
-    "ast_hash": "9bb633606a20fb7ca1604415ba872152",
+    "mtime": 1787231605.7536094,
+    "ast_hash": "7a8b1c3a7ec7e260f53f6003cd4b8280",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalArtifactBuffModal.tsx": {
-    "mtime": 1787227204.6226168,
+    "mtime": 1787231605.7733448,
     "ast_hash": "24ef4858f0c998c74f8839f62cfd4e77",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalArtifactBuffPanel.tsx": {
-    "mtime": 1787227204.6226168,
+    "mtime": 1787231605.7743433,
     "ast_hash": "aebdd2b930070a58aa7e76eb5a42913a",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/a-day-carved-from-rising-winds.ts": {
-    "mtime": 1787229093.1247196,
-    "ast_hash": "6f7ca62e4c411141740a590fef062b9a",
+    "mtime": 1787231605.7833753,
+    "ast_hash": "c21a7bcd1b3927c5d54452b58a5c083e",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/adventurer.ts": {
-    "mtime": 1787229093.102305,
-    "ast_hash": "7b06202608dd3efd6e81d4c5a69d43fb",
+    "mtime": 1787231605.7833753,
+    "ast_hash": "9f43478495d3c12e78431ebe1b294a1f",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/archaic-petra.ts": {
-    "mtime": 1787229093.110123,
-    "ast_hash": "62b0e139e20b2544b425e1db28dd58fb",
+    "mtime": 1787231605.7854147,
+    "ast_hash": "9d213281daa4eba45e213c9d61d7b3f3",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/aubade-of-morningstar-and-moon.ts": {
-    "mtime": 1787229093.1242151,
-    "ast_hash": "3cb52f119e9740e3a2bf293c4053da74",
+    "mtime": 1787231605.7854147,
+    "ast_hash": "aa966de69045c2a32ff344937ffb14c3",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/berserker.ts": {
-    "mtime": 1787229093.1038747,
-    "ast_hash": "2391ec305499b6f62e8a90d317623581",
+    "mtime": 1787231605.7863753,
+    "ast_hash": "7b86755ea455ab37336c70789b75521f",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/blizzard-strayer.ts": {
-    "mtime": 1787229093.1126966,
-    "ast_hash": "6c5373428fc5f224789a2f85d5d7eb40",
+    "mtime": 1787231605.7873943,
+    "ast_hash": "b4b22178088df71f22194f1f74725063",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/bloodstained-chivalry.ts": {
-    "mtime": 1787229093.1090765,
-    "ast_hash": "b9fef6f752d5188a69266bb4307726d5",
+    "mtime": 1787231605.7873943,
+    "ast_hash": "298dc43b5644110c2f099e652fcdb8ff",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/brave-heart.ts": {
-    "mtime": 1787229093.1054428,
-    "ast_hash": "cee6e5581fb8c9cfe910cb7f822260fc",
+    "mtime": 1787231605.7873943,
+    "ast_hash": "3713caf312eefb00c47836d82562aa07",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/celestial-gift.ts": {
-    "mtime": 1787229093.1247196,
-    "ast_hash": "41c2ba961edadca87ea1c0e9436dbb62",
+    "mtime": 1787231605.7883868,
+    "ast_hash": "e68541d62edd081decb0fe3b3d707ce1",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/crimson-witch-of-flames.ts": {
-    "mtime": 1787229093.112187,
-    "ast_hash": "c4a98b2b2fc5e1792dd811d32aa3688e",
+    "mtime": 1787231605.788908,
+    "ast_hash": "6397de2986e56ecdcc40634e1a22cb3b",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/deepwood-memories.ts": {
-    "mtime": 1787229093.115701,
-    "ast_hash": "81b68236b7f6c8bd7f1d7a1b8c8871d1",
+    "mtime": 1787231605.788908,
+    "ast_hash": "f37c10c0de96673db700fb1e3e3cc9ea",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/defenders-will.ts": {
-    "mtime": 1787229093.1054428,
-    "ast_hash": "aa6f47c2bd2dec657e6c3a7a57118135",
+    "mtime": 1787231605.790414,
+    "ast_hash": "63774ed50da59669529202377ee4304d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/desert-pavilion-chronicle.ts": {
-    "mtime": 1787229093.1167026,
-    "ast_hash": "4c136f0f587c062c6a702a20d6b21f12",
+    "mtime": 1787231605.790414,
+    "ast_hash": "eb0deea75e2f1b76c379132b5183b62c",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/disenchantment-in-deep-shadow.ts": {
-    "mtime": 1787229093.1257243,
-    "ast_hash": "5e55a7843784343ac6d1ff41cdfcb76f",
+    "mtime": 1787231605.7914197,
+    "ast_hash": "f7f6488cf8c98210e8f0d8c8f72b53bd",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/echoes-of-an-offering.ts": {
-    "mtime": 1787229093.115701,
-    "ast_hash": "736e01077ba4c3ca21ff250e40a4a4e8",
+    "mtime": 1787231605.7914197,
+    "ast_hash": "959534b83acdcd84c6e5f7c8f5f3b28e",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/emblem-of-severed-fate.ts": {
-    "mtime": 1787229093.1147008,
-    "ast_hash": "d6efe7c0fb10e19cf37972b3eae8e53c",
+    "mtime": 1787231605.7914197,
+    "ast_hash": "2124dc728ea2699c733107d3fb5f0210",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/finale-of-the-deep-galleries.ts": {
-    "mtime": 1787229093.1232128,
-    "ast_hash": "22105b8670419824dc8ddbee37d05b75",
+    "mtime": 1787231605.7924197,
+    "ast_hash": "c2df141393f79042f73e57426800f597",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/flower-of-paradise-lost.ts": {
-    "mtime": 1787229093.1177022,
-    "ast_hash": "f5d32066255bb3942303bff4cf42941a",
+    "mtime": 1787231605.7924197,
+    "ast_hash": "2c9e14814a5969d35edf7b4b40c84cd8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/fragment-of-harmonic-whimsy.ts": {
-    "mtime": 1787229093.121212,
-    "ast_hash": "b69eeb06d80bc0a3c2a179a7f0dfa36f",
+    "mtime": 1787231605.7934186,
+    "ast_hash": "efcc1c0b5352b8cf4cd459195c0e3bae",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gambler.ts": {
-    "mtime": 1787229093.1059527,
-    "ast_hash": "479465c423a2d82c8a79ad480f6e2a1d",
+    "mtime": 1787231605.794419,
+    "ast_hash": "ccf61f7f899b813d6ef0a6c0ff24fb72",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gilded-dreams.ts": {
-    "mtime": 1787229093.1167026,
-    "ast_hash": "a8ab851cc9ab3abc892422cff1d07829",
+    "mtime": 1787231605.794419,
+    "ast_hash": "6f6418e6abe12ec26e886b2f179705b9",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gladiators-finale.ts": {
-    "mtime": 1787229093.108017,
-    "ast_hash": "f7f2a64a90716db8090c800943605a84",
+    "mtime": 1787231605.7954185,
+    "ast_hash": "f24d8e5742685592f6e035afd93b13cd",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/golden-troupe.ts": {
-    "mtime": 1787229093.120212,
-    "ast_hash": "9f305db50853fc6bcf65553587d080ca",
+    "mtime": 1787231605.7954185,
+    "ast_hash": "bb6fc3929ff21f44693af7fb1a374337",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/heart-of-depth.ts": {
-    "mtime": 1787229093.1126966,
-    "ast_hash": "80310b1f3fcdf6fce2399336cffd8600",
+    "mtime": 1787231605.7954185,
+    "ast_hash": "17ef501bc4cd9dad97c928ae33765246",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/heart-of-the-furnace.ts": {
-    "mtime": 1787229093.1257243,
-    "ast_hash": "5a0c1f6b51ec85aefcf3e58643d9bdd2",
+    "mtime": 1787231605.7964184,
+    "ast_hash": "d5264002b5999fc75f9636b13ed5ef1a",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/husk-of-opulent-dreams.ts": {
-    "mtime": 1787229093.1147008,
-    "ast_hash": "cb994971589204283a0b3b845c4df413",
+    "mtime": 1787231605.7964184,
+    "ast_hash": "0801dbb70fa3fd374f99c32878b5adeb",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/index.ts": {
-    "mtime": 1787229093.126725,
-    "ast_hash": "a3691d5a89b4284674dd2be7f9656831",
+    "mtime": 1787231605.79742,
+    "ast_hash": "be23e463643f9c20c3ea44859e3d60d5",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/initiate.ts": {
-    "mtime": 1787229093.1016343,
-    "ast_hash": "1d28222bb4a18066544c878af177271d",
+    "mtime": 1787231605.79742,
+    "ast_hash": "517d2dd6f999c1132947d722892a13ad",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/instructor.ts": {
-    "mtime": 1787229093.1043985,
-    "ast_hash": "4cc4ff0910c046aa0be14fbc00e416b9",
+    "mtime": 1787231605.7984197,
+    "ast_hash": "7bbc6d66492221de3672ce80ec063c83",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/lavawalker.ts": {
-    "mtime": 1787229093.111154,
-    "ast_hash": "7f75192e4812d96f7957ecfb45860106",
+    "mtime": 1787231605.7984197,
+    "ast_hash": "9b7b5bdda949fdebae8fbc5b87f8001d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/long-nights-oath.ts": {
-    "mtime": 1787229093.1222126,
-    "ast_hash": "22b7d8d446c44cf87811a96ebbac3f09",
+    "mtime": 1787231605.7995167,
+    "ast_hash": "f49c4b6a69101728b79314494933d41d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/lucky-dog.ts": {
-    "mtime": 1787229093.1028254,
-    "ast_hash": "7688fc148f1fdabc26348a68d33aa451",
+    "mtime": 1787231605.7995167,
+    "ast_hash": "656eb543f61bc45034312d33f539114b",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/maiden-beloved.ts": {
-    "mtime": 1787229093.1096013,
-    "ast_hash": "4b96469c717543862f1c964410bd3452",
+    "mtime": 1787231605.8005188,
+    "ast_hash": "1fe5309a4553e9317a929ccebb5c3356",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/marechaussee-hunter.ts": {
-    "mtime": 1787229093.1192122,
-    "ast_hash": "50bd0ea71901dacd4e249d2daf2c4f7a",
+    "mtime": 1787231605.8015184,
+    "ast_hash": "2f67e831f0aec521a734f4a1fd9a4b41",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/martial-artist.ts": {
-    "mtime": 1787229093.1059527,
-    "ast_hash": "ee9dc9134f854491019feac17a5bcfee",
+    "mtime": 1787231605.8015184,
+    "ast_hash": "cdc2af2ecabefc5e5b459a490c4c08cf",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/night-of-the-skys-unveiling.ts": {
-    "mtime": 1787229093.1232128,
-    "ast_hash": "874bcb6acf1810a432b2b1c1bc431e58",
+    "mtime": 1787231605.8025172,
+    "ast_hash": "5faa75570e536c76ed4ac7e49fd3ea8b",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/nighttime-whispers-in-the-echoing-woods.ts": {
-    "mtime": 1787229093.121212,
-    "ast_hash": "6dde098eccc8d512d82d1083b727676c",
+    "mtime": 1787231605.8025172,
+    "ast_hash": "c0462100e82c660a4524cd4beaeac84c",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/noblesse-oblige.ts": {
-    "mtime": 1787229093.1090765,
-    "ast_hash": "d3dcaa5b3824831597fce1332122801a",
+    "mtime": 1787231605.8035161,
+    "ast_hash": "cb877b9f969361b5f853b521df38716d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/nymphs-dream.ts": {
-    "mtime": 1787229093.118211,
-    "ast_hash": "80115e9116f520532215fe036f38d32a",
+    "mtime": 1787231605.8035161,
+    "ast_hash": "c7d26457d1d7ed5d1d1e49bff31e5e10",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/obsidian-codex.ts": {
-    "mtime": 1787229093.1222126,
-    "ast_hash": "1f242fdad1f4ff27ec5874f678b9ba9c",
+    "mtime": 1787231605.8045235,
+    "ast_hash": "641fb86e7c218f54c49e92f1ed6d72d4",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/ocean-hued-clam.ts": {
-    "mtime": 1787229093.1147008,
-    "ast_hash": "a11511b5f6ca815ad6fc6be3499ee40f",
+    "mtime": 1787231605.8045235,
+    "ast_hash": "200d906b02f780424de223846ee340b1",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/pale-flame.ts": {
-    "mtime": 1787229093.1137016,
-    "ast_hash": "462a40315521b1107ec414ab86a38f71",
+    "mtime": 1787231605.805516,
+    "ast_hash": "3db724b66de9ad802cdeb5e8466f34e3",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-destiny.ts": {
-    "mtime": 1787229093.106984,
-    "ast_hash": "79a63b29b9fd17118512c96bf2094fb7",
+    "mtime": 1787231605.8062913,
+    "ast_hash": "59fc07929598cf15e6a13b86a74b01d0",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-illumination.ts": {
-    "mtime": 1787229093.1074939,
-    "ast_hash": "010b3a0c8b42d38da01b9bbaf4868d55",
+    "mtime": 1787231605.8062913,
+    "ast_hash": "400ac2aed713601121345c1a2e20cc44",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-wisdom.ts": {
-    "mtime": 1787229093.106984,
-    "ast_hash": "b6d5cc3a4825dcf36fd3557dde1dea36",
+    "mtime": 1787231605.8062913,
+    "ast_hash": "438131e64159f1c3e19ced45b6a3f4fc",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-to-springtime.ts": {
-    "mtime": 1787229093.108017,
-    "ast_hash": "67ae61200135ec8e671a7b1def4c4244",
+    "mtime": 1787231605.8072972,
+    "ast_hash": "391cbcc8b308a37b840c1499d9e22cde",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/resolution-of-sojourner.ts": {
-    "mtime": 1787229093.1033478,
-    "ast_hash": "01d33fb18bf86a1721057dd1b40f864f",
+    "mtime": 1787231605.8078346,
+    "ast_hash": "e6d7d5c21490d2abf92dd28c92fc6ad0",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/retracing-bolide.ts": {
-    "mtime": 1787229093.110637,
-    "ast_hash": "d95c45c6af349449b9cc67cf295b30b5",
+    "mtime": 1787231605.808378,
+    "ast_hash": "301000e0a92187e9e4cafc3d0ccd763e",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/scarlet-proof.ts": {
-    "mtime": 1787229093.1257243,
-    "ast_hash": "8611abddc4ad6ead3866b97947165e43",
+    "mtime": 1787231605.8089166,
+    "ast_hash": "55978c5cd6adee4d66d047d7da7d2aad",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/scholar.ts": {
-    "mtime": 1787229093.1064665,
-    "ast_hash": "87b0ae7b1923e4c76b7e196e566d6a86",
+    "mtime": 1787231605.8089166,
+    "ast_hash": "ab45a34593307be2e1283032b59655ac",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/scroll-of-the-hero-of-cinder-city.ts": {
-    "mtime": 1787229093.1222126,
-    "ast_hash": "93d0409768c27f71d837c7002e43cf45",
+    "mtime": 1787231605.8099253,
+    "ast_hash": "ca79aeb41af8560707d63206bed27416",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/shimenawas-reminiscence.ts": {
-    "mtime": 1787229093.1137016,
-    "ast_hash": "8f20d83a0155af395906a3c0d9facd54",
+    "mtime": 1787231605.8104312,
+    "ast_hash": "eda199875049e15588aa489307cf56e4",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/silken-moons-serenade.ts": {
-    "mtime": 1787229093.1242151,
-    "ast_hash": "97355d89619457ac22e0f8ab739c29da",
+    "mtime": 1787231605.8104312,
+    "ast_hash": "8dc6865363a547cd183a3ccc835aceb6",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/song-of-days-past.ts": {
-    "mtime": 1787229093.120212,
-    "ast_hash": "7907087054091063479faa806e482eda",
+    "mtime": 1787231605.8114417,
+    "ast_hash": "25c680b8b1b59b69006d643f5441cf64",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/tenacity-of-the-millelith.ts": {
-    "mtime": 1787229093.1126966,
-    "ast_hash": "9106ffa518a2708b7336a308d646903e",
+    "mtime": 1787231605.8119557,
+    "ast_hash": "3ed0aca9088d3a6cc3b2c63dec4f5e8d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/the-exile.ts": {
-    "mtime": 1787229093.104925,
-    "ast_hash": "cd2483c1f81e5bb97e54cec952855459",
+    "mtime": 1787231605.8124926,
+    "ast_hash": "d27f43c5b4755b49bee5a46e67ead7d1",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/thundering-fury.ts": {
-    "mtime": 1787229093.111154,
-    "ast_hash": "25393e5b32cf7552dfc1b9c0d7048270",
+    "mtime": 1787231605.8124926,
+    "ast_hash": "3c453314cedcafcc45285e251ae8079d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/thundersoother.ts": {
-    "mtime": 1787229093.110637,
-    "ast_hash": "1d093183d98c56c0ed3018cbcddeb27a",
+    "mtime": 1787231605.8134968,
+    "ast_hash": "3f770c49684f385d3d7aa6b0654660e8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/tiny-miracle.ts": {
-    "mtime": 1787229093.1033478,
-    "ast_hash": "4f781908067f311361f688a78c2cdf2d",
+    "mtime": 1787231605.8134968,
+    "ast_hash": "874e94f4db79053a4778e97a1842c797",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/traveling-doctor.ts": {
-    "mtime": 1787229093.1028254,
-    "ast_hash": "ecbb45f2a607ccc39a62d65fdcd46231",
+    "mtime": 1787231605.814008,
+    "ast_hash": "3a646de8f0d731bed24d3c3e1a100abf",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/types.ts": {
-    "mtime": 1787228782.3295722,
+    "mtime": 1787231605.814008,
     "ast_hash": "8db193ef18152588ffc8d02558c6448f",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/unfinished-reverie.ts": {
-    "mtime": 1787229093.121212,
-    "ast_hash": "44c1df9dc4c47a128944139a04d0cb7e",
+    "mtime": 1787231605.815016,
+    "ast_hash": "384ad32e22690355cd9d28b753efdfb9",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/vermillion-hereafter.ts": {
-    "mtime": 1787229093.1147008,
-    "ast_hash": "6ad7d2c288c1ab44da5bd31a30209dd5",
+    "mtime": 1787231605.8155198,
+    "ast_hash": "a5e31a828233050e4d23d47cbef35a64",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/viridescent-venerer.ts": {
-    "mtime": 1787229093.1096013,
-    "ast_hash": "2928c1908166da590f18717f7b2eecfc",
+    "mtime": 1787231605.8155198,
+    "ast_hash": "19cfdf909a39bb9766edc4c29449323f",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/vourukashas-glow.ts": {
-    "mtime": 1787229093.1192122,
-    "ast_hash": "e370543327911d1c2fa42c0072adb9e6",
+    "mtime": 1787231605.816534,
+    "ast_hash": "7b221843189ad3bb76bce476a9205926",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/wanderers-troupe.ts": {
-    "mtime": 1787229093.1085486,
-    "ast_hash": "4725bbaad9e31b12cef476d965d2310c",
+    "mtime": 1787231605.817047,
+    "ast_hash": "fd35647b91e2c8094206649f63765a65",
     "semantic_hash": ""
   },
   "src/lib/engine/artifact-buffs.test.ts": {
-    "mtime": 1787229220.0439622,
-    "ast_hash": "73649f84551afb27758571f05fdbd661",
+    "mtime": 1787231605.9955997,
+    "ast_hash": "70e42243602f9d5db7b0f94a34a080e1",
     "semantic_hash": ""
   },
   "src/lib/engine/artifact-buffs.ts": {
-    "mtime": 1787228790.8894117,
+    "mtime": 1787231605.9965942,
     "ast_hash": "b055496405aea930810e0136c1549e5f",
     "semantic_hash": ""
   },
   ".agents/skills/external-artifact-buffs/SKILL.md": {
-    "mtime": 1787227204.5853374,
+    "mtime": 1787231605.727388,
     "ast_hash": "6304183a428c09be17b5ab6621c27e5f",
     "semantic_hash": ""
   },
   "src/components/calculator/components/TeamBuffModal.tsx": {
-    "mtime": 1787230499.5926335,
-    "ast_hash": "1f10cf70de880a39b771d031c4a7ec8b",
+    "mtime": 1787231883.2207818,
+    "ast_hash": "58d0e0b0c9fc473dc1540e47b6c6e837",
+    "semantic_hash": ""
+  },
+  "src/data/registry/characters/bennett.ts": {
+    "mtime": 1787231792.2642388,
+    "ast_hash": "b69a07b6a06f6d3c360ae0bfc3ffbd64",
+    "semantic_hash": ""
+  },
+  "src/data/talents/bennett.ts": {
+    "mtime": 1787231809.6136599,
+    "ast_hash": "38d9a1ded5800424026529bd476eafd5",
+    "semantic_hash": ""
+  },
+  "src/lib/engine/characters/bennett.test.ts": {
+    "mtime": 1787232182.7095127,
+    "ast_hash": "0300c6cbce30923b6e57bbe726c865d1",
+    "semantic_hash": ""
+  },
+  "src/lib/engine/characters/bennett.ts": {
+    "mtime": 1787231827.298376,
+    "ast_hash": "42de4d0efdda70bf4922921472d0b654",
     "semantic_hash": ""
   }
 }

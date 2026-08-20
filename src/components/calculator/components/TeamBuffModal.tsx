@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import type { CharacterConfig, Element } from "@/data/registry/types";
 import type { CalcInstance, SupportInstance } from "../types";
-import { SUPPORT_CONFIGS, supportById } from "@/data/registry/supports";
+import { SUPPORT_CONFIGS, supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 

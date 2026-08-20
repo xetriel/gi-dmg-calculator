@@ -8,9 +8,8 @@ import { getInitialStats, hydrateFromBuild } from "./hooks/useCalculatorState";
 import { StatsGrid } from "./components/StatsGrid";
 import { MechanicsPanel } from "./components/MechanicsPanel";
 import { validate } from "@/lib/engine/validation";
-import { SUPPORT_CONFIGS, supportById } from "@/data/registry/supports";
+import { SUPPORT_CONFIGS, supportById, byId as characterById } from "@/data/registry/characters";
 import { resolveSupportCtx, type SupportInstance } from "@/lib/engine/team-buffs";
-import { byId as characterById } from "@/data/registry/characters";
 
 interface SupportBuildEditorViewProps {
   config: CharacterConfig;

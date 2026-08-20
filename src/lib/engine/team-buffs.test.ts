@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveTeamBuffs, resolveSupportCtx, type SupportInstance } from "./team-buffs";
-import { supportById } from "../../data/registry/supports";
+import { supportById } from "../../data/registry/characters";
 
 function makeIneffa(overrides: Partial<SupportInstance> = {}): SupportInstance {
   return {
