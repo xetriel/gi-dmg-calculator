@@ -13,6 +13,7 @@ import { levelMultiplier } from "@/lib/engine/level-multiplier";
 import { encodeBuild } from "@/lib/engine/share";
 import { resolveTeamBuffs, type TeamBuffSource } from "@/lib/engine/team-buffs";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
+import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
 import { byId as characterById } from "@/data/registry/characters";
 import { renderStyledText } from "./calculator/utils/colors";
 
@@ -30,6 +31,8 @@ import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
 import { TeamBuffPanel } from "./calculator/components/TeamBuffPanel";
 import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponBuffPanel";
 import { ExternalWeaponBuffModal } from "./calculator/components/ExternalWeaponBuffModal";
+import { ExternalArtifactBuffPanel } from "./calculator/components/ExternalArtifactBuffPanel";
+import { ExternalArtifactBuffModal } from "./calculator/components/ExternalArtifactBuffModal";
 
 
 const REACTION_LABEL: Record<ReactionType, string> = {
@@ -210,6 +213,8 @@ export function CharacterCalculator({
   const [isSelectAttackOpen, setIsSelectAttackOpen] = useState(false);
   const [isWeaponModalOpen, setIsWeaponModalOpen] = useState(false);
   const [activeWeaponModalSetupId, setActiveWeaponModalSetupId] = useState<string>("");
+  const [isArtifactModalOpen, setIsArtifactModalOpen] = useState(false);
+  const [activeArtifactModalSetupId, setActiveArtifactModalSetupId] = useState<string>("");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);
@@ -429,6 +434,16 @@ export function CharacterCalculator({
     if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
       const weaponResult = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
       for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
+        if (key in s && typeof val === "number") {
+          (s as unknown as Record<string, number>)[key] += val;
+        }
+      }
+    }
+
+    // Apply external artifact team buffs
+    if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
+      const artifactResult = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+      for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
         if (key in s && typeof val === "number") {
           (s as unknown as Record<string, number>)[key] += val;
         }
@@ -1489,6 +1504,20 @@ export function CharacterCalculator({
                           }
                         }
 
+                        // Add external artifact buff sources
+                        if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
+                          const artifactRes = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+                          for (const src of artifactRes.sources) {
+                            if (src.stat === row.key) {
+                              additions.push({
+                                source: `${src.artifactName} (Artifact)`,
+                                value: src.value,
+                                description: src.label,
+                              });
+                            }
+                          }
+                        }
+
 
                         // Generic fallback addition if total differs from raw but no source was explicitly captured
                         const recordedSum = additions.reduce((acc, curr) => acc + curr.value, 0);
@@ -1816,6 +1845,19 @@ export function CharacterCalculator({
                         />
                       )}
 
+                      {/* External Artifact Buffs panel */}
+                      {!fromCharacterId && (
+                        <ExternalArtifactBuffPanel
+                          config={config}
+                          inst={inst}
+                          updateInstance={updateInstance}
+                          onOpenModal={() => {
+                            setActiveArtifactModalSetupId(inst.id);
+                            setIsArtifactModalOpen(true);
+                          }}
+                        />
+                      )}
+
                       {/* Core attribute tables */}
                       <StatsGrid
                         inst={inst}
@@ -1877,6 +1919,19 @@ export function CharacterCalculator({
                       />
                     )}
 
+                    {/* External Artifact Buffs panel */}
+                    {!fromCharacterId && (
+                      <ExternalArtifactBuffPanel
+                        config={config}
+                        inst={inst}
+                        updateInstance={updateInstance}
+                        onOpenModal={() => {
+                          setActiveArtifactModalSetupId(inst.id);
+                          setIsArtifactModalOpen(true);
+                        }}
+                      />
+                    )}
+
                     {/* Core attribute tables */}
                     <StatsGrid
                       inst={inst}
@@ -1916,6 +1971,17 @@ export function CharacterCalculator({
         instances={instances}
         activeInstanceId={activeWeaponModalSetupId || instances[0]?.id || ""}
         setActiveInstanceId={setActiveWeaponModalSetupId}
+        updateInstance={updateInstance}
+      />
+
+      {/* External Artifact Buffs Dialog Overlay popup */}
+      <ExternalArtifactBuffModal
+        isOpen={isArtifactModalOpen}
+        setIsOpen={setIsArtifactModalOpen}
+        config={config}
+        instances={instances}
+        activeInstanceId={activeArtifactModalSetupId || instances[0]?.id || ""}
+        setActiveInstanceId={setActiveArtifactModalSetupId}
         updateInstance={updateInstance}
       />
 

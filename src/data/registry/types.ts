@@ -22,7 +22,8 @@ export type StatKey =
   | "anemoDmgBonus" | "cryoDmgBonus" | "geoDmgBonus" | "physicalDmgBonus"
   | "lunarChargedDmgBonus" | "lunarBloomDmgBonus" | "lunarCrystallizeDmgBonus"
   | "lunarChargedElevation" | "lunarBloomElevation" | "lunarCrystallizeElevation"
-  | "lunarChargedFlatDmg" | "lunarBloomFlatDmg" | "lunarCrystallizeFlatDmg";
+  | "lunarChargedFlatDmg" | "lunarBloomFlatDmg" | "lunarCrystallizeFlatDmg"
+  | "stellarSwirlDmgBonus" | "stellarGlimmerDmgBonus";
 
 export interface StatField {
   key: StatKey;
