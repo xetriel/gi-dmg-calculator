@@ -5,9 +5,11 @@ import type { LunarType, LunarResult } from "@/lib/engine/lunar";
 import type { validate } from "@/lib/engine/validation";
 import type { SupportInstance } from "@/lib/engine/team-buffs";
 import type { ExternalWeaponInstance } from "@/lib/engine/weapon-buffs";
+import type { ExternalArtifactInstance, ExternalArtifactBuffSource } from "@/lib/engine/artifact-buffs";
 
 export type { SupportInstance } from "@/lib/engine/team-buffs";
 export type { ExternalWeaponInstance } from "@/lib/engine/weapon-buffs";
+export type { ExternalArtifactInstance, ExternalArtifactBuffSource } from "@/lib/engine/artifact-buffs";
 
 export interface SavedBuild {
   id: string;
@@ -34,6 +36,8 @@ export interface CalcInstance {
   teamBuffsEnabled?: boolean;          // master toggle, defaults to true
   externalWeapons?: ExternalWeaponInstance[]; // external weapon team buffs
   externalWeaponBuffsEnabled?: boolean;       // master toggle for external weapons, defaults to true
+  externalArtifacts?: ExternalArtifactInstance[]; // external artifact team buffs (max 4)
+  externalArtifactBuffsEnabled?: boolean;         // master toggle for external artifacts, defaults to true
 }
 
 

@@ -45,6 +45,8 @@ export interface DamageStats {
   lunarChargedFlatDmg?: number;
   lunarBloomFlatDmg?: number;
   lunarCrystallizeFlatDmg?: number;
+  stellarSwirlDmgBonus?: number;
+  stellarGlimmerDmgBonus?: number;
 }
 
 // Per-hit direct-reaction parameters, shared by Stellar-Conduct and Direct Lunar
@@ -57,6 +59,7 @@ export interface DirectReactionParams {
   reactionBonusPct: number;   // %Reaction Bonus (e.g. constellation +30, artifacts)
   elevationBonusPct?: number; // %Reaction Elevation Bonus (e.g. constellation elevation)
   lunarType?: "lunar-charged" | "lunar-crystallize" | "lunar-bloom";
+  stellarType?: "stellar-swirl" | "stellar-glimmer" | "stellar-conduct";
 }
 
 export interface HitInput {
@@ -253,6 +256,10 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
       specificDmgBonus = stats.lunarCrystallizeDmgBonus ?? 0;
       specificElevation = stats.lunarCrystallizeElevation ?? 0;
       specificFlatDmg = stats.lunarCrystallizeFlatDmg ?? 0;
+    } else if (s.stellarType === "stellar-swirl" || (s.stellarType === undefined && !s.lunarType && stats.stellarSwirlDmgBonus)) {
+      specificDmgBonus = stats.stellarSwirlDmgBonus ?? 0;
+    } else if (s.stellarType === "stellar-glimmer") {
+      specificDmgBonus = stats.stellarGlimmerDmgBonus ?? 0;
     }
 
     const emBonusFrac = stellarEmBonus(stats.em);

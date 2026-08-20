@@ -83,6 +83,24 @@ CREATE TABLE IF NOT EXISTS `Weapon` (
   INDEX `Weapon_isSupport_idx` (`isSupport`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---------------------------------------------------------------------
+--  Artifact — artifact set definitions, set piece effects & team buffs
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Artifact` (
+  `id`            VARCHAR(191)  NOT NULL,          -- e.g. 'scarlet-proof', 'heart-of-the-furnace'
+  `name`          VARCHAR(191)  NOT NULL,
+  `rarity`        INT           NOT NULL,          -- 4..5
+  `twoPieceDesc`  TEXT          NOT NULL,
+  `fourPieceDesc` TEXT          NOT NULL,
+  `isSupport`     BOOLEAN       NOT NULL DEFAULT FALSE,
+  `buffType`      VARCHAR(32)   NULL DEFAULT 'self', -- 'team' | 'self' | 'both'
+  `buffConfig`    JSON          NULL,
+  `createdAt`     DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt`     DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `Artifact_isSupport_idx` (`isSupport`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- =====================================================================
 --  OPTIONAL — smoke-test seed (matches Phase-1 Task T7). Safe to skip.
@@ -116,6 +134,16 @@ INSERT INTO `Weapon` (`id`, `name`, `type`, `rarity`, `baseAtk`, `subStatType`, 
   ('a-thousand-floating-dreams', 'A Thousand Floating Dreams', 'Catalyst', 5, 542, 'em', 265, 'A Thousand Nights'' Dawnsong',
    'Party members other than the equipping character will provide the equipping character with buffs based on whether their Elemental Type is the same as the latter or not. If their Elemental Types are the same, increase Elemental Mastery by 32~64. If not, increase the equipping character''s DMG Bonus from their Elemental Type by 10~26%. Each of the aforementioned effects can have up to 3 stacks. Additionally, all nearby party members other than the equipping character will have their Elemental Mastery increased by 40~48. Multiple such effects from multiple such weapons can stack.',
    TRUE, 'both', JSON_OBJECT('partyEm', JSON_ARRAY(40,42,44,46,48), 'sameElementEm', JSON_ARRAY(32,40,48,56,64), 'diffElementDmgBonus', JSON_ARRAY(10,14,18,22,26)));
+
+INSERT INTO `Artifact` (`id`, `name`, `rarity`, `twoPieceDesc`, `fourPieceDesc`, `isSupport`, `buffType`, `buffConfig`) VALUES
+  ('scarlet-proof', 'Scarlet Proof', 5,
+   'ATK increased by 18%.',
+   'Increases the equipping character''s CRIT Rate by 16%, and their Stellar Swirl reaction dealt by 40%, for 10s after they trigger a Stellar Swirl reaction.',
+   FALSE, 'self', JSON_OBJECT('twoPieceAtkPct', 18, 'fourPieceCritRate', 16, 'fourPieceStellarSwirlDmg', 40)),
+  ('heart-of-the-furnace', 'Heart of the Furnace', 5,
+   'ATK increased by 18%.',
+   'Increases the equipping character''s ATK by 12% for 12s when they trigger a Stellar Glimmer reaction or deal Stellar Glimmer reaction DMG. Also increases Stellar Glimmer reaction DMG dealt by all nearby party members by 50%. The above effects can trigger even when the equipping character is not on the field, and the DMG bonus from multiple Artifact Sets with the same name do not stack.',
+   TRUE, 'both', JSON_OBJECT('twoPieceAtkPct', 18, 'fourPieceWielderAtkPct', 12, 'fourPiecePartyStellarGlimmerDmg', 50));
 
 
 -- ---- Verify ----

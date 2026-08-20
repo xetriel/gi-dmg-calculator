@@ -82,25 +82,69 @@ describe("traveler mechanics", () => {
     expect(r6.perHit["blazing-threshold-dmg"]?.critDmgBonusPct).toBe(40);
   });
 
-  it("Cryo Traveler (Beta) Frostglow stacks, C1, C6 mechanics", () => {
+  it("Cryo Traveler A1 Ever-Keen Frost: Cryo infusion and +80% ATK flat DMG", () => {
+    const r = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      stats: { ...baseStats, atk: 2000 },
+      inputs: { "frostpierce-active": 1 },
+    }));
+    // NA keys should be converted to Cryo
+    expect(r.perHit["1-hit"]?.element).toBe("Cryo");
+    expect(r.perHit["charged-1"]?.element).toBe("Cryo");
+    expect(r.perHit["plunge"]?.element).toBe("Cryo");
+    // Flat DMG = 80% of 2000 ATK = 1600
+    expect(r.perHit["1-hit"]?.flatDmgBonus).toBe(1600);
+  });
+
+  it("Cryo Traveler A4 Lucent Ice: 8% ATK as EM (capped at 160)", () => {
+    // 2000 ATK * 8% = 160 EM (at cap)
     const r1 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
-      inputs: { "frostglow-stacks": 8 },
+      stats: { ...baseStats, atk: 2000 },
+      inputs: {},
     }));
-    expect(r1.perHit["burst-javelin-dmg"]?.bonusDmgPct).toBeCloseTo(39.68);
+    expect(r1.statDeltas.em).toBe(160);
 
-    const rC1 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
-      constellationLevel: 1,
-      inputs: { "c1-frost-shred": 1 },
+    // 1500 ATK * 8% = 120 EM (below cap)
+    const r2 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      stats: { ...baseStats, atk: 1500 },
+      inputs: {},
     }));
-    expect(rC1.statDeltas.enemyRes).toBe(-15);
+    expect(r2.statDeltas.em).toBe(120);
+  });
 
-    const rC6 = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+  it("Cryo Traveler C2 Frostfall Reverberation: +120 EM with Stellar Glimmer", () => {
+    const r = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      stats: { ...baseStats, atk: 2000 },
+      constellationLevel: 2,
+      inputs: { "c2-stellar-em": 1 },
+    }));
+    // A4 160 + C2 120 = 280 total EM
+    expect(r.statDeltas.em).toBe(280);
+  });
+
+  it("Cryo Traveler C6 Brumal Grimfrost: Stellar Glimmer reaction bonus", () => {
+    const r = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      stats: { ...baseStats, atk: 2000 },
       constellationLevel: 6,
-      inputs: { "c6-cryo-infusion": 1 },
+      inputs: { "frostglow-stacks": 8, "c2-stellar-em": 1 },
     }));
-    expect(rC6.perHit["1-hit"]?.element).toBe("Cryo");
-    expect(rC6.perHit["1-hit"]?.critDmgBonusPct).toBe(40);
-    expect(rC6.perHit["skill-dmg"]?.critDmgBonusPct).toBe(40);
+    // C6: 8 stacks * 5% = 40% reaction bonus
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.reactionBonusPct).toBe(40);
+    expect(r.perHit["stellar-swirl-javelin-dmg"]?.directReaction?.reactionBonusPct).toBe(40);
+  });
+
+  it("Cryo Traveler Stellar direct reaction routing with Illusory Frostmirror", () => {
+    // 2000 ATK → 0.7 * (2000/100) = 14% (capped)
+    const r = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
+      stats: { ...baseStats, atk: 2000 },
+      inputs: { "frostglow-stacks": 4 },
+    }));
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction).toBeDefined();
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.coefficient).toBe(1.0);
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.baseDmgBonusPct).toBe(14);
+    // C0: no C6 reaction bonus
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.reactionBonusPct).toBe(0);
+    // Frostglow +4.96% per stack on burst-javelin-dmg only
+    expect(r.perHit["burst-javelin-dmg"]?.bonusDmgPct).toBeCloseTo(19.84);
   });
 
   it("talent seed row counts for all Traveler forms", () => {

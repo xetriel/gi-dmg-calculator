@@ -56,8 +56,39 @@ async function main() {
     });
   }
 
-  const weaponCount = await prisma.weapon.count();
+  const weaponCount = await (prisma as any).weapon.count();
   console.log(`Done. Weapon total rows: ${weaponCount}`);
+
+  // Sync artifacts
+  const { ARTIFACTS } = await import("../src/data/registry/artifacts");
+  for (const artifact of ARTIFACTS) {
+    const buffConfigJson = artifact.buffs.length > 0 ? JSON.parse(JSON.stringify(artifact.buffs)) : undefined;
+    await (prisma as any).artifact?.upsert({
+      where: { id: artifact.id },
+      update: {
+        name: artifact.name,
+        rarity: artifact.rarity,
+        twoPieceDesc: artifact.twoPieceDesc,
+        fourPieceDesc: artifact.fourPieceDesc,
+        isSupport: artifact.isSupport,
+        buffType: artifact.buffType,
+        buffConfig: buffConfigJson,
+      },
+      create: {
+        id: artifact.id,
+        name: artifact.name,
+        rarity: artifact.rarity,
+        twoPieceDesc: artifact.twoPieceDesc,
+        fourPieceDesc: artifact.fourPieceDesc,
+        isSupport: artifact.isSupport,
+        buffType: artifact.buffType,
+        buffConfig: buffConfigJson,
+      },
+    });
+  }
+
+  const artifactCount = await (prisma as any).artifact?.count();
+  console.log(`Done. Artifact total rows: ${artifactCount ?? ARTIFACTS.length}`);
 
   await prisma.$disconnect();
 }

@@ -1,4 +1,4 @@
-import type { Element, MechanicDef, Constellation } from "../types";
+import type { Element, Weapon, MechanicDef, Constellation } from "../types";
 
 // Context passed to support buff compute functions
 export interface SupportCtx {
@@ -23,6 +23,14 @@ export interface SupportBuff {
   compute: (ctx: SupportCtx) => number;
 }
 
+// Structured explanation of a support character's buff source for catalog and details UI
+export interface SupportBuffExplanation {
+  name: string;             // e.g. "A4: Burst EM Share"
+  brief: string;            // e.g. "+6% ATK as EM"
+  full: string;             // e.g. "Panoramic Permutation Protocol: Increases active party member's EM by 6% of Ineffa's total ATK when Burst is active."
+  category?: "stat_share" | "dmg_bonus" | "flat_dmg" | "lunar" | "elemental";
+}
+
 // Which stat inputs to show in the support mini-calculator
 export interface SupportStatField {
   key: string;               // e.g., "atk.base", "critRate"
@@ -44,6 +52,9 @@ export interface SupportConfig {
   name: string;              // "Ineffa"
   rarity: 4 | 5;
   element: Element;
+  weapon?: Weapon;                      // "Polearm", "Sword", etc.
+  description?: string;                 // Overview of the support character
+  buffExplanations?: SupportBuffExplanation[]; // Detailed breakdown of buff sources
   statFields: SupportStatField[];       // limited stat inputs to show
   mechanicDefs?: MechanicDef[];         // support-mode mechanic toggles
   constellations?: Constellation[];     // constellation definitions

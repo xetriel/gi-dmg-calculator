@@ -94,3 +94,21 @@ model Weapon {
   @@index([isSupport])
 }
 
+// Artifact definitions table. Stores artifact metadata, set descriptions,
+// support capabilities, and buff configurations.
+model Artifact {
+  id            String   @id // e.g. "scarlet-proof", "heart-of-the-furnace"
+  name          String
+  rarity        Int      // 4 | 5
+  twoPieceDesc  String   @db.Text
+  fourPieceDesc String   @db.Text
+  isSupport     Boolean  @default(false)
+  buffType      String?  @default("self") // "team" | "self" | "both"
+  buffConfig    Json?    // Structured buff configuration
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isSupport])
+}
+
+

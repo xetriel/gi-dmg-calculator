@@ -6,6 +6,28 @@ export const ineffaSupport: SupportConfig = {
   name: "Ineffa",
   rarity: 5,
   element: "Electro",
+  weapon: "Polearm",
+  description: "Electro sub-DPS and buffer. Shares EM with active characters scaling from her ATK, boosts Lunar-Charged reaction DMG at C1, and increases Lunar-Charged Base DMG via Moonsign Benediction.",
+  buffExplanations: [
+    {
+      name: "A4: Burst EM Share",
+      brief: "+6% Total ATK as EM",
+      full: "Panoramic Permutation Protocol: While Ineffa's Burst is active, active party members gain an Elemental Mastery bonus equal to 6% of Ineffa's Total ATK.",
+      category: "stat_share",
+    },
+    {
+      name: "C1: Carrier Flow Composite",
+      brief: "+2.5% Lunar-Charged DMG / 100 ATK (max 50%)",
+      full: "Carrier Flow Composite: Increases party members' Lunar-Charged Reaction DMG by 2.5% per 100 ATK Ineffa possesses, up to a maximum of 50%. Requires C1.",
+      category: "lunar",
+    },
+    {
+      name: "Moonsign Benediction",
+      brief: "+0.7% Lunar-Charged Base DMG / 100 ATK (max 14%)",
+      full: "Moonsign Benediction: Enhances team Lunar-Charged Base DMG by +0.7% per 100 ATK, capped at +14.0% Lunar Base DMG.",
+      category: "lunar",
+    },
+  ],
 
   // Limited stat inputs — only stats that affect Ineffa's support output
   statFields: [

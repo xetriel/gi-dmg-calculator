@@ -27,6 +27,7 @@ import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
 import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
 import { resolveTeamBuffs } from "./team-buffs";
 import { resolveExternalWeaponBuffs } from "./weapon-buffs";
+import { resolveExternalArtifactBuffs } from "./artifact-buffs";
 
 
 export interface FormulaBreakdown {
@@ -132,6 +133,18 @@ export function explainHitFormulas(
     : null;
   if (weaponResult) {
     for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
+      if (key in effectiveStats && typeof val === "number") {
+        (effectiveStats as unknown as Record<string, number>)[key] += val;
+      }
+    }
+  }
+
+  // Apply external artifact team buffs
+  const artifactResult = (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length)
+    ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true)
+    : null;
+  if (artifactResult) {
+    for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
       if (key in effectiveStats && typeof val === "number") {
         (effectiveStats as unknown as Record<string, number>)[key] += val;
       }
