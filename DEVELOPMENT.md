@@ -6,17 +6,30 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 19, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 20, 2026).
 
 ### New Character Calculators
-- **Traveler Elemental Variants (August 10, 2026)**: Added complete calculator profiles for all 7 Traveler elemental forms (Anemo, Geo, Electro, Dendro, Hydro, Pyro, and Cryo [BETA]):
+- **Bennett (August 20, 2026)**: Added Bennett, a 4-star Pyro Sword character featuring unified DPS and Support integration:
+  - **DPS Calculator**: Complete Level 1–15 talent scaling (`src/data/talents/bennett.ts`) for *Strike of Fortune* (Normal/Charged/Plunging Attacks), *Passion Overload* (Press, Hold 1, Hold 2, Explosion), and *Fantastic Voyage* (Burst DMG, Healing, ATK Ratio). Mechanics resolver in `src/lib/engine/characters/bennett.ts` handling A1 Rekindle (-20% Skill CD), A4 Fearnaught (-50% Skill CD in Burst field), C1 Grand Expectation (removes HP restriction & adds +20% Base ATK bonus), C2 Impasse Conqueror (+30% ER when HP < 70%), C4 Unexpected Odysseys (short charge follow-up attack), and C6 Crimson Fire (+15% Pyro DMG Bonus).
+  - **Support Integration**: Embedded `support` definition with Base ATK scaling flat ATK buff (`(Base ATK * ratio) + (C1 ? Base ATK * 0.20 : 0)`) and C6 Pyro DMG buff, complete with `formatBriefStats` pill breakdown (Base ATK, Total ATK, ER).
+  - Verified with 6 dedicated test cases in `src/lib/engine/characters/bennett.test.ts`.
+- **Traveler (Cryo) [Finalized] (August 20, 2026)**: Finalized Cryo Traveler mechanics and constellation definitions in `src/data/registry/characters/traveler-cryo.ts` and `src/lib/engine/characters/traveler-cryo.ts`:
+  - Official Constellations: C1 Somber Freeze, C2 Frostfall Reverberation, C3 Glacier Strike, C4 Enduring Ice, C5 Bittercold Fog, C6 Brumal Grimfrost.
+  - **A1 Ever-Keen Frost**: Toggling `frostpierce-active` infuses Normal/Charged/Plunging attacks with Cryo and grants a flat +80% ATK DMG bonus.
+  - **A4 Lucent Ice**: Converts 8% of total ATK into Elemental Mastery (capped at +160 EM).
+  - **C2 Frostfall Reverberation**: Grants +60 EM baseline, boosted to +120 EM when Stellar Glimmer toggle is active.
+  - **Frostglow Stacks (0–8)**: Grants +4.96% DMG per stack on standard `burst-javelin-dmg` hits.
+  - **Stellar Jubilee (Illusory Frostmirror)**: Injects `directReaction` parameters for `stellar-conduct-javelin-dmg` and `stellar-swirl-javelin-dmg` (`baseDmgBonusPct: min(0.7 * ATK/100, 14)`), routing through the direct reaction engine branch (`6·EM/(EM+2000)`), bypassing standard DMG% and DEF terms.
+  - **C6 Brumal Grimfrost**: Injects `reactionBonusPct: min(stacks * 5, 40)` Stellar reaction bonus.
+  - Verified with 5 dedicated test cases in `src/lib/engine/characters/traveler.test.ts`.
+- **Traveler Elemental Variants (August 10, 2026)**: Added complete calculator profiles for all 7 Traveler elemental forms (Anemo, Geo, Electro, Dendro, Hydro, Pyro, and Cryo):
   - **Traveler (Anemo)**: C2 ER bonus (+16%), C6 Anemo RES shred (-20%) with dynamic elemental absorption shred (-20% Hydro/Pyro/Cryo/Electro).
   - **Traveler (Geo)**: C1 Wake of Earth party CRIT Rate (+10%), C2 Rockcore Melt meteor explosion registration.
   - **Traveler (Electro)**: C2 Electro RES shred (-15%), C6 3rd Falling Thunder independent hit instance (200% DMG multiplier).
   - **Traveler (Dendro)**: A4 EM scaling (Skill DMG +0.15%/EM, Burst DMG +0.1%/EM), C6 Dendro/elemental DMG bonus (+12%).
   - **Traveler (Hydro)**: A4 Max HP Torrent Surge DMG scaling, C4 Aquacrest Sabre 10% Max HP shield durability output.
   - **Traveler (Pyro)**: C1 Nightsoul All DMG Bonus (+6%/+15%), C4 Volcanic Burst Pyro DMG Bonus (+20%), C6 Pyro infusion & +40% Pyro CRIT DMG.
-  - **Traveler (Cryo) [BETA]**: Frostglow stacks (+4.96%/stack Burst DMG), C1 Cryo RES shred (-15%), C6 Cryo infusion & +40% Cryo CRIT DMG.
+  - **Traveler (Cryo)**: Full Stellar reaction integration, A1 Cryo infusion & flat ATK scaling, A4 ATK→EM conversion, and C6 Brumal Grimfrost reaction DMG bonus.
 - **Yanfei (August 9, 2026)**: Added Yanfei, a 4-star Pyro Catalyst character featuring Scarlet Seals (0–4 stacks) A1 Pyro DMG Bonus (+5% per seal), Burst Brilliance Charged Attack DMG Bonus (+55.8%), C2 CA CRIT Rate (+20% vs <50% HP targets), and C4 45% Max HP Shield durability output.
 - **Xinyan (August 9, 2026)**: Added Xinyan, a 4-star Pyro Claymore character featuring Physical DMG Bonus focus, A4 Shield Physical DMG Bonus (+15%), C2 Burst Physical 100% CRIT Rate, C4 Physical RES shred (-15%), and C6 DEF to ATK conversion (+50% DEF).
 - **Tartaglia (August 9, 2026)**: Added Tartaglia, a 5-star Hydro Bow character featuring Ranged & Melee stance attacks, 4 Riptide variants (Flash, Burst, Slash, Blast), and Master of Weaponry (+1 NA Talent Level) party passive.
@@ -43,7 +56,7 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Varesa (July 17, 2026)**: Added Varesa, a 5-star Electro Catalyst character from Natlan specializing in Plunging Attacks and Nightsoul-related mechanics.
 - **Skirk (July 17, 2026)**: Added Skirk, a playable 5-star Cryo Sword character utilizing a unique "Serpent's Subtlety" resource system instead of traditional Elemental Energy.
 - **Linnea (July 15, 2026)**: Added Linnea character definition, stat scaling data, and custom mechanics.
-- **Ineffa (July 14, 2026)**: Added Ineffa character definition, stat scaling data, custom direct reaction scaling, C1 reaction bonus, and dynamic shield calculations.
+- **Ineffa (July 14, 2026)**: Added Ineffa character definition, stat scaling data, custom direct reaction scaling, C1 reaction bonus, dynamic shield calculations, and embedded support definition (A4 EM share, C1 Lunar-Charged DMG bonus, Moonsign Benediction bonus).
 - **Varka (July 14, 2026)**: Implemented Varka talent multipliers, passive skills, and special A1/A4 resonance check logic.
 - **Columbina (July 14, 2026)**: Implemented Columbina talent multipliers and status effects utilizing Lunar reaction mechanics.
 - **Flins (July 14, 2026)**: Added Flins character logic and calculations.
@@ -51,6 +64,26 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Unified Character & Support Registry Architecture (August 20, 2026)**: Consolidated the support character registry (`src/data/registry/supports/`) directly into the central character registry (`src/data/registry/characters/`), creating a single source of truth for both playable DPS characters and supportive team buff providers:
+  - **Single Source of Truth**: Extended `CharacterConfig` in `src/data/registry/types.ts` with an optional `support?: CharacterSupportBuffDef` block.
+  - **Dynamic Support Derivation**: Registry dynamically derives `SUPPORT_CONFIGS` via `CHARACTERS.filter(c => !!c.support)` with dual ID compatibility (`"bennett"` / `"bennett-support"`, `"ineffa"` / `"ineffa-support"`).
+  - **Folder Consolidation**: Removed `src/data/registry/supports/` and cleanly updated imports across calculation engines, UI components, and test suites.
+- **Dedicated Support Character UI & Popup Modal (`<TeamBuffModal>`) (August 20, 2026)**: Redesigned the team support buff interface into a dedicated 2-pane popup modal dialog and sleek summary card, matching the External Weapon and Artifact buff architectures:
+  - **2-Pane Modal (`TeamBuffModal.tsx`)**:
+    - *Header & Multi-Setup Tabs*: Setup switcher tabs (Setup 1 / Setup 2 / Setup 3) with active counter badges (`{activeCount}/3`).
+    - *Left Catalog Pane*: Real-time search bar, Element filters with icons (Pyro, Hydro, Electro, Cryo, Anemo, Geo, Dendro), Rarity filters (5★, 4★), and comprehensive character cards detailing utility descriptions, provided buffs breakdown (`+6% Total ATK as EM`, `Up to 119% Base ATK as Flat ATK`), and constellation previews.
+    - *Right Configuration Pane*: Master "Apply All" toggle, per-support checkboxes, brief info stat summary pills (`formatBriefStats`), setup switcher dropdowns, `[🔄 Sync]` button, `[✎ Edit Build ↗]` links, interactive C0–C6 constellation selectors, and constellation-gated mechanic sliders/toggles with dynamic prerequisite hints.
+  - **Compact Summary Card (`TeamBuffPanel.tsx`)**: Interactive pill cloud on the setup card displaying configured team supports (element icon, name, constellation badge, setup name) with live aggregated stat bonus badges and quick `⚙️ Edit` trigger.
+- **Complete 64-Artifact Database & External Artifact Team Buff Engine (August 20, 2026)**: Implemented full modular 1-file-per-artifact definitions for all 64 artifact sets in Genshin Impact (`src/data/registry/artifacts/`) across 5 release generations:
+  - **Batch 1 (Starter & 1★–4★, 18 Sets)**: *Initiate, Adventurer, Lucky Dog, Traveling Doctor, Resolution of Sojourner, Tiny Miracle, Berserker, Instructor, The Exile, Defender's Will, Brave Heart, Martial Artist, Gambler, Scholar, Prayers for Wisdom, Prayers for Destiny, Prayers for Illumination, Prayers to Springtime*.
+  - **Batch 2 (Classic Mondstadt & Liyue, 14 Sets)**: *Gladiator's Finale, Wanderer's Troupe, Noblesse Oblige, Bloodstained Chivalry, Maiden Beloved, Viridescent Venerer, Archaic Petra, Retracing Bolide, Thundersoother, Thundering Fury, Lavawalker, Crimson Witch of Flames, Blizzard Strayer, Heart of Depth*.
+  - **Batch 3 (Inazuma & Sumeru, 14 Sets)**: *Tenacity of the Millelith, Pale Flame, Shimenawa's Reminiscence, Emblem of Severed Fate, Husk of Opulent Dreams, Ocean-Hued Clam, Vermillion Hereafter, Echoes of an Offering, Deepwood Memories, Gilded Dreams, Desert Pavilion Chronicle, Flower of Paradise Lost, Nymph's Dream, Vourukasha's Glow*.
+  - **Batch 4 (Fontaine & Natlan, 10 Sets)**: *Marechaussee Hunter, Golden Troupe, Song of Days Past, Nighttime Whispers in the Echoing Woods, Fragment of Harmonic Whimsy, Unfinished Reverie, Scroll of the Hero of Cinder City, Obsidian Codex, Long Night's Oath, Finale of the Deep Galleries*.
+  - **Batch 5 (Nod-Khadar & Moonsign / Special, 8 Sets)**: *Night of the Sky's Unveiling, Silken Moon's Serenade, Aubade of Morningstar and Moon, A Day Carved from Rising Winds, Celestial Gift, Disenchantment in Deep Shadow, Scarlet Proof, Heart of the Furnace*.
+  - **Role Separation & Constraint Engine (`artifact-buffs.ts`)**: Pure mathematical resolver supporting **Wielder** (active DPS self-buffs) vs **Party Support** (party-wide external buffs), 2-Piece vs 4-Piece requirement activation, strict maximum of 4 active artifact sets per team, same-name non-stacking party support deduplication, weapon eligibility checks, ER-to-Burst DMG scaling, and mechanic condition sliders.
+  - **Direct Reaction Stat Additions**: Extended `damage.ts` and `types.ts` with `stellarSwirlDmgBonus` and `stellarGlimmerDmgBonus` stat keys for direct reaction damage derivation.
+  - **Interactive 2-Pane Modal (`<ExternalArtifactBuffModal>`) & Summary Card (`<ExternalArtifactBuffPanel>`)**: Features search, role filters (*All*, *Party Support*, *Wielder*), 2pc/4pc switcher, slot switcher (*⚔️ Wielder* vs *🛡️ Support*), mechanic controls, multi-setup tabs, and real-time aggregate stat delta previews.
+  - **Prisma Schema & Database Synchronization**: Added `model Artifact` with `isSupport` indexing to `schema.prisma`, DDL to `gi_stat_db.sql`, dynamic upserts to `prisma/seed.ts`, and developer skill in `.agents/skills/external-artifact-buffs/SKILL.md`.
 - **Complete 244-Weapon Database & Weapon Role Separation (August 19, 2026)**: Completed the entire weapon database across all 5 weapon classes (56 Swords, 47 Claymores, 44 Polearms, 49 Bows, 48 Catalysts) in modular 1-file-per-weapon registries (`src/data/registry/weapons/`):
   - **Role Separation Standard**: Categorized all weapons into **Party Support** (`isSupport: true, buffType: "team" | "both"`) vs **Own Wielder** (`isSupport: false, buffType: "self"`).
     - *Party Support Weapons* (e.g. *Freedom-Sworn, Key of Khaj-Nisut, Peak Patrol Song, Song of Broken Pines, Wolf's Gravestone, Makhaira Aquamarine, Forest Regalia, Moonpiercer, A Thousand Floating Dreams, Crane's Echoing Call, TTDS, Hakushin Ring, Wandering Evenstar, Elegy for the End, Golden Frostbound Oath, Favonius Series*) can be equipped as external team buff sources for any character in the party regardless of weapon type.
