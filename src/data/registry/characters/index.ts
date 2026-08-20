@@ -1,4 +1,25 @@
-import type { CharacterConfig } from "../types";
+import type {
+  CharacterConfig,
+  SupportConfig,
+  SupportCtx,
+  SupportBuff,
+  SupportBuffExplanation,
+  SupportStatField,
+  BriefStatPill,
+  CharacterSupportBuffDef,
+} from "../types";
+
+export type {
+  CharacterConfig,
+  SupportConfig,
+  SupportCtx,
+  SupportBuff,
+  SupportBuffExplanation,
+  SupportStatField,
+  BriefStatPill,
+  CharacterSupportBuffDef,
+};
+
 import { arlecchino } from "./arlecchino";
 import { huTao } from "./hu-tao";
 import { neuvillette } from "./neuvillette";
@@ -44,9 +65,145 @@ import { travelerDendro } from "./traveler-dendro";
 import { travelerHydro } from "./traveler-hydro";
 import { travelerPyro } from "./traveler-pyro";
 import { travelerCryo } from "./traveler-cryo";
+import { bennett } from "./bennett";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
-export { arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, mizuki, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo };
-export const CHARACTERS: CharacterConfig[] = [arlecchino, huTao, neuvillette, clorinde, sandrone, zibai, nefer, flins, columbina, varka, linnea, ineffa, skirk, varesa, gaming, durin, alhaitham, ayaka, ayato, dehya, diluc, cyno, aloy, eula, ganyu, heizou, itto, kaveh, keqing, klee, mavuika, mualani, lyney, xiao, tartaglia, yanfei, xinyan, mizuki, travelerAnemo, travelerGeo, travelerElectro, travelerDendro, travelerHydro, travelerPyro, travelerCryo];
-export const byId = (id: string) => CHARACTERS.find(c => c.id === id);
+export {
+  arlecchino,
+  huTao,
+  neuvillette,
+  clorinde,
+  sandrone,
+  zibai,
+  nefer,
+  flins,
+  columbina,
+  varka,
+  linnea,
+  ineffa,
+  skirk,
+  varesa,
+  gaming,
+  durin,
+  alhaitham,
+  ayaka,
+  ayato,
+  dehya,
+  diluc,
+  cyno,
+  aloy,
+  eula,
+  ganyu,
+  heizou,
+  itto,
+  kaveh,
+  keqing,
+  klee,
+  mavuika,
+  mualani,
+  lyney,
+  xiao,
+  tartaglia,
+  yanfei,
+  xinyan,
+  mizuki,
+  travelerAnemo,
+  travelerGeo,
+  travelerElectro,
+  travelerDendro,
+  travelerHydro,
+  travelerPyro,
+  travelerCryo,
+  bennett,
+};
+
+export const CHARACTERS: CharacterConfig[] = [
+  arlecchino,
+  huTao,
+  neuvillette,
+  clorinde,
+  sandrone,
+  zibai,
+  nefer,
+  flins,
+  columbina,
+  varka,
+  linnea,
+  ineffa,
+  skirk,
+  varesa,
+  gaming,
+  durin,
+  alhaitham,
+  ayaka,
+  ayato,
+  dehya,
+  diluc,
+  cyno,
+  aloy,
+  eula,
+  ganyu,
+  heizou,
+  itto,
+  kaveh,
+  keqing,
+  klee,
+  mavuika,
+  mualani,
+  lyney,
+  xiao,
+  tartaglia,
+  yanfei,
+  xinyan,
+  mizuki,
+  travelerAnemo,
+  travelerGeo,
+  travelerElectro,
+  travelerDendro,
+  travelerHydro,
+  travelerPyro,
+  travelerCryo,
+  bennett,
+];
+
+export const byId = (id: string) => CHARACTERS.find((c) => c.id === id);
+
+// ==========================================
+// Derived Support Roster & Helpers
+// ==========================================
+
+export const SUPPORT_CONFIGS: SupportConfig[] = CHARACTERS.filter(
+  (c): c is CharacterConfig & { support: NonNullable<CharacterConfig["support"]> } => !!c.support
+).map((c) => ({
+  id: `${c.id}-support`,
+  characterId: c.id,
+  name: c.name,
+  rarity: c.rarity,
+  element: c.element,
+  weapon: c.weapon,
+  description: c.support.description ?? c.notes?.join(" ") ?? "",
+  buffExplanations: c.support.buffExplanations ?? [],
+  statFields: c.support.statFields ?? [
+    { key: "baseAtk", label: "Base ATK", defaultValue: "800" },
+    { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+    { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+  ],
+  mechanicDefs: c.mechanicDefs,
+  constellations: c.constellations,
+  buffs: c.support.buffs,
+  lunarBaseBonusCompute: c.support.lunarBaseBonusCompute,
+  formatBriefStats: c.support.formatBriefStats,
+}));
+
+export const supportById = (id: string): SupportConfig | undefined => {
+  const cleanId = id.replace(/-support$/, "");
+  return SUPPORT_CONFIGS.find(
+    (s) =>
+      s.id === id ||
+      s.characterId === id ||
+      s.characterId === cleanId ||
+      s.id === `${cleanId}-support`
+  );
+};
+

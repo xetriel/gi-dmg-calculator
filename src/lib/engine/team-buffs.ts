@@ -1,5 +1,5 @@
 import type { DamageStats } from "./damage";
-import { supportById, type SupportCtx } from "../../data/registry/supports";
+import { supportById, type SupportCtx } from "../../data/registry/characters";
 
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
@@ -66,8 +66,13 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
 
   // Parse mechanic inputs
   const inputs: Record<string, number> = {};
+  for (const [k, v] of Object.entries(inst.mechanicInputs ?? {})) {
+    inputs[k] = toNum(v);
+  }
   for (const m of config.mechanicDefs ?? []) {
-    inputs[m.id] = toNum(inst.mechanicInputs[m.id]);
+    if (!(m.id in inputs)) {
+      inputs[m.id] = toNum(inst.mechanicInputs?.[m.id]);
+    }
   }
 
   return {

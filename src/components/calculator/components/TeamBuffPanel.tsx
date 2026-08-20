@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import type { CalcInstance } from "../types";
-import { supportById } from "@/data/registry/supports";
+import { supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
 import { ElementIcon } from "@/components/icons";
 

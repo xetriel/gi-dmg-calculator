@@ -48,9 +48,9 @@ Every support implementation and engine extension touches or adheres to the foll
 
 | File Path | Purpose |
 | --- | --- |
-| `src/data/registry/supports/types.ts` | Type definitions: `SupportConfig`, `SupportBuff`, `SupportCtx`, `SupportStatField`, `BriefStatPill`. |
-| `src/data/registry/supports/<id>.ts` | Character support configuration (e.g., `ineffa.ts`, `bennett.ts`): stat inputs, mechanic toggles, constellations, buff compute functions, `formatBriefStats`, and Moonsign Lunar Base DMG formulas. |
-| `src/data/registry/supports/index.ts` | Central support registry exporting `SUPPORT_CONFIGS` array, `supportById(id)` lookup helper, and type re-exports. |
+| `src/data/registry/types.ts` | Type definitions: `CharacterConfig`, `CharacterSupportBuffDef`, `SupportConfig`, `SupportBuff`, `SupportCtx`, `SupportStatField`, `BriefStatPill`. |
+| `src/data/registry/characters/<id>.ts` | Character configuration with optional embedded `support` block (e.g., `ineffa.ts`, `bennett.ts`): stat inputs, mechanic toggles, constellations, buff compute functions, `formatBriefStats`, and Moonsign Lunar Base DMG formulas. |
+| `src/data/registry/characters/index.ts` | Central character & support registry exporting `CHARACTERS`, `byId(id)`, `SUPPORT_CONFIGS` array, `supportById(id)` lookup helper, and type re-exports. |
 | `src/lib/engine/team-buffs.ts` | Pure engine resolver: `resolveTeamBuffs(supports, masterEnabled)`, `resolveSupportCtx(inst)`, computing `statDeltas`, `lunarBaseBonusPct`, `sources`, and `teamCrit`. |
 | `src/lib/engine/team-buffs.test.ts` | Vitest test suite testing buff computations, caps, constellation gates, toggle exclusions, ATK/stat zero edge cases, additive stacking, and brief stat formatting. |
 | `src/components/calculator/components/TeamBuffPanel.tsx` | Collapsible UI panel rendering master toggle, add-support selector, support cards with brief stats, setup switcher, draft sync, constellation selectors, mechanic toggles, and live computed buff previews. |

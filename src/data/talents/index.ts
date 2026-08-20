@@ -44,9 +44,10 @@ import { travelerElectroSeed } from "./traveler-electro";
 import { travelerDendroSeed } from "./traveler-dendro";
 import { travelerHydroSeed } from "./traveler-hydro";
 import { travelerPyroSeed } from "./traveler-pyro";
+import { bennettSeed } from "./bennett";
 import { travelerCryoSeed } from "./traveler-cryo";
 
-export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed, varesaSeed, gamingSeed, durinSeed, alhaithamSeed, ayakaSeed, ayatoSeed, dehyaSeed, dilucSeed, cynoSeed, aloySeed, eulaSeed, ganyuSeed, heizouSeed, ittoSeed, kavehSeed, keqingSeed, kleeSeed, mavuikaSeed, mualaniSeed, lyneySeed, xiaoSeed, tartagliaSeed, yanfeiSeed, xinyanSeed, mizukiSeed, travelerAnemoSeed, travelerGeoSeed, travelerElectroSeed, travelerDendroSeed, travelerHydroSeed, travelerPyroSeed, travelerCryoSeed];
+export const TALENT_SEED: CharacterTalentSeed[] = [huTaoSeed, neuvilletteSeed, arlecchinoSeed, clorindeSeed, sandroneSeed, zibaiSeed, neferSeed, flinsSeed, columbinaSeed, varkaSeed, linneaSeed, ineffaSeed, skirkSeed, varesaSeed, gamingSeed, durinSeed, alhaithamSeed, ayakaSeed, ayatoSeed, dehyaSeed, dilucSeed, cynoSeed, aloySeed, eulaSeed, ganyuSeed, heizouSeed, ittoSeed, kavehSeed, keqingSeed, kleeSeed, mavuikaSeed, mualaniSeed, lyneySeed, xiaoSeed, tartagliaSeed, yanfeiSeed, xinyanSeed, mizukiSeed, travelerAnemoSeed, travelerGeoSeed, travelerElectroSeed, travelerDendroSeed, travelerHydroSeed, travelerPyroSeed, travelerCryoSeed, bennettSeed];
 
 export interface TalentRow {
   characterId: string;
