@@ -15,18 +15,28 @@ export const sapwoodBlade: WeaponConfig = {
   },
   passiveName: "Forest Sanctuary",
   passiveDesc:
-    "After triggering Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, or Burgeon, a Leaf of Consciousness will be created around the character for up to 10s. When picked up, the Leaf will grant the character 60~120 Elemental Mastery for 12s.",
+    "After triggering Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, or Burgeon, a Leaf of Consciousness is created. Picking it up increases Elemental Mastery by 60~120 for 12s.",
   isSupport: true,
   buffType: "team",
+  mechanicDefs: [
+    {
+      id: "sapwood-leaf-picked",
+      label: "Leaf of Consciousness Picked Up",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+60~120 EM for 12s to picking party member",
+    }
+  ],
   buffs: [
     {
-      id: "sapwood-leaf-em",
-      label: "Leaf of Consciousness EM (Sapwood Blade)",
-      description: "Active character picks up Leaf of Consciousness for +60~120 EM",
+      id: "sapwood-party-em",
+      label: "Party EM (Sapwood Blade Leaf of Consciousness)",
+      description: "Picking up the Leaf of Consciousness grants +60~120 Elemental Mastery for 12s",
       stat: "em",
       refinementValues: [60, 75, 90, 105, 120],
       isTeamBuff: true,
-      compute: r=>[60,75,90,105,120][r-1],
+      conditionKey: "sapwood-leaf-picked",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['sapwood-leaf-picked'] ?? '1') === '1' || Number(ctx.inputs?.['sapwood-leaf-picked'] ?? 1) > 0; return on ? [60, 75, 90, 105, 120][r - 1] : 0; },
     }
   ],
   

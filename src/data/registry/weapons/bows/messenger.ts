@@ -13,9 +13,9 @@ export const messenger: WeaponConfig = {
     value: 31.2,
     baseValue: 6.8,
   },
-  passiveName: "Flying Message",
+  passiveName: "Flying Messenger",
   passiveDesc:
-    "Aimed Shot hits on weak points deal an additional 100~200% ATK DMG as CRIT DMG. Can only occur once every 10s.",
+    "Charged Attack hits on weak spots deal an additional 100~200% ATK DMG as CRIT hit.",
   isSupport: false,
   buffType: "self",
   buffs: [

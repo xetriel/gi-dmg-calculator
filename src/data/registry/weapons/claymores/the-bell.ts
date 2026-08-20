@@ -24,18 +24,18 @@ export const theBell: WeaponConfig = {
       label: "Protected by Shield (+12~24% DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+12~24% All DMG Bonus while shielded",
+      hint: "+12~24% All DMG bonus when shielded",
     }
   ],
   buffs: [
     {
       id: "bell-dmg",
-      label: "All DMG Bonus (The Bell)",
+      label: "All DMG Bonus when Shielded (The Bell)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       conditionKey: "bell-shielded",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["bell-shielded"]??"1")==="1"||Number(ctx.inputs?.["bell-shielded"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['bell-shielded'] ?? '1') === '1' || Number(ctx.inputs?.['bell-shielded'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

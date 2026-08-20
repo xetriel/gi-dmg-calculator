@@ -18,6 +18,15 @@ export const fluteOfEzpitzal: WeaponConfig = {
     "Using an Elemental Skill increases DEF by 16~32% for 15s.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "ezpitzal-skill-def",
+      label: "Skill Used (+16~32% DEF)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+16~32% DEF for 15s",
+    }
+  ],
   buffs: [
     {
       id: "ezpitzal-def",
@@ -26,7 +35,8 @@ export const fluteOfEzpitzal: WeaponConfig = {
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       isPercent: true,
-      compute: r=>[16,20,24,28,32][r-1],
+      conditionKey: "ezpitzal-skill-def",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['ezpitzal-skill-def'] ?? '1') === '1' || Number(ctx.inputs?.['ezpitzal-skill-def'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
     }
   ],
   

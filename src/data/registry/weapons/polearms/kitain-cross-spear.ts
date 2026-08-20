@@ -25,7 +25,7 @@ export const kitainCrossSpear: WeaponConfig = {
       stat: "skillDmgBonus",
       refinementValues: [6, 7.5, 9, 10.5, 12],
       isTeamBuff: false,
-      compute: r=>[6,7.5,9,10.5,12][r-1],
+      compute: (r) => [6, 7.5, 9, 10.5, 12][r - 1],
     }
   ],
   

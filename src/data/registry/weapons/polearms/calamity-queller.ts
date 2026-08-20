@@ -15,24 +15,24 @@ export const calamityQueller: WeaponConfig = {
   },
   passiveName: "Extinguishing Precept",
   passiveDesc:
-    "Gain 12~24% All Elemental DMG Bonus. Obtain Consummation after using an Elemental Skill, causing ATK to increase by 3.2~6.4% per second. Max 6 stacks. When the character equipped with this weapon is not on the field, Consummation's ATK increase is doubled.",
-  isSupport: true,
-  buffType: "both",
+    "Gain 12~24% All Elemental DMG Bonus. Obtain Consummation for 20s after utilizing an Elemental Skill, causing ATK to increase by 3.2~6.4% per second. This ATK increase has a maximum of 6 stacks. When the character equipping this weapon is not on the field, Consummation's ATK increase is doubled.",
+  isSupport: false,
+  buffType: "self",
   mechanicDefs: [
     {
-      id: "calamity-stacks",
+      id: "consummation-stacks",
       label: "Consummation Stacks (0-6)",
       control: "stacks",
       defaultValue: 6,
       max: 6,
-      hint: "+3.2~6.4% ATK per stack (up to 19.2~38.4%)",
+      hint: "+3.2~6.4% ATK per second/stack (up to +19.2~38.4%)",
     },
     {
-      id: "calamity-off-field",
-      label: "Wielder is Off-Field (2x ATK Buff)",
+      id: "consummation-offfield",
+      label: "Equipping Character Off-Field (2x ATK)",
       control: "toggle",
-      defaultValue: 1,
-      hint: "Doubles ATK bonus from stacks (up to 38.4~76.8% ATK)",
+      defaultValue: 0,
+      hint: "Doubles Consummation ATK bonus when off-field (up to +38.4~76.8%)",
     }
   ],
   buffs: [
@@ -45,14 +45,14 @@ export const calamityQueller: WeaponConfig = {
       compute: (r) => [12, 15, 18, 21, 24][r - 1],
     },
     {
-      id: "calamity-atk",
-      label: "ATK% (Calamity Queller Consummation)",
+      id: "calamity-consummation-atk",
+      label: "ATK% (Consummation Stacks)",
       stat: "atk",
       refinementValues: [19.2, 24, 28.8, 33.6, 38.4],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "calamity-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['calamity-stacks'] ?? 6); const offField = (ctx.inputs?.['calamity-off-field'] ?? '1') === '1' || Number(ctx.inputs?.['calamity-off-field'] ?? 1) > 0; const mult = offField ? 2 : 1; const baseRatio = [0.032, 0.04, 0.048, 0.056, 0.064][r - 1]; return s * baseRatio * mult * ctx.baseAtk; },
+      conditionKey: "consummation-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['consummation-stacks'] ?? 6); const off = (ctx.inputs?.['consummation-offfield'] ?? '0') === '1' || Number(ctx.inputs?.['consummation-offfield'] ?? 0) > 0; const mult = off ? 2 : 1; const perStack = [3.2, 4.0, 4.8, 5.6, 6.4][r - 1]; return ((s * perStack * mult) / 100) * ctx.baseAtk; },
     }
   ],
   signatureFor: ["shenhe"],

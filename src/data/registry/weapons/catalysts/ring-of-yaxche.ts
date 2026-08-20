@@ -13,19 +13,26 @@ export const ringOfYaxche: WeaponConfig = {
     value: 41.3,
     baseValue: 9,
   },
-  passiveName: "Echoing Chime",
+  passiveName: "Echoing Song",
   passiveDesc:
-    "Using an Elemental Skill increases Normal Attack DMG by 0.6~1.2% for every 1,000 Max HP for 10s. Max increase is 16~32%.",
+    "Using an Elemental Skill grants Jade-Forged Crown: every 1,000 Max HP increases Normal Attack DMG by 0.6~1.0% for 10s (up to max +16~32% NA DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "yaxche-max-hp",
-      label: "Character Max HP",
+      id: "yaxche-wielder-hp",
+      label: "Character Total Max HP (e.g. 35000)",
       control: "stacks",
       defaultValue: 35000,
-      max: 100000,
-      hint: "Max HP used for NA DMG bonus conversion",
+      max: 80000,
+      hint: "Max HP used for Normal Attack DMG bonus",
+    },
+    {
+      id: "yaxche-skill-active",
+      label: "Elemental Skill Used Active",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Grants NA DMG bonus based on Max HP",
     }
   ],
   buffs: [
@@ -35,7 +42,8 @@ export const ringOfYaxche: WeaponConfig = {
       stat: "normalDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const hp=Number(ctx.inputs?.["yaxche-max-hp"]??35e3);const per1k=[.6,.75,.9,1.05,1.2][r-1];const cap=[16,20,24,28,32][r-1];return Math.min(hp/1e3*per1k,cap)},
+      conditionKey: "yaxche-skill-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['yaxche-skill-active'] ?? '1') === '1' || Number(ctx.inputs?.['yaxche-skill-active'] ?? 1) > 0; if (!on) return 0; const hp = Number(ctx.inputs?.['yaxche-wielder-hp'] ?? 35000); const ratio = [0.6, 0.7, 0.8, 0.9, 1.0][r - 1]; const cap = [16, 20, 24, 28, 32][r - 1]; return Math.min((hp / 1000) * ratio, cap); },
     }
   ],
   

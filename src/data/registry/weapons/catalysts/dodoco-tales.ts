@@ -21,17 +21,17 @@ export const dodocoTales: WeaponConfig = {
   mechanicDefs: [
     {
       id: "dodoco-na-hit",
-      label: "Normal Attack Hit (+16~32% CA DMG)",
+      label: "Normal Attack Hit (+16~32% Charged Attack DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% Charged Attack DMG",
+      hint: "+16~32% Charged Attack DMG for 6s",
     },
     {
       id: "dodoco-ca-hit",
       label: "Charged Attack Hit (+8~16% ATK)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+8~16% ATK",
+      hint: "+8~16% ATK for 6s",
     }
   ],
   buffs: [
@@ -42,17 +42,17 @@ export const dodocoTales: WeaponConfig = {
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       conditionKey: "dodoco-na-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["dodoco-na-hit"]??"1")==="1"||Number(ctx.inputs?.["dodoco-na-hit"]??1)>0;return on?[16,20,24,28,32][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['dodoco-na-hit'] ?? '1') === '1' || Number(ctx.inputs?.['dodoco-na-hit'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
     },
     {
       id: "dodoco-atk",
-      label: "ATK% (Dodoco Tales)",
+      label: "ATK% from Charged Hit (Dodoco Tales)",
       stat: "atk",
       refinementValues: [8, 10, 12, 14, 16],
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "dodoco-ca-hit",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["dodoco-ca-hit"]??"1")==="1"||Number(ctx.inputs?.["dodoco-ca-hit"]??1)>0;return on?[8,10,12,14,16][r-1]/100*ctx.baseAtk:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['dodoco-ca-hit'] ?? '1') === '1' || Number(ctx.inputs?.['dodoco-ca-hit'] ?? 1) > 0; return on ? ([8, 10, 12, 14, 16][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   signatureFor: ["klee"],

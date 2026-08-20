@@ -8,33 +8,24 @@ export const aTeaspoonOfTranscendence: WeaponConfig = {
   baseAtk: 608,
   lvl1BaseAtk: 46,
   subStat: {
-    type: "critDmg",
-    label: "CRIT DMG%",
-    value: 66.2,
-    baseValue: 14.4,
+    type: "critRate",
+    label: "CRIT Rate%",
+    value: 33.1,
+    baseValue: 7.2,
   },
-  passiveName: "Tea-Time Melody",
+  passiveName: "Transcendence",
   passiveDesc:
-    "Increases All Elemental DMG Bonus by 12~24%. After using an Elemental Skill, ATK is increased by 16~32% for 12s.",
+    "All Elemental DMG Bonus is increased by 12~24%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
       id: "teaspoon-elem-dmg",
-      label: "All Elemental DMG Bonus",
+      label: "All Elemental DMG Bonus (A Teaspoon of Transcendence)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       compute: (r) => [12, 15, 18, 21, 24][r - 1],
-    },
-    {
-      id: "teaspoon-atk",
-      label: "ATK%",
-      stat: "atk",
-      refinementValues: [16, 20, 24, 28, 32],
-      isTeamBuff: false,
-      isPercent: true,
-      compute: (r, ctx) => ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk,
     }
   ],
   

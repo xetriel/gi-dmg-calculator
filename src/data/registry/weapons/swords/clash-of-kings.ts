@@ -20,9 +20,17 @@ export const clashOfKings: WeaponConfig = {
   buffType: "self",
   buffs: [
     {
-      id: "clash-na-ca-dmg",
-      label: "Normal/Charged Attack DMG Bonus",
+      id: "clash-na-dmg",
+      label: "Normal Attack DMG Bonus (Clash of Kings)",
       stat: "normalDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: false,
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+    },
+    {
+      id: "clash-ca-dmg",
+      label: "Charged Attack DMG Bonus (Clash of Kings)",
+      stat: "chargedDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       compute: (r) => [16, 20, 24, 28, 32][r - 1],

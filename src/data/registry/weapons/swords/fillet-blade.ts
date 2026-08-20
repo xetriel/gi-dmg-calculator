@@ -15,7 +15,7 @@ export const filletBlade: WeaponConfig = {
   },
   passiveName: "Gash",
   passiveDesc:
-    "On hit, has a 50% chance to deal 240~400% ATK DMG to a single opponent. Can only occur once every 15~11s.",
+    "On hit, has 50% chance to deal 240~400% ATK DMG to a single opponent. Can only occur once every 15~11s.",
   isSupport: false,
   buffType: "self",
   buffs: [

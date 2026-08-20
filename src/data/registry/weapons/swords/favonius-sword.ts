@@ -15,7 +15,7 @@ export const favoniusSword: WeaponConfig = {
   },
   passiveName: "Windfall",
   passiveDesc:
-    "CRIT hits have a 60~100% chance to generate 1 Elemental Orb, which will regenerate 6 Energy for the character. Can only occur once every 12~6s.",
+    "CRIT hits have a 60~100% chance to generate a small amount of Elemental Particles, which will regenerate 6 Energy for the character. Can only occur once every 12~6s.",
   isSupport: true,
   buffType: "team",
   buffs: [

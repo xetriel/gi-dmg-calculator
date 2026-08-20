@@ -15,7 +15,7 @@ export const memoryOfDust: WeaponConfig = {
   },
   passiveName: "Golden Majesty",
   passiveDesc:
-    "Increases Shield Strength by 20~40%. Scoring hits on opponents increases ATK by 4~8% for 8s. Max 5 stacks. While protected by a shield, this ATK increase effect is increased by 100%.",
+    "Increases Shield Strength by 20~40%. Scoring hits on opponents increases ATK by 4~8% for 8s. Max 5 stacks. While protected by a shield, this ATK increase effect is increased by 100% (+40~80% ATK).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

@@ -13,19 +13,19 @@ export const blackmarrowLantern: WeaponConfig = {
     value: 165,
     baseValue: 36,
   },
-  passiveName: "Marrow Flame",
+  passiveName: "Blackmarrow Radiance",
   passiveDesc:
-    "Increases Elemental Skill DMG by 16~32% for 10s after triggering an Elemental Reaction.",
+    "All Elemental DMG Bonus is increased by 12~24%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "blackmarrow-skill-dmg",
-      label: "Elemental Skill DMG Bonus",
-      stat: "skillDmgBonus",
-      refinementValues: [16, 20, 24, 28, 32],
+      id: "blackmarrow-elem-dmg",
+      label: "All Elemental DMG Bonus (Blackmarrow Lantern)",
+      stat: "dmgBonus",
+      refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+      compute: (r) => [12, 15, 18, 21, 24][r - 1],
     }
   ],
   

@@ -15,24 +15,24 @@ export const huntersPath: WeaponConfig = {
   },
   passiveName: "At the End of the Beast-Paths",
   passiveDesc:
-    "Gain 12~24% All Elemental DMG Bonus. Obtain the Tireless Hunt effect after hitting an opponent with a Charged Attack: Charged Attack DMG is increased by 160~320% of Elemental Mastery for 12 hits or 10s.",
+    "Gain 12~24% All Elemental DMG Bonus. Gain the Tireless Hunt effect after hitting an opponent with a Charged Attack, increasing Charged Attack DMG by 160~320% of Elemental Mastery.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "hunters-path-em",
-      label: "Character EM",
+      id: "hunters-path-wielder-em",
+      label: "Character Total Elemental Mastery (e.g. 300)",
       control: "stacks",
-      defaultValue: 400,
+      defaultValue: 300,
       max: 2000,
-      hint: "EM used for flat Charged Attack DMG bonus",
+      hint: "Total EM used to compute flat Charged Attack DMG bonus",
     },
     {
-      id: "hunters-path-active",
-      label: "Tireless Hunt Active",
+      id: "hunters-path-tireless-hunt",
+      label: "Tireless Hunt Active (+160~320% EM as CA DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+160~320% of EM as flat CA DMG bonus",
+      hint: "Adds EM scaling to Charged Attack DMG",
     }
   ],
   buffs: [
@@ -46,12 +46,12 @@ export const huntersPath: WeaponConfig = {
     },
     {
       id: "hunters-path-flat-ca",
-      label: "Flat CA DMG from EM (Hunter's Path)",
-      stat: "flatDmgBonus",
+      label: "Flat Charged Attack DMG from EM (Hunter's Path)",
+      stat: "chargedDmgBonus",
       refinementValues: [160, 200, 240, 280, 320],
       isTeamBuff: false,
-      conditionKey: "hunters-path-active",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['hunters-path-active'] ?? '1') === '1' || Number(ctx.inputs?.['hunters-path-active'] ?? 1) > 0; if (!on) return 0; const em = Number(ctx.inputs?.['hunters-path-em'] ?? 400); return em * ([1.6, 2.0, 2.4, 2.8, 3.2][r - 1]); },
+      conditionKey: "hunters-path-tireless-hunt",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['hunters-path-tireless-hunt'] ?? '1') === '1' || Number(ctx.inputs?.['hunters-path-tireless-hunt'] ?? 1) > 0; if (!on) return 0; const em = Number(ctx.inputs?.['hunters-path-wielder-em'] ?? 300); const ratio = [1.6, 2.0, 2.4, 2.8, 3.2][r - 1]; return em * ratio; },
     }
   ],
   signatureFor: ["tighnari"],

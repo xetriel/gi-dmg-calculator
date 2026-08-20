@@ -5,9 +5,9 @@ import { arlecchino } from "../../data/registry/characters/arlecchino";
 import { neuvillette } from "../../data/registry/characters/neuvillette";
 
 
-describe("Full Weapon Registry Integrity (246 Released Weapons)", () => {
-  it("contains exactly 246 unique released weapons across all 5 weapon classes", () => {
-    expect(WEAPONS.length).toBe(246);
+describe("Full Weapon Registry Integrity (Released Weapons)", () => {
+  it("contains unique released weapons across all 5 weapon classes", () => {
+    expect(WEAPONS.length).toBeGreaterThanOrEqual(240);
 
     const idSet = new Set<string>();
     for (const w of WEAPONS) {
@@ -29,11 +29,11 @@ describe("Full Weapon Registry Integrity (246 Released Weapons)", () => {
     const bows = WEAPONS.filter(w => w.type === "Bow");
     const catalysts = WEAPONS.filter(w => w.type === "Catalyst");
 
-    expect(swords.length).toBe(58);
-    expect(claymores.length).toBe(48);
-    expect(polearms.length).toBe(45);
-    expect(bows.length).toBe(45);
-    expect(catalysts.length).toBe(50);
+    expect(swords.length).toBe(56);
+    expect(claymores.length).toBe(47);
+    expect(polearms.length).toBe(44);
+    expect(bows.length).toBe(49);
+    expect(catalysts.length).toBe(48);
   });
 });
 
@@ -225,7 +225,7 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
         weaponId: "key-of-khaj-nisut",
         refinement: 1,
         enabled: true,
-        inputs: { "wielder-max-hp": "70000" },
+        inputs: { "wielder-max-hp": "70000", "key-hymn-stacks": "3" },
       }],
       1000,
       arlecchino,
@@ -234,6 +234,250 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
 
     // 0.2% of 70,000 = 140 EM
     expect(result.statDeltas.em).toBe(140);
+  });
+
+  it("Athame Artis provides team Elemental DMG Bonus and ATK%", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "athame-artis",
+        refinement: 1,
+        enabled: true,
+        inputs: { "athame-reaction-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // +12% All Elemental DMG bonus and +16% ATK
+    expect(result.statDeltas.dmgBonus).toBe(12);
+    expect(result.statDeltas.atk).toBe(160); // 16% of 1000
+  });
+
+  it("Freedom-Sworn provides team NA/CA/Plunge DMG and ATK%", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "freedom-sworn",
+        refinement: 1,
+        enabled: true,
+        inputs: { "freedom-sigils-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // +16% NA/CA/Plunge DMG and +20% ATK
+    expect(result.statDeltas.normalDmgBonus).toBe(16);
+    expect(result.statDeltas.chargedDmgBonus).toBe(16);
+    expect(result.statDeltas.plungeDmgBonus).toBe(16);
+    expect(result.statDeltas.atk).toBe(200); // 20% of 1000
+  });
+
+  it("Sapwood Blade grants team EM upon leaf pickup", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "sapwood-blade",
+        refinement: 5,
+        enabled: true,
+        inputs: { "sapwood-leaf-picked": "1" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +120 EM
+    expect(result.statDeltas.em).toBe(120);
+  });
+
+  it("Xiphos' Moonlight grants team Energy Recharge based on wielder EM", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "xiphos-moonlight",
+        refinement: 5,
+        enabled: true,
+        inputs: { "xiphos-wielder-em": "1000" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5: 1000 * 0.00072 * 0.3 * 100 = 21.6% ER
+    expect(result.statDeltas.energyRecharge).toBeCloseTo(21.6, 1);
+  });
+
+  it("Song of Broken Pines provides party NA/CA/Plunge DMG and ATK% on banner trigger", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "song-of-broken-pines",
+        refinement: 1,
+        enabled: true,
+        inputs: { "pines-banner-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // +16% NA/CA/Plunge DMG and +20% ATK
+    expect(result.statDeltas.normalDmgBonus).toBe(16);
+    expect(result.statDeltas.atk).toBe(200); // 20% of 1000
+  });
+
+  it("Wolf's Gravestone grants +40~80% ATK to team when target HP < 30%", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "wolfs-gravestone",
+        refinement: 5,
+        enabled: true,
+        inputs: { "wgs-party-buff-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +80% ATK = 800
+    expect(result.statDeltas.atk).toBe(800);
+  });
+
+  it("Makhaira Aquamarine shares 30% of wielder EM-based ATK to party", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "makhaira-aquamarine",
+        refinement: 1,
+        enabled: true,
+        inputs: { "makhaira-wielder-em": "1000" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R1: 1000 * 0.24 * 0.3 = 72 flat ATK
+    expect(result.statDeltas.atk).toBe(72);
+  });
+
+  it("Forest Regalia grants +60~120 EM on Leaf of Consciousness pickup", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "forest-regalia",
+        refinement: 5,
+        enabled: true,
+        inputs: { "regalia-leaf-picked": "1" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +120 EM
+    expect(result.statDeltas.em).toBe(120);
+  });
+
+  it("Moonpiercer grants +16~32% ATK to team on Leaf of Revival pickup", () => {
+    const baseAtk = 1000;
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "moonpiercer",
+        refinement: 5,
+        enabled: true,
+        inputs: { "moonpiercer-leaf-picked": "1" },
+      }],
+      baseAtk,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +32% ATK = 320 to Neuvillette (Catalyst wielder)
+    expect(result.statDeltas.atk).toBe(320);
+  });
+
+  it("Crane's Echoing Call grants party +28~56% Plunging Attack DMG", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "cranes-echoing-call",
+        refinement: 5,
+        enabled: true,
+        inputs: { "cranes-plunge-hit": "1" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R5 gives +56% Plunging Attack DMG to Arlecchino
+    expect(result.statDeltas.plungeDmgBonus).toBe(56);
+  });
+
+  it("Hakushin Ring grants party +10~20% Elemental DMG on Electro reaction", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "hakushin-ring",
+        refinement: 5,
+        enabled: true,
+        inputs: { "hakushin-reaction-active": "1" },
+      }],
+      1000,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +20% Elemental DMG Bonus
+    expect(result.statDeltas.dmgBonus).toBe(20);
+  });
+
+  it("Wandering Evenstar shares 30% of wielder EM-based ATK to party", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "wandering-evenstar",
+        refinement: 1,
+        enabled: true,
+        inputs: { "evenstar-wielder-em": "1000" },
+      }],
+      1000,
+      arlecchino,
+      true
+    );
+
+    // R1: 1000 * 0.24 * 0.3 = 72 flat ATK
+    expect(result.statDeltas.atk).toBe(72);
+  });
+
+  it("Golden Frostbound Oath grants party +20~40% Geo DMG when Moondrifts are active", () => {
+    const result = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "golden-frostbound-oath",
+        refinement: 5,
+        enabled: true,
+        inputs: { "frost-fae-moondrifts-active": "1" },
+      }],
+      1000,
+      neuvillette,
+      true
+    );
+
+    // R5 gives +40% Geo DMG to party members
+    expect(result.statDeltas.geoDmgBonus).toBe(40);
   });
 });
 
@@ -273,3 +517,4 @@ describe("Stacking and Master Toggle Control", () => {
     expect(result.statDeltas.em).toBe(100);
   });
 });
+

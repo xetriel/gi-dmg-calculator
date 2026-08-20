@@ -21,7 +21,7 @@ export const aThousandBlazingSuns: WeaponConfig = {
   mechanicDefs: [
     {
       id: "blazing-suns-active",
-      label: "Nightsoul Burst Triggered",
+      label: "Nightsoul Burst Triggered Active",
       control: "toggle",
       defaultValue: 1,
       hint: "+28~56% ATK for 6s",
@@ -30,7 +30,7 @@ export const aThousandBlazingSuns: WeaponConfig = {
   buffs: [
     {
       id: "blazing-suns-crit-dmg",
-      label: "CRIT DMG%",
+      label: "CRIT DMG% (A Thousand Blazing Suns)",
       stat: "critDmg",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
@@ -38,7 +38,7 @@ export const aThousandBlazingSuns: WeaponConfig = {
     },
     {
       id: "blazing-suns-atk",
-      label: "ATK%",
+      label: "ATK% (A Thousand Blazing Suns)",
       stat: "atk",
       refinementValues: [28, 35, 42, 49, 56],
       isTeamBuff: false,

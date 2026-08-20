@@ -20,22 +20,22 @@ export const dragonsBane: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "dragons-bane-target",
-      label: "Target Affected by Pyro/Hydro",
+      id: "dragons-bane-target-affected",
+      label: "Target Affected by Hydro or Pyro (+20~36% DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~36% DMG bonus vs Pyro/Hydro affected targets",
+      hint: "+20~36% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "dragons-bane-dmg",
-      label: "All DMG Bonus (Dragon's Bane)",
+      label: "All DMG Bonus vs Hydro/Pyro (Dragon's Bane)",
       stat: "dmgBonus",
       refinementValues: [20, 24, 28, 32, 36],
       isTeamBuff: false,
-      conditionKey: "dragons-bane-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["dragons-bane-target"]??"1")==="1"||Number(ctx.inputs?.["dragons-bane-target"]??1)>0;if(!on)return 0;return[20,24,28,32,36][r-1]},
+      conditionKey: "dragons-bane-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['dragons-bane-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['dragons-bane-target-affected'] ?? 1) > 0; return on ? [20, 24, 28, 32, 36][r - 1] : 0; },
     }
   ],
   

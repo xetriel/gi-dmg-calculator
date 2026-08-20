@@ -15,9 +15,18 @@ export const kagotsurubeIsshin: WeaponConfig = {
   },
   passiveName: "Isshin Art Clarity",
   passiveDesc:
-    "When a Normal, Charged, or Plunging Attack hits an opponent, it will deal 180% of ATK as AoE DMG and increase ATK by 15% for 8s.",
+    "When a Normal, Charged, or Plunging Attack hits an opponent, it unleashes a Hewing Gale dealing 180% ATK DMG and increases ATK by 15% for 8s.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "isshin-atk-active",
+      label: "Hewing Gale ATK Buff Active (+15% ATK)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+15% ATK for 8s",
+    }
+  ],
   buffs: [
     {
       id: "isshin-atk",
@@ -26,7 +35,8 @@ export const kagotsurubeIsshin: WeaponConfig = {
       refinementValues: [15, 15, 15, 15, 15],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r,ctx)=>15/100*ctx.baseAtk,
+      conditionKey: "isshin-atk-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['isshin-atk-active'] ?? '1') === '1' || Number(ctx.inputs?.['isshin-atk-active'] ?? 1) > 0; return on ? (0.15 * ctx.baseAtk) : 0; },
     }
   ],
   

@@ -15,17 +15,17 @@ export const blackcliffLongsword: WeaponConfig = {
   },
   passiveName: "Press the Advantage",
   passiveDesc:
-    "After defeating an opponent, ATK is increased by 12~24% for 30s. This effect has a maximum of 3 stacks.",
+    "After defeating an opponent, ATK is increased by 12~24% for 30s. This effect has a maximum of 3 stacks, and the duration of each stack is independent of the others.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
       id: "blackcliff-stacks",
-      label: "Press the Advantage Stacks (0-3)",
+      label: "Opponents Defeated Stacks (0-3)",
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      hint: "+12~24% ATK per defeat stack",
+      hint: "+12~24% ATK per defeat stack (up to +36~72%)",
     }
   ],
   buffs: [
@@ -37,7 +37,7 @@ export const blackcliffLongsword: WeaponConfig = {
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "blackcliff-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["blackcliff-stacks"]??3);return s*[12,15,18,21,24][r-1]/100*ctx.baseAtk},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['blackcliff-stacks'] ?? 3); return ((s * [12, 15, 18, 21, 24][r - 1]) / 100) * ctx.baseAtk; },
     }
   ],
   

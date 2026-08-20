@@ -15,22 +15,22 @@ export const theFirstGreatMagic: WeaponConfig = {
   },
   passiveName: "Parsifal the Great",
   passiveDesc:
-    "Charged Attack DMG increased by 16~32%. For every party member with the same Elemental Type as the wielder (including wielder), gain 1 Gimmick stack: ATK increased by 16/32/48% ~ 32/64/96%. For every member with a different type, gain 1 Theatrics stack: Movement SPD increased by 4/7/10% ~ 12/15/18%.",
+    "Charged Attack DMG increased by 16~32%. For every party member of the same Elemental Type (max 3), gain Gimmick stack (+16/32/48% ~ 32/64/96% ATK).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "great-magic-same-stacks",
-      label: "Same-Element Party Members (1-3)",
+      id: "magic-same-element-count",
+      label: "Party Members of Same Element (1-3)",
       control: "stacks",
       defaultValue: 3,
       max: 3,
-      hint: "+16/32/48% ATK for 1/2/3 matching element members",
+      hint: "1 member: +16~32% ATK, 2 members: +32~64% ATK, 3 members: +48~96% ATK",
     }
   ],
   buffs: [
     {
-      id: "great-magic-ca-dmg",
+      id: "magic-ca-dmg",
       label: "Charged Attack DMG Bonus (The First Great Magic)",
       stat: "chargedDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
@@ -38,14 +38,14 @@ export const theFirstGreatMagic: WeaponConfig = {
       compute: (r) => [16, 20, 24, 28, 32][r - 1],
     },
     {
-      id: "great-magic-atk",
-      label: "ATK% (The First Great Magic Stacks)",
+      id: "magic-atk",
+      label: "ATK% from Same Element Party Members (The First Great Magic)",
       stat: "atk",
       refinementValues: [48, 60, 72, 84, 96],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "great-magic-same-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['great-magic-same-stacks'] ?? 3); const tiers: Record<number, [number, number, number, number, number]> = { 1: [16, 20, 24, 28, 32], 2: [32, 40, 48, 56, 64], 3: [48, 60, 72, 84, 96] }; const pct = (tiers[s] ?? tiers[3])[r - 1]; return (pct / 100) * ctx.baseAtk; },
+      conditionKey: "magic-same-element-count",
+      compute: (r, ctx) => { const count = Number(ctx.inputs?.['magic-same-element-count'] ?? 3); const perMember = [16, 20, 24, 28, 32][r - 1]; return ((Math.min(count, 3) * perMember) / 100) * ctx.baseAtk; },
     }
   ],
   signatureFor: ["lyney"],

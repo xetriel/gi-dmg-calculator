@@ -10,7 +10,7 @@ export const beginnersProtector: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "A simple polearm given to novice adventurers.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

@@ -15,19 +15,29 @@ export const moonpiercer: WeaponConfig = {
   },
   passiveName: "Stillwood Moonshadow",
   passiveDesc:
-    "After triggering Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, or Burgeon, a Leaf of Revival will be created around the character for up to 10s. When picked up, the Leaf will grant the character 16~32% ATK for 12s.",
+    "After triggering Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, or Burgeon, a Leaf of Revival will be generated on the ground for 10s. The character who picks it up will have their ATK increased by 16~32% for 12s.",
   isSupport: true,
   buffType: "team",
+  mechanicDefs: [
+    {
+      id: "moonpiercer-leaf-picked",
+      label: "Leaf of Revival Picked Up (+16~32% ATK)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Team buff: +16~32% ATK for 12s to picking party member",
+    }
+  ],
   buffs: [
     {
-      id: "moonpiercer-leaf-atk",
-      label: "Leaf of Revival ATK% (Moonpiercer)",
-      description: "Active character picks up Leaf of Revival for +16~32% ATK",
+      id: "moonpiercer-party-atk",
+      label: "Party ATK% (Moonpiercer Leaf of Revival)",
+      description: "Picking up Leaf of Revival grants +16~32% ATK for 12s",
       stat: "atk",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: true,
       isPercent: true,
-      compute: (r,ctx)=>{const pct=[16,20,24,28,32][r-1];return pct/100*ctx.baseAtk},
+      conditionKey: "moonpiercer-leaf-picked",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['moonpiercer-leaf-picked'] ?? '1') === '1' || Number(ctx.inputs?.['moonpiercer-leaf-picked'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   

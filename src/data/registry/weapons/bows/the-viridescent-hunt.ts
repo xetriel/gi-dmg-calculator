@@ -15,7 +15,7 @@ export const theViridescentHunt: WeaponConfig = {
   },
   passiveName: "Verdant Wind",
   passiveDesc:
-    "Upon hit, Normal and Aimed Shot Attacks have a 50% chance to generate a Cyclone that attracts enemies and deals 40~80% ATK as DMG every 0.5s for 4s.",
+    "Normal and Aimed Shot hits have a 50% chance to generate a Cyclone, dealing 40~80% ATK as DMG and pulling enemies.",
   isSupport: false,
   buffType: "self",
   buffs: [

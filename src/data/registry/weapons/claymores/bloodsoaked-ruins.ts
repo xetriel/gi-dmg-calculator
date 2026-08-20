@@ -18,10 +18,19 @@ export const bloodsoakedRuins: WeaponConfig = {
     "ATK is increased by 20~40%. When defeating an opponent, All Elemental DMG Bonus is increased by 20~40% for 15s.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "bloodsoaked-defeat-active",
+      label: "Opponent Defeated (+20~40% Elem DMG)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+20~40% All Elemental DMG for 15s",
+    }
+  ],
   buffs: [
     {
       id: "bloodsoaked-atk",
-      label: "ATK%",
+      label: "ATK% (Bloodsoaked Ruins)",
       stat: "atk",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
@@ -30,11 +39,12 @@ export const bloodsoakedRuins: WeaponConfig = {
     },
     {
       id: "bloodsoaked-elem-dmg",
-      label: "All Elemental DMG Bonus",
+      label: "All Elemental DMG Bonus (Bloodsoaked Ruins)",
       stat: "dmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
-      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+      conditionKey: "bloodsoaked-defeat-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['bloodsoaked-defeat-active'] ?? '1') === '1' || Number(ctx.inputs?.['bloodsoaked-defeat-active'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
     }
   ],
   

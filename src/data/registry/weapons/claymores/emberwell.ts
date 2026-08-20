@@ -21,7 +21,7 @@ export const emberwell: WeaponConfig = {
   buffs: [
     {
       id: "emberwell-pyro-dmg",
-      label: "Pyro DMG Bonus",
+      label: "Pyro DMG Bonus (Emberwell)",
       stat: "pyroDmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,

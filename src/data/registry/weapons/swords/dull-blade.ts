@@ -10,7 +10,7 @@ export const dullBlade: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "Youthful dreams of wild adventure. Plated with dreams of glory and silver.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

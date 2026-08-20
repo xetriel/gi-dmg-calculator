@@ -15,7 +15,7 @@ export const mappaMare: WeaponConfig = {
   },
   passiveName: "Infusion Scroll",
   passiveDesc:
-    "Triggering an Elemental reaction grants a 8~16% Elemental DMG Bonus for 10s. Max 2 stacks.",
+    "Triggering an Elemental Reaction grants an 8~16% Elemental DMG Bonus for 10s. Max 2 stacks (+16~32% Elemental DMG).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,18 +25,18 @@ export const mappaMare: WeaponConfig = {
       control: "stacks",
       defaultValue: 2,
       max: 2,
-      hint: "+8~16% Elemental DMG Bonus per stack",
+      hint: "+8~16% All Elemental DMG Bonus per stack (up to +16~32%)",
     }
   ],
   buffs: [
     {
       id: "mappa-elem-dmg",
-      label: "Elemental DMG Bonus (Mappa Mare)",
+      label: "All Elemental DMG Bonus (Mappa Mare)",
       stat: "dmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       conditionKey: "mappa-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["mappa-stacks"]??2);return s*[8,10,12,14,16][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['mappa-stacks'] ?? 2); return s * [8, 10, 12, 14, 16][r - 1]; },
     }
   ],
   

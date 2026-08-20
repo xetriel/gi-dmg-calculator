@@ -20,22 +20,22 @@ export const cinnabarSpindle: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "cinnabar-def",
+      id: "cinnabar-wielder-def",
       label: "Character Total DEF",
       control: "stacks",
       defaultValue: 2500,
-      max: 10000,
-      hint: "Total DEF used for Cinnabar flat Skill DMG bonus",
+      max: 5000,
+      hint: "Total DEF used to calculate flat Elemental Skill DMG bonus",
     }
   ],
   buffs: [
     {
-      id: "cinnabar-flat-skill",
-      label: "Flat Skill DMG from DEF (Cinnabar Spindle)",
-      stat: "flatDmgBonus",
+      id: "cinnabar-skill-flat",
+      label: "Elemental Skill Flat DMG from DEF (Cinnabar Spindle)",
+      stat: "skillDmgBonus",
       refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const def=Number(ctx.inputs?.["cinnabar-def"]??2500);const ratio=[.4,.5,.6,.7,.8][r-1];return def*ratio},
+      compute: (r, ctx) => { const def = Number(ctx.inputs?.['cinnabar-wielder-def'] ?? 2500); const ratio = [0.4, 0.5, 0.6, 0.7, 0.8][r - 1]; return def * ratio; },
     }
   ],
   signatureFor: ["albedo"],

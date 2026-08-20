@@ -20,22 +20,22 @@ export const coolSteel: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "cool-steel-target",
-      label: "Target Affected by Hydro/Cryo",
+      id: "cool-steel-target-affected",
+      label: "Target Affected by Hydro or Cryo",
       control: "toggle",
       defaultValue: 1,
-      hint: "+12~24% DMG bonus",
+      hint: "+12~24% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "cool-steel-dmg",
-      label: "All DMG Bonus (Cool Steel)",
+      label: "All DMG Bonus vs Hydro/Cryo (Cool Steel)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      conditionKey: "cool-steel-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["cool-steel-target"]??"1")==="1"||Number(ctx.inputs?.["cool-steel-target"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      conditionKey: "cool-steel-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['cool-steel-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['cool-steel-target-affected'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

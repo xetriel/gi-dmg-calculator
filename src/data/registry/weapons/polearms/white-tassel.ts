@@ -15,17 +15,17 @@ export const whiteTassel: WeaponConfig = {
   },
   passiveName: "Sharp",
   passiveDesc:
-    "Increases Normal Attack DMG by 24~48%.",
+    "Normal Attack DMG is increased by 24~48%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "white-tassel-na-dmg",
+      id: "white-tassel-na",
       label: "Normal Attack DMG Bonus (White Tassel)",
       stat: "normalDmgBonus",
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
-      compute: r=>[24,30,36,42,48][r-1],
+      compute: (r) => [24, 30, 36, 42, 48][r - 1],
     }
   ],
   

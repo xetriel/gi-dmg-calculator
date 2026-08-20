@@ -21,5 +21,5 @@ export const crescentPike: WeaponConfig = {
   buffs: [
 
   ],
-
+  
 };

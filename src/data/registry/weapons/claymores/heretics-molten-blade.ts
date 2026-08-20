@@ -21,7 +21,7 @@ export const hereticsMoltenBlade: WeaponConfig = {
   buffs: [
     {
       id: "molten-blade-skill",
-      label: "Elemental Skill DMG Bonus",
+      label: "Elemental Skill DMG Bonus (Heretic's Molten Blade)",
       stat: "skillDmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,

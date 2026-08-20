@@ -13,7 +13,7 @@ export const theStringless: WeaponConfig = {
     value: 165,
     baseValue: 36,
   },
-  passiveName: "Songless Ballad",
+  passiveName: "Song of Bygone Days",
   passiveDesc:
     "Increases Elemental Skill and Elemental Burst DMG by 24~48%.",
   isSupport: false,
@@ -25,7 +25,7 @@ export const theStringless: WeaponConfig = {
       stat: "skillDmgBonus",
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
-      compute: r=>[24,30,36,42,48][r-1],
+      compute: (r) => [24, 30, 36, 42, 48][r - 1],
     },
     {
       id: "stringless-burst-dmg",
@@ -33,7 +33,7 @@ export const theStringless: WeaponConfig = {
       stat: "burstDmgBonus",
       refinementValues: [24, 30, 36, 42, 48],
       isTeamBuff: false,
-      compute: r=>[24,30,36,42,48][r-1],
+      compute: (r) => [24, 30, 36, 42, 48][r - 1],
     }
   ],
   

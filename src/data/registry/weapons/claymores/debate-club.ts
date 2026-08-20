@@ -15,7 +15,7 @@ export const debateClub: WeaponConfig = {
   },
   passiveName: "Blunt Conclusion",
   passiveDesc:
-    "After using an Elemental Skill, Normal or Charged Attacks deal an additional 60~120% ATK DMG in a small area on hit. Effect lasts 15s.",
+    "After using an Elemental Skill, Normal or Charged Attacks deal an additional 60~120% ATK DMG in a small AoE on hit for 15s.",
   isSupport: false,
   buffType: "self",
   buffs: [

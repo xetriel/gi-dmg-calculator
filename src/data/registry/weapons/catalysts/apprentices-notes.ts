@@ -10,7 +10,7 @@ export const apprenticesNotes: WeaponConfig = {
   
   passiveName: "",
   passiveDesc:
-    "Notes left behind by an apprentice studying elemental magic.",
+    "",
   isSupport: false,
   buffType: "self",
   buffs: [

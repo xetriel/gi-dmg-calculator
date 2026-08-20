@@ -15,19 +15,29 @@ export const songOfBrokenPines: WeaponConfig = {
   },
   passiveName: "Rebel's Banner-Hymn",
   passiveDesc:
-    "Increases ATK by 16~32%. Normal/Charged Attacks grant Sigils of Whispers (max 4). At 4 Sigils, all party members gain Millennial Movement: Banner-Hymn (+12~24% Normal ATK SPD and +20~40% ATK for 12s).",
+    "Increases ATK by 16~32%. Normal/Charged Attacks grant Sigils of Whispers (max 4). At 4 Sigils, all party members gain Millennial Movement: Banner-Hymn (+12~24% Normal ATK SPD, +16~32% NA/CA/Plunge DMG, and +20~40% ATK for 12s).",
   isSupport: true,
   buffType: "both",
   mechanicDefs: [
     {
       id: "pines-banner-active",
-      label: "Banner-Hymn Active (4 Sigils)",
+      label: "Millennial Movement: Banner-Hymn Active (4 Sigils)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Team buff: +12~24% Normal ATK SPD, +20~40% ATK for 12s",
+      hint: "Team buff: +16~32% NA/CA/Plunge DMG, +20~40% ATK for 12s",
     }
   ],
   buffs: [
+    {
+      id: "pines-party-na-ca-plunge",
+      label: "Party NA/CA/Plunge DMG Bonus (Song of Broken Pines)",
+      description: "Nearby party members gain +16~32% Normal, Charged, and Plunging Attack DMG",
+      stat: "normalDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: true,
+      conditionKey: "pines-banner-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['pines-banner-active'] ?? '1') === '1' || Number(ctx.inputs?.['pines-banner-active'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
+    },
     {
       id: "pines-party-atk",
       label: "Party ATK% (Song of Broken Pines)",

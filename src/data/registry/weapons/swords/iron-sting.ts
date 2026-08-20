@@ -25,7 +25,7 @@ export const ironSting: WeaponConfig = {
       control: "stacks",
       defaultValue: 2,
       max: 2,
-      hint: "+6~12% All DMG bonus per stack",
+      hint: "+6~12% All DMG bonus per stack (up to +12~24%)",
     }
   ],
   buffs: [
@@ -36,7 +36,7 @@ export const ironSting: WeaponConfig = {
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       conditionKey: "iron-sting-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["iron-sting-stacks"]??2);return s*[6,7.5,9,10.5,12][r-1]},
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['iron-sting-stacks'] ?? 2); return s * [6, 7.5, 9, 10.5, 12][r - 1]; },
     }
   ],
   

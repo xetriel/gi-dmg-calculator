@@ -25,7 +25,7 @@ export const theBlackSword: WeaponConfig = {
       stat: "normalDmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
-      compute: r=>[20,25,30,35,40][r-1],
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
     },
     {
       id: "black-sword-ca-dmg",
@@ -33,7 +33,7 @@ export const theBlackSword: WeaponConfig = {
       stat: "chargedDmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
-      compute: r=>[20,25,30,35,40][r-1],
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
     }
   ],
   

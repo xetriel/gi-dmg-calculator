@@ -25,16 +25,16 @@ export const rust: WeaponConfig = {
       stat: "normalDmgBonus",
       refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      compute: r=>[40,50,60,70,80][r-1],
+      compute: (r) => [40, 50, 60, 70, 80][r - 1],
     },
     {
-      id: "rust-ca-dmg",
+      id: "rust-ca-penalty",
       label: "Charged Attack DMG Penalty (Rust)",
       stat: "chargedDmgBonus",
       refinementValues: [-10, -10, -10, -10, -10],
       isTeamBuff: false,
-      compute: ()=>-10,
+      compute: () => -10,
     }
   ],
-  
+  signatureFor: ["yoimiya"],
 };

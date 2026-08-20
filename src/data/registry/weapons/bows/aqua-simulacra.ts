@@ -15,22 +15,22 @@ export const aquaSimulacra: WeaponConfig = {
   },
   passiveName: "The Cleansing Form",
   passiveDesc:
-    "HP is increased by 16~32%. When there are opponents nearby, the DMG dealt by the wielder is increased by 20~40%. This takes effect whether the character is on-field or off-field.",
+    "HP is increased by 16~32%. When there are opponents nearby, the DMG dealt by the wielder is increased by 20~40% (whether on-field or off-field).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "aqua-nearby-opponents",
-      label: "Opponents Nearby (Active DMG Buff)",
+      id: "aqua-opponents-nearby",
+      label: "Opponents Nearby (+20~40% All DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+20~40% All DMG bonus",
+      hint: "+20~40% All DMG bonus when enemies are nearby",
     }
   ],
   buffs: [
     {
       id: "aqua-hp",
-      label: "HP% (Aqua Simulacra)",
+      label: "Max HP% (Aqua Simulacra)",
       stat: "hp",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
@@ -39,12 +39,12 @@ export const aquaSimulacra: WeaponConfig = {
     },
     {
       id: "aqua-dmg",
-      label: "All DMG Bonus (Aqua Simulacra Nearby)",
+      label: "All DMG Bonus (Aqua Simulacra)",
       stat: "dmgBonus",
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
-      conditionKey: "aqua-nearby-opponents",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['aqua-nearby-opponents'] ?? '1') === '1' || Number(ctx.inputs?.['aqua-nearby-opponents'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
+      conditionKey: "aqua-opponents-nearby",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['aqua-opponents-nearby'] ?? '1') === '1' || Number(ctx.inputs?.['aqua-opponents-nearby'] ?? 1) > 0; return on ? [20, 25, 30, 35, 40][r - 1] : 0; },
     }
   ],
   signatureFor: ["yelan"],

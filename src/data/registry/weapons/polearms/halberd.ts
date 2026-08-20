@@ -15,7 +15,7 @@ export const halberd: WeaponConfig = {
   },
   passiveName: "Heavy",
   passiveDesc:
-    "Normal Attacks deal an additional 160~320% ATK DMG. Can only occur once every 10s.",
+    "Normal Attacks deal an additional 160~320% DMG every 10s.",
   isSupport: false,
   buffType: "self",
   buffs: [

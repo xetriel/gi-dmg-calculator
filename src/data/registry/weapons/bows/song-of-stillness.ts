@@ -13,18 +13,18 @@ export const songOfStillness: WeaponConfig = {
     value: 41.3,
     baseValue: 9,
   },
-  passiveName: "Benthic Pulse",
+  passiveName: "White Noise",
   passiveDesc:
-    "After the wielder is healed, they will deal 16~32% more DMG for 8s. This can be triggered even if the character is not on the field.",
+    "After the wielder is healed, they will deal 16~32% more DMG for 8s. Can trigger even when off-field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "stillness-healed",
-      label: "Character Received Healing",
+      id: "stillness-healed-active",
+      label: "Character Healed Active (+16~32% DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% All DMG bonus for 8s",
+      hint: "+16~32% All DMG for 8s after receiving healing",
     }
   ],
   buffs: [
@@ -34,8 +34,8 @@ export const songOfStillness: WeaponConfig = {
       stat: "dmgBonus",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      conditionKey: "stillness-healed",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["stillness-healed"]??"1")==="1"||Number(ctx.inputs?.["stillness-healed"]??1)>0;return on?[16,20,24,28,32][r-1]:0},
+      conditionKey: "stillness-healed-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['stillness-healed-active'] ?? '1') === '1' || Number(ctx.inputs?.['stillness-healed-active'] ?? 1) > 0; return on ? [16, 20, 24, 28, 32][r - 1] : 0; },
     }
   ],
   

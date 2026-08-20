@@ -20,7 +20,7 @@ export const serpentSpine: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "serpent-stacks",
+      id: "serpent-spine-stacks",
       label: "Wavesplitter Stacks (0-5)",
       control: "stacks",
       defaultValue: 5,
@@ -30,13 +30,13 @@ export const serpentSpine: WeaponConfig = {
   ],
   buffs: [
     {
-      id: "serpent-dmg",
+      id: "serpent-spine-dmg",
       label: "All DMG Bonus (Serpent Spine)",
       stat: "dmgBonus",
       refinementValues: [30, 35, 40, 45, 50],
       isTeamBuff: false,
-      conditionKey: "serpent-stacks",
-      compute: (r,ctx)=>{const s=Number(ctx.inputs?.["serpent-stacks"]??5);return s*[6,7,8,9,10][r-1]},
+      conditionKey: "serpent-spine-stacks",
+      compute: (r, ctx) => { const s = Number(ctx.inputs?.['serpent-spine-stacks'] ?? 5); return s * [6, 7, 8, 9, 10][r - 1]; },
     }
   ],
   

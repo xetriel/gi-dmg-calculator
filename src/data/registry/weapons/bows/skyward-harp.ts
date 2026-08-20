@@ -15,7 +15,7 @@ export const skywardHarp: WeaponConfig = {
   },
   passiveName: "Echoing Ballad",
   passiveDesc:
-    "Increases CRIT DMG by 20~40%. Hits have a 60~100% chance to inflict a small AoE attack dealing 125% Physical ATK DMG every 4~2s.",
+    "Increases CRIT DMG by 20~40%. Hits have a 60~100% chance to inflict a small AoE attack dealing 125% Physical ATK DMG.",
   isSupport: false,
   buffType: "self",
   buffs: [

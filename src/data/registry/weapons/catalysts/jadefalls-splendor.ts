@@ -15,27 +15,35 @@ export const jadefallsSplendor: WeaponConfig = {
   },
   passiveName: "Primordial Jade Regalia",
   passiveDesc:
-    "For 3s after using an Elemental Burst or creating a shield, the equipping character can gain the Primordial Jade Regalia effect: Restore 4.5~6.5 Energy every 2.5s, and gain 0.3~1.1% Elemental DMG Bonus for their corresponding Elemental Type for every 1,000 Max HP they possess, up to 12~44%.",
+    "For 3s after using an Elemental Burst or creating a shield, gain 0.3~1.1% corresponding Elemental DMG Bonus for every 1,000 Max HP (up to 12~44%).",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "jadefall-max-hp",
-      label: "Character Max HP",
+      id: "jadefall-wielder-hp",
+      label: "Character Total Max HP (e.g. 50000)",
       control: "stacks",
       defaultValue: 50000,
-      max: 100000,
-      hint: "Max HP used for Elemental DMG Bonus conversion",
+      max: 80000,
+      hint: "Max HP used to compute Elemental DMG bonus",
+    },
+    {
+      id: "jadefall-burst-shield-active",
+      label: "Burst/Shield Trigger Active (3s)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Grants Elemental DMG Bonus based on Max HP",
     }
   ],
   buffs: [
     {
       id: "jadefall-elem-dmg",
-      label: "Elemental DMG Bonus (Jadefall's Splendor)",
+      label: "Elemental DMG Bonus from Max HP (Jadefall's Splendor)",
       stat: "dmgBonus",
       refinementValues: [12, 20, 28, 36, 44],
       isTeamBuff: false,
-      compute: (r, ctx) => { const hp = Number(ctx.inputs?.['jadefall-max-hp'] ?? 50000); const per1k = [0.3, 0.5, 0.7, 0.9, 1.1][r - 1]; const cap = [12, 20, 28, 36, 44][r - 1]; return Math.min((hp / 1000) * per1k, cap); },
+      conditionKey: "jadefall-burst-shield-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['jadefall-burst-shield-active'] ?? '1') === '1' || Number(ctx.inputs?.['jadefall-burst-shield-active'] ?? 1) > 0; if (!on) return 0; const hp = Number(ctx.inputs?.['jadefall-wielder-hp'] ?? 50000); const ratio = [0.3, 0.5, 0.7, 0.9, 1.1][r - 1]; const cap = [12, 20, 28, 36, 44][r - 1]; return Math.min((hp / 1000) * ratio, cap); },
     }
   ],
   signatureFor: ["baizhu"],

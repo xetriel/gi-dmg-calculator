@@ -15,13 +15,13 @@ export const mailedFlower: WeaponConfig = {
   },
   passiveName: "Whispers of Wind and Flower",
   passiveDesc:
-    "Within 8s after an Elemental Skill hits an opponent or triggers an Elemental Reaction, ATK is increased by 12~24% and Elemental Mastery is increased by 48~96.",
+    "Within 8s after the character's Elemental Skill hits an opponent or triggers an Elemental Reaction, their ATK is increased by 12~24% and Elemental Mastery is increased by 48~96.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
       id: "mailed-flower-active",
-      label: "Skill Hit / Reaction Triggered",
+      label: "Skill Hit / Reaction Active (+12~24% ATK, +48~96 EM)",
       control: "toggle",
       defaultValue: 1,
       hint: "+12~24% ATK and +48~96 EM for 8s",
@@ -36,7 +36,7 @@ export const mailedFlower: WeaponConfig = {
       isTeamBuff: false,
       isPercent: true,
       conditionKey: "mailed-flower-active",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["mailed-flower-active"]??"1")==="1"||Number(ctx.inputs?.["mailed-flower-active"]??1)>0;return on?[12,15,18,21,24][r-1]/100*ctx.baseAtk:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['mailed-flower-active'] ?? '1') === '1' || Number(ctx.inputs?.['mailed-flower-active'] ?? 1) > 0; return on ? ([12, 15, 18, 21, 24][r - 1] / 100) * ctx.baseAtk : 0; },
     },
     {
       id: "mailed-flower-em",
@@ -45,7 +45,7 @@ export const mailedFlower: WeaponConfig = {
       refinementValues: [48, 60, 72, 84, 96],
       isTeamBuff: false,
       conditionKey: "mailed-flower-active",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["mailed-flower-active"]??"1")==="1"||Number(ctx.inputs?.["mailed-flower-active"]??1)>0;return on?[48,60,72,84,96][r-1]:0},
+      compute: (r, ctx) => { const on = (ctx.inputs?.['mailed-flower-active'] ?? '1') === '1' || Number(ctx.inputs?.['mailed-flower-active'] ?? 1) > 0; return on ? [48, 60, 72, 84, 96][r - 1] : 0; },
     }
   ],
   

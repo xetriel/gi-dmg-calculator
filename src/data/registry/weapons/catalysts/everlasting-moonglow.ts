@@ -13,24 +13,24 @@ export const everlastingMoonglow: WeaponConfig = {
     value: 49.6,
     baseValue: 10.8,
   },
-  passiveName: "Byakuya Kougetsu",
+  passiveName: "Byakuya Koukoku",
   passiveDesc:
-    "Healing Bonus is increased by 10~20%, Normal Attack DMG is increased by 1~3% of the Max HP of the character equipping this weapon. For 12s after using an Elemental Burst, Normal Attacks that hit opponents will restore 0.6 Energy.",
+    "Healing Bonus is increased by 10~20%, Normal Attack DMG is increased by 1~3% of the Max HP of the character equipping this weapon.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "moonglow-max-hp",
-      label: "Character Max HP",
+      id: "moonglow-wielder-hp",
+      label: "Character Total Max HP (e.g. 40000)",
       control: "stacks",
       defaultValue: 40000,
-      max: 100000,
-      hint: "Max HP used for flat NA DMG calculation",
+      max: 80000,
+      hint: "Max HP used for flat Normal Attack DMG bonus",
     }
   ],
   buffs: [
     {
-      id: "moonglow-heal",
+      id: "moonglow-healing-bonus",
       label: "Healing Bonus% (Everlasting Moonglow)",
       stat: "healingBonus",
       refinementValues: [10, 12.5, 15, 17.5, 20],
@@ -38,12 +38,13 @@ export const everlastingMoonglow: WeaponConfig = {
       compute: (r) => [10, 12.5, 15, 17.5, 20][r - 1],
     },
     {
-      id: "moonglow-flat-na",
-      label: "Flat Normal Attack DMG from HP (Everlasting Moonglow)",
+      id: "moonglow-na-flat",
+      label: "Flat Normal Attack DMG from Max HP (Everlasting Moonglow)",
       stat: "normalDmgBonus",
       refinementValues: [1, 1.5, 2, 2.5, 3],
       isTeamBuff: false,
-      compute: (r, ctx) => { const hp = Number(ctx.inputs?.['moonglow-max-hp'] ?? 40000); const ratio = [0.01, 0.015, 0.02, 0.025, 0.03][r - 1]; return hp * ratio; },
+      conditionKey: "moonglow-wielder-hp",
+      compute: (r, ctx) => { const hp = Number(ctx.inputs?.['moonglow-wielder-hp'] ?? 40000); const ratio = [0.01, 0.015, 0.02, 0.025, 0.03][r - 1]; return hp * ratio; },
     }
   ],
   signatureFor: ["sangonomiya-kokomi"],

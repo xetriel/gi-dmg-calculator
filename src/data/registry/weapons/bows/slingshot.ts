@@ -20,29 +20,22 @@ export const slingshot: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "slingshot-close-range",
-      label: "Hit Target within 0.3s (+36~60% DMG)",
+      id: "slingshot-pointblank",
+      label: "Hit within 0.3s (+36~60% DMG vs -10%)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Increases Normal and Charged DMG by 36~60%",
+      hint: "Toggle on for +36~60% DMG, off for -10% DMG penalty",
     }
   ],
   buffs: [
     {
-      id: "slingshot-na-dmg",
-      label: "Normal Attack DMG Bonus (Slingshot)",
+      id: "slingshot-na-ca-dmg",
+      label: "Normal & Charged Attack DMG Bonus (Slingshot)",
       stat: "normalDmgBonus",
       refinementValues: [36, 42, 48, 54, 60],
       isTeamBuff: false,
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["slingshot-close-range"]??"1")==="1"||Number(ctx.inputs?.["slingshot-close-range"]??1)>0;return on?[36,42,48,54,60][r-1]:-10},
-    },
-    {
-      id: "slingshot-ca-dmg",
-      label: "Charged Attack DMG Bonus (Slingshot)",
-      stat: "chargedDmgBonus",
-      refinementValues: [36, 42, 48, 54, 60],
-      isTeamBuff: false,
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["slingshot-close-range"]??"1")==="1"||Number(ctx.inputs?.["slingshot-close-range"]??1)>0;return on?[36,42,48,54,60][r-1]:-10},
+      conditionKey: "slingshot-pointblank",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['slingshot-pointblank'] ?? '1') === '1' || Number(ctx.inputs?.['slingshot-pointblank'] ?? 1) > 0; return on ? [36, 42, 48, 54, 60][r - 1] : -10; },
     }
   ],
   

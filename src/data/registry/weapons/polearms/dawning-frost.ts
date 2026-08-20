@@ -8,24 +8,24 @@ export const dawningFrost: WeaponConfig = {
   baseAtk: 565,
   lvl1BaseAtk: 44,
   subStat: {
-    type: "critRate",
-    label: "CRIT Rate%",
-    value: 18.4,
-    baseValue: 4,
+    type: "em",
+    label: "Elemental Mastery",
+    value: 110,
+    baseValue: 24,
   },
   passiveName: "Frost Dawn",
   passiveDesc:
-    "Cryo DMG is increased by 12~24%.",
+    "Elemental Skill DMG is increased by 16~32%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "dawning-frost-cryo",
-      label: "Cryo DMG Bonus",
-      stat: "cryoDmgBonus",
-      refinementValues: [12, 15, 18, 21, 24],
+      id: "dawning-frost-skill",
+      label: "Elemental Skill DMG Bonus (Dawning Frost)",
+      stat: "skillDmgBonus",
+      refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
-      compute: (r) => [12, 15, 18, 21, 24][r - 1],
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
     }
   ],
   

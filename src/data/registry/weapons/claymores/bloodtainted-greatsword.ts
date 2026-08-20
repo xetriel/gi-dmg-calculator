@@ -20,22 +20,22 @@ export const bloodtaintedGreatsword: WeaponConfig = {
   buffType: "self",
   mechanicDefs: [
     {
-      id: "bloodtainted-target",
-      label: "Target Affected by Pyro/Electro",
+      id: "bloodtainted-target-affected",
+      label: "Target Affected by Pyro or Electro",
       control: "toggle",
       defaultValue: 1,
-      hint: "+12~24% All DMG bonus",
+      hint: "+12~24% All DMG bonus against affected enemies",
     }
   ],
   buffs: [
     {
       id: "bloodtainted-dmg",
-      label: "All DMG Bonus (Bloodtainted Greatsword)",
+      label: "All DMG Bonus vs Pyro/Electro (Bloodtainted Greatsword)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
-      conditionKey: "bloodtainted-target",
-      compute: (r,ctx)=>{const on=(ctx.inputs?.["bloodtainted-target"]??"1")==="1"||Number(ctx.inputs?.["bloodtainted-target"]??1)>0;return on?[12,15,18,21,24][r-1]:0},
+      conditionKey: "bloodtainted-target-affected",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['bloodtainted-target-affected'] ?? '1') === '1' || Number(ctx.inputs?.['bloodtainted-target-affected'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
     }
   ],
   

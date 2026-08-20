@@ -18,6 +18,15 @@ export const skyriderSword: WeaponConfig = {
     "Using an Elemental Burst increases ATK and Movement SPD by 12~24% for 15s.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "skyrider-burst-active",
+      label: "Burst Used (+12~24% ATK)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "+12~24% ATK for 15s",
+    }
+  ],
   buffs: [
     {
       id: "skyrider-atk",
@@ -26,7 +35,8 @@ export const skyriderSword: WeaponConfig = {
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r,ctx)=>[12,15,18,21,24][r-1]/100*ctx.baseAtk,
+      conditionKey: "skyrider-burst-active",
+      compute: (r, ctx) => { const on = (ctx.inputs?.['skyrider-burst-active'] ?? '1') === '1' || Number(ctx.inputs?.['skyrider-burst-active'] ?? 1) > 0; return on ? ([12, 15, 18, 21, 24][r - 1] / 100) * ctx.baseAtk : 0; },
     }
   ],
   
