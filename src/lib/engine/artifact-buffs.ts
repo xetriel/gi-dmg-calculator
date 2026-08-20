@@ -69,6 +69,7 @@ export function resolveExternalArtifactBuffs(
       slot,
       baseAtk,
       charElement: charConfig?.element,
+      charWeapon: charConfig?.weapon,
       inputs: inst.inputs ?? {},
     };
 

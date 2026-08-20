@@ -1,14 +1,16 @@
 import type { CharacterConfig, Element, MechanicDef } from "../types";
 
-export type ArtifactRarity = 4 | 5;
-export type ArtifactPieceCount = 2 | 4;
+export type ArtifactRarity = 1 | 2 | 3 | 4 | 5;
+export type ArtifactPieceCount = 1 | 2 | 4;
 export type ArtifactSlot = "wielder" | "support";
 
 export interface ArtifactBuffContext {
-  pieceCount: ArtifactPieceCount;              // 2 or 4
+  pieceCount: ArtifactPieceCount;              // 1, 2 or 4
   slot: ArtifactSlot;                          // "wielder" (active DPS) or "support" (party member)
   baseAtk: number;                             // active character's base ATK
   charElement?: Element;                       // active character's element
+  charWeapon?: string;                         // active character's weapon type e.g. "Sword", "Claymore", "Polearm", "Bow", "Catalyst"
+  energyRecharge?: number;                     // active character's ER% (e.g. 150 for Emblem)
   inputs?: Record<string, string | number>;    // artifact condition inputs (e.g. toggles/stacks)
 }
 
@@ -17,7 +19,7 @@ export interface ArtifactBuffDef {
   label: string;                               // display label (e.g. "2-Piece ATK% (Scarlet Proof)")
   description?: string;                        // optional tooltip description
   stat: string;                                // target stat key (e.g. "atk", "critRate", "stellarSwirlDmgBonus", "stellarGlimmerDmgBonus")
-  pieceRequirement: ArtifactPieceCount;        // 2 or 4 pieces required
+  pieceRequirement: ArtifactPieceCount;        // 1, 2 or 4 pieces required
   isTeamBuff: boolean;                         // true if buff applies to all party members / teammates
   isPercent?: boolean;                         // true if percentage based (e.g. +18% ATK)
   conditionKey?: string;                       // MechanicDef.id if conditional
