@@ -14,6 +14,8 @@ import { resolveSupportCtx, type SupportInstance } from "@/lib/engine/team-buffs
 interface SupportBuildEditorViewProps {
   config: CharacterConfig;
   fromCharacterId?: string | null;
+  fromCharSetupId?: string | null;
+  initialSupportSetupId?: string | null;
   initialBuild?: { id: string | null; name: string | null; data: unknown } | null;
 }
 
@@ -23,6 +25,8 @@ const fmt = (n: number, decimals = 1) =>
 export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
   config,
   fromCharacterId,
+  fromCharSetupId,
+  initialSupportSetupId,
   initialBuild,
 }) => {
   const router = useRouter();
@@ -62,6 +66,9 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
 
   // State
   const [isMounted, setIsMounted] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "unsaved" | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   const [instances, setInstances] = useState<CalcInstance[]>(() => {
     if (initialBuild?.data) {
       const hyd = hydrateFromBuild(initialBuild.data, createInitialInstance);
@@ -82,15 +89,19 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
         const draft = JSON.parse(stored);
         if (Array.isArray(draft.instances) && draft.instances.length > 0) {
           setInstances(draft.instances);
-          setActiveInstanceId(draft.instances[0].id);
+          if (initialSupportSetupId && draft.instances.some((i: CalcInstance) => i.id === initialSupportSetupId)) {
+            setActiveInstanceId(initialSupportSetupId);
+          } else {
+            setActiveInstanceId(draft.instances[0].id);
+          }
         }
       }
     } catch (e) {
       console.error("Failed to load working draft in SupportBuildEditorView:", e);
     }
-  }, [config.id]);
+  }, [config.id, initialSupportSetupId]);
 
-  // Auto-save to localStorage on mutation
+  // Auto-save to localStorage on mutation and track dirty state
   useEffect(() => {
     if (!isMounted || typeof window === "undefined") return;
     try {
@@ -108,7 +119,71 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
   // Active instance
   const activeInst = instances.find((i) => i.id === activeInstanceId) ?? instances[0];
 
+  const handleSave = (silent = false) => {
+    if (typeof window === "undefined") return;
+    try {
+      // 1. Save support character draft
+      const existing = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+      let draft: Record<string, unknown> = { instances };
+      if (existing) {
+        draft = { ...JSON.parse(existing), instances };
+      }
+      localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
+
+      // 2. Directly sync into the parent character's working draft if available
+      if (fromCharacterId) {
+        const parentRaw = localStorage.getItem(`gi_calc_working_draft_${fromCharacterId}`);
+        if (parentRaw) {
+          const parentDraft = JSON.parse(parentRaw);
+          if (Array.isArray(parentDraft.instances)) {
+            const targetCharSetupId = fromCharSetupId ?? "1";
+            parentDraft.instances = parentDraft.instances.map((pInst: CalcInstance) => {
+              if (pInst.id === targetCharSetupId || !fromCharSetupId) {
+                const supports = (pInst.teamSupports ?? []).map((sup: SupportInstance) => {
+                  const isThisSupport = sup.supportId === config.id || sup.supportId === `${config.id}-support`;
+                  if (isThisSupport) {
+                    return {
+                      ...sup,
+                      stats: activeInst.stats,
+                      mechanicInputs: activeInst.mechanicInputs,
+                      constellationLevel: activeInst.constellationLevel,
+                      talentLevels: activeInst.levels,
+                      selectedSetupId: activeInst.id,
+                      selectedSetupName: `Support Setup ${activeInst.id}`,
+                    };
+                  }
+                  return sup;
+                });
+                return { ...pInst, teamSupports: supports };
+              }
+              return pInst;
+            });
+            localStorage.setItem(`gi_calc_working_draft_${fromCharacterId}`, JSON.stringify(parentDraft));
+          }
+        }
+      }
+
+      setHasUnsavedChanges(false);
+      setSaveStatus("saved");
+      if (!silent) {
+        setTimeout(() => setSaveStatus(null), 2500);
+      }
+    } catch (e) {
+      console.error("Failed to save support build:", e);
+    }
+  };
+
+  const handleBack = () => {
+    if (hasUnsavedChanges) {
+      handleSave(true);
+    }
+    const targetSetup = fromCharSetupId ? `?setup=${fromCharSetupId}&synced=${config.id}` : `?synced=${config.id}`;
+    router.push(`/characters/${fromCharacterId}${targetSetup}`);
+  };
+
   const updateInstance = (id: string, updater: (inst: CalcInstance) => Partial<CalcInstance>) => {
+    setHasUnsavedChanges(true);
+    setSaveStatus("unsaved");
     setInstances((prev) =>
       prev.map((i) => (i.id === id ? { ...i, ...updater(i) } : i))
     );
@@ -213,24 +288,32 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
     <div className="flex flex-col h-full w-full max-w-7xl mx-auto px-4 py-6">
       {/* Top Banner when navigating from a DPS character */}
       {fromChar && (
-        <div className="mb-4 flex items-center justify-between px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 shadow-xs">
-          <div className="flex items-center gap-2">
+        <div className="mb-4 flex items-center justify-between px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 shadow-xs flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-base">🛠️</span>
             <span className="text-xs text-amber-900 dark:text-amber-200 font-medium">
-              Editing support build for <strong>{fromChar.name}</strong>'s party
+              Editing support build for <strong>{fromChar.name}</strong>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+              Character Setup {fromCharSetupId ?? "1"}
+            </span>
+            <span className="text-xs text-amber-700/80 dark:text-amber-400/80">
+              • Buffing with <strong>Support Setup {activeInst.id}</strong>
             </span>
           </div>
-          <Link
-            href={`/characters/${fromCharacterId}`}
-            className="text-xs font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 transition-colors flex items-center gap-1 bg-amber-200/50 dark:bg-amber-900/60 px-3 py-1 rounded-md"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="text-xs font-semibold text-amber-800 dark:text-amber-200 hover:text-amber-950 dark:hover:text-amber-100 transition-colors flex items-center gap-1.5 bg-amber-200/60 dark:bg-amber-900/80 hover:bg-amber-300/60 dark:hover:bg-amber-800 px-3 py-1.5 rounded-lg border border-amber-300/80 dark:border-amber-700 cursor-pointer shadow-2xs"
           >
-            ← Back to {fromChar.name} Calculator
-          </Link>
+            <span>← Back to {fromChar.name} Calculator</span>
+            <span className="opacity-75">(Setup {fromCharSetupId ?? "1"})</span>
+          </button>
         </div>
       )}
 
       {/* Header */}
-      <header className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-4">
+      <header className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-4 flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -248,7 +331,22 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            className={`text-xs px-3.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+              saveStatus === "saved"
+                ? "bg-emerald-600 text-white border border-emerald-600"
+                : hasUnsavedChanges
+                ? "bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 animate-pulse"
+                : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-gray-300 dark:border-zinc-700 hover:border-gray-400"
+            }`}
+          >
+            <span>{saveStatus === "saved" ? "✓" : "💾"}</span>
+            <span>{saveStatus === "saved" ? "Saved!" : "Save Support Build"}</span>
+          </button>
+
           <Link
             href={`/characters/${config.id}`}
             className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all flex items-center gap-1 font-medium"
@@ -259,21 +357,23 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
       </header>
 
       {/* Setup Selector Tabs */}
-      <div className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-2">
-        <div className="flex items-center gap-2">
+      <div className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {instances.map((inst) => {
             const isActive = inst.id === activeInstanceId;
             return (
               <button
                 key={inst.id}
-                onClick={() => setActiveInstanceId(inst.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all border flex items-center gap-2 ${
+                onClick={() => {
+                  setActiveInstanceId(inst.id);
+                }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all border flex items-center gap-2 cursor-pointer ${
                   isActive
                     ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                     : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400"
                 }`}
               >
-                <span>Setup {inst.id}</span>
+                <span>Support Setup {inst.id}</span>
                 {instances.length > 1 && (
                   <span
                     onClick={(e) => {
@@ -281,7 +381,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
                       deleteSetup(inst.id);
                     }}
                     className="hover:text-red-300 transition-colors cursor-pointer text-[10px]"
-                    title="Delete this setup"
+                    title="Delete this support setup"
                   >
                     ✕
                   </span>
@@ -293,16 +393,23 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
           {instances.length < 3 && (
             <button
               onClick={addSetup}
-              className="px-2.5 py-1 text-xs text-gray-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400 border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg transition-all flex items-center gap-1"
-              title="Add a new setup variant"
+              className="px-2.5 py-1 text-xs text-gray-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400 border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+              title="Add a new support setup variant"
             >
-              + Add Setup
+              + Add Support Setup
             </button>
           )}
         </div>
 
-        <div className="text-[11px] text-gray-400 dark:text-zinc-500 italic">
-          Draft auto-saved to local storage
+        <div className="flex items-center gap-2 text-xs">
+          {hasUnsavedChanges && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/50">
+              ● Unsaved changes
+            </span>
+          )}
+          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">
+            Draft auto-saved to local storage
+          </span>
         </div>
       </div>
 
@@ -325,6 +432,78 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
               updateInstance={updateInstance}
               setMechanic={setMechanic}
             />
+          </div>
+
+          {/* Talent Levels (Base max 10, with constellation +3 auto-bonus) */}
+          <div className="border border-gray-200 dark:border-zinc-800 rounded-xl p-4 bg-white/50 dark:bg-zinc-900/30 shadow-2xs">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-3 flex items-center justify-between flex-wrap gap-1">
+              <span>Talent Levels</span>
+              <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-normal">
+                Base max Lv. 10 • Constellations grant +3
+              </span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(["normal", "skill", "burst"] as const).map((tType) => {
+                const label =
+                  tType === "normal"
+                    ? "Normal Attack"
+                    : tType === "skill"
+                    ? "Elemental Skill"
+                    : "Elemental Burst";
+                const baseLvl = Math.min(Number(activeInst.levels?.[tType] ?? "10") || 10, 10);
+                // Check constellation bonus
+                let consBonus = 0;
+                if (config.constellations) {
+                  for (const c of config.constellations) {
+                    if (c.level <= activeInst.constellationLevel) {
+                      for (const eff of c.effects) {
+                        if (eff.type === "talent_level_bonus" && eff.talentType === tType) {
+                          consBonus += 3;
+                        }
+                      }
+                    }
+                  }
+                }
+                const effLvl = baseLvl + consBonus;
+
+                return (
+                  <div
+                    key={tType}
+                    className="p-2.5 rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/40 flex flex-col gap-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-zinc-300">
+                        {label}
+                      </span>
+                      {consBonus > 0 && (
+                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">
+                          +{consBonus} (Lv.{effLvl})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Lv.</span>
+                      <select
+                        className="w-full border border-gray-300 dark:border-zinc-700 rounded px-2 py-1 text-xs bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium"
+                        value={String(baseLvl)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateInstance(activeInst.id, (i) => ({
+                            levels: { ...i.levels, [tType]: val },
+                          }));
+                        }}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((l) => (
+                          <option key={l} value={l}>
+                            {l}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Core Attribute Inputs */}

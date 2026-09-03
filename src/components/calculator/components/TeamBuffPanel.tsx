@@ -100,9 +100,11 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                   <span className="text-[10px] font-bold px-1 py-0.2 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
                     C{sup.constellationLevel}
                   </span>
-                  {sup.selectedSetupName && (
-                    <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
-                      {sup.selectedSetupName}
+                  {(sup.selectedSetupName || sup.selectedSetupId) && (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
+                      {sup.selectedSetupName?.startsWith("Support Setup")
+                        ? sup.selectedSetupName
+                        : `Support Setup ${sup.selectedSetupId ?? "1"}`}
                     </span>
                   )}
                 </div>

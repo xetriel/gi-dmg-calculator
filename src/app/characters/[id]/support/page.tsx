@@ -53,11 +53,15 @@ export default async function SupportPage({
     : null;
 
   const fromCharacterId = typeof sParams.from === "string" ? sParams.from : null;
+  const fromCharSetupId = typeof sParams.charSetup === "string" ? sParams.charSetup : null;
+  const initialSupportSetupId = typeof sParams.supportSetup === "string" ? sParams.supportSetup : null;
 
   return (
     <SupportBuildEditorView
       config={config}
       fromCharacterId={fromCharacterId}
+      fromCharSetupId={fromCharSetupId}
+      initialSupportSetupId={initialSupportSetupId}
       initialBuild={initialBuildProp}
     />
   );

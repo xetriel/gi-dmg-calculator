@@ -2,6 +2,24 @@ import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
 import { atk, atkCharged, atkPlunge } from "./hit-helpers";
 
+// Bennett Elemental Burst ATK Ratio per effective talent level (from bennettSeed)
+const BENNETT_BURST_RATIOS: Record<number, number> = {
+  1: 56.0,
+  2: 60.2,
+  3: 64.4,
+  4: 70.0,
+  5: 74.2,
+  6: 78.4,
+  7: 84.0,
+  8: 89.6,
+  9: 95.2,
+  10: 100.8,
+  11: 106.4,
+  12: 112.0,
+  13: 119.0,
+  14: 126.0,
+};
+
 export const bennett: CharacterConfig = {
   id: "bennett",
   name: "Bennett",
@@ -168,8 +186,11 @@ export const bennett: CharacterConfig = {
         label: "ATK (Bennett Fantastic Voyage)",
         compute: (ctx) => {
           if ((ctx.inputs["fantastic-voyage-active"] ?? 0) <= 0) return 0;
-          const burstLv = ctx.talentLevels?.burst ?? (ctx.constellationLevel >= 5 ? 13 : 10);
-          const ratio = burstLv >= 13 ? 119.0 : 100.8;
+          const rawBurstLv = ctx.talentLevels?.burst ?? 10;
+          const effectiveBurstLv = rawBurstLv <= 10
+            ? (ctx.constellationLevel >= 5 ? rawBurstLv + 3 : rawBurstLv)
+            : (ctx.constellationLevel >= 5 ? rawBurstLv : Math.max(1, rawBurstLv - 3));
+          const ratio = BENNETT_BURST_RATIOS[effectiveBurstLv] ?? (effectiveBurstLv >= 13 ? 119.0 : 100.8);
           const c1Bonus = ctx.constellationLevel >= 1 ? 20.0 : 0;
           const totalRatio = (ratio + c1Bonus) / 100;
           const baseAtk = ctx.baseAtk || ctx.atk;

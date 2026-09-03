@@ -271,6 +271,75 @@ describe("team-buffs resolver", () => {
     expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
   });
 
+  it("Bennett C5 with base talentLevels burst = 10 automatically adds +3 -> Lv13 (139% total ratio) = ~1202.4 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * (119% [Lv13 from 10+3] + 20% [C1]) = 865 * 139% = 1202.35
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+  });
+
+  it("Bennett C2 with base talentLevels burst = 10 stays at Lv10 (120.8% total ratio) = ~1044.9 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 2,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * (100.8% [Lv10] + 20% [C1]) = 865 * 120.8% = 1044.92
+    expect(r.statDeltas.atk).toBeCloseTo(1044.92, 1);
+  });
+
+  it("Bennett C0 with base talentLevels burst = 10 (100.8% total ratio, no C1) = ~871.9 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 0,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * 100.8% = 871.92
+    expect(r.statDeltas.atk).toBeCloseTo(871.92, 1);
+  });
+
   it("Bennett formatBriefStats with atk.base = 865 produces Base ATK: 865", () => {
     const config = supportById("bennett-support");
     expect(config).toBeDefined();

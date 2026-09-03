@@ -155,7 +155,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       finalConstellation = firstInst.constellationLevel ?? 0;
       finalTalents = firstInst.levels;
       setupId = firstInst.id;
-      setupName = `Setup ${firstInst.id}`;
+      setupName = `Support Setup ${firstInst.id}`;
+    } else {
+      setupId = "1";
+      setupName = "Support Setup 1";
     }
 
     const newSupport: SupportInstance = {
@@ -212,7 +215,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
       talentLevels: targetInst.levels ?? sup.talentLevels,
       selectedSetupId: targetInst.id,
-      selectedSetupName: `Setup ${targetInst.id}`,
+      selectedSetupName: `Support Setup ${targetInst.id}`,
     }));
   };
 
@@ -235,7 +238,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
       talentLevels: targetInst.levels ?? sup.talentLevels,
       selectedSetupId: targetInst.id,
-      selectedSetupName: `Setup ${targetInst.id}`,
+      selectedSetupName: `Support Setup ${targetInst.id}`,
     }));
   };
 
@@ -537,7 +540,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
                 // Get available setups from working draft
                 const draft = readSupportDraft(sConfig.characterId);
-                const availableSetups = draft?.instances ?? [];
+                const availableSetups = draft?.instances && draft.instances.length > 0 ? draft.instances : [{ id: "1" }];
 
                 return (
                   <div
@@ -549,7 +552,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     }`}
                   >
                     {/* Support Card Header */}
-                    <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <input
                           type="checkbox"
@@ -569,6 +572,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold">
                           C{sup.constellationLevel}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30">
+                          Buffing: Character Setup {currentInst.id}
                         </span>
                       </div>
 
@@ -597,47 +603,56 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     )}
 
                     {/* Setup Switcher & Actions */}
-                    <div className="flex items-center gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
-                      <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Build Source:</span>
-                      
-                      {/* Setup dropdown */}
-                      {availableSetups.length > 1 && (
-                        <select
-                          className="text-xs border rounded-lg px-2 py-1 bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium"
-                          value={sup.selectedSetupId ?? ""}
-                          onChange={(e) => switchSetup(index, e.target.value)}
-                        >
-                          {availableSetups.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              Setup {s.id}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                      {availableSetups.length <= 1 && sup.selectedSetupName && (
-                        <span className="text-xs text-gray-600 dark:text-zinc-400 font-medium">
-                          {sup.selectedSetupName}
+                    <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1">
+                          <span>⚙️</span>
+                          <span>Support Setup:</span>
                         </span>
-                      )}
 
-                      {/* Sync button */}
-                      <button
-                        type="button"
-                        onClick={() => syncFromDraft(index)}
-                        className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-amber-400 transition-all font-semibold cursor-pointer"
-                        title="Sync latest stats from this character's calculator"
-                      >
-                        🔄 Sync
-                      </button>
+                        {/* Setup option buttons */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {availableSetups.map((s) => {
+                            const isSelected = (sup.selectedSetupId ?? "1") === s.id;
+                            return (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => switchSetup(index, s.id)}
+                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 ${
+                                  isSelected
+                                    ? "bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:border-amber-500 shadow-xs"
+                                    : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400"
+                                }`}
+                                title={`Switch to ${sConfig.name} Support Setup ${s.id}`}
+                              >
+                                <span>Support Setup {s.id}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                      {/* Edit in dedicated support builder */}
-                      <Link
-                        href={`/characters/${sConfig.characterId}/support${config.id ? `?from=${config.id}` : ""}`}
-                        className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-1 font-semibold"
-                        title="Open dedicated support builder for this character"
-                      >
-                        ✎ Edit Build ↗
-                      </Link>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Sync button */}
+                        <button
+                          type="button"
+                          onClick={() => syncFromDraft(index)}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-amber-400 transition-all font-semibold cursor-pointer"
+                          title="Sync latest stats from this support character's calculator"
+                        >
+                          🔄 Sync
+                        </button>
+
+                        {/* Edit in dedicated support builder */}
+                        <Link
+                          href={`/characters/${sConfig.characterId}/support?from=${config.id}&charSetup=${currentInst.id}&supportSetup=${sup.selectedSetupId ?? "1"}`}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-1 font-semibold"
+                          title="Open dedicated support builder for this character"
+                        >
+                          ✎ Edit Build ↗
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Constellation Selector */}

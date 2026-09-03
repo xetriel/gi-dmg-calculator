@@ -100,7 +100,7 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                     value={inst.levels[g.type] ?? ""}
                     onChange={(e) => setLevel(inst.id, g.type, e.target.value)}
                   >
-                    {s.levels.map((l) => (
+                    {s.levels.filter((l) => l <= 10).map((l) => (
                       <option key={l} value={l}>
                         {l}
                       </option>

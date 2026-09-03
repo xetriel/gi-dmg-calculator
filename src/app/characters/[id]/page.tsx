@@ -90,8 +90,9 @@ export default async function Page({
   const initialBuildProp = initialBuildData
     ? { id: initialBuildId, name: initialBuildName, data: initialBuildData }
     : null;
-  // Extract ?from= param for support editing navigation
+  // Extract ?from= and ?setup= params for support editing navigation
   const fromCharacterId = typeof sParams.from === "string" ? sParams.from : null;
+  const initialSetupId = typeof sParams.setup === "string" ? sParams.setup : null;
 
   return (
     <CharacterCalculator
@@ -101,6 +102,7 @@ export default async function Page({
       savedBuilds={savedBuilds}
       isSharedBuild={isShared}
       fromCharacterId={fromCharacterId}
+      initialSetupId={initialSetupId}
     />
   );
 }
