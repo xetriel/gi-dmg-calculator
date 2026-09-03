@@ -586,24 +586,27 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
             {/* Modal Bottom Bar: Aggregated Buff Totals */}
             <div className="p-4 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50 flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
                   Total External Artifact Bonuses:
                 </span>
                 {totalResult.sources.length > 0 ? (
-                  totalResult.sources.map((s, i) => (
-                    <span
-                      key={i}
-                      className={`text-xs font-extrabold px-2.5 py-1 rounded-lg border ${
-                        masterEnabled
-                          ? "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30"
-                          : "bg-gray-200 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
-                      }`}
-                    >
-                      {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                        ? fmt(s.value)
-                        : `${fmt(s.value)}%`}
-                    </span>
-                  ))
+                  totalResult.sources.map((s, i) => {
+                    const theme = getRarityTheme(s.rarity);
+                    return (
+                      <span
+                        key={i}
+                        className={`text-xs font-extrabold px-2.5 py-1 rounded-lg border ${
+                          masterEnabled
+                            ? theme.sourceBuffPill
+                            : "bg-gray-200 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
+                        }`}
+                      >
+                        {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
+                          ? fmt(s.value)
+                          : `${fmt(s.value)}%`}
+                      </span>
+                    );
+                  })
                 ) : (
                   <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
                     None active

@@ -21,6 +21,7 @@ export interface TeamBuffSource {
   stat: string;              // "em", "lunarChargedDmgBonus", etc.
   label: string;             // "EM (Ineffa A4)"
   value: number;             // 148.44
+  rarity?: number;           // 4 or 5
 }
 
 // Aggregated result from all active supports
@@ -155,6 +156,7 @@ export function resolveTeamBuffs(
         stat: buff.stat,
         label: buff.label,
         value,
+        rarity: config.rarity,
       });
 
       // Accumulate into statDeltas
@@ -173,6 +175,7 @@ export function resolveTeamBuffs(
           stat: "lunarBaseBonusPct",
           label: `Lunar Base DMG (${config.name} Moonsign)`,
           value: lunarBase,
+          rarity: config.rarity,
         });
       }
     }
