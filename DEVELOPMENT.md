@@ -64,6 +64,19 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Advanced Rarity-Focused Theming for External Buff Systems (September 4, 2026)**:
+  - **Unified Design Tokens (`rarity-theme.ts`)**: Created a centralized token architecture for 1★ (silver/zinc), 2★ (green/emerald), 3★ (blue/sky), 4★ (purple), and 5★ (gold/amber), standardizing badges, catalog hover outlines, "+ Add" action buttons, active card backgrounds, checkbox accents, option selectors, and preview pills.
+  - **Three External Buff Modals Updated (`TeamBuffModal.tsx`, `ExternalWeaponBuffModal.tsx`, `ExternalArtifactBuffModal.tsx`)**: Themed catalog items and configured cards by item rarity instead of uniform amber/purple tones.
+  - **Buff Source Rarity Attribution (`team-buffs.ts`, `weapon-buffs.ts`, `artifact-buffs.ts`)**: Extended `TeamBuffSource`, `ExternalWeaponBuffSource`, and `ExternalArtifactBuffSource` with `rarity: config.rarity` to propagate the exact source item rarity to the UI layer.
+  - **Source-Themed Buff Notes**: Aggregated buff pills in both modals and setup cards dynamically reflect source rarity (e.g. Bennett's *Fantastic Voyage* and *C6 Pyro DMG* render in purple 4★ styling, TTDS *Party ATK%* renders in blue 3★ styling, and *Noblesse Oblige* renders in gold 5★ styling).
+  - **Header & Quantity Limit Neutralization**: Updated header titles and quick-action icons to default white, and styled quantity counters (`n/total`) in clean white with limit notations (`(Max N)`) in a muted grey across `TeamBuffPanel.tsx`, `ExternalWeaponBuffPanel.tsx`, and `ExternalArtifactBuffPanel.tsx`.
+- **Support Character Talent Auto-+3 Constellation Scaling & Build Save Validation (September 3, 2026)**:
+  - **Dynamic +3 Talent Level Scaling**: Implemented automatic talent level boost (+3) on talent-boosting constellations (e.g., Bennett C5 +3 Burst), accurately calculating talent level 13 ratios ($10 + 3 = 13 \implies 119\% + 20\% = 139\% \implies 865 \times 1.39 = 1,202.4$ flat ATK).
+  - **Talent Dropdown Bounds**: Restricted talent level selectors across the main calculator and support build editor to base levels 1–10 with live `+3 (Lv. 13)` indicators.
+  - **Dedicated Save & Unsaved Changes Guard**: Added an explicit Save button in `SupportBuildEditorView.tsx` with a dirty state check and modal confirmation when navigating back to the main calculator without saving.
+- **Formula Breakdown Mathematical Precision & Sub-Formula Alignment (September 3, 2026)**:
+  - Resolved calculation discrepancies and formula decompositions in `/characters/[id]/formula` for Flins and direct reaction scaling.
+  - Updated "Default CRIT Rate" label to "Initial CRIT Rate" and enforced probability law bounding ($\le 100\%$).
 - **Unified Character & Support Registry Architecture (August 20, 2026)**: Consolidated the support character registry (`src/data/registry/supports/`) directly into the central character registry (`src/data/registry/characters/`), creating a single source of truth for both playable DPS characters and supportive team buff providers:
   - **Single Source of Truth**: Extended `CharacterConfig` in `src/data/registry/types.ts` with an optional `support?: CharacterSupportBuffDef` block.
   - **Dynamic Support Derivation**: Registry dynamically derives `SUPPORT_CONFIGS` via `CHARACTERS.filter(c => !!c.support)` with dual ID compatibility (`"bennett"` / `"bennett-support"`, `"ineffa"` / `"ineffa-support"`).
