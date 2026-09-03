@@ -38,7 +38,15 @@ const ELEMENT_BADGES: Record<string, string> = {
 };
 
 // Reads the support character's working draft from localStorage
-function readSupportDraft(characterId: string): { instances: Array<{ id: string; stats: Record<string, string>; mechanicInputs: Record<string, string>; constellationLevel: number }>; } | null {
+function readSupportDraft(characterId: string): {
+  instances: Array<{
+    id: string;
+    stats: Record<string, string>;
+    mechanicInputs: Record<string, string>;
+    constellationLevel: number;
+    levels?: Record<string, string>;
+  }>;
+} | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(`gi_calc_working_draft_${characterId}`);
@@ -120,6 +128,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         initStats[`${f.key}.flat`] = "0";
       } else {
         initStats[f.key] = f.defaultValue;
+        if (f.key === "baseAtk" && !("atk.base" in initStats)) {
+          initStats["atk.base"] = f.defaultValue;
+        }
       }
     }
 
@@ -133,6 +144,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     let finalStats = initStats;
     let finalMechanics = initMechanics;
     let finalConstellation = 0;
+    let finalTalents: Record<string, string> | undefined;
     let setupId: string | undefined;
     let setupName: string | undefined;
 
@@ -141,6 +153,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       finalStats = firstInst.stats ?? initStats;
       finalMechanics = firstInst.mechanicInputs ?? initMechanics;
       finalConstellation = firstInst.constellationLevel ?? 0;
+      finalTalents = firstInst.levels;
       setupId = firstInst.id;
       setupName = `Setup ${firstInst.id}`;
     }
@@ -150,6 +163,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       stats: finalStats,
       mechanicInputs: finalMechanics,
       constellationLevel: finalConstellation,
+      talentLevels: finalTalents,
       enabled: true,
       selectedSetupId: setupId,
       selectedSetupName: setupName,
@@ -196,6 +210,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       stats: targetInst.stats,
       mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
       constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+      talentLevels: targetInst.levels ?? sup.talentLevels,
       selectedSetupId: targetInst.id,
       selectedSetupName: `Setup ${targetInst.id}`,
     }));
@@ -218,6 +233,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       stats: targetInst.stats,
       mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
       constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+      talentLevels: targetInst.levels ?? sup.talentLevels,
       selectedSetupId: targetInst.id,
       selectedSetupName: `Setup ${targetInst.id}`,
     }));

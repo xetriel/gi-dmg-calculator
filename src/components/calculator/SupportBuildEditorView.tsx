@@ -172,6 +172,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
       stats: activeInst.stats,
       mechanicInputs: activeInst.mechanicInputs,
       constellationLevel: activeInst.constellationLevel,
+      talentLevels: activeInst.levels,
       enabled: true,
       selectedSetupId: activeInst.id,
       selectedSetupName: `Setup ${activeInst.id}`,

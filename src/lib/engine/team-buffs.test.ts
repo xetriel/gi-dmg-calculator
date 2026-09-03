@@ -226,6 +226,71 @@ describe("team-buffs resolver", () => {
     expect(r.statDeltas.atk ?? 0).toBe(0);
   });
 
+  it("Bennett C5 with stats from character calculator (atk.base = 865): ATK buff = ~1202.4", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        enabled: true,
+      },
+    ]);
+    // 865 * (119% + 20%) = 865 * 139% = 1202.35
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+    expect(r.sources.some(s => s.supportName === "Bennett" && s.stat === "atk" && Math.abs(s.value - 1202.35) < 0.1)).toBe(true);
+  });
+
+  it("Bennett C5 with talentLevels burst = 13 and atk.base = 865 resolves full buff", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        talentLevels: { burst: "13" },
+        enabled: true,
+      },
+    ]);
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+  });
+
+  it("Bennett formatBriefStats with atk.base = 865 produces Base ATK: 865", () => {
+    const config = supportById("bennett-support");
+    expect(config).toBeDefined();
+
+    const inst: SupportInstance = {
+      supportId: "bennett-support",
+      stats: { "atk.base": "865", "atk.percent": "0", "atk.flat": "0", critRate: "60", critDmg: "120" },
+      mechanicInputs: {},
+      constellationLevel: 5,
+      enabled: true,
+    };
+
+    const ctx = resolveSupportCtx(inst);
+    expect(ctx).not.toBeNull();
+    expect(ctx!.baseAtk).toBe(865);
+    const pills = config!.formatBriefStats!(ctx!);
+    expect(pills[0].label).toBe("Base ATK");
+    expect(pills[0].value).toBe("865");
+  });
+
   it("Bennett + Ineffa stack together additively", () => {
     const bennett = makeBennett({ constellationLevel: 1 }); // 966.4 ATK, 60 CR, 120 CD
     const ineffa = makeIneffa(); // 130.8 EM, 14 Lunar Base, 50 LC, 70 CR, 140 CD
