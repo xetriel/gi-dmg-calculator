@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveTeamBuffs, resolveSupportCtx, type SupportInstance } from "./team-buffs";
-import { supportById } from "../../data/registry/characters";
+import { supportById, byId } from "../../data/registry/characters";
 
 function makeIneffa(overrides: Partial<SupportInstance> = {}): SupportInstance {
   return {
@@ -335,5 +335,55 @@ describe("remastered support system", () => {
     expect(pills[0].label).toBe("Base ATK");
     expect(pills[0].value).toBe("800");
     expect(pills[1].label).toBe("CRIT");
+  });
+
+  describe("RSC serialization safety (Next.js Server -> Client boundary)", () => {
+    it("byId(bennett) has no functions and is 100% JSON-serializable", () => {
+      const char = byId("bennett");
+      expect(char).toBeDefined();
+      // Must not have function-bearing support property
+      expect((char as Record<string, unknown>).support).toBeUndefined();
+
+      // Deep serialization check: must serialize without errors
+      const serialized = JSON.stringify(char);
+      expect(serialized).toBeDefined();
+      const parsed = JSON.parse(serialized);
+      expect(parsed.id).toBe("bennett");
+
+      // Verify no remaining functions on any key
+      for (const [k, v] of Object.entries(char!)) {
+        expect(typeof v).not.toBe("function");
+      }
+    });
+
+    it("byId(ineffa) has no functions and is 100% JSON-serializable", () => {
+      const char = byId("ineffa");
+      expect(char).toBeDefined();
+      expect((char as Record<string, unknown>).support).toBeUndefined();
+
+      const serialized = JSON.stringify(char);
+      expect(serialized).toBeDefined();
+      const parsed = JSON.parse(serialized);
+      expect(parsed.id).toBe("ineffa");
+
+      for (const [k, v] of Object.entries(char!)) {
+        expect(typeof v).not.toBe("function");
+      }
+    });
+
+    it("supportById retains all functions and calculation logic for client/engine usage", () => {
+      const bennettSupport = supportById("bennett");
+      expect(bennettSupport).toBeDefined();
+      expect(bennettSupport?.buffs.length).toBeGreaterThan(0);
+      expect(typeof bennettSupport?.buffs[0].compute).toBe("function");
+      expect(typeof bennettSupport?.formatBriefStats).toBe("function");
+
+      const ineffaSupport = supportById("ineffa");
+      expect(ineffaSupport).toBeDefined();
+      expect(ineffaSupport?.buffs.length).toBeGreaterThan(0);
+      expect(typeof ineffaSupport?.buffs[0].compute).toBe("function");
+      expect(typeof ineffaSupport?.lunarBaseBonusCompute).toBe("function");
+      expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
+    });
   });
 });

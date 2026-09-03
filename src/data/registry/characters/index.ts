@@ -118,7 +118,7 @@ export {
   bennett,
 };
 
-export const CHARACTERS: CharacterConfig[] = [
+const RAW_CHARACTERS: CharacterConfig[] = [
   arlecchino,
   huTao,
   neuvillette,
@@ -167,13 +167,11 @@ export const CHARACTERS: CharacterConfig[] = [
   bennett,
 ];
 
-export const byId = (id: string) => CHARACTERS.find((c) => c.id === id);
-
 // ==========================================
 // Derived Support Roster & Helpers
 // ==========================================
 
-export const SUPPORT_CONFIGS: SupportConfig[] = CHARACTERS.filter(
+export const SUPPORT_CONFIGS: SupportConfig[] = RAW_CHARACTERS.filter(
   (c): c is CharacterConfig & { support: NonNullable<CharacterConfig["support"]> } => !!c.support
 ).map((c) => ({
   id: `${c.id}-support`,
@@ -206,4 +204,18 @@ export const supportById = (id: string): SupportConfig | undefined => {
       s.id === `${cleanId}-support`
   );
 };
+
+// ==========================================
+// Clean Serializable Character Roster
+// ==========================================
+// Strips function-bearing `support` blocks so that CharacterConfig objects
+// can be safely serialized across the Next.js RSC Server -> Client boundary.
+export const CHARACTERS: CharacterConfig[] = RAW_CHARACTERS.map((c) => {
+  if (!c.support) return c;
+  const { support: _support, ...clean } = c;
+  return clean;
+});
+
+export const byId = (id: string): CharacterConfig | undefined =>
+  CHARACTERS.find((c) => c.id === id);
 
