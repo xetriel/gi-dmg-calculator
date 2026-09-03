@@ -9,7 +9,7 @@ const mockMizuki: CharacterConfig = {
   rarity: 5,
   element: "Anemo",
   weapon: "Catalyst",
-  region: "Nod-Khadar",
+  region: "Nod-Krai",
   dmgBonusLabel: "Anemo DMG Bonus%",
   talents: [],
   constellations: [],

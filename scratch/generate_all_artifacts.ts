@@ -2165,7 +2165,7 @@ export const ALL_ARTIFACTS: RawArtifact[] = [
     ],
   },
 
-  // --- Batch 5: Nod-Khadar & Moonsign / Special Sets ---
+  // --- Batch 5: Nod-Krai & Moonsign / Special Sets ---
   {
     id: "night-of-the-skys-unveiling",
     name: "Night of the Sky's Unveiling",
