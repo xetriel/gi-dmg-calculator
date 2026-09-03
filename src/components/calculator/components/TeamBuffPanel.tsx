@@ -4,6 +4,7 @@ import type { CalcInstance } from "../types";
 import { supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
 import { ElementIcon } from "@/components/icons";
+import { getRarityTheme } from "../rarity-theme";
 
 interface TeamBuffPanelProps {
   inst: CalcInstance;
@@ -41,16 +42,17 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
         <button
           type="button"
           onClick={onOpenModal}
-          className="flex items-center gap-1.5 text-xs font-bold text-gray-800 dark:text-zinc-200 hover:text-amber-500 dark:hover:text-amber-400 transition-colors cursor-pointer group"
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white hover:text-black dark:hover:text-white transition-colors cursor-pointer group"
           title="Open Team Support Buffs configuration modal"
         >
-          <span className="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 group-hover:scale-105 transition-transform text-xs">
+          <span className="p-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 group-hover:scale-105 transition-transform text-xs">
             👥
           </span>
           <span>Team Support Buffs</span>
           {supports.length > 0 && (
-            <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-              {activeCount}/{supports.length} (Max {MAX_SUPPORTS})
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
+              <span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{supports.length}</span>
+              <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max {MAX_SUPPORTS})</span>
             </span>
           )}
         </button>
@@ -82,6 +84,7 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
             {supports.map((sup, idx) => {
               const sConfig = supportById(sup.supportId);
               if (!sConfig) return null;
+              const theme = getRarityTheme(sConfig.rarity);
               const isActive = masterEnabled && sup.enabled;
 
               return (
@@ -90,7 +93,7 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                   onClick={onOpenModal}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
                     isActive
-                      ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200"
+                      ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
                   title={`${sConfig.name} (C${sup.constellationLevel}${sup.selectedSetupName ? `, ${sup.selectedSetupName}` : ""}) - Click to configure`}
@@ -100,9 +103,11 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                   <span className="text-[10px] font-bold px-1 py-0.2 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
                     C{sup.constellationLevel}
                   </span>
-                  {sup.selectedSetupName && (
-                    <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
-                      {sup.selectedSetupName}
+                  {(sup.selectedSetupName || sup.selectedSetupId) && (
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${theme.badge}`}>
+                      {sup.selectedSetupName?.startsWith("Support Setup")
+                        ? sup.selectedSetupName
+                        : `Support Setup ${sup.selectedSetupId ?? "1"}`}
                     </span>
                   )}
                 </div>
@@ -113,20 +118,23 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
           {/* Aggregated Team Buffs Pill Breakdown */}
           {teamResult.sources.length > 0 && (
             <div className="pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 flex items-center gap-1.5 flex-wrap">
-              {teamResult.sources.map((s, i) => (
-                <span
-                  key={i}
-                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                    masterEnabled
-                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                      : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
-                  }`}
-                >
-                  {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                    ? fmt(s.value)
-                    : `${fmt(s.value)}%`}
-                </span>
-              ))}
+              {teamResult.sources.map((s, i) => {
+                const theme = getRarityTheme(s.rarity);
+                return (
+                  <span
+                    key={i}
+                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                      masterEnabled
+                        ? theme.sourceBuffPill
+                        : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
+                    }`}
+                  >
+                    {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
+                      ? fmt(s.value)
+                      : `${fmt(s.value)}%`}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
@@ -134,10 +142,11 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
         <button
           type="button"
           onClick={onOpenModal}
-          className="w-full py-1.5 px-2 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-500 text-gray-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-400 text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-gray-50/50 dark:bg-zinc-900/30"
+          className="w-full py-1.5 px-2 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-500 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-gray-50/50 dark:bg-zinc-900/30"
         >
           <span>➕</span>
-          <span>Add Team Support Buffs (Max {MAX_SUPPORTS})</span>
+          <span>Add Team Support Buffs</span>
+          <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max {MAX_SUPPORTS})</span>
         </button>
       )}
     </div>

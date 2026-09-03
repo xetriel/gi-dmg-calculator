@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveTeamBuffs, resolveSupportCtx, type SupportInstance } from "./team-buffs";
-import { supportById } from "../../data/registry/characters";
+import { supportById, byId } from "../../data/registry/characters";
 
 function makeIneffa(overrides: Partial<SupportInstance> = {}): SupportInstance {
   return {
@@ -226,6 +226,140 @@ describe("team-buffs resolver", () => {
     expect(r.statDeltas.atk ?? 0).toBe(0);
   });
 
+  it("Bennett C5 with stats from character calculator (atk.base = 865): ATK buff = ~1202.4", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        enabled: true,
+      },
+    ]);
+    // 865 * (119% + 20%) = 865 * 139% = 1202.35
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+    expect(r.sources.some(s => s.supportName === "Bennett" && s.stat === "atk" && Math.abs(s.value - 1202.35) < 0.1)).toBe(true);
+  });
+
+  it("Bennett C5 with talentLevels burst = 13 and atk.base = 865 resolves full buff", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        talentLevels: { burst: "13" },
+        enabled: true,
+      },
+    ]);
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+  });
+
+  it("Bennett C5 with base talentLevels burst = 10 automatically adds +3 -> Lv13 (139% total ratio) = ~1202.4 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 5,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * (119% [Lv13 from 10+3] + 20% [C1]) = 865 * 139% = 1202.35
+    expect(r.statDeltas.atk).toBeCloseTo(1202.35, 1);
+  });
+
+  it("Bennett C2 with base talentLevels burst = 10 stays at Lv10 (120.8% total ratio) = ~1044.9 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 2,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * (100.8% [Lv10] + 20% [C1]) = 865 * 120.8% = 1044.92
+    expect(r.statDeltas.atk).toBeCloseTo(1044.92, 1);
+  });
+
+  it("Bennett C0 with base talentLevels burst = 10 (100.8% total ratio, no C1) = ~871.9 ATK", () => {
+    const r = resolveTeamBuffs([
+      {
+        supportId: "bennett-support",
+        stats: {
+          "atk.base": "865",
+          "atk.percent": "0",
+          "atk.flat": "0",
+          critRate: "60",
+          critDmg: "120",
+        },
+        mechanicInputs: {
+          "fantastic-voyage-active": "1",
+        },
+        constellationLevel: 0,
+        talentLevels: { burst: "10" },
+        enabled: true,
+      },
+    ]);
+    // 865 * 100.8% = 871.92
+    expect(r.statDeltas.atk).toBeCloseTo(871.92, 1);
+  });
+
+  it("Bennett formatBriefStats with atk.base = 865 produces Base ATK: 865", () => {
+    const config = supportById("bennett-support");
+    expect(config).toBeDefined();
+
+    const inst: SupportInstance = {
+      supportId: "bennett-support",
+      stats: { "atk.base": "865", "atk.percent": "0", "atk.flat": "0", critRate: "60", critDmg: "120" },
+      mechanicInputs: {},
+      constellationLevel: 5,
+      enabled: true,
+    };
+
+    const ctx = resolveSupportCtx(inst);
+    expect(ctx).not.toBeNull();
+    expect(ctx!.baseAtk).toBe(865);
+    const pills = config!.formatBriefStats!(ctx!);
+    expect(pills[0].label).toBe("Base ATK");
+    expect(pills[0].value).toBe("865");
+  });
+
   it("Bennett + Ineffa stack together additively", () => {
     const bennett = makeBennett({ constellationLevel: 1 }); // 966.4 ATK, 60 CR, 120 CD
     const ineffa = makeIneffa(); // 130.8 EM, 14 Lunar Base, 50 LC, 70 CR, 140 CD
@@ -335,5 +469,55 @@ describe("remastered support system", () => {
     expect(pills[0].label).toBe("Base ATK");
     expect(pills[0].value).toBe("800");
     expect(pills[1].label).toBe("CRIT");
+  });
+
+  describe("RSC serialization safety (Next.js Server -> Client boundary)", () => {
+    it("byId(bennett) has no functions and is 100% JSON-serializable", () => {
+      const char = byId("bennett");
+      expect(char).toBeDefined();
+      // Must not have function-bearing support property
+      expect((char as Record<string, unknown>).support).toBeUndefined();
+
+      // Deep serialization check: must serialize without errors
+      const serialized = JSON.stringify(char);
+      expect(serialized).toBeDefined();
+      const parsed = JSON.parse(serialized);
+      expect(parsed.id).toBe("bennett");
+
+      // Verify no remaining functions on any key
+      for (const [k, v] of Object.entries(char!)) {
+        expect(typeof v).not.toBe("function");
+      }
+    });
+
+    it("byId(ineffa) has no functions and is 100% JSON-serializable", () => {
+      const char = byId("ineffa");
+      expect(char).toBeDefined();
+      expect((char as Record<string, unknown>).support).toBeUndefined();
+
+      const serialized = JSON.stringify(char);
+      expect(serialized).toBeDefined();
+      const parsed = JSON.parse(serialized);
+      expect(parsed.id).toBe("ineffa");
+
+      for (const [k, v] of Object.entries(char!)) {
+        expect(typeof v).not.toBe("function");
+      }
+    });
+
+    it("supportById retains all functions and calculation logic for client/engine usage", () => {
+      const bennettSupport = supportById("bennett");
+      expect(bennettSupport).toBeDefined();
+      expect(bennettSupport?.buffs.length).toBeGreaterThan(0);
+      expect(typeof bennettSupport?.buffs[0].compute).toBe("function");
+      expect(typeof bennettSupport?.formatBriefStats).toBe("function");
+
+      const ineffaSupport = supportById("ineffa");
+      expect(ineffaSupport).toBeDefined();
+      expect(ineffaSupport?.buffs.length).toBeGreaterThan(0);
+      expect(typeof ineffaSupport?.buffs[0].compute).toBe("function");
+      expect(typeof ineffaSupport?.lunarBaseBonusCompute).toBe("function");
+      expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
+    });
   });
 });

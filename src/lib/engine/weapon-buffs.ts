@@ -12,6 +12,7 @@ export interface ExternalWeaponBuffSource {
   stat: string;
   label: string;
   value: number;
+  rarity?: number;
 }
 
 export interface ExternalWeaponBuffResult {
@@ -86,6 +87,7 @@ export function resolveExternalWeaponBuffs(
         stat: buff.stat,
         label: `${buff.label} (R${refinement})`,
         value: val,
+        rarity: config.rarity,
       });
 
       const key = buff.stat as keyof DamageStats;

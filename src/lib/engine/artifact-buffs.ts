@@ -19,6 +19,7 @@ export interface ExternalArtifactBuffSource {
   stat: string;
   label: string;
   value: number;
+  rarity?: number;
 }
 
 export interface ExternalArtifactBuffResult {
@@ -118,6 +119,7 @@ export function resolveExternalArtifactBuffs(
         stat: buff.stat,
         label: `${buff.label} (${pieceCount}-Pc, ${slot === "wielder" ? "Wielder" : "Support"})`,
         value: val,
+        rarity: config.rarity,
       });
 
       const key = buff.stat as keyof DamageStats;

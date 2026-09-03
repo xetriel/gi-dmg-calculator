@@ -99,6 +99,7 @@ export function CharacterCalculator({
   savedBuilds = [],
   isSharedBuild = false,
   fromCharacterId,
+  initialSetupId,
 }: {
   config: CharacterConfig;
   scaling: TalentScalingData;
@@ -106,6 +107,7 @@ export function CharacterCalculator({
   savedBuilds?: SavedBuild[];
   isSharedBuild?: boolean;
   fromCharacterId?: string | null;
+  initialSetupId?: string | null;
 }) {
   const router = useRouter();
 
@@ -114,7 +116,10 @@ export function CharacterCalculator({
     const initLevels: Record<string, string> = {};
     for (const g of config.talents) {
       const s = scaling[g.type];
-      if (s && s.levels.length) initLevels[g.type] = String(s.levels[s.levels.length - 1]);
+      if (s && s.levels.length) {
+        const baseLevels = s.levels.filter((l) => l <= 10);
+        initLevels[g.type] = String(baseLevels[baseLevels.length - 1] ?? 10);
+      }
     }
     const initMechanics: Record<string, string> = {};
     for (const m of config.mechanicDefs ?? []) {
@@ -217,7 +222,7 @@ export function CharacterCalculator({
   const [isArtifactModalOpen, setIsArtifactModalOpen] = useState(false);
   const [activeArtifactModalSetupId, setActiveArtifactModalSetupId] = useState<string>("");
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-  const [activeTeamModalSetupId, setActiveTeamModalSetupId] = useState<string>("");
+  const [activeTeamModalSetupId, setActiveTeamModalSetupId] = useState<string>(() => initialSetupId ?? "");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);

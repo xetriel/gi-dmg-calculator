@@ -23,7 +23,7 @@ import {
 import { resolveMechanics } from "./mechanics";
 import { levelMultiplier } from "./level-multiplier";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "./transformative";
-import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "./lunar";
+import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, LUNAR_DIRECT_MULTIPLIER } from "./lunar";
 import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
 import { resolveTeamBuffs } from "./team-buffs";
 import { resolveExternalWeaponBuffs } from "./weapon-buffs";
@@ -57,6 +57,16 @@ const fmt = (n: number, decimals: number = 1) => {
 };
 
 const fmtPct = (n: number, decimals: number = 1) => `${fmt(n, decimals)}%`;
+
+function formatResMultiplier(resPct: number, elem: string): string {
+  if (resPct < 0) {
+    return `(100% - Total Enemy ${elem} DMG RES ${fmtPct(resPct)} / 2)`;
+  } else if (resPct <= 75) {
+    return `(100% - Total Enemy ${elem} DMG RES ${fmtPct(resPct)})`;
+  } else {
+    return `(1 / (4 * Total Enemy ${elem} DMG RES ${fmtPct(resPct)} + 1))`;
+  }
+}
 
 export function explainHitFormulas(
   config: CharacterConfig,
@@ -278,26 +288,29 @@ export function explainHitFormulas(
         const totalFlatIncrease = totalIncrease + specificFlatDmg;
         const elevationPct = specificElevation;
 
+        const coeff = dr.coefficient ?? (h.lunarType ? LUNAR_DIRECT_MULTIPLIER[h.lunarType] : 1) ?? 1;
+        const coeffFactorStr = coeff !== 1 ? ` * ${coeff}` : "";
         const coeffStr = `${fmtPct(mult)}`;
         const baseTransStr = `(Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${totalLunarDmgBonus > 0 ? ` + Total ${lunarLabel} ${fmtPct(totalLunarDmgBonus)}` : ""})`;
         const baseBonusStr = dr.baseDmgBonusPct > 0 ? ` * (100% + Total Lunar Base DMG Multiplier ${fmtPct(dr.baseDmgBonusPct)})` : "";
         const flatStr = totalFlatIncrease > 0 ? ` + Total Lunar DMG Increase ${fmt(totalFlatIncrease)}` : "";
 
-        basePart = `(${coeffStr} * Total ${statName} ${fmt(statVal)} * ${baseTransStr}${baseBonusStr}${flatStr})`;
+        basePart = `(${coeffStr} * Total ${statName} ${fmt(statVal)}${coeffFactorStr} * ${baseTransStr}${baseBonusStr}${flatStr})`;
         if (elevationPct > 0) {
           specialPart = ` * (100% + Total Lunar Special DMG Bonus ${fmtPct(elevationPct)})`;
         }
       } else if (h.direct) {
         const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
         const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
-        const coeffStr = dr.coefficient !== 1 ? `${dr.coefficient} * ` : "";
+        const coeff = dr.coefficient ?? 1;
+        const coeffFactorStr = coeff !== 1 ? ` * ${coeff}` : "";
         const baseBonusStr = dr.baseDmgBonusPct > 0 ? ` * (100% + Lunar Base DMG Bonus ${fmtPct(dr.baseDmgBonusPct)})` : "";
         const rxBonusStr = dr.reactionBonusPct > 0 ? ` + Reaction Bonus ${fmtPct(dr.reactionBonusPct)}` : "";
-        basePart = `(${coeffStr}${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${rxBonusStr})${baseBonusStr}`;
+        basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${coeffFactorStr}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${rxBonusStr})${baseBonusStr}`;
       } else {
         basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
       }
-      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`}${specialPart} * (100% - Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} / 2)`;
+      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`}${specialPart} * ${formatResMultiplier(effectiveStats.enemyRes, elem)}`;
 
       const mainFormulaNonCrit = `${h.name} ${fmt(hitRes.nonCrit)} = ${basePart}${defResPart}`;
       const mainFormulaCrit = `${h.name} ${fmt(hitRes.crit)} = ${basePart} * (100% + Total Crit DMG ${fmtPct(effectiveCritDmg)})${defResPart}`;
@@ -314,9 +327,25 @@ export function explainHitFormulas(
         const mechAtkAdds = mech.statBuffSources?.["atk"] ?? [];
         
         // Extract team ATK% and flat ATK sources if present
-        const teamAtkBuffs = mechAtkAdds.filter(a => a.source.toLowerCase().includes("team") || a.source.toLowerCase().includes("bennett") || a.source.toLowerCase().includes("xilonen") || a.source.toLowerCase().includes("kazuha"));
-        const teamAtkPctSum = teamAtkBuffs.filter(a => a.source.toLowerCase().includes("%") || a.value < 100).reduce((acc, c) => acc + c.value, 0);
-        const flatAtkBuffs = mechAtkAdds.filter(a => a.value >= 100 && !a.source.toLowerCase().includes("%"));
+        const teamAtkBuffs = [...mechAtkAdds.filter(a => a.source.toLowerCase().includes("team") || a.source.toLowerCase().includes("bennett") || a.source.toLowerCase().includes("xilonen") || a.source.toLowerCase().includes("kazuha"))];
+        if (teamResult) {
+          for (const s of teamResult.sources) {
+            if (s.stat === "atk") teamAtkBuffs.push({ source: s.supportName, value: s.value });
+          }
+        }
+        if (weaponResult) {
+          for (const s of weaponResult.sources) {
+            if (s.stat === "atk") teamAtkBuffs.push({ source: s.weaponName, value: s.value });
+          }
+        }
+        if (artifactResult) {
+          for (const s of artifactResult.sources) {
+            if (s.stat === "atk") teamAtkBuffs.push({ source: s.artifactName, value: s.value });
+          }
+        }
+
+        const teamAtkPctSum = teamAtkBuffs.filter(a => a.source.toLowerCase().includes("%") || (a.value < 100 && !a.source.toLowerCase().includes("flat"))).reduce((acc, c) => acc + c.value, 0);
+        const flatAtkBuffs = teamAtkBuffs.filter(a => a.value >= 100 || a.source.toLowerCase().includes("flat"));
         const flatAtkSum = flatAtkBuffs.reduce((acc, c) => acc + c.value, 0);
 
         const atkPctTerms: string[] = [];
@@ -335,7 +364,7 @@ export function explainHitFormulas(
         subBreakdowns.push(`Base ATK ${fmt(baseAtk)} = Char. ATK ${fmt(charAtk, 2)} + Weapon ATK ${fmt(weaponAtk, 2)}`);
 
         if (teamAtkBuffs.length > 0 && teamAtkPctSum > 0) {
-          subBreakdowns.push(`Team ATK ${fmtPct(teamAtkPctSum)} = ${teamAtkBuffs.map(b => `ATK (${b.source}) ${fmtPct(b.value)}`).join(" + ")}`);
+          subBreakdowns.push(`Team ATK ${fmtPct(teamAtkPctSum)} = ${teamAtkBuffs.filter(a => a.source.toLowerCase().includes("%") || (a.value < 100 && !a.source.toLowerCase().includes("flat"))).map(b => `ATK (${b.source}) ${fmtPct(b.value)}`).join(" + ")}`);
         }
       } else if (h.scaling === "hp") {
         subBreakdowns.push(`Total HP ${fmt(effectiveStats.hp)} = Base HP ${fmt(baseHp)} * (100% + HP ${fmtPct(hpPct)}) + Flat HP ${fmt(hpFlat)}`);
@@ -369,8 +398,35 @@ export function explainHitFormulas(
         const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
         const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
         subBreakdowns.push(`Base Transformative Multiplier ${fmtPct(100 + emBonusPct)} = 100% + 6 * Total EM ${fmt(effectiveStats.em)} / (Total EM ${fmt(effectiveStats.em)} + 2000)`);
-        if (dr.baseDmgBonusPct > 0) {
-          subBreakdowns.push(`Lunar Base DMG Bonus ${fmtPct(dr.baseDmgBonusPct)} = Min(0.2% * (Total HP ${fmt(effectiveStats.hp)} / 1000), 7%)`);
+        if (dr.baseDmgBonusPct > 0 || lunarBaseFromTeam > 0) {
+          const totalLunarBase = dr.baseDmgBonusPct + lunarBaseFromTeam;
+          let charBaseFormula = "";
+          if (config.id === "flins" || config.id === "ineffa") {
+            charBaseFormula = `Min(0.7% * (Total ATK ${fmt(effectiveStats.atk)} / 100), 14%)`;
+          } else if (config.id === "zibai") {
+            charBaseFormula = `Min(0.7% * (Total DEF ${fmt(effectiveStats.def)} / 100), 14%)`;
+          } else if (config.id === "columbina") {
+            charBaseFormula = `Min(0.2% * (Total HP ${fmt(effectiveStats.hp)} / 1000), 7%)`;
+          } else if (h.scaling === "atk") {
+            charBaseFormula = `Min(0.7% * (Total ATK ${fmt(effectiveStats.atk)} / 100), 14%)`;
+          } else if (h.scaling === "def") {
+            charBaseFormula = `Min(0.7% * (Total DEF ${fmt(effectiveStats.def)} / 100), 14%)`;
+          } else {
+            charBaseFormula = `Min(0.2% * (Total HP ${fmt(effectiveStats.hp)} / 1000), 7%)`;
+          }
+
+          if (lunarBaseFromTeam > 0) {
+            subBreakdowns.push(`Total Lunar Base DMG Multiplier ${fmtPct(totalLunarBase)} = Lunar Base DMG (${config.name}) ${fmtPct(dr.baseDmgBonusPct)} + Team Lunar Base DMG ${fmtPct(lunarBaseFromTeam)}`);
+            subBreakdowns.push(`Lunar Base DMG (${config.name}) ${fmtPct(dr.baseDmgBonusPct)} = ${charBaseFormula}`);
+            if (teamResult) {
+              const teamMoonsignSources = teamResult.sources.filter(s => s.stat === "lunarBaseBonusPct");
+              if (teamMoonsignSources.length > 0) {
+                subBreakdowns.push(`Team Lunar Base DMG ${fmtPct(lunarBaseFromTeam)} = ${teamMoonsignSources.map(s => `Lunar Base DMG (${s.supportName}) ${fmtPct(s.value)}`).join(" + ")}`);
+              }
+            }
+          } else {
+            subBreakdowns.push(`Lunar Base DMG Bonus ${fmtPct(dr.baseDmgBonusPct)} = ${charBaseFormula}`);
+          }
         }
       } else {
         const isSpecial = catKey === "special";
@@ -393,16 +449,67 @@ export function explainHitFormulas(
       }
 
       // 4. CRIT Rate & CRIT DMG breakdown
-      const charCritDmg = config.ascensionStat?.label === "CRIT DMG" ? (config.ascensionStat.maxValue ?? 38.4) : 0;
-      const charCritRate = config.ascensionStat?.label === "CRIT Rate" ? (config.ascensionStat.maxValue ?? 19.2) : 0;
-      const defaultCritRate = 5 + charCritRate;
-      const defaultCritDmg = 50 + charCritDmg;
+      const initialCritRate = toNum(inst.stats["critRate"]) ?? 5;
+      const initialCritDmg = toNum(inst.stats["critDmg"]) ?? 50;
 
-      const artCritRate = Math.max(0, toNum(inst.stats["critRate"]) ?? 0);
-      const artCritDmg = Math.max(0, toNum(inst.stats["critDmg"]) ?? 0);
+      const crBuffs: { source: string; value: number }[] = [];
+      if (mods.critRateBonusPct) {
+        crBuffs.push({ source: `${h.name} Bonus`, value: mods.critRateBonusPct });
+      }
+      if (artifactResult) {
+        for (const s of artifactResult.sources) {
+          if (s.stat === "critRate") crBuffs.push({ source: s.artifactName, value: s.value });
+        }
+      }
+      if (weaponResult) {
+        for (const s of weaponResult.sources) {
+          if (s.stat === "critRate") crBuffs.push({ source: s.weaponName, value: s.value });
+        }
+      }
+      if (teamResult) {
+        for (const s of teamResult.sources) {
+          if (s.stat === "critRate") crBuffs.push({ source: s.supportName, value: s.value });
+        }
+      }
+      if (mech.statDeltas.critRate) {
+        crBuffs.push({ source: config.name, value: mech.statDeltas.critRate });
+      }
 
-      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((Default Crit Rate ${fmtPct(defaultCritRate)}${artCritRate > 0 ? ` + Art. Crit Rate ${fmtPct(artCritRate)}` : ""}), 100%), 0%)`);
-      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = Default Crit DMG ${fmtPct(defaultCritDmg)}${artCritDmg > 0 ? ` + Art. Crit DMG ${fmtPct(artCritDmg)}` : ""}`);
+      const crTerms = [`Initial Crit Rate ${fmtPct(initialCritRate)}`];
+      for (const b of crBuffs) {
+        crTerms.push(`Crit Rate (${b.source}) ${fmtPct(b.value)}`);
+      }
+      const crInner = crTerms.length === 1 ? crTerms[0] : crTerms.join(" + ");
+      subBreakdowns.push(`Total Crit Rate ${fmtPct(effectiveCritRate)} = Max(Min((${crInner}), 100%), 0%)`);
+
+      const cdBuffs: { source: string; value: number }[] = [];
+      if (mods.critDmgBonusPct) {
+        cdBuffs.push({ source: `${h.name} Bonus`, value: mods.critDmgBonusPct });
+      }
+      if (artifactResult) {
+        for (const s of artifactResult.sources) {
+          if (s.stat === "critDmg") cdBuffs.push({ source: s.artifactName, value: s.value });
+        }
+      }
+      if (weaponResult) {
+        for (const s of weaponResult.sources) {
+          if (s.stat === "critDmg") cdBuffs.push({ source: s.weaponName, value: s.value });
+        }
+      }
+      if (teamResult) {
+        for (const s of teamResult.sources) {
+          if (s.stat === "critDmg") cdBuffs.push({ source: s.supportName, value: s.value });
+        }
+      }
+      if (mech.statDeltas.critDmg) {
+        cdBuffs.push({ source: config.name, value: mech.statDeltas.critDmg });
+      }
+
+      const cdTerms = [`Initial Crit DMG ${fmtPct(initialCritDmg)}`];
+      for (const b of cdBuffs) {
+        cdTerms.push(`Crit DMG (${b.source}) ${fmtPct(b.value)}`);
+      }
+      subBreakdowns.push(`Total Crit DMG ${fmtPct(effectiveCritDmg)} = ${cdTerms.join(" + ")}`);
 
       // 5. DEF Multiplier breakdown
       if (!h.direct) {
@@ -410,7 +517,13 @@ export function explainHitFormulas(
       }
 
       // 6. RES Multiplier breakdown
-      subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)}`);
+      const baseEnemyRes = toNum(inst.stats["enemyRes"]) ?? 10;
+      const resDiff = effectiveStats.enemyRes - baseEnemyRes;
+      if (Math.abs(resDiff) > 0.001) {
+        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(baseEnemyRes)} + Team Enemy ${elem} DMG RES ${fmtPct(resDiff)}`);
+      } else {
+        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)}`);
+      }
 
       breakdowns.push({
         id: `hit-${id}`,
@@ -448,12 +561,17 @@ export function explainHitFormulas(
     const panelBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
     const totalBonusPct = emBonusPct + panelBonusPct;
     const resMult = resMultiplier(effectiveStats.enemyRes);
+    const resFormulaStr = effectiveStats.enemyRes < 0
+      ? `(100% - Enemy RES ${fmtPct(effectiveStats.enemyRes)} / 2)`
+      : effectiveStats.enemyRes <= 75
+        ? `(100% - Enemy RES ${fmtPct(effectiveStats.enemyRes)})`
+        : `(1 / (4 * Enemy RES ${fmtPct(effectiveStats.enemyRes)} + 1))`;
 
     const mainFormula = `${label} DMG ${fmt(dmg)} = Base Reaction Scaling * (100% + Reaction Bonus ${fmtPct(totalBonusPct)}) * Enemy RES Multiplier ${fmtPct(resMult * 100)}`;
     const subBreakdowns = [
       `Reaction Bonus ${fmtPct(totalBonusPct)} = EM Bonus ${fmtPct(emBonusPct)} + Panel Bonus ${fmtPct(panelBonusPct)}`,
       `EM Bonus ${fmtPct(emBonusPct)} = (16 * EM ${fmt(effectiveStats.em)}) / (EM + 2000)`,
-      `Enemy RES Multiplier ${fmtPct(resMult * 100)} = (100% - Enemy RES ${fmtPct(effectiveStats.enemyRes)} / 2)`,
+      `Enemy RES Multiplier ${fmtPct(resMult * 100)} = ${resFormulaStr}`,
     ];
 
     breakdowns.push({
@@ -534,7 +652,7 @@ export function explainHitFormulas(
     teamBuffsLines.push(`Team Enemy ${config.element} DMG RES ${fmtPct(-resShredSum)} = ${resBuffs.map(b => `Enemy ${config.element} DMG RES (${b.source}) ${fmtPct(-b.value)}`).join(" + ")}`);
   }
 
-  // Add team support and external weapon buff sources
+  // Add team support, external weapon, and external artifact buff sources
   const allBuffSources: { name: string; label: string; stat: string; value: number }[] = [];
   if (teamResult && teamResult.sources.length > 0) {
     for (const s of teamResult.sources) {
@@ -544,6 +662,11 @@ export function explainHitFormulas(
   if (weaponResult && weaponResult.sources.length > 0) {
     for (const s of weaponResult.sources) {
       allBuffSources.push({ name: s.weaponName, label: s.label, stat: s.stat, value: s.value });
+    }
+  }
+  if (artifactResult && artifactResult.sources.length > 0) {
+    for (const s of artifactResult.sources) {
+      allBuffSources.push({ name: s.artifactName, label: s.label, stat: s.stat, value: s.value });
     }
   }
 

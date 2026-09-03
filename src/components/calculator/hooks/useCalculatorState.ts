@@ -147,7 +147,10 @@ export function useCalculatorState({
     const initLevels: Record<string, string> = {};
     for (const g of config.talents) {
       const s = scaling[g.type];
-      if (s && s.levels.length) initLevels[g.type] = String(s.levels[s.levels.length - 1]);
+      if (s && s.levels.length) {
+        const baseLevels = s.levels.filter((l) => l <= 10);
+        initLevels[g.type] = String(baseLevels[baseLevels.length - 1] ?? 10);
+      }
     }
     const initMechanics: Record<string, string> = {};
     for (const m of config.mechanicDefs ?? []) {
