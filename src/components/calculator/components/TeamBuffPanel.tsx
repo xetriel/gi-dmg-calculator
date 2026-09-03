@@ -4,6 +4,7 @@ import type { CalcInstance } from "../types";
 import { supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
 import { ElementIcon } from "@/components/icons";
+import { getRarityTheme } from "../rarity-theme";
 
 interface TeamBuffPanelProps {
   inst: CalcInstance;
@@ -82,6 +83,7 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
             {supports.map((sup, idx) => {
               const sConfig = supportById(sup.supportId);
               if (!sConfig) return null;
+              const theme = getRarityTheme(sConfig.rarity);
               const isActive = masterEnabled && sup.enabled;
 
               return (
@@ -90,7 +92,7 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                   onClick={onOpenModal}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
                     isActive
-                      ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200"
+                      ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
                   title={`${sConfig.name} (C${sup.constellationLevel}${sup.selectedSetupName ? `, ${sup.selectedSetupName}` : ""}) - Click to configure`}
@@ -101,7 +103,7 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                     C{sup.constellationLevel}
                   </span>
                   {(sup.selectedSetupName || sup.selectedSetupId) && (
-                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${theme.badge}`}>
                       {sup.selectedSetupName?.startsWith("Support Setup")
                         ? sup.selectedSetupName
                         : `Support Setup ${sup.selectedSetupId ?? "1"}`}

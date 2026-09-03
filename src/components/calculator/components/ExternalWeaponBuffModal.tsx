@@ -7,6 +7,7 @@ import { WEAPONS, weaponById, getWeaponsForCharacter } from "@/data/registry/wea
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { toNum } from "@/lib/engine/validation";
 import { WeaponIcon } from "@/components/icons";
+import { getRarityTheme } from "../rarity-theme";
 
 interface ExternalWeaponBuffModalProps {
   isOpen: boolean;
@@ -21,13 +22,7 @@ interface ExternalWeaponBuffModalProps {
 const fmt = (n: number, decimals = 1) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 
-const RARITY_COLORS: Record<number, string> = {
-  5: "text-amber-500 bg-amber-500/10 border-amber-500/30",
-  4: "text-purple-500 bg-purple-500/10 border-purple-500/30",
-  3: "text-sky-500 bg-sky-500/10 border-sky-500/30",
-  2: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
-  1: "text-zinc-500 bg-zinc-500/10 border-zinc-500/30",
-};
+
 
 export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = ({
   isOpen,
@@ -288,14 +283,15 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
               {filteredCatalog.map((w) => {
                 const isAdded = addedWeaponIds.has(w.id);
                 const isMatchingClass = w.type === config.weapon;
+                const theme = getRarityTheme(w.rarity);
 
                 return (
                   <div
                     key={w.id}
                     className={`rounded-xl border p-3 transition-all duration-150 flex flex-col justify-between gap-2 ${
                       isAdded
-                        ? "border-amber-400/50 bg-amber-50/20 dark:bg-amber-950/10 opacity-70"
-                        : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-xs"
+                        ? `${theme.catalogAddedBg} opacity-70`
+                        : `border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 ${theme.catalogBorderHover} hover:shadow-xs`
                     }`}
                   >
                     <div>
@@ -306,7 +302,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                           <span className="text-xs font-bold text-gray-900 dark:text-white">
                             {w.name}
                           </span>
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[w.rarity]}`}>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                             {"★".repeat(w.rarity)}
                           </span>
                           {w.isSupport && (
@@ -328,7 +324,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                           className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer shrink-0 ${
                             isAdded
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : "bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
+                              : `${theme.addButton} shadow-xs`
                           }`}
                         >
                           {isAdded ? "Added ✓" : "+ Add"}
@@ -409,13 +405,14 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 );
 
                 const isMatchingClass = wConfig.type === config.weapon;
+                const theme = getRarityTheme(wConfig.rarity);
 
                 return (
                   <div
                     key={wInst.id || `${wInst.weaponId}-${index}`}
                     className={`rounded-2xl border p-4 transition-all duration-200 shadow-xs ${
                       isActive
-                        ? "border-amber-400/60 dark:border-amber-500/40 bg-amber-50/20 dark:bg-amber-950/15"
+                        ? theme.cardBorderActive
                         : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/40 opacity-60"
                     }`}
                   >
@@ -424,7 +421,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                       <div className="flex items-center gap-2 flex-wrap">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 accent-amber-500 cursor-pointer"
+                          className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
                           checked={wInst.enabled}
                           onChange={() => updateWeapon(index, (w) => ({ enabled: !w.enabled }))}
                         />
@@ -432,7 +429,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
                           {wConfig.name}
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[wConfig.rarity]}`}>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                           {"★".repeat(wConfig.rarity)}
                         </span>
                         {wConfig.isSupport && (
@@ -473,8 +470,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                             onClick={() => updateWeapon(index, () => ({ refinement: r }))}
                             className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
                               (wInst.refinement || 1) === r
-                                ? "bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:border-amber-500 shadow-xs"
-                                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
+                                ? theme.activeButton
+                                : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                             }`}
                           >
                             R{r}
@@ -502,7 +499,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                               >
                                 <input
                                   type="checkbox"
-                                  className="h-4 w-4 accent-amber-500 cursor-pointer"
+                                  className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
                                   checked={isChecked}
                                   onChange={(e) =>
                                     updateWeapon(index, (w) => ({
@@ -535,8 +532,9 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                                     const numVal = Number(e.target.value);
                                     updateWeapon(index, (w) => ({
                                       inputs: { ...w.inputs, [m.id]: String(numVal) },
-                                    }));
-                                  }}
+                                    }))
+                                  }
+                                  }
                                   className="w-24 px-2 py-1 text-xs text-right border rounded-lg bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono font-bold"
                                 />
                               </div>
@@ -559,7 +557,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                             key={i}
                             className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
                               isActive
-                                ? "bg-amber-100/70 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300/60 dark:border-amber-700/60"
+                                ? theme.notePill
                                 : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
                             }`}
                           >

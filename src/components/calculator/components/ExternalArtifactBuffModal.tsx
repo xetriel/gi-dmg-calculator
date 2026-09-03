@@ -5,6 +5,7 @@ import type { CalcInstance, ExternalArtifactInstance } from "../types";
 import { ARTIFACTS, artifactById, filterArtifacts } from "@/data/registry/artifacts";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
 import { toNum } from "@/lib/engine/validation";
+import { getRarityTheme } from "../rarity-theme";
 
 interface ExternalArtifactBuffModalProps {
   isOpen: boolean;
@@ -19,10 +20,7 @@ interface ExternalArtifactBuffModalProps {
 const fmt = (n: number, decimals = 1) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 
-const RARITY_COLORS: Record<number, string> = {
-  5: "text-amber-500 bg-amber-500/10 border-amber-500/30",
-  4: "text-purple-500 bg-purple-500/10 border-purple-500/30",
-};
+
 
 export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps> = ({
   isOpen,
@@ -259,14 +257,15 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
               {filteredCatalog.map((a) => {
                 const isAdded = addedArtifactIds.has(a.id);
+                const theme = getRarityTheme(a.rarity);
 
                 return (
                   <div
                     key={a.id}
                     className={`rounded-xl border p-3 transition-all duration-150 flex flex-col justify-between gap-2 ${
                       isAdded
-                        ? "border-purple-400/50 bg-purple-50/20 dark:bg-purple-950/10 opacity-70"
-                        : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-xs"
+                        ? `${theme.catalogAddedBg} opacity-70`
+                        : `border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 ${theme.catalogBorderHover} hover:shadow-xs`
                     }`}
                   >
                     <div>
@@ -277,7 +276,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                           <span className="text-xs font-bold text-gray-900 dark:text-white">
                             {a.name}
                           </span>
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[a.rarity] || ""}`}>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                             {"★".repeat(a.rarity)}
                           </span>
                           {a.isSupport && (
@@ -301,7 +300,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
                               : isMaxReached
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : "bg-purple-600 hover:bg-purple-700 text-white shadow-xs"
+                              : `${theme.addButton} shadow-xs`
                           }`}
                           title={isMaxReached && !isAdded ? "Maximum of 4 artifact sets reached" : undefined}
                         >
@@ -388,12 +387,14 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                   true
                 );
 
+                const theme = getRarityTheme(aConfig.rarity);
+
                 return (
                   <div
                     key={aInst.id || `${aInst.artifactId}-${index}`}
                     className={`rounded-2xl border p-4 transition-all duration-200 shadow-xs ${
                       isActive
-                        ? "border-purple-400/60 dark:border-purple-500/40 bg-purple-50/20 dark:bg-purple-950/15"
+                        ? theme.cardBorderActive
                         : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/40 opacity-60"
                     }`}
                   >
@@ -402,7 +403,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                       <div className="flex items-center gap-2 flex-wrap">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 accent-purple-500 cursor-pointer"
+                          className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
                           checked={aInst.enabled}
                           onChange={() => updateArtifact(index, (a) => ({ enabled: !a.enabled }))}
                         />
@@ -410,7 +411,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
                           {aConfig.name}
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[aConfig.rarity] || ""}`}>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                           {"★".repeat(aConfig.rarity)}
                         </span>
                         {aConfig.isSupport && (
@@ -476,8 +477,8 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                             onClick={() => updateArtifact(index, () => ({ pieceCount: 2 }))}
                             className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
                               (aInst.pieceCount || 4) === 2
-                                ? "bg-purple-600 text-white border-purple-700 shadow-xs"
-                                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-purple-400"
+                                ? theme.activeButton
+                                : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                             }`}
                           >
                             2-Piece
@@ -487,8 +488,8 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                             onClick={() => updateArtifact(index, () => ({ pieceCount: 4 }))}
                             className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
                               (aInst.pieceCount || 4) === 4
-                                ? "bg-purple-600 text-white border-purple-700 shadow-xs"
-                                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-purple-400"
+                                ? theme.activeButton
+                                : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                             }`}
                           >
                             4-Piece
@@ -530,7 +531,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                               >
                                 <input
                                   type="checkbox"
-                                  className="h-4 w-4 accent-purple-500 cursor-pointer"
+                                  className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
                                   checked={isChecked}
                                   onChange={(e) =>
                                     updateArtifact(index, (a) => ({
@@ -559,7 +560,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                             key={i}
                             className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
                               isActive
-                                ? "bg-purple-100/70 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300/60 dark:border-purple-700/60"
+                                ? theme.notePill
                                 : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
                             }`}
                           >

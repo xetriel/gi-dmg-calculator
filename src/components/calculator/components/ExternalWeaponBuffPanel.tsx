@@ -6,6 +6,7 @@ import { weaponById } from "@/data/registry/weapons";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { toNum } from "@/lib/engine/validation";
 import { WeaponIcon } from "@/components/icons";
+import { getRarityTheme } from "../rarity-theme";
 
 interface ExternalWeaponBuffPanelProps {
   config: CharacterConfig;
@@ -85,6 +86,7 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
             {weapons.map((wInst, idx) => {
               const wConfig = weaponById(wInst.weaponId);
               if (!wConfig) return null;
+              const theme = getRarityTheme(wConfig.rarity);
               const isActive = masterEnabled && wInst.enabled;
 
               return (
@@ -93,14 +95,14 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
                   onClick={onOpenModal}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
                     isActive
-                      ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200"
+                      ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
                   title={`${wConfig.name} (R${wInst.refinement || 1}) - Click to configure`}
                 >
                   <WeaponIcon weapon={wConfig.type} className="w-3.5 h-3.5 shrink-0" />
                   <span className="font-semibold text-[11px] truncate max-w-[130px]">{wConfig.name}</span>
-                  <span className="text-[10px] font-bold opacity-75">R{wInst.refinement || 1}</span>
+                  <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${theme.badge}`}>R{wInst.refinement || 1}</span>
                 </div>
               );
             })}

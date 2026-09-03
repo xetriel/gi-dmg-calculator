@@ -6,6 +6,7 @@ import type { CalcInstance, SupportInstance } from "../types";
 import { SUPPORT_CONFIGS, supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
+import { getRarityTheme } from "../rarity-theme";
 
 interface TeamBuffModalProps {
   isOpen: boolean;
@@ -22,10 +23,7 @@ const MAX_SUPPORTS = 3;
 const fmt = (n: number, decimals = 1) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 
-const RARITY_COLORS: Record<number, string> = {
-  5: "text-amber-500 bg-amber-500/10 border-amber-500/30",
-  4: "text-purple-500 bg-purple-500/10 border-purple-500/30",
-};
+
 
 const ELEMENT_BADGES: Record<string, string> = {
   Pyro: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
@@ -379,14 +377,15 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
               {filteredCatalog.map((s) => {
                 const isAdded = addedSupportIds.has(s.id);
+                const theme = getRarityTheme(s.rarity);
 
                 return (
                   <div
                     key={s.id}
                     className={`rounded-xl border p-3 transition-all duration-150 flex flex-col justify-between gap-2.5 ${
                       isAdded
-                        ? "border-amber-400/50 bg-amber-50/20 dark:bg-amber-950/10 opacity-70"
-                        : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-xs"
+                        ? `${theme.catalogAddedBg} opacity-70`
+                        : `border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 ${theme.catalogBorderHover} hover:shadow-xs`
                     }`}
                   >
                     <div>
@@ -397,7 +396,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           <span className="text-xs font-bold text-gray-900 dark:text-white">
                             {s.name}
                           </span>
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[s.rarity] || ""}`}>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                             {"★".repeat(s.rarity)}
                           </span>
                           <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${ELEMENT_BADGES[s.element] || ""}`}>
@@ -420,7 +419,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
                               : isMaxReached
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : "bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
+                              : `${theme.addButton} shadow-xs`
                           }`}
                           title={isMaxReached && !isAdded ? `Maximum of ${MAX_SUPPORTS} support characters reached` : undefined}
                         >
@@ -541,13 +540,14 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 // Get available setups from working draft
                 const draft = readSupportDraft(sConfig.characterId);
                 const availableSetups = draft?.instances && draft.instances.length > 0 ? draft.instances : [{ id: "1" }];
+                const theme = getRarityTheme(sConfig.rarity);
 
                 return (
                   <div
                     key={`${sup.supportId}-${index}`}
                     className={`rounded-2xl border p-4 transition-all duration-200 shadow-xs ${
                       isActive
-                        ? "border-amber-400/60 dark:border-amber-500/40 bg-amber-50/20 dark:bg-amber-950/15"
+                        ? theme.cardBorderActive
                         : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/40 opacity-60"
                     }`}
                   >
@@ -556,7 +556,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                       <div className="flex items-center gap-2 flex-wrap">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 accent-amber-500 cursor-pointer"
+                          className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
                           checked={sup.enabled}
                           onChange={() => updateSupport(index, () => ({ enabled: !sup.enabled }))}
                         />
@@ -564,7 +564,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
                           {sConfig.name}
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${RARITY_COLORS[sConfig.rarity] || ""}`}>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                           {"★".repeat(sConfig.rarity)}
                         </span>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded border font-semibold ${ELEMENT_BADGES[sConfig.element] || ""}`}>
@@ -573,7 +573,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold">
                           C{sup.constellationLevel}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${theme.notePill}`}>
                           Buffing: Character Setup {currentInst.id}
                         </span>
                       </div>
@@ -621,8 +621,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                 onClick={() => switchSetup(index, s.id)}
                                 className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 ${
                                   isSelected
-                                    ? "bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:border-amber-500 shadow-xs"
-                                    : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400"
+                                    ? theme.activeButton
+                                    : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                                 }`}
                                 title={`Switch to ${sConfig.name} Support Setup ${s.id}`}
                               >
@@ -638,7 +638,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <button
                           type="button"
                           onClick={() => syncFromDraft(index)}
-                          className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-amber-400 transition-all font-semibold cursor-pointer"
+                          className={`text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 ${theme.buttonHover} transition-all font-semibold cursor-pointer`}
                           title="Sync latest stats from this support character's calculator"
                         >
                           🔄 Sync
@@ -647,7 +647,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         {/* Edit in dedicated support builder */}
                         <Link
                           href={`/characters/${sConfig.characterId}/support?from=${config.id}&charSetup=${currentInst.id}&supportSetup=${sup.selectedSetupId ?? "1"}`}
-                          className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all inline-flex items-center gap-1 font-semibold"
+                          className={`text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 ${theme.buttonHover} transition-all inline-flex items-center gap-1 font-semibold`}
                           title="Open dedicated support builder for this character"
                         >
                           ✎ Edit Build ↗
@@ -670,8 +670,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                             }
                             className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
                               sup.constellationLevel >= lvl
-                                ? "bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:border-amber-500 shadow-xs"
-                                : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
+                                ? theme.activeButton
+                                : `bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                             }`}
                           >
                             C{lvl}
@@ -696,7 +696,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                             <div key={m.id} className="flex items-center gap-2 text-xs" title={m.hint}>
                               <input
                                 type="checkbox"
-                                className="h-4 w-4 accent-amber-500 cursor-pointer disabled:opacity-40"
+                                className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer disabled:opacity-40`}
                                 checked={mechVal && !isGated}
                                 disabled={isGated}
                                 onChange={(e) =>
@@ -726,7 +726,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                             key={i}
                             className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
                               isActive
-                                ? "bg-amber-100/70 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300/60 dark:border-amber-700/60"
+                                ? theme.notePill
                                 : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
                             }`}
                           >

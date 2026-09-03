@@ -5,6 +5,7 @@ import type { CalcInstance } from "../types";
 import { artifactById } from "@/data/registry/artifacts";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
 import { toNum } from "@/lib/engine/validation";
+import { getRarityTheme } from "../rarity-theme";
 
 interface ExternalArtifactBuffPanelProps {
   config: CharacterConfig;
@@ -79,6 +80,7 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
             {artifacts.map((aInst, idx) => {
               const aConfig = artifactById(aInst.artifactId);
               if (!aConfig) return null;
+              const theme = getRarityTheme(aConfig.rarity);
               const isActive = masterEnabled && aInst.enabled;
               const isWielder = (aInst.slot || "wielder") === "wielder";
 
@@ -88,14 +90,14 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
                   onClick={onOpenModal}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
                     isActive
-                      ? "bg-purple-50/70 dark:bg-purple-950/30 border-purple-300 dark:border-purple-700/60 text-purple-900 dark:text-purple-200"
+                      ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
                   title={`${aConfig.name} (${aInst.pieceCount || 4}-Pc, ${isWielder ? "Wielder" : "Support"}) - Click to configure`}
                 >
                   <span className="text-xs">🏺</span>
                   <span className="font-semibold text-[11px] truncate max-w-[130px]">{aConfig.name}</span>
-                  <span className="text-[10px] font-bold opacity-75">{aInst.pieceCount || 4}P</span>
+                  <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${theme.badge}`}>{aInst.pieceCount || 4}P</span>
                   <span
                     className={`text-[9px] px-1 py-0.2 rounded font-bold ${
                       isWielder
