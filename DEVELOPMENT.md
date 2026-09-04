@@ -6,7 +6,7 @@ This document logs the feature updates, architecture changes, and character rele
 
 ## [v1.2.0-Beta] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to August 20, 2026).
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to September 5, 2026).
 
 ### New Character Calculators
 - **Bennett (August 20, 2026)**: Added Bennett, a 4-star Pyro Sword character featuring unified DPS and Support integration:
@@ -64,12 +64,78 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
-- **Advanced Rarity-Focused Theming for External Buff Systems (September 4, 2026)**:
+- **Complete 246-Weapon Database Audit & Canonical Wiki Standardization (September 5, 2026)**:
+  - **100% Canonical Wiki Synchronization**: Audited all weapons in `src/data/registry/weapons/` against the official Genshin Impact Wiki database, establishing an exact 1-to-1 match across all five categories: **56 Swords**, **45 Claymores**, **43 Polearms**, **53 Catalysts**, and **49 Bows** (246 weapons total).
+  - **Relocation of 18 Misplaced Weapons**: Reassigned 18 weapons previously placed in incorrect category directories to their authentic weapon classes, re-aligning their Level 90 Base ATK and Substat progressions to their canonical class curves:
+    - *Catalysts*: Moved `angelos-heptades.ts` (Base ATK 741, ATK 16.5%), `clash-of-kings.ts` (Base ATK 510, CRIT Rate 27.6%), `echoes-of-the-heart.ts` (Base ATK 565, ATK 27.6%), `blackmarrow-lantern.ts` (Base ATK 454, EM 221), `dawning-frost.ts` (Base ATK 510, CRIT DMG 55.1%), and `etherlight-spindlelute.ts` (Base ATK 510, ER 45.9%).
+    - *Claymores*: Moved `master-key.ts` (Base ATK 454, ER 61.3%), `flame-forged-insight.ts` (Base ATK 510, EM 165), `forged-by-the-golden-melody.ts` (Base ATK 510, CRIT Rate 27.6%), and `a-teaspoon-of-transcendence.ts` (Base ATK 674, CRIT DMG 44.1%).
+    - *Polearms*: Moved `symphonist-of-scents.ts` (Base ATK 608, CRIT DMG 66.2%), `bloodsoaked-ruins.ts` (Base ATK 674, CRIT Rate 22.1%), `prospectors-shovel.ts` (Base ATK 510, ATK 41.3%), and `song-of-the-vigil.ts` (Base ATK 565, EM 110).
+    - *Swords*: Moved `emberwell.ts` (Base ATK 510, EM 165), `heretics-molten-blade.ts` (Base ATK 510, CRIT Rate 27.6%), `serenitys-call.ts` (Base ATK 454, ER 61.3%), and `moonweavers-dawn.ts` (Base ATK 565, ATK 27.6%).
+  - **Creation of Missing Canonical Weapons**:
+    - `whitelake-frostfeather.ts`: 5★ Sword (Base ATK 674, CRIT Rate 22.1%) with *Snow Swan's Finale* passive granting stacking ATK and Stellar Glimmer bonuses.
+    - `frostbreath.ts`: 4★ Polearm (Base ATK 510, ER 45.9%) with *A Cast Real Far* passive granting reaction-triggered ATK buff and team energy restoration (`isSupport: true`, `buffType: "both"`).
+  - **Canonical Normalization & Discrepancy Resolution**:
+    - Unified *Sword of Narzissenkreuz* under `sword-of-narzissenkreuz.ts` (retiring `sword-of-narzissenkreuz-pneuma.ts`).
+    - Added official double quotation marks to `"\"Ultimate Overlord's Mega Magic Sword\""`.
+    - Corrected Base ATK, Substats, and official passive names across 20+ weapons including *Athame Artis* (608 ATK, 33.1% CRIT Rate, *Day King's Splendor Solis*), *Azurelight* (674 ATK, 22.1% CRIT Rate, *Whitehill's Bestowal*), *Lightbearing Moonshard* (542 ATK, 88.2% CRIT DMG, *Legacy of Lang-Gan*), *A Thousand Blazing Suns* (741 ATK, 11.0% CRIT Rate, *Sunset Reignites the Dawn*), *Blade of Atonement* (565 ATK, 27.6% ATK, *Repentance and Redemption*), *Fang of the Mountain King* (741 ATK, 11.0% CRIT Rate), *Disaster and Remorse* (674 ATK, 22.1% CRIT Rate, *Siren Song*), *Fractured Halo* (608 ATK, 66.2% CRIT DMG, *Purifying Crown*), *Sacrificer's Staff* (620 ATK, 9.2% CRIT Rate), *Tamayuratei no Ohanashi* (565 ATK, 30.6% ER), *Nightweaver's Looking Glass* (542 ATK, 265 EM), *Nocturne's Curtain Call* (542 ATK, 88.2% CRIT DMG), *Reliquary of Truth* (542 ATK, 88.2% CRIT DMG), *Sunny Morning Sleep-In* (542 ATK, 265 EM), *Vivid Notions* (674 ATK, 44.1% CRIT DMG), and *Snare Hook* (454 ATK, 61.3% ER).
+  - **Specialized Refinement Mechanics**: Implemented interactive toggles and scaling curves for *A Thousand Blazing Suns* (Nightsoul's Blessing +75% bonus toggle), *Blade of Atonement* (reaction EM & Stellar Glimmer ATK triggers), *Fang of the Mountain King* (Canopy's Favor 10%–20% per stack, up to 120% Skill/Burst DMG), and *Athame Artis* (Burst hit trigger with Hexerei: Secret Rite amplification).
+  - **Clean Barrel & Aggregator Exporting**: Rebuilt category barrel exports (`swords/index.ts`, `claymores/index.ts`, `polearms/index.ts`, `catalysts/index.ts`, `bows/index.ts`) and root registry (`WEAPONS`: 246 items).
+- **UI/UX Header Redesign: Option B Compact Command Toolbar (September 4, 2026)**:
+  - **Modular Architecture (`CalculatorHeader.tsx`)**: Extracted and modularized header logic into `CalculatorHeader.tsx`, replacing ~260 lines of inline header code in `CharacterCalculator.tsx`.
+  - **Compact Footprint**: Consolidated 7 sprawling toolbar buttons (~720px width) into a compact, responsive ~330px command toolbar with zero clipping or horizontal overflow.
+  - **Streamlined Layout & View Controls**:
+    - Replaced wide `[ 📖 Split View ]` toggle with high-contrast icon toggle `[ ◫ Split ]` / `[ 🥞 Column ]`.
+    - Consolidated Rotation Builder, Weapon Buffs, Artifact Buffs, and Support Editor into a grouped `[ 🛠️ Tools (n) ▼ ]` dropdown with dynamic active-count badges.
+    - Implemented max-width text truncation on `[ 📂 Scratchpad ▼ ]` build selector to prevent layout stretching on long build titles.
+    - Integrated compact `[ 💾 Save Setup ]` / `[ 💾 Save Changes ]` button with a pulsing dirty indicator dot.
+    - Structured `[ ⋯ Actions ▼ ]` dropdown into three clean functional categories: **Build Setup** (Share Build Link, Import JSON Setup, Save As New Setup), **Data & Reports** (Export JSON, Export CSV, Export TXT, Copy as text), and **Visual Snapshot** (Save as PDF, Download PNG).
+- **Effective Stats Panel Debugging, Unified Engine Resolution, and Dedicated Focus View (September 4, 2026)**:
+  - **Unified Pure Engine Resolver (`resolveAllEffectiveStats`)**: Implemented pure calculation function in `src/lib/engine/effective-stats.ts` systematically deriving stat breakdowns across 6 core categories: Core Attributes, Category DMG Bonuses, Elemental DMG Bonuses, Reaction Elevation & Bonuses, Reaction Multipliers, and Enemy Debuffs. Pre-computed on `ComputedInstance` as `statBreakdowns` to eliminate render cycle overhead.
+  - **Strict External Buff Highlighting Rule**: Enforced strict color discipline where bold amber text (`text-amber-600 dark:text-amber-400 font-bold`) and indicator dots are reserved exclusively for external buff additions (Team Supports, External Weapons, External Artifacts), while self-mechanics and constellations render in sky-blue.
+  - **Remastered Additive Rows (`StatBreakdownRow.tsx`)**: Formatted all stats into explicit mathematical equations ($\text{Raw} + \text{Additions} = \text{Total}$), paired with categorized tooltip popovers separating Outside External Support Buffs (with source rarity badges) from Character Mechanics / Constellations.
+  - **Interactive Popup Modal (`EffectiveStatsModal.tsx`)**: Embedded in-place modal accessible via `[🔍 Focus View ↗]` on setup cards, featuring multi-setup switcher tabs, live stat/source search bar, category filter chips (All Stats, ⭐ External Buffed Only, Core Attributes, Category DMG, Elemental DMG, Reaction & Elevation, Enemy Debuffs, Multipliers), equation summary bar, and direct `[↗ Open Full Page]` navigation.
+  - **Dedicated Standalone Breakdown Route (`/characters/[id]/effective-stats`)**: Server-rendered full-screen page powered by `EffectiveStatsView.tsx`, supporting direct URL linking, `?share=` state decoding, and setup switching.
+  - **DMG Output `?` Button Relocation**: Moved `HitFormulaTooltip` (`?`) from the 1st column to the far right (5th column Average DMG in `DamageTable.tsx` and alongside Transformative DMG in `TransformativePanel.tsx`) with inward-expanding `right-0` popover orientation.
+  - **Direct Stat Anchor Navigation & Glowing Auto-Scroll**: Clicking `?` on any `StatBreakdownRow` navigates directly to `/characters/[id]/effective-stats#stat-${statKey}`, automatically selects the "All Stats" tab, smoothly centers the target card, and pulses with an amber glowing highlight ring.
+- **Universal Roster Support Capabilities & 46-Character Team Integration (September 4, 2026)**:
+  - **Universal Support Roster**: Integrated all 46 characters in the roster into the Team Support Buff system (`src/data/registry/characters/`), allowing any character to act as a party support member for any DPS setup.
+  - **Self-Support Exclusion Guard**: Enforced authentic party constraints in `TeamBuffModal.tsx` (`if (s.characterId === config.id) return false;`), preventing active characters from selecting themselves as a support.
+  - **Moonsign & Stellar Amplifiers Group**: Integrated authentic Moonsign Lunar Base DMG formulas (`lunarBaseBonusCompute`), elevations, and stat shares across *Columbina* (+0.2%/1k HP, cap 7%), *Zibai* (+0.7%/100 DEF, cap 14%), *Linnea* (+0.7%/100 DEF, cap 14%, A4 EM share, C2 CRIT DMG), *Flins* (+0.7%/100 ATK, cap 14%, C2 RES shred), *Nefer* (+0.0175%/EM, cap 14%), *Sandrone* (Stellar-Conduct base DMG +0.7%/100 ATK), and *Traveler (Cryo)*.
+  - **Offensive Buffers & Debuffers**: Full supportive kit and constellation implementations for *Mavuika* (Kiongozi Burst DMG up to +50%, C2 DEF shred), *Mizuki* (EM-scaling elemental DMG), *Klee* (C2 DEF shred, C6 Pyro DMG), *Ganyu* (Celestial Shower Cryo DMG, C1 RES shred, C4 All DMG), *Ayato* (Burst NA DMG), *Hu Tao* (A1 & C4 CRIT Rate), *Heizou* (A4 EM share), *Tartaglia* (+1 NA Talent Level), *Skirk* (+1 Skill Level), *Itto* (C4 ATK/DEF), *Kaveh* (Bloom DMG bonuses), *Lyney* (C4 Pyro RES shred), *Varka* (C4 Anemo & Swirled DMG), *Xinyan* (A4 Physical DMG, C4 Physical RES shred), *Aloy* (A1 ATK buff), *Ayaka* (C4 DEF shred), *Eula* (Skill RES shred), *Durin* (RES shred, C6 DEF shred), and all *Traveler* elemental forms.
+  - **Defensive Supports & Pure On-Field Hypercarries**: Added *Yanfei* (C4 shield) and *Dehya* (mitigation), while configuring pure on-field hypercarries (*Arlecchino*, *Diluc*, *Xiao*, *Cyno*, *Clorinde*, *Neuvillette*, *Gaming*, *Keqing*, *Mualani*, *Alhaitham*, *Varesa*) with `buffs: []`, providing authentic party presence, elemental resonance, and team CRIT passthrough (`teamCrit`) for Lunar reactions without unfaithful numeric inflation.
+  - **Next.js RSC Boundary Safety**: Cleanly stripped function-bearing `support` blocks from `CHARACTERS` prior to server-client serialization in `src/data/registry/characters/index.ts`, exporting `SUPPORT_CONFIGS` separately for client and calculation engine use.
+- **Complete Audit & Remediation of 64 Artifact Sets (September 4, 2026)**:
+  - **Authenticity Audit**: Rechecked all 64 artifact sets against the official Genshin Impact Wiki, confirming 100% authenticity and maintaining flat modular directory structure (`src/data/registry/artifacts/<slug>.ts`).
+  - **Verbatim Descriptions**: Standardized naming and updated all 49 abbreviated 2-piece and 4-piece descriptions to match official in-game texts verbatim.
+  - **Base DEF and Base HP Context Scaling**: Extended `ArtifactBuffContext` with `baseDef` and `baseHp`, fixing a calculation bug where percent DEF/HP buffs previously scaled against `baseAtk` in `resolveExternalArtifactBuffs`.
+  - **Fixed & Missing Buff Implementations**:
+    - *Song of Days Past*: Implemented `days-past-healing` slider mechanic (0–15,000 HP) and 4-piece `flatDmgBonus` buff (`isTeamBuff: true`).
+    - *Echoes of an Offering*: Implemented `valley-rite-active` toggle mechanic and 4-piece Valley Rite flat DMG bonus.
+    - *Tiny Miracle*: Implemented 2-piece All Elemental RES (+20%) and 4-piece Elemental RES (+30%) mechanics.
+    - *Maiden Beloved*: Implemented 4-piece party healing bonus (+20%) toggle.
+    - *Husk of Opulent Dreams*: Scaled 2-piece DEF% to `baseDef` and added 4-piece Curiosity DEF stacking buffs.
+    - *Defender's Will*, *Tenacity of the Millelith*, *Vourukasha's Glow*: Scaled 2-piece DEF%/HP% to `baseDef` and `baseHp`.
+    - Corrected 2-piece values for *Long Night's Oath* (25%), *Finale of the Deep Galleries* (Cryo +15%), *Night of the Sky's Unveiling* (EM +80), *Aubade of Morningstar and Moon* (EM +80), and *Disenchantment in Deep Shadow* (ATK +18%). Added `onePieceDesc` to Tiara circlets.
+  - **Database Synchronization**: Synchronized Prisma schema and database rows with `npm run db:seed` (`Artifact total rows: 64`).
+- **Upper Limit of 4 External Weapons & Engine Enforcement (September 4, 2026)**:
+  - **Team Limit Enforcement**: Enforced strict maximum of 4 external weapons per setup, perfectly matching the 4-party member roster limit and External Artifact Buff constraints.
+  - **Engine Slice Protection**: Enforced `weapons.slice(0, 4)` in `src/lib/engine/weapon-buffs.ts`, safely ignoring any weapon instances beyond the 4th slot.
+  - **UI & Modal Guards**: Defined `MAX_EXTERNAL_WEAPONS = 4` in `ExternalWeaponBuffModal.tsx`, disabled catalog Add buttons with `"Max 4"` badge/tooltip when filled, updated header badge to `{activeCount}/{total} Active (Max 4)`, and aligned `ExternalWeaponBuffPanel.tsx` and types.
+- **Unified Default White/Silver Styling & Expand/Shrink Summary Drawer for External Buffs (September 4, 2026)**:
+  - **Unified Neutral Theme**: Standardized checkboxes (`accent-zinc-900 dark:accent-zinc-100`), edit buttons, header icons, limit badges, setup switcher counters, and "All" filters to neutral white/silver across Team Support Buffs, External Weapon Buffs, and External Artifact Buffs.
+  - **Authentic Rarity & Element Accents**: Preserved authentic colors exclusively where meaningful: rarity filter buttons styled in 5★ gold (`amber-500`), 4★ purple (`purple-600`), and 3★ blue (`sky-600`); element filter buttons in `TeamBuffModal.tsx` styled in raw elemental DMG colors (Pyro, Hydro, Electro, Cryo, Anemo, Geo, Dendro).
+  - **Interactive Expand/Shrink Summary Drawer**: Replaced unbounded wrapping summary bars at the bottom of the configured pane with an animated expandable drawer featuring a chevron toggle (`^` / `v`), ~44px single-line collapsed height, active buff count badge, and scrollable container when expanded.
+- **Support Character Fix & Mechanics Calibration: Columbina C2 (September 4, 2026)**:
+  - **C2 Constellation & Support Realignment**: Updated Columbina C2 to official specifications: Gravity accumulation rate increased by 34%, *Lunar Brilliance* granting +40% Max HP for 8s, and *Ascendant Gleam* sharing stats based on the dominant Lunar reaction: Lunar-Charged (+1% Max HP as ATK), Lunar-Bloom (+0.35% Max HP as EM), and Lunar-Crystallize (+1% Max HP as DEF), plus party-wide +7% Lunar reaction elevation.
+  - **Interactive C2 Controls**: Added dedicated toggles in `columbina.ts` (`c2-lunar-brilliance`, `c2-gleam-charged`, `c2-gleam-bloom`, `c2-gleam-crystallize`).
+  - **Test Suite Expansion**: Added comprehensive test coverage in `src/lib/engine/characters/columbina.test.ts` and `src/lib/engine/team-buffs.test.ts`.
+- **Advanced Rarity-Focused Theming for External Buff Systems & Polished Split View Layout (September 4, 2026)**:
   - **Unified Design Tokens (`rarity-theme.ts`)**: Created a centralized token architecture for 1★ (silver/zinc), 2★ (green/emerald), 3★ (blue/sky), 4★ (purple), and 5★ (gold/amber), standardizing badges, catalog hover outlines, "+ Add" action buttons, active card backgrounds, checkbox accents, option selectors, and preview pills.
   - **Three External Buff Modals Updated (`TeamBuffModal.tsx`, `ExternalWeaponBuffModal.tsx`, `ExternalArtifactBuffModal.tsx`)**: Themed catalog items and configured cards by item rarity instead of uniform amber/purple tones.
   - **Buff Source Rarity Attribution (`team-buffs.ts`, `weapon-buffs.ts`, `artifact-buffs.ts`)**: Extended `TeamBuffSource`, `ExternalWeaponBuffSource`, and `ExternalArtifactBuffSource` with `rarity: config.rarity` to propagate the exact source item rarity to the UI layer.
   - **Source-Themed Buff Notes**: Aggregated buff pills in both modals and setup cards dynamically reflect source rarity (e.g. Bennett's *Fantastic Voyage* and *C6 Pyro DMG* render in purple 4★ styling, TTDS *Party ATK%* renders in blue 3★ styling, and *Noblesse Oblige* renders in gold 5★ styling).
   - **Header & Quantity Limit Neutralization**: Updated header titles and quick-action icons to default white, and styled quantity counters (`n/total`) in clean white with limit notations (`(Max N)`) in a muted grey across `TeamBuffPanel.tsx`, `ExternalWeaponBuffPanel.tsx`, and `ExternalArtifactBuffPanel.tsx`.
+  - **Polished Split-Screen View Layout**: Positioned the draggable horizontal splitter bar in `CharacterCalculator.tsx` immediately before `DamageTable` (Normal Attack, Skill, Burst), housing all inputs, external buffs, and effective stats in the top independently-scrolling container, and damage outputs in the bottom container, with resize bounds clamped between 15% and 85%.
 - **Support Character Talent Auto-+3 Constellation Scaling & Build Save Validation (September 3, 2026)**:
   - **Dynamic +3 Talent Level Scaling**: Implemented automatic talent level boost (+3) on talent-boosting constellations (e.g., Bennett C5 +3 Burst), accurately calculating talent level 13 ratios ($10 + 3 = 13 \implies 119\% + 20\% = 139\% \implies 865 \times 1.39 = 1,202.4$ flat ATK).
   - **Talent Dropdown Bounds**: Restricted talent level selectors across the main calculator and support build editor to base levels 1–10 with live `+3 (Lv. 13)` indicators.
@@ -147,6 +213,9 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Outermost Header Enhancements**: Revamped RootLayout header with custom SVG sword logos, a v1.2.0-Beta version pill, and a pulsing status badge showing database connectivity.
 
 ### Fixed
+- **Artifact Base DEF & Base HP Context Scaling (September 4, 2026)**: Fixed an engine issue in `resolveExternalArtifactBuffs` where percent DEF% and HP% buffs were erroneously scaling against `baseAtk` instead of `baseDef` and `baseHp`.
+- **Columbina C2 Ascendant Gleam Buff Formulas (September 4, 2026)**: Corrected Columbina C2 support buff computations to accurately share +1% Max HP as ATK (Lunar-Charged), +0.35% Max HP as EM (Lunar-Bloom), and +1% Max HP as DEF (Lunar-Crystallize) instead of placeholder ratios.
+- **Weapon Classification & Progression Curves (September 5, 2026)**: Fixed 18 misplaced weapon files across swords, claymores, polearms, catalysts, and bows, aligning Base ATK and secondary stat curves with official canonical progressions.
 - **Universal DMG Bonus**: Corrected a computation error where universal DMG bonuses were not properly added to element-specific values in certain sub-formulas.
 
 ---

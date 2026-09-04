@@ -75,7 +75,7 @@
     "semantic_hash": "8cb7a1e7296dee073470ac0d1cbc6d5f"
   },
   "src/app/characters/[id]/page.tsx": {
-    "mtime": 1788454602.9757593,
+    "mtime": 1788460534.7459543,
     "ast_hash": "6d64fe9a5b8ea7bbf07b2c7138351116",
     "semantic_hash": ""
   },
@@ -100,8 +100,8 @@
     "semantic_hash": "8f946014397accdeafae44c53d2a38c5"
   },
   "src/components/CharacterCalculator.tsx": {
-    "mtime": 1788455936.9796689,
-    "ast_hash": "7db3094a423f8e6253fcdf048769dea6",
+    "mtime": 1788532578.378821,
+    "ast_hash": "e53b4815338ac8ccfe8567442321c177",
     "semantic_hash": ""
   },
   "src/components/HistoryView.tsx": {
@@ -120,14 +120,14 @@
     "semantic_hash": "6b26617b56b4751669d154d5428eeeae"
   },
   "src/components/calculator/components/DamageTable.tsx": {
-    "mtime": 1788455923.725757,
-    "ast_hash": "1dd95e90a5c15b7fe886893b87d8ab57",
+    "mtime": 1788485537.7201338,
+    "ast_hash": "ee0019374209fb7e5bd9298ad75ce214",
     "semantic_hash": ""
   },
   "src/components/calculator/components/HitFormulaTooltip.tsx": {
-    "mtime": 1787214803.572206,
-    "ast_hash": "e4d551095d87b06badb2f0b74d55e7b2",
-    "semantic_hash": "e4d551095d87b06badb2f0b74d55e7b2"
+    "mtime": 1788485520.5902624,
+    "ast_hash": "c4c4e7481e4a01274f06e51eba1ad04b",
+    "semantic_hash": ""
   },
   "src/components/calculator/components/MechanicsPanel.tsx": {
     "mtime": 1787214803.573217,
@@ -140,9 +140,9 @@
     "semantic_hash": "1848afb0fbf839dd001795631b861cc0"
   },
   "src/components/calculator/components/StatBreakdownRow.tsx": {
-    "mtime": 1787214803.573217,
-    "ast_hash": "f44d0b7d8f97fb76a1bf4f94a330a711",
-    "semantic_hash": "f44d0b7d8f97fb76a1bf4f94a330a711"
+    "mtime": 1788485583.988732,
+    "ast_hash": "30fe1e1ea29b80955745b1fc2492d330",
+    "semantic_hash": ""
   },
   "src/components/calculator/components/StatsGrid.tsx": {
     "mtime": 1787214803.574288,
@@ -150,12 +150,12 @@
     "semantic_hash": "f6aa704abb27bcbfd6ca7d2bef290b1c"
   },
   "src/components/calculator/components/TransformativePanel.tsx": {
-    "mtime": 1787214803.574288,
-    "ast_hash": "b78fcbbdcf1e73ad02a99e8be3934378",
-    "semantic_hash": "b78fcbbdcf1e73ad02a99e8be3934378"
+    "mtime": 1788485547.0907454,
+    "ast_hash": "049995b016404202589e6b43867ea5a5",
+    "semantic_hash": ""
   },
   "src/components/calculator/hooks/useCalculatorState.ts": {
-    "mtime": 1788456040.7450004,
+    "mtime": 1788460534.7559848,
     "ast_hash": "e406517804058419b45d0a7351ad944d",
     "semantic_hash": ""
   },
@@ -165,8 +165,8 @@
     "semantic_hash": "eab2abcdb53d6c68933ec8e832e835dc"
   },
   "src/components/calculator/types.ts": {
-    "mtime": 1787287679.5277913,
-    "ast_hash": "92eb5c749db08f846437cd801a75c653",
+    "mtime": 1788494426.802585,
+    "ast_hash": "2daf14c0faec04494b2a2858dc99caf7",
     "semantic_hash": ""
   },
   "src/components/calculator/utils/colors.ts": {
@@ -180,44 +180,44 @@
     "semantic_hash": "1d65952b91725c2b63a1bf9f1c7fe424"
   },
   "src/data/registry/characters/alhaitham.ts": {
-    "mtime": 1787214803.69146,
-    "ast_hash": "90b3acf0c9fe676cccf755b1bf5a5c5b",
-    "semantic_hash": "90b3acf0c9fe676cccf755b1bf5a5c5b"
+    "mtime": 1788488272.2952554,
+    "ast_hash": "814398fe08d2951ac4eb63afb922a9a8",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/arlecchino.ts": {
-    "mtime": 1787214803.6920588,
-    "ast_hash": "d7e5e729e1728d0014b5550d4fcbccb5",
-    "semantic_hash": "d7e5e729e1728d0014b5550d4fcbccb5"
+    "mtime": 1788488182.61402,
+    "ast_hash": "04c379b3d20e49e6950129148593b7c0",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/ayaka.ts": {
-    "mtime": 1787214803.7127676,
-    "ast_hash": "4c364523ddf75c4c1691eded8d2df6d4",
-    "semantic_hash": "4c364523ddf75c4c1691eded8d2df6d4"
+    "mtime": 1788488064.5961063,
+    "ast_hash": "ba84234fe82e1cd9a178d4c0f43f91b3",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/clorinde.ts": {
-    "mtime": 1787214803.7138147,
-    "ast_hash": "bde7dabe2418bb7e6ef0b67e93940a4c",
-    "semantic_hash": "bde7dabe2418bb7e6ef0b67e93940a4c"
+    "mtime": 1788488221.818874,
+    "ast_hash": "f3605e36a9ba35237cf4321eb211e179",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/columbina.ts": {
-    "mtime": 1787214803.7138147,
-    "ast_hash": "6e49301c72caba8234a35f5f12e9c904",
-    "semantic_hash": "6e49301c72caba8234a35f5f12e9c904"
+    "mtime": 1788524630.8667088,
+    "ast_hash": "78f2dc26c4e05bd89a6b7407ff2483a9",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/durin.ts": {
-    "mtime": 1787214803.7944431,
-    "ast_hash": "c17f87c3203a9f69e4892ea3e89ef00f",
-    "semantic_hash": "c17f87c3203a9f69e4892ea3e89ef00f"
+    "mtime": 1788488082.877095,
+    "ast_hash": "c7a51784858d8f9d302b2aca98ee7768",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/flins.ts": {
-    "mtime": 1787214803.8619173,
-    "ast_hash": "5f7a435610e20993a4dcfbc19eb0c5eb",
-    "semantic_hash": "5f7a435610e20993a4dcfbc19eb0c5eb"
+    "mtime": 1788487805.0296278,
+    "ast_hash": "479dd859c440554cfaf1d55c0fc7528c",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/gaming.ts": {
-    "mtime": 1787214803.8889763,
-    "ast_hash": "5793fac5a86871fe42681c3fde130d87",
-    "semantic_hash": "5793fac5a86871fe42681c3fde130d87"
+    "mtime": 1788488243.6353962,
+    "ast_hash": "95e4b0c7c5db8e288629c28ca93b64fa",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/hit-helpers.ts": {
     "mtime": 1787214803.934695,
@@ -225,12 +225,12 @@
     "semantic_hash": "25279ed173cb6556d67630fa91a94376"
   },
   "src/data/registry/characters/hu-tao.ts": {
-    "mtime": 1787214803.9372747,
-    "ast_hash": "56bea7a1486a8963e4230b8592630a6e",
-    "semantic_hash": "56bea7a1486a8963e4230b8592630a6e"
+    "mtime": 1788487899.7493484,
+    "ast_hash": "1ecfa1cb664abc6e8f007bfbb22bb404",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/index.ts": {
-    "mtime": 1788434585.8839798,
+    "mtime": 1788460534.7589836,
     "ast_hash": "64bb8bb84f9104d606c0a571e0188749",
     "semantic_hash": ""
   },
@@ -240,44 +240,44 @@
     "semantic_hash": ""
   },
   "src/data/registry/characters/linnea.ts": {
-    "mtime": 1787214804.1407492,
-    "ast_hash": "116bc8e0bfdb7aa4273f4c79ae36d69f",
-    "semantic_hash": "116bc8e0bfdb7aa4273f4c79ae36d69f"
+    "mtime": 1788487787.755898,
+    "ast_hash": "5946f1c1cf4eacec54ff39e5fb96b576",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/nefer.ts": {
-    "mtime": 1787214804.3168309,
-    "ast_hash": "90fe433f1ba593701c055968e8d1de95",
-    "semantic_hash": "90fe433f1ba593701c055968e8d1de95"
+    "mtime": 1788487816.3872561,
+    "ast_hash": "d112300b5c13cf09a4bfd58e3cdcf6c0",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/neuvillette.ts": {
-    "mtime": 1787214804.398104,
-    "ast_hash": "9a90177440ef8f08ff67ba3697c2718d",
-    "semantic_hash": "9a90177440ef8f08ff67ba3697c2718d"
+    "mtime": 1788488233.8310084,
+    "ast_hash": "af453f2d7a375a53811dd70823de9f02",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/sandrone.ts": {
-    "mtime": 1787214804.3994,
-    "ast_hash": "dae916f4ff5398eb690cd1098f89b776",
-    "semantic_hash": "dae916f4ff5398eb690cd1098f89b776"
+    "mtime": 1788487853.700201,
+    "ast_hash": "b6ee66e9cbd93d83e7392caaf1df4daf",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/skirk.ts": {
-    "mtime": 1787214804.3994,
-    "ast_hash": "3226ea7f2a3b8cef20086c5089c35953",
-    "semantic_hash": "3226ea7f2a3b8cef20086c5089c35953"
+    "mtime": 1788487928.8160498,
+    "ast_hash": "295a83de14004ad8a2f25c2ba47a4de9",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/varesa.ts": {
-    "mtime": 1787214804.6744425,
-    "ast_hash": "95e5f7211ee67fe0996684be33851ed0",
-    "semantic_hash": "95e5f7211ee67fe0996684be33851ed0"
+    "mtime": 1788488281.1585417,
+    "ast_hash": "7cced793fc693875f1d93a8ef3db6429",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/varka.ts": {
-    "mtime": 1787214804.7306066,
-    "ast_hash": "7cda5f34b71d1dffd34db5a96e67e758",
-    "semantic_hash": "7cda5f34b71d1dffd34db5a96e67e758"
+    "mtime": 1788487968.6584015,
+    "ast_hash": "0b6fdd2675b064cfafc2e4626f309ded",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/zibai.ts": {
-    "mtime": 1787214804.7978332,
-    "ast_hash": "de6e5c1d429961d3b7a03620f5facf3f",
-    "semantic_hash": "de6e5c1d429961d3b7a03620f5facf3f"
+    "mtime": 1788487775.5849717,
+    "ast_hash": "f25bdf1354b307324843295ffe720e6b",
+    "semantic_hash": ""
   },
   "src/data/registry/core-stats.ts": {
     "mtime": 1787214804.7988584,
@@ -435,14 +435,14 @@
     "semantic_hash": "48a4e892f90d9c835c012ed16f340ad4"
   },
   "src/lib/engine/characters/columbina.test.ts": {
-    "mtime": 1787214806.8694625,
-    "ast_hash": "64872826ba33cada8af13546aa934881",
-    "semantic_hash": "64872826ba33cada8af13546aa934881"
+    "mtime": 1788524678.8954108,
+    "ast_hash": "b8d450364ae6243d6998177f602fbd48",
+    "semantic_hash": ""
   },
   "src/lib/engine/characters/columbina.ts": {
-    "mtime": 1787214806.871462,
-    "ast_hash": "2514e330124104031feb53740b55f17d",
-    "semantic_hash": "2514e330124104031feb53740b55f17d"
+    "mtime": 1788524641.02476,
+    "ast_hash": "081822749542365b196d79b8efdddb99",
+    "semantic_hash": ""
   },
   "src/lib/engine/characters/durin.test.ts": {
     "mtime": 1787214806.8828855,
@@ -590,18 +590,18 @@
     "semantic_hash": "64e0a071b43d000b07d885bfe5831846"
   },
   "src/lib/engine/damage.ts": {
-    "mtime": 1787287679.5577936,
-    "ast_hash": "8d3f691e4206b936123fe29897ac16ef",
+    "mtime": 1788492584.6174958,
+    "ast_hash": "b1cd79aa33a8f8fc457ab8cda1803339",
     "semantic_hash": ""
   },
   "src/lib/engine/formula-explainer.test.ts": {
-    "mtime": 1788380061.602143,
-    "ast_hash": "552e78a1fe97c92d6e1af2d1ce12c887",
+    "mtime": 1788485845.9486456,
+    "ast_hash": "03f17581ec44b79d0d2d8e5e0187aeb1",
     "semantic_hash": ""
   },
   "src/lib/engine/formula-explainer.ts": {
-    "mtime": 1788379774.019287,
-    "ast_hash": "b75a640409316bf6612a1146d114b6a0",
+    "mtime": 1788491490.4424727,
+    "ast_hash": "ff40470d7502dff5ac2eff2f005739a7",
     "semantic_hash": ""
   },
   "src/lib/engine/level-multiplier.ts": {
@@ -640,9 +640,9 @@
     "semantic_hash": ""
   },
   "src/lib/engine/validation.ts": {
-    "mtime": 1787214806.9934897,
-    "ast_hash": "85634a5dec58d7b6c7b558b4e4d874e5",
-    "semantic_hash": "85634a5dec58d7b6c7b558b4e4d874e5"
+    "mtime": 1788484221.069021,
+    "ast_hash": "d563d5cd49b83bccf06c98ecff78c7bb",
+    "semantic_hash": ""
   },
   "src/lib/prisma.ts": {
     "mtime": 1787214806.997501,
@@ -675,24 +675,24 @@
     "semantic_hash": "6c8eb1ca1c8cf9c749d3825519ce4447"
   },
   "src/data/registry/characters/ayato.ts": {
-    "mtime": 1787214803.7127676,
-    "ast_hash": "576d06435c7a643636308e9314655155",
-    "semantic_hash": "576d06435c7a643636308e9314655155"
+    "mtime": 1788487889.8196976,
+    "ast_hash": "b773dcce3008f678e4b95fd7d6fd13f0",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/dehya.ts": {
-    "mtime": 1787214803.7148204,
-    "ast_hash": "14bff3af33d0d63b3e4dea9e7a867515",
-    "semantic_hash": "14bff3af33d0d63b3e4dea9e7a867515"
+    "mtime": 1788488165.2592685,
+    "ast_hash": "05c2a5199cff871e210c2d17543f3898",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/diluc.ts": {
-    "mtime": 1787214803.7519464,
-    "ast_hash": "a49eb55b0e25519982bb9b00d17fb45b",
-    "semantic_hash": "a49eb55b0e25519982bb9b00d17fb45b"
+    "mtime": 1788488193.4978275,
+    "ast_hash": "10c9417c484082b076acd23850c0ee6d",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/mavuika.ts": {
-    "mtime": 1787214804.208488,
-    "ast_hash": "4654caeacbd1284a8cd90553a8746bab",
-    "semantic_hash": "4654caeacbd1284a8cd90553a8746bab"
+    "mtime": 1788487829.0224395,
+    "ast_hash": "4c8799beab3dc7a33eb1390081e5ae9c",
+    "semantic_hash": ""
   },
   "src/data/talents/ayato.ts": {
     "mtime": 1787214806.7809167,
@@ -765,8 +765,8 @@
     "semantic_hash": ""
   },
   "DEVELOPMENT.md": {
-    "mtime": 1788428112.881321,
-    "ast_hash": "fcd0d78543ced4f2b7e03b878faa54b1",
+    "mtime": 1788548409.2688522,
+    "ast_hash": "756c9c7ce52101aea0e852ca3b91dbb2",
     "semantic_hash": ""
   },
   "README.md": {
@@ -865,64 +865,64 @@
     "semantic_hash": ""
   },
   "src/components/calculator/components/TeamBuffPanel.tsx": {
-    "mtime": 1788459407.1110098,
-    "ast_hash": "8a16b74b8ad882da7bb8a24af15a306c",
+    "mtime": 1788521466.6285925,
+    "ast_hash": "880f4103c3dba21a980e206b5299ad31",
     "semantic_hash": ""
   },
   "src/data/registry/characters/aloy.ts": {
-    "mtime": 1787214803.6920588,
-    "ast_hash": "1c0a360150691bf0cf37fdc8362560d5",
-    "semantic_hash": "1c0a360150691bf0cf37fdc8362560d5"
+    "mtime": 1788488435.9088278,
+    "ast_hash": "2e673b018fa8145902158055338e41a7",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/cyno.ts": {
-    "mtime": 1787214803.7148204,
-    "ast_hash": "8029d5237c3d0e1fda391a147b901e0c",
-    "semantic_hash": "8029d5237c3d0e1fda391a147b901e0c"
+    "mtime": 1788488209.7552633,
+    "ast_hash": "00cf05498a9b7675df955e65691f4572",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/eula.ts": {
-    "mtime": 1787214803.833033,
-    "ast_hash": "a17ee80e615dbbf5bdc458dc24e7241f",
-    "semantic_hash": "a17ee80e615dbbf5bdc458dc24e7241f"
+    "mtime": 1788488072.8260326,
+    "ast_hash": "5669878400ec2f9fb247915464000b3e",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/ganyu.ts": {
-    "mtime": 1787214803.9153068,
-    "ast_hash": "06bc143740b772a7c32253cd44de9634",
-    "semantic_hash": "06bc143740b772a7c32253cd44de9634"
+    "mtime": 1788487877.3669245,
+    "ast_hash": "5c32ac75262cea579cd8a468406e6ded",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/heizou.ts": {
-    "mtime": 1787214803.9324124,
-    "ast_hash": "db75868c7c40a4ec34d2c1829c4a693c",
-    "semantic_hash": "db75868c7c40a4ec34d2c1829c4a693c"
+    "mtime": 1788487909.3163443,
+    "ast_hash": "544a76d247a50c1a7db255e3169fbfe2",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/itto.ts": {
-    "mtime": 1787214803.9780505,
-    "ast_hash": "2f5c226fa8cd7a401ad92bbc56ffdb0d",
-    "semantic_hash": "2f5c226fa8cd7a401ad92bbc56ffdb0d"
+    "mtime": 1788487937.895765,
+    "ast_hash": "d86a8502d3bfb161168101a00c1b4bff",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/kaveh.ts": {
-    "mtime": 1787214803.9814532,
-    "ast_hash": "1d3a911531efd3bcf93b70810306fd44",
-    "semantic_hash": "1d3a911531efd3bcf93b70810306fd44"
+    "mtime": 1788487950.7435143,
+    "ast_hash": "94fbd3581dbd79bf48f3484da4bde7be",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/keqing.ts": {
-    "mtime": 1787214803.9973617,
-    "ast_hash": "2bb628650e044030b359f28dcaf7efc6",
-    "semantic_hash": "2bb628650e044030b359f28dcaf7efc6"
+    "mtime": 1788488251.5310285,
+    "ast_hash": "cc5e1d917269f5ae16b013e6438eae28",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/klee.ts": {
-    "mtime": 1787214804.0613923,
-    "ast_hash": "6685eec0549d10a7983606a86c881b59",
-    "semantic_hash": "6685eec0549d10a7983606a86c881b59"
+    "mtime": 1788487865.6845977,
+    "ast_hash": "3ec1a3d820a0560fdf80fa367da89d74",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/lyney.ts": {
-    "mtime": 1787214804.208488,
-    "ast_hash": "e3f218abef0a9e7a03573fbc8a149d8c",
-    "semantic_hash": "e3f218abef0a9e7a03573fbc8a149d8c"
+    "mtime": 1788487959.7845051,
+    "ast_hash": "f7ee1af9928b6e1e54c6a2bcb9629ff9",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/mualani.ts": {
-    "mtime": 1787214804.2622209,
-    "ast_hash": "514c136e146955f9966a4b024adea43d",
-    "semantic_hash": "514c136e146955f9966a4b024adea43d"
+    "mtime": 1788488260.354757,
+    "ast_hash": "acf3a4cbc4ab4d3062361c00628662a3",
+    "semantic_hash": ""
   },
   "src/data/talents/aloy.ts": {
     "mtime": 1787214806.778915,
@@ -1090,64 +1090,64 @@
     "semantic_hash": "1183b8c1a2cbdec3bf546f1f6454fb9f"
   },
   "src/lib/engine/team-buffs.test.ts": {
-    "mtime": 1788455961.2866728,
-    "ast_hash": "066d74fbe2a920255ba06270c8cfaf0c",
+    "mtime": 1788524655.0344903,
+    "ast_hash": "224162b9f853f880fbd2ada701e5108e",
     "semantic_hash": ""
   },
   "src/lib/engine/team-buffs.ts": {
-    "mtime": 1788459292.1703823,
-    "ast_hash": "673b4104080e1fa6c2d9e9d4492eb792",
+    "mtime": 1788484651.1925004,
+    "ast_hash": "85e31279b029122ab83519f742ef72ce",
     "semantic_hash": ""
   },
   "src/data/registry/characters/tartaglia.ts": {
-    "mtime": 1787214804.5172162,
-    "ast_hash": "4e7f63674929bd4387b3a0e71e736f76",
-    "semantic_hash": "4e7f63674929bd4387b3a0e71e736f76"
+    "mtime": 1788487918.1167083,
+    "ast_hash": "003de0f0a360466f9e159fce23a47cb6",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-anemo.ts": {
-    "mtime": 1787214804.5182848,
-    "ast_hash": "ee483f3d588512625e1dda4432883d06",
-    "semantic_hash": "ee483f3d588512625e1dda4432883d06"
+    "mtime": 1788488091.4868414,
+    "ast_hash": "39b01ea4e7ae72858a4db9c3a4b362f3",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-cryo.ts": {
-    "mtime": 1787287679.5537922,
-    "ast_hash": "882f1b5b16c470038d1eaaa1bccf5e74",
+    "mtime": 1788488443.9520197,
+    "ast_hash": "4e5721b7f12673b079843bebf5252f0b",
     "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-dendro.ts": {
-    "mtime": 1787214804.5857792,
-    "ast_hash": "3a210fbebd58c5251b92aa26a65d3a6d",
+    "mtime": 1788488117.43581,
+    "ast_hash": "d06a207968ac399413bb0c1ea44e24a6",
     "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-electro.ts": {
-    "mtime": 1787214804.5867906,
-    "ast_hash": "2ba540a9609c772d03ff51af5e5fe26a",
-    "semantic_hash": "2ba540a9609c772d03ff51af5e5fe26a"
+    "mtime": 1788488108.559257,
+    "ast_hash": "1ac0ab95241d5a75389339fb515fb6ed",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-geo.ts": {
-    "mtime": 1787214804.5867906,
-    "ast_hash": "42a6ea96a0cbb2948701c125e7e47c43",
-    "semantic_hash": "42a6ea96a0cbb2948701c125e7e47c43"
+    "mtime": 1788488099.600622,
+    "ast_hash": "3260a5b0f6e67c9c59c3bb437683b1ba",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-hydro.ts": {
-    "mtime": 1787214804.5867906,
-    "ast_hash": "31e2ce23874e1d66973342517d7ca696",
-    "semantic_hash": "31e2ce23874e1d66973342517d7ca696"
+    "mtime": 1788488147.6047242,
+    "ast_hash": "cfa06ae711594b07667cb081f7d0faa0",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/traveler-pyro.ts": {
-    "mtime": 1787214804.6744425,
-    "ast_hash": "6c1042200b22f623208ea1a4b7e9db90",
-    "semantic_hash": "6c1042200b22f623208ea1a4b7e9db90"
+    "mtime": 1788488127.231372,
+    "ast_hash": "c52f143ae214e028b8d7bda8791dd62c",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/xiao.ts": {
-    "mtime": 1787214804.7306066,
-    "ast_hash": "399c036f2ac1b1c536e03fb39a94d57d",
-    "semantic_hash": "399c036f2ac1b1c536e03fb39a94d57d"
+    "mtime": 1788488201.3464959,
+    "ast_hash": "08f0f90ab502fc022c82062ed2461b35",
+    "semantic_hash": ""
   },
   "src/data/registry/characters/yanfei.ts": {
-    "mtime": 1787214804.7968495,
-    "ast_hash": "5e1a6d2622167d1a6b4f3cb2f6d79a78",
-    "semantic_hash": "5e1a6d2622167d1a6b4f3cb2f6d79a78"
+    "mtime": 1788488157.091849,
+    "ast_hash": "dd4baeedbd4725c998e8bec9a106348c",
+    "semantic_hash": ""
   },
   "src/data/talents/tartaglia.ts": {
     "mtime": 1787214806.812655,
@@ -1275,9 +1275,9 @@
     "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
   },
   ".agents/skills/character-calculator/SKILL.md": {
-    "mtime": 1787214803.311962,
-    "ast_hash": "1be5514523ebe18469166befe29dd197",
-    "semantic_hash": "1be5514523ebe18469166befe29dd197"
+    "mtime": 1788482490.1677685,
+    "ast_hash": "064c4ea9d1100232407b3f2f545c5b0e",
+    "semantic_hash": ""
   },
   ".agents/workflows/graphify.md": {
     "mtime": 1787214803.3252795,
@@ -1285,8 +1285,8 @@
     "semantic_hash": "637776aa6f7496d069afe7520c845c8a"
   },
   "src/data/registry/characters/xinyan.ts": {
-    "mtime": 1787214804.7549026,
-    "ast_hash": "4d56c8b962860125fc6beed47369f94f",
+    "mtime": 1788487979.2055953,
+    "ast_hash": "643b0be3f7f8b92e0182fb8d3473a18e",
     "semantic_hash": ""
   },
   "src/data/talents/xinyan.ts": {
@@ -1305,23 +1305,23 @@
     "semantic_hash": ""
   },
   "src/app/characters/[id]/support/page.tsx": {
-    "mtime": 1788454482.5922325,
+    "mtime": 1788460534.7469718,
     "ast_hash": "2a4837d0f2b29b8b2527a0a02b3a2dd0",
     "semantic_hash": ""
   },
   "src/components/calculator/SupportBuildEditorView.tsx": {
-    "mtime": 1788455951.2735298,
+    "mtime": 1788460534.748956,
     "ast_hash": "d5b3322ae0eb6797962097d97af84a1b",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalWeaponBuffPanel.tsx": {
-    "mtime": 1788459417.632878,
-    "ast_hash": "2bec6aa7fa775de31392bb4ed391e810",
+    "mtime": 1788521478.4316216,
+    "ast_hash": "370299232e3c0975857412c31be1a469",
     "semantic_hash": ""
   },
   "src/data/registry/characters/mizuki.ts": {
-    "mtime": 1787214804.261096,
-    "ast_hash": "d7d39785c944e253b749f92708d8c2ff",
+    "mtime": 1788487839.300857,
+    "ast_hash": "02c4e17f5a4de531ae48f59a9d0fdcb6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/index.ts": {
@@ -1350,128 +1350,128 @@
     "semantic_hash": ""
   },
   "src/lib/engine/weapon-buffs.test.ts": {
-    "mtime": 1787214806.9944923,
-    "ast_hash": "4c2969b3f4e39f26a86e36666a4d8b8e",
+    "mtime": 1788547532.413473,
+    "ast_hash": "3df198b3100236d11a3b8804ced9570b",
     "semantic_hash": ""
   },
   "src/lib/engine/weapon-buffs.ts": {
-    "mtime": 1788459452.1601214,
-    "ast_hash": "04162a7ef290d3dc3b54374100d9f458",
+    "mtime": 1788494420.2294202,
+    "ast_hash": "43614c8698cf4b280ea04390f2ea8d65",
     "semantic_hash": ""
   },
   ".agents/skills/formula-breakdown/SKILL.md": {
-    "mtime": 1787214803.3240435,
-    "ast_hash": "4ce5f26bc71f9604d4896af3e9c3affb",
+    "mtime": 1788482504.0599673,
+    "ast_hash": "292b3138bc4ac8fe5defa9fbebb55a67",
     "semantic_hash": ""
   },
   ".agents/skills/support-calculator/SKILL.md": {
-    "mtime": 1787287679.5032637,
-    "ast_hash": "bb1b69c5a9d552e38b07a12716035323",
+    "mtime": 1788482208.9762096,
+    "ast_hash": "a96fa9e34e62cc5985dfe7c3008c537c",
     "semantic_hash": ""
   },
   "scratch/build_full_registry.ts": {
-    "mtime": 1787214803.467031,
+    "mtime": 1788492768.0222864,
     "ast_hash": "2548881eebda9c2d7382eafb0be58275",
     "semantic_hash": ""
   },
   "scratch/check_types.ts": {
-    "mtime": 1787214803.467031,
+    "mtime": 1788492768.0228093,
     "ast_hash": "5c7f99e3d4eaae821996a487acc6a5e2",
     "semantic_hash": ""
   },
   "scratch/clean_weapon_categories.ts": {
-    "mtime": 1787214803.4764247,
+    "mtime": 1788492768.0233808,
     "ast_hash": "17b38e9fdf42cf4e56d25a6cad197116",
     "semantic_hash": ""
   },
   "scratch/compare_weapons.ts": {
-    "mtime": 1787214803.4779792,
+    "mtime": 1788492768.023902,
     "ast_hash": "52db6f1e919e768eb82e000764d41307",
     "semantic_hash": ""
   },
   "scratch/execute_sync.ts": {
-    "mtime": 1787214803.4779792,
+    "mtime": 1788492768.0250006,
     "ast_hash": "f974a2b72be5be584a0db63084530e28",
     "semantic_hash": ""
   },
   "scratch/generate_all_246.ts": {
-    "mtime": 1787214803.4791565,
+    "mtime": 1788492768.0255225,
     "ast_hash": "bae2d25786dd86725a881495f090dfbd",
     "semantic_hash": ""
   },
   "scratch/generate_bows.ts": {
-    "mtime": 1787214803.4791565,
+    "mtime": 1788492768.0289752,
     "ast_hash": "898b69efae15971c749a34fff1a14956",
     "semantic_hash": ""
   },
   "scratch/generate_catalysts.ts": {
-    "mtime": 1787214803.4802656,
+    "mtime": 1788492768.0296655,
     "ast_hash": "fdfc40650641e94aca5f2144e63880db",
     "semantic_hash": ""
   },
   "scratch/generate_claymores.ts": {
-    "mtime": 1787214803.4802656,
+    "mtime": 1788492768.030666,
     "ast_hash": "206bd360e25b37c7caf105dad683fb4b",
     "semantic_hash": ""
   },
   "scratch/generate_complete_bows.ts": {
-    "mtime": 1787214803.4814997,
+    "mtime": 1788492768.0316644,
     "ast_hash": "da5b9c5f8264a19b33a3601e1ef670b4",
     "semantic_hash": ""
   },
   "scratch/generate_complete_catalysts.ts": {
-    "mtime": 1787214803.4814997,
+    "mtime": 1788492768.0336678,
     "ast_hash": "d544fcedab7ed155ee0a73e5199ddee3",
     "semantic_hash": ""
   },
   "scratch/generate_complete_claymores.ts": {
-    "mtime": 1787214803.482614,
+    "mtime": 1788492768.0336678,
     "ast_hash": "331817ba8a699122eb871f03da80b6e6",
     "semantic_hash": ""
   },
   "scratch/generate_complete_polearms.ts": {
-    "mtime": 1787214803.482614,
+    "mtime": 1788492768.0346642,
     "ast_hash": "fa7bbe186b99d8ff8c45dce0bd1cb1ec",
     "semantic_hash": ""
   },
   "scratch/generate_complete_swords.ts": {
-    "mtime": 1787214803.4837856,
+    "mtime": 1788492768.0366733,
     "ast_hash": "bc58e7502d7214f2529da36cca618c1f",
     "semantic_hash": ""
   },
   "scratch/generate_polearms.ts": {
-    "mtime": 1787214803.4837856,
+    "mtime": 1788492768.0402064,
     "ast_hash": "e43d4d09a6537b8c9b8ddbbf11fa7e2f",
     "semantic_hash": ""
   },
   "scratch/generate_swords.ts": {
-    "mtime": 1787214803.4850175,
+    "mtime": 1788492768.041195,
     "ast_hash": "1437945b75a2eac225ff8009179b340a",
     "semantic_hash": ""
   },
   "scratch/master_definitions.ts": {
-    "mtime": 1787214803.4850175,
+    "mtime": 1788492768.0421932,
     "ast_hash": "1dce3fed0897c8dfeafb09772a33cb89",
     "semantic_hash": ""
   },
   "scratch/sync_exact_246.ts": {
-    "mtime": 1787214803.5240428,
+    "mtime": 1788492768.0431938,
     "ast_hash": "49abf039c21639476a58143ecb330010",
     "semantic_hash": ""
   },
   "scratch/test_init.ts": {
-    "mtime": 1787214803.5240428,
+    "mtime": 1788492768.0451941,
     "ast_hash": "05b23a71f63dcce664d682bf672d231c",
     "semantic_hash": ""
   },
   "scratch/verify_all_weapons.ts": {
-    "mtime": 1787214803.525207,
+    "mtime": 1788492768.0461936,
     "ast_hash": "8562f4715712c52623e0ee39e05953b5",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalWeaponBuffModal.tsx": {
-    "mtime": 1788459376.3236165,
-    "ast_hash": "9081cd674136506b95f6e7baf6acd8e3",
+    "mtime": 1788524107.5923023,
+    "ast_hash": "c19e7f2c8bb19d3afe57b0afbf006399",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/alley-hunter.ts": {
@@ -1570,8 +1570,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/index.ts": {
-    "mtime": 1787214804.89671,
-    "ast_hash": "16dfe91d27ea8e3679d065ce1c0fa170",
+    "mtime": 1788546124.4522345,
+    "ast_hash": "8de629749b7b8b0c47d1a7dd889492be",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/jade-vista.ts": {
@@ -1685,8 +1685,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/snare-hook.ts": {
-    "mtime": 1787214804.915522,
-    "ast_hash": "fd894d8d634aa4fd271b48bbcc1017c6",
+    "mtime": 1788547490.1846776,
+    "ast_hash": "941af9c3b210d6de58761d0abc002203",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/bows/song-of-stillness.ts": {
@@ -1722,11 +1722,6 @@
   "src/data/registry/weapons/bows/windblume-ode.ts": {
     "mtime": 1787214804.9203231,
     "ast_hash": "0439cc847154bf64690813f7dd30a72c",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/catalysts/a-teaspoon-of-transcendence.ts": {
-    "mtime": 1787214804.9717593,
-    "ast_hash": "03e1f7b8903a73320e52ea39d6358391",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/a-thousand-floating-dreams.ts": {
@@ -1810,8 +1805,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/index.ts": {
-    "mtime": 1787214805.184551,
-    "ast_hash": "62b88149d339d0a093e9af732f92241b",
+    "mtime": 1788546124.4522345,
+    "ast_hash": "9865314ed5ef6b57902b9add7728b97b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/jadefalls-splendor.ts": {
@@ -1845,13 +1840,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/nightweavers-looking-glass.ts": {
-    "mtime": 1787214805.207433,
-    "ast_hash": "8009939f53dd6ec72b21c7e758de2b90",
+    "mtime": 1788546124.4473166,
+    "ast_hash": "4d2edab55e2aa1f4a98c9b9f01ef3d3c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/nocturnes-curtain-call.ts": {
-    "mtime": 1787214805.207433,
-    "ast_hash": "8fe0c7fb3cf0bd45dddde47f166ea572",
+    "mtime": 1788546124.4473166,
+    "ast_hash": "977ec8b58f4f9041fbf1ea0c516c7fde",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/oathsworn-eye.ts": {
@@ -1875,8 +1870,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/reliquary-of-truth.ts": {
-    "mtime": 1787214805.2388053,
-    "ast_hash": "c8ce127c10f96b74f59885b09d8bf921",
+    "mtime": 1788546124.4473166,
+    "ast_hash": "777e392ce8213afa9bbd0e8d10474500",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/ring-of-yaxche.ts": {
@@ -1910,13 +1905,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/starcallers-watch.ts": {
-    "mtime": 1787214805.2450838,
-    "ast_hash": "c1e9c4e25c9d3f4c160cb6fd820f10a7",
+    "mtime": 1788546124.436502,
+    "ast_hash": "1c24a49cd5be7e262c455cd5dbc92f8d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/sunny-morning-sleep-in.ts": {
-    "mtime": 1787214805.2460892,
-    "ast_hash": "0437d6e6d4051df52728407c661a9af6",
+    "mtime": 1788546124.448325,
+    "ast_hash": "1f237f5aeb4fdaf22770c346974aa36a",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/surfs-up.ts": {
@@ -1950,8 +1945,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/vivid-notions.ts": {
-    "mtime": 1787214805.2838392,
-    "ast_hash": "129bce2954edeae7194bfadb6a29fcb9",
+    "mtime": 1788546124.448325,
+    "ast_hash": "54842cd5f401032fbdfe25377789eb96",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/catalysts/wandering-evenstar.ts": {
@@ -1970,8 +1965,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/a-thousand-blazing-suns.ts": {
-    "mtime": 1787214805.289467,
-    "ast_hash": "83ed1b85e8bf7c6aaed971aa2623863b",
+    "mtime": 1788547490.1815228,
+    "ast_hash": "1417b30b15861dff32cabe3233042b5c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/akuoumaru.ts": {
@@ -1990,13 +1985,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/blade-of-atonement.ts": {
-    "mtime": 1787214805.4233053,
-    "ast_hash": "b57cd9615a60272a28e2934d8a9ca769",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/claymores/bloodsoaked-ruins.ts": {
-    "mtime": 1787214805.424057,
-    "ast_hash": "e61b1136c84c5cbed1bbadbf55f0bdeb",
+    "mtime": 1788547490.182057,
+    "ast_hash": "e3f6f915c4c26652af7975aeb98567d7",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/bloodtainted-greatsword.ts": {
@@ -2014,14 +2004,9 @@
     "ast_hash": "ca8f7560ec8892c4cdc0a0686207c15e",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/claymores/emberwell.ts": {
-    "mtime": 1787214805.8137813,
-    "ast_hash": "1e2810d5dd58f9a1ef44b7fd96326044",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/claymores/fang-of-the-mountain-king.ts": {
-    "mtime": 1787214805.8147156,
-    "ast_hash": "41c9f04a62e23e400076d46cb28f2289",
+    "mtime": 1788547490.182057,
+    "ast_hash": "ffd4349e8650b76ba5a7e014621c0e78",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/favonius-greatsword.ts": {
@@ -2049,14 +2034,9 @@
     "ast_hash": "e1dea528d5c3d242dc57430728346aa7",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/claymores/heretics-molten-blade.ts": {
-    "mtime": 1787214806.4914925,
-    "ast_hash": "bbf53fa469656a53f38ff3d8b9eb7134",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/claymores/index.ts": {
-    "mtime": 1787214806.57559,
-    "ast_hash": "9901c6f935eefcc6982db2275ce5388e",
+    "mtime": 1788546124.4512274,
+    "ast_hash": "f57bffa50cb661adefa7fee496c560a8",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/katsuragikiri-nagamasa.ts": {
@@ -2094,11 +2074,6 @@
     "ast_hash": "938ec125b43865737583c60a5afb769e",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/claymores/prospectors-shovel.ts": {
-    "mtime": 1787214806.5906005,
-    "ast_hash": "cd9782d86ac0305f7717a99126175c7d",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/claymores/prototype-archaic.ts": {
     "mtime": 1787214806.591601,
     "ast_hash": "a4aef922e2d72571d21ecf748abb5940",
@@ -2122,11 +2097,6 @@
   "src/data/registry/weapons/claymores/sacrificial-greatsword.ts": {
     "mtime": 1787214806.5976205,
     "ast_hash": "b95c9811628e842059c5f3b12e3ee104",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/claymores/serenitys-call.ts": {
-    "mtime": 1787214806.5983632,
-    "ast_hash": "a3fec2a96c4b32b50c6c33d4a239b915",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/serpent-spine.ts": {
@@ -2154,11 +2124,6 @@
     "ast_hash": "1ad1c0c9b5340e11cca6c2266306623d",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/claymores/song-of-the-vigil.ts": {
-    "mtime": 1787214806.609071,
-    "ast_hash": "79aa173c9de9c0f33c99de70eed0923f",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/claymores/talking-stick.ts": {
     "mtime": 1787214806.6120765,
     "ast_hash": "ba698ea0024045fea999ab7cbfd9e0e2",
@@ -2180,8 +2145,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/ultimate-overlords-mega-magic-sword.ts": {
-    "mtime": 1787214806.620055,
-    "ast_hash": "d8acacc850fa74973ac631003709a9f1",
+    "mtime": 1788546124.423771,
+    "ast_hash": "318357bf3720b8f2339c2b10fc0f1509",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/claymores/verdict.ts": {
@@ -2229,11 +2194,6 @@
     "ast_hash": "af8e19285ff6ce4d5fc327c031864a23",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/polearms/blackmarrow-lantern.ts": {
-    "mtime": 1787214806.6407175,
-    "ast_hash": "9f223011ed14c6e213f078c8a32bb2c0",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/polearms/calamity-queller.ts": {
     "mtime": 1787214806.6428638,
     "ast_hash": "b48ac8d76536f290caf40d7dacd44850",
@@ -2249,11 +2209,6 @@
     "ast_hash": "6a31cdd799e7ede4e9bb72001a3a2674",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/polearms/dawning-frost.ts": {
-    "mtime": 1787214806.6478722,
-    "ast_hash": "351d8a8c25a6e10fbf9662a79ed23363",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/polearms/deathmatch.ts": {
     "mtime": 1787214806.6478722,
     "ast_hash": "293308ee442fc78585c0b24d7912a5ba",
@@ -2265,8 +2220,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/disaster-and-remorse.ts": {
-    "mtime": 1787214806.6508725,
-    "ast_hash": "fddaf4c2a9197141c85eb03aa74030f5",
+    "mtime": 1788547490.183637,
+    "ast_hash": "dc93766e914ff9b971a0e33aaa42d705",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/dragons-bane.ts": {
@@ -2284,19 +2239,9 @@
     "ast_hash": "341f0d954a24ecc023f4e5923828196c",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/polearms/etherlight-spindlelute.ts": {
-    "mtime": 1787214806.6573763,
-    "ast_hash": "a161b2d09169bd5723a0b906b8819ec3",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/polearms/favonius-lance.ts": {
     "mtime": 1787214806.658383,
     "ast_hash": "73e8dd9b25855016d6b3c935fa9b8fe2",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/polearms/flame-forged-insight.ts": {
-    "mtime": 1787214806.6624005,
-    "ast_hash": "3f5dea2b0a100e164d92c30c9f05ac77",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/footprint-of-the-rainbow.ts": {
@@ -2304,14 +2249,9 @@
     "ast_hash": "48f6c43865e4a1b92fb29d015d8feedf",
     "semantic_hash": ""
   },
-  "src/data/registry/weapons/polearms/forged-by-the-golden-melody.ts": {
-    "mtime": 1787214806.6643894,
-    "ast_hash": "a6b6aab39f738a396a2ec821b44de68a",
-    "semantic_hash": ""
-  },
   "src/data/registry/weapons/polearms/fractured-halo.ts": {
-    "mtime": 1787214806.6653955,
-    "ast_hash": "124359bbf4cf6bf16d6f9d22a48432c9",
+    "mtime": 1788547490.183637,
+    "ast_hash": "65c31215eeb43b1672acfa1c47acb3b1",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/halberd.ts": {
@@ -2320,8 +2260,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/index.ts": {
-    "mtime": 1787214806.6673987,
-    "ast_hash": "b5e2deffb9d06fee02ef6163c1abec2d",
+    "mtime": 1788546124.4512274,
+    "ast_hash": "f173efc3e373bb88cd508bb56cdf02c4",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/iron-point.ts": {
@@ -2352,11 +2292,6 @@
   "src/data/registry/weapons/polearms/moonpiercer.ts": {
     "mtime": 1787214806.6753974,
     "ast_hash": "051215ccad5856daf10955135e2d37b4",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/polearms/moonweavers-dawn.ts": {
-    "mtime": 1787214806.6753974,
-    "ast_hash": "6573e841df2c170d11674fcf352a9a7c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/mountain-bracing-bolt.ts": {
@@ -2390,8 +2325,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/sacrificers-staff.ts": {
-    "mtime": 1787214806.6863956,
-    "ast_hash": "57fc3cc9cf102f0ad92e13635a95c732",
+    "mtime": 1788547490.1841576,
+    "ast_hash": "4db7a2eef3295c2010ac3199386201f6",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/skyward-spine.ts": {
@@ -2410,8 +2345,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/tamayuratei-no-ohanashi.ts": {
-    "mtime": 1787214806.6914318,
-    "ast_hash": "eceba34242eb1a8337a7baf5f6679458",
+    "mtime": 1788547490.1841576,
+    "ast_hash": "27929d74a3b25e29fb994c6a5e00547b",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/polearms/the-catch.ts": {
@@ -2435,18 +2370,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/absolution.ts": {
-    "mtime": 1787214806.6996334,
-    "ast_hash": "609f0cb383c5e6946cf85d1a609a7a30",
+    "mtime": 1788546124.4390097,
+    "ast_hash": "034088084088f448bd893635c45bb4fa",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/amenoma-kageuchi.ts": {
     "mtime": 1787214806.700438,
     "ast_hash": "4bae019096e08090d75352187c478bce",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/angelos-heptades.ts": {
-    "mtime": 1787214806.700438,
-    "ast_hash": "7db33310fc8fe53d22d8e1385ed53d05",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/aquila-favonia.ts": {
@@ -2455,13 +2385,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/athame-artis.ts": {
-    "mtime": 1787214806.7042787,
-    "ast_hash": "d32cdd474afd563d87b440fb548cbfd8",
+    "mtime": 1788547490.182585,
+    "ast_hash": "36d276576e8e155edf3626dcc2e1621d",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/azurelight.ts": {
-    "mtime": 1787214806.7047832,
-    "ast_hash": "10acee8d8a410e4de62bc82915c530d6",
+    "mtime": 1788547490.1831138,
+    "ast_hash": "8bd4d4c39c640d5e80721919eff4e127",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/blackcliff-longsword.ts": {
@@ -2470,18 +2400,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/calamity-of-eshu.ts": {
-    "mtime": 1787214806.7068272,
-    "ast_hash": "72d8b59b9f862f09aa9eca61f2ed0d7a",
+    "mtime": 1788546124.4400084,
+    "ast_hash": "3da7f9bf7d6874fb4ee8ceed7c474e8f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/cinnabar-spindle.ts": {
     "mtime": 1787214806.7075703,
     "ast_hash": "64e1d07537807e29d44b989e4046f7f3",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/clash-of-kings.ts": {
-    "mtime": 1787214806.7085772,
-    "ast_hash": "a49dfd01cc62a9eb5c9d3d834b6a9c2e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/cool-steel.ts": {
@@ -2497,11 +2422,6 @@
   "src/data/registry/weapons/swords/dull-blade.ts": {
     "mtime": 1787214806.7119992,
     "ast_hash": "cf674cc692155c0211680a142776d05a",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/echoes-of-the-heart.ts": {
-    "mtime": 1787214806.7119992,
-    "ast_hash": "6a662b37114ed5e90691b112bb94a3ac",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/exaiphanes-blade.ts": {
@@ -2550,13 +2470,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/harbinger-of-dawn.ts": {
-    "mtime": 1787214806.7253358,
-    "ast_hash": "9783332ff0432b41d3fe44c2fcba2560",
+    "mtime": 1788546124.4400084,
+    "ast_hash": "2c5677caad36fe5e2a36845d61c76b45",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/index.ts": {
-    "mtime": 1787214806.7287621,
-    "ast_hash": "92c52fa822a19c9be799345a0da4309a",
+    "mtime": 1788546124.4507236,
+    "ast_hash": "5d5f3769a1f086178d6090fb3b5b34f2",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/iron-sting.ts": {
@@ -2580,18 +2500,13 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/lightbearing-moonshard.ts": {
-    "mtime": 1787214806.7383666,
-    "ast_hash": "d251acef2ba75db410c105e9365b0f73",
+    "mtime": 1788547490.1831138,
+    "ast_hash": "fc754e29286b500f9a48a7053ea561be",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/lions-roar.ts": {
     "mtime": 1787214806.7383666,
     "ast_hash": "4cc70df18f67faa287614bd43f865cc5",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/master-key.ts": {
-    "mtime": 1787214806.7419665,
-    "ast_hash": "6a6b715f2e12240bceede3cdd15f523f",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/mistsplitter-reforged.ts": {
@@ -2600,8 +2515,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/peak-patrol-song.ts": {
-    "mtime": 1787214806.7439654,
-    "ast_hash": "ddd4706645f04d5c989b351c649ce02a",
+    "mtime": 1788546124.4410083,
+    "ast_hash": "90c73d0a3378d1e463fe1f011acdf28c",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/primordial-jade-cutter.ts": {
@@ -2650,8 +2565,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/sturdy-bone.ts": {
-    "mtime": 1787214806.759471,
-    "ast_hash": "1c96d0fe148887087a5fbf67d7fab8e8",
+    "mtime": 1788546124.4420083,
+    "ast_hash": "a03924d850988c2f282900b40673370e",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/summit-shaper.ts": {
@@ -2662,16 +2577,6 @@
   "src/data/registry/weapons/swords/sword-of-descension.ts": {
     "mtime": 1787214806.7614768,
     "ast_hash": "d3f3d32da7729329982b76847d337419",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/sword-of-narzissenkreuz-pneuma.ts": {
-    "mtime": 1787214806.7634768,
-    "ast_hash": "2f76330b7116ab48a4a7ce383fec9340",
-    "semantic_hash": ""
-  },
-  "src/data/registry/weapons/swords/symphonist-of-scents.ts": {
-    "mtime": 1787214806.7639816,
-    "ast_hash": "25aea50e37c6cc588a0e39224c2ccecb",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/the-alley-flash.ts": {
@@ -2695,8 +2600,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/toukabou-shigure.ts": {
-    "mtime": 1787214806.7699845,
-    "ast_hash": "0418681fb474f0f452b447d8f3231432",
+    "mtime": 1788546124.4420083,
+    "ast_hash": "aa5e29275e869a178045126201f8eea3",
     "semantic_hash": ""
   },
   "src/data/registry/weapons/swords/travelers-handy-sword.ts": {
@@ -2720,43 +2625,43 @@
     "semantic_hash": ""
   },
   ".agents/skills/external-weapon-buffs/SKILL.md": {
-    "mtime": 1787214803.311962,
-    "ast_hash": "d8ce0fa903b5879a839ef8dacc0f1748",
+    "mtime": 1788519788.882436,
+    "ast_hash": "fd916bb00a051a2814c27bf0dd45bd65",
     "semantic_hash": ""
   },
   ".agents/skills/weapon-role-consideration/SKILL.md": {
-    "mtime": 1787287679.5042627,
-    "ast_hash": "263a3d922a1ff0d80481e5f82aaa299b",
+    "mtime": 1788546230.1330588,
+    "ast_hash": "179586dd5d7df26acdbb50051f054a2c",
     "semantic_hash": ""
   },
   "scratch/generate_all_artifacts.ts": {
-    "mtime": 1788428112.9883857,
+    "mtime": 1788492768.0270953,
     "ast_hash": "8cf4c35173203b2b3ea0fda2cbb5e3ef",
     "semantic_hash": ""
   },
   "scratch/generate_artifact_sql.ts": {
-    "mtime": 1787287679.5227911,
+    "mtime": 1788492768.02761,
     "ast_hash": "7a8b1c3a7ec7e260f53f6003cd4b8280",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalArtifactBuffModal.tsx": {
-    "mtime": 1788459398.5917194,
-    "ast_hash": "87146af878221fa6488b2e73282b748f",
+    "mtime": 1788524113.4359086,
+    "ast_hash": "e27f0b84ea0044e57028da30817d974a",
     "semantic_hash": ""
   },
   "src/components/calculator/components/ExternalArtifactBuffPanel.tsx": {
-    "mtime": 1788459423.2589035,
-    "ast_hash": "9a17999641682965f3e8940b70715c4a",
+    "mtime": 1788521489.0213637,
+    "ast_hash": "f3ba9402d0753eae621a9a7c7cd4dfbf",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/a-day-carved-from-rising-winds.ts": {
-    "mtime": 1787287679.5277913,
-    "ast_hash": "c21a7bcd1b3927c5d54452b58a5c083e",
+    "mtime": 1788492403.8272388,
+    "ast_hash": "d08c8a7c4060bd224d455d22241216f8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/adventurer.ts": {
-    "mtime": 1787287679.5287943,
-    "ast_hash": "9f43478495d3c12e78431ebe1b294a1f",
+    "mtime": 1788492261.6385603,
+    "ast_hash": "d75073b6689f3c17df91b4f0de74aae3",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/archaic-petra.ts": {
@@ -2765,38 +2670,38 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/aubade-of-morningstar-and-moon.ts": {
-    "mtime": 1787287679.531798,
-    "ast_hash": "aa966de69045c2a32ff344937ffb14c3",
+    "mtime": 1788492315.0310273,
+    "ast_hash": "a1bca46427496c6b54389b3805477f02",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/berserker.ts": {
-    "mtime": 1787287679.531798,
-    "ast_hash": "7b86755ea455ab37336c70789b75521f",
+    "mtime": 1788492261.6704805,
+    "ast_hash": "f198782db659fab04dd2733f73a586a8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/blizzard-strayer.ts": {
-    "mtime": 1787287679.5327902,
-    "ast_hash": "b4b22178088df71f22194f1f74725063",
+    "mtime": 1788492261.782614,
+    "ast_hash": "a5ceaed3847937ffc1131836fa89cd70",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/bloodstained-chivalry.ts": {
-    "mtime": 1787287679.5327902,
-    "ast_hash": "298dc43b5644110c2f099e652fcdb8ff",
+    "mtime": 1788492261.7452269,
+    "ast_hash": "0de138f53422e6e47d2c9d881b0d6f1e",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/brave-heart.ts": {
-    "mtime": 1787287679.5327902,
-    "ast_hash": "3713caf312eefb00c47836d82562aa07",
+    "mtime": 1788492261.6858265,
+    "ast_hash": "ef44de831e5cba33209515aa2216f233",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/celestial-gift.ts": {
-    "mtime": 1787287679.5327902,
-    "ast_hash": "e68541d62edd081decb0fe3b3d707ce1",
+    "mtime": 1788492261.9313068,
+    "ast_hash": "f5e7ab2740ac8cec4b69f7ea0585c0ec",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/crimson-witch-of-flames.ts": {
-    "mtime": 1787287679.5337908,
-    "ast_hash": "6397de2986e56ecdcc40634e1a22cb3b",
+    "mtime": 1788492261.781217,
+    "ast_hash": "2bb2f17f511e8761106fd0ac0662a17d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/deepwood-memories.ts": {
@@ -2805,8 +2710,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/defenders-will.ts": {
-    "mtime": 1787287679.5337908,
-    "ast_hash": "63774ed50da59669529202377ee4304d",
+    "mtime": 1788492261.6837068,
+    "ast_hash": "dac58ba6c4a0de6759b5993b27628744",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/desert-pavilion-chronicle.ts": {
@@ -2815,33 +2720,33 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/disenchantment-in-deep-shadow.ts": {
-    "mtime": 1787287679.5347912,
-    "ast_hash": "f7f6488cf8c98210e8f0d8c8f72b53bd",
+    "mtime": 1788492325.3909023,
+    "ast_hash": "a878556d5cbfd8d568efa449bb308ea7",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/echoes-of-an-offering.ts": {
-    "mtime": 1787287679.5357926,
-    "ast_hash": "959534b83acdcd84c6e5f7c8f5f3b28e",
+    "mtime": 1788492261.8307383,
+    "ast_hash": "18bcb5c129b18e07dd746a4f80fa7ef2",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/emblem-of-severed-fate.ts": {
-    "mtime": 1787287679.5357926,
-    "ast_hash": "2124dc728ea2699c733107d3fb5f0210",
+    "mtime": 1788492261.8126423,
+    "ast_hash": "2f3c3349bf7a15fd1963e2d321ae3495",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/finale-of-the-deep-galleries.ts": {
-    "mtime": 1787287679.5357926,
-    "ast_hash": "c2df141393f79042f73e57426800f597",
+    "mtime": 1788492293.3899474,
+    "ast_hash": "ceb70263ad64f107242801aff29a11e0",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/flower-of-paradise-lost.ts": {
-    "mtime": 1787287679.5367918,
-    "ast_hash": "2c9e14814a5969d35edf7b4b40c84cd8",
+    "mtime": 1788492261.8400335,
+    "ast_hash": "596099a4e4bffbae26d8e084b0049ee6",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/fragment-of-harmonic-whimsy.ts": {
-    "mtime": 1787287679.5367918,
-    "ast_hash": "efcc1c0b5352b8cf4cd459195c0e3bae",
+    "mtime": 1788492261.891636,
+    "ast_hash": "325b321af3c086b2ed9551c213b9a815",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gambler.ts": {
@@ -2850,23 +2755,23 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gilded-dreams.ts": {
-    "mtime": 1787287679.5377915,
-    "ast_hash": "6f6418e6abe12ec26e886b2f179705b9",
+    "mtime": 1788492261.8362777,
+    "ast_hash": "c68a70366e97061a65ed6beb11449b97",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/gladiators-finale.ts": {
-    "mtime": 1787287679.5377915,
-    "ast_hash": "f24d8e5742685592f6e035afd93b13cd",
+    "mtime": 1788492261.7306235,
+    "ast_hash": "179a2a0c491620820d6124a101744e0d",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/golden-troupe.ts": {
-    "mtime": 1787287679.5377915,
-    "ast_hash": "bb6fc3929ff21f44693af7fb1a374337",
+    "mtime": 1788492261.876343,
+    "ast_hash": "81d50cd22bc46f8a5ef88ca1e78f8928",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/heart-of-depth.ts": {
-    "mtime": 1787287679.5377915,
-    "ast_hash": "17ef501bc4cd9dad97c928ae33765246",
+    "mtime": 1788492261.7863252,
+    "ast_hash": "5f307062142b9b775121a9ea58cbaf32",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/heart-of-the-furnace.ts": {
@@ -2875,8 +2780,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/husk-of-opulent-dreams.ts": {
-    "mtime": 1787287679.5387912,
-    "ast_hash": "0801dbb70fa3fd374f99c32878b5adeb",
+    "mtime": 1788492261.816465,
+    "ast_hash": "070fa6ec201d74d6de658c7137c1b387",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/index.ts": {
@@ -2900,8 +2805,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/long-nights-oath.ts": {
-    "mtime": 1787287679.5397913,
-    "ast_hash": "f49c4b6a69101728b79314494933d41d",
+    "mtime": 1788492288.0780861,
+    "ast_hash": "f64442038763074bb98b5cc2680396ae",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/lucky-dog.ts": {
@@ -2910,38 +2815,38 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/maiden-beloved.ts": {
-    "mtime": 1787287679.5407913,
-    "ast_hash": "1fe5309a4553e9317a929ccebb5c3356",
+    "mtime": 1788492394.5981596,
+    "ast_hash": "4964a5089db1959a5ebd085bfe72402e",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/marechaussee-hunter.ts": {
-    "mtime": 1787287679.5407913,
-    "ast_hash": "2f67e831f0aec521a734f4a1fd9a4b41",
+    "mtime": 1788492261.8741243,
+    "ast_hash": "ed953170f30ee06383ad4e052cfce631",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/martial-artist.ts": {
-    "mtime": 1787287679.541794,
-    "ast_hash": "cdc2af2ecabefc5e5b459a490c4c08cf",
+    "mtime": 1788492261.6912334,
+    "ast_hash": "de4573bc9c1cfbeb33b94d98bb9b8452",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/night-of-the-skys-unveiling.ts": {
-    "mtime": 1787287679.541794,
-    "ast_hash": "5faa75570e536c76ed4ac7e49fd3ea8b",
+    "mtime": 1788492304.3392541,
+    "ast_hash": "d88b2a01ea5837dde23f6d00dc7c4a1a",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/nighttime-whispers-in-the-echoing-woods.ts": {
-    "mtime": 1787287679.5427938,
-    "ast_hash": "c0462100e82c660a4524cd4beaeac84c",
+    "mtime": 1788492261.8895147,
+    "ast_hash": "6d186ab7aeec0741c3d2441ca2a3a217",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/noblesse-oblige.ts": {
-    "mtime": 1787287679.5427938,
-    "ast_hash": "cb877b9f969361b5f853b521df38716d",
+    "mtime": 1788492261.7435248,
+    "ast_hash": "e4413b6d5d481723a0604c7acb5484a1",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/nymphs-dream.ts": {
-    "mtime": 1787287679.5427938,
-    "ast_hash": "c7d26457d1d7ed5d1d1e49bff31e5e10",
+    "mtime": 1788492261.8448658,
+    "ast_hash": "4edef617a607db405a7f74190d971f30",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/obsidian-codex.ts": {
@@ -2950,38 +2855,38 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/ocean-hued-clam.ts": {
-    "mtime": 1787287679.5437937,
-    "ast_hash": "200d906b02f780424de223846ee340b1",
+    "mtime": 1788492261.8211658,
+    "ast_hash": "1414e9aae45b7fee8a9482a1a3692d17",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/pale-flame.ts": {
-    "mtime": 1787287679.5437937,
-    "ast_hash": "3db724b66de9ad802cdeb5e8466f34e3",
+    "mtime": 1788492261.798359,
+    "ast_hash": "3cc77c9f265c1a351b68abdddfa58cf7",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-destiny.ts": {
-    "mtime": 1787287679.5437937,
-    "ast_hash": "59fc07929598cf15e6a13b86a74b01d0",
+    "mtime": 1788491656.0773678,
+    "ast_hash": "8e8b3fb4cd72d6e8be79867ab9b0c899",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-illumination.ts": {
-    "mtime": 1787287679.5447917,
-    "ast_hash": "400ac2aed713601121345c1a2e20cc44",
+    "mtime": 1788491667.1693237,
+    "ast_hash": "59610a2960cf2c603270664dcb09f8c1",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-for-wisdom.ts": {
-    "mtime": 1787287679.5447917,
-    "ast_hash": "438131e64159f1c3e19ced45b6a3f4fc",
+    "mtime": 1788491647.5503867,
+    "ast_hash": "46f9a9cdf9c5c91c960b845a892875f5",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/prayers-to-springtime.ts": {
-    "mtime": 1787287679.5457985,
-    "ast_hash": "391cbcc8b308a37b840c1499d9e22cde",
+    "mtime": 1788491675.041076,
+    "ast_hash": "a1c999b1501e26fbdcb169728bbaadf6",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/resolution-of-sojourner.ts": {
-    "mtime": 1787287679.5457985,
-    "ast_hash": "e6d7d5c21490d2abf92dd28c92fc6ad0",
+    "mtime": 1788492261.6605754,
+    "ast_hash": "cc5c1d68d2ed66cfda96c6d617e4e08b",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/retracing-bolide.ts": {
@@ -2995,43 +2900,43 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/scholar.ts": {
-    "mtime": 1787287679.546792,
-    "ast_hash": "ab45a34593307be2e1283032b59655ac",
+    "mtime": 1788492261.706681,
+    "ast_hash": "1df4d1fc970e20584c49792a66209d52",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/scroll-of-the-hero-of-cinder-city.ts": {
-    "mtime": 1787287679.546792,
-    "ast_hash": "ca79aeb41af8560707d63206bed27416",
+    "mtime": 1788492261.902134,
+    "ast_hash": "993c8ad670e5228d30844b6714f4d7f8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/shimenawas-reminiscence.ts": {
-    "mtime": 1787287679.546792,
-    "ast_hash": "eda199875049e15588aa489307cf56e4",
+    "mtime": 1788492261.808509,
+    "ast_hash": "b4f3b966efa910fe096a766024cabfe6",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/silken-moons-serenade.ts": {
-    "mtime": 1787287679.547792,
-    "ast_hash": "8dc6865363a547cd183a3ccc835aceb6",
+    "mtime": 1788492261.927788,
+    "ast_hash": "168a6c67ef444bbc94ebd8e653b420dc",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/song-of-days-past.ts": {
-    "mtime": 1787287679.547792,
-    "ast_hash": "25c680b8b1b59b69006d643f5441cf64",
+    "mtime": 1788492613.3195257,
+    "ast_hash": "bef3fe33c76828b6ede7293ddb9ca0e6",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/tenacity-of-the-millelith.ts": {
-    "mtime": 1787287679.547792,
-    "ast_hash": "3ed0aca9088d3a6cc3b2c63dec4f5e8d",
+    "mtime": 1788492261.7935894,
+    "ast_hash": "305bfbbffa600826d4b440092b46793b",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/the-exile.ts": {
-    "mtime": 1787287679.548794,
-    "ast_hash": "d27f43c5b4755b49bee5a46e67ead7d1",
+    "mtime": 1788492261.680937,
+    "ast_hash": "e193cfb456f6ce0b612ee7c41ed95885",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/thundering-fury.ts": {
-    "mtime": 1787287679.548794,
-    "ast_hash": "3c453314cedcafcc45285e251ae8079d",
+    "mtime": 1788492261.7756793,
+    "ast_hash": "fb7ded2bf4592aa8565bda4d4f7939ce",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/thundersoother.ts": {
@@ -3040,8 +2945,8 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/tiny-miracle.ts": {
-    "mtime": 1787287679.5497925,
-    "ast_hash": "874e94f4db79053a4778e97a1842c797",
+    "mtime": 1788491619.2981074,
+    "ast_hash": "5005108ac8310be46a39b1049851edc0",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/traveling-doctor.ts": {
@@ -3050,28 +2955,28 @@
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/types.ts": {
-    "mtime": 1787287679.5497925,
-    "ast_hash": "8db193ef18152588ffc8d02558c6448f",
+    "mtime": 1788491415.0386994,
+    "ast_hash": "aa918564c67571051887039dc47829d8",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/unfinished-reverie.ts": {
-    "mtime": 1787287679.5507944,
-    "ast_hash": "384ad32e22690355cd9d28b753efdfb9",
+    "mtime": 1788492261.896756,
+    "ast_hash": "6a3892a2ed2b8f4126d6de48b1008e22",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/vermillion-hereafter.ts": {
-    "mtime": 1787287679.5507944,
-    "ast_hash": "a5e31a828233050e4d23d47cbef35a64",
+    "mtime": 1788492261.8285794,
+    "ast_hash": "64300ee3baf0986ee471dbdbc08a415a",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/viridescent-venerer.ts": {
-    "mtime": 1787287679.5507944,
-    "ast_hash": "19cfdf909a39bb9766edc4c29449323f",
+    "mtime": 1788492261.7563875,
+    "ast_hash": "0ff625dfa116297017afe6b4e1d61900",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/vourukashas-glow.ts": {
-    "mtime": 1787287679.5517924,
-    "ast_hash": "7b221843189ad3bb76bce476a9205926",
+    "mtime": 1788492261.8538356,
+    "ast_hash": "cb611b7f9e88a33fd1e84da226bbfd26",
     "semantic_hash": ""
   },
   "src/data/registry/artifacts/wanderers-troupe.ts": {
@@ -3080,27 +2985,27 @@
     "semantic_hash": ""
   },
   "src/lib/engine/artifact-buffs.test.ts": {
-    "mtime": 1788428112.919116,
-    "ast_hash": "943e4826214ef17b56048b908ffde142",
+    "mtime": 1788492435.46412,
+    "ast_hash": "9c4cb375e0ee1e07b497a98611993005",
     "semantic_hash": ""
   },
   "src/lib/engine/artifact-buffs.ts": {
-    "mtime": 1788459324.9345562,
-    "ast_hash": "46b2f044e09190a5f9a74a602a1f80d9",
+    "mtime": 1788491448.6414454,
+    "ast_hash": "789ff16f385996c0b32278c45e952ec6",
     "semantic_hash": ""
   },
   ".agents/skills/external-artifact-buffs/SKILL.md": {
-    "mtime": 1787287679.5032637,
-    "ast_hash": "6304183a428c09be17b5ab6621c27e5f",
+    "mtime": 1788482466.2572482,
+    "ast_hash": "1c2295ef3949fdaebc0b8eddf541c5db",
     "semantic_hash": ""
   },
   "src/components/calculator/components/TeamBuffModal.tsx": {
-    "mtime": 1788459351.3526633,
-    "ast_hash": "ff3d6d86f4806fc27c502a67309d9a54",
+    "mtime": 1788524101.423403,
+    "ast_hash": "d906dd2a1e33d249a154a6695b17e194",
     "semantic_hash": ""
   },
   "src/data/registry/characters/bennett.ts": {
-    "mtime": 1788455917.6354287,
+    "mtime": 1788460534.7579856,
     "ast_hash": "3163c0999945f48e568af2ab54abde5d",
     "semantic_hash": ""
   },
@@ -3110,8 +3015,8 @@
     "semantic_hash": ""
   },
   "src/lib/engine/characters/bennett.test.ts": {
-    "mtime": 1787287679.556795,
-    "ast_hash": "6261acaa43d45dc8d7827fe9bd4ad297",
+    "mtime": 1788485909.1879714,
+    "ast_hash": "a0f511111a18b1a6c5ae662b5e240e14",
     "semantic_hash": ""
   },
   "src/lib/engine/characters/bennett.ts": {
@@ -3120,8 +3025,148 @@
     "semantic_hash": ""
   },
   "src/components/calculator/rarity-theme.ts": {
-    "mtime": 1788457923.16366,
-    "ast_hash": "4a76b11c1db444e04ed38b7a1d1cc63b",
+    "mtime": 1788460534.7569845,
+    "ast_hash": "b67cfbf82f813b5541cadd5a1456948b",
+    "semantic_hash": ""
+  },
+  "scratch/analyze-characters.js": {
+    "mtime": 1788492768.020123,
+    "ast_hash": "f1294fa985f9e8460160caae549ecfa9",
+    "semantic_hash": ""
+  },
+  "src/app/characters/[id]/effective-stats/page.tsx": {
+    "mtime": 1788484321.5251436,
+    "ast_hash": "aff927db6a60d579d933637ff5c689e4",
+    "semantic_hash": ""
+  },
+  "src/components/calculator/EffectiveStatsView.tsx": {
+    "mtime": 1788491467.3261747,
+    "ast_hash": "7f2b4a58979f6021d8b6a699441ccc8f",
+    "semantic_hash": ""
+  },
+  "src/components/calculator/components/CalculatorHeader.tsx": {
+    "mtime": 1788532618.7273479,
+    "ast_hash": "e4b684ff746b5decfb5cd7e2000cfb8b",
+    "semantic_hash": ""
+  },
+  "src/components/calculator/components/EffectiveStatsModal.tsx": {
+    "mtime": 1788484285.284371,
+    "ast_hash": "561b3fa9c95324baa1672ca4df7b71bc",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/angelos-heptades.ts": {
+    "mtime": 1788547490.1846776,
+    "ast_hash": "5571847684302018b490d3af6086d0cf",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/blackmarrow-lantern.ts": {
+    "mtime": 1788546124.414258,
+    "ast_hash": "49437d4af36c9d57846e67dfe3a2f0ba",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/clash-of-kings.ts": {
+    "mtime": 1788546124.4031606,
+    "ast_hash": "60aeda07856a85086733cc914d02d77e",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/dawning-frost.ts": {
+    "mtime": 1788546124.4153068,
+    "ast_hash": "efdf5cbb632beb67f69c4cdf86497527",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/echoes-of-the-heart.ts": {
+    "mtime": 1788546124.4048793,
+    "ast_hash": "502953c511d6656b06c6dcf32ba33ed5",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/catalysts/etherlight-spindlelute.ts": {
+    "mtime": 1788546124.4169402,
+    "ast_hash": "e71f6f51866171ed2980cf035f190214",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/claymores/a-teaspoon-of-transcendence.ts": {
+    "mtime": 1788547490.1852002,
+    "ast_hash": "8c026fc4da012341f8b0118dbfbb8f53",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/claymores/flame-forged-insight.ts": {
+    "mtime": 1788546124.4174533,
+    "ast_hash": "3fecc070f474f8a012ab2051d6c714f8",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/claymores/forged-by-the-golden-melody.ts": {
+    "mtime": 1788546124.4185228,
+    "ast_hash": "4aea21a6b72db997a1bae5f26b0f5bc7",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/claymores/master-key.ts": {
+    "mtime": 1788546124.405922,
+    "ast_hash": "c0d690e4e982cd4422e471d9f622a462",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/polearms/bloodsoaked-ruins.ts": {
+    "mtime": 1788546124.407991,
+    "ast_hash": "334efe92e198c158e707f2ba961500f6",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/polearms/frostbreath.ts": {
+    "mtime": 1788546124.4248075,
+    "ast_hash": "b33581ee97043ae216aeeb7e76703c35",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/polearms/prospectors-shovel.ts": {
+    "mtime": 1788546124.4116735,
+    "ast_hash": "db31f9d135a51ece1609e1738fb8c64f",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/polearms/song-of-the-vigil.ts": {
+    "mtime": 1788546124.4137423,
+    "ast_hash": "69850992beeaab3ff2c682cbf0a79c52",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/polearms/symphonist-of-scents.ts": {
+    "mtime": 1788546124.40696,
+    "ast_hash": "552f06322ab7b6d820d48022eb0fe425",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/emberwell.ts": {
+    "mtime": 1788546124.4095798,
+    "ast_hash": "bed02050f612cc131ac92222d215088d",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/heretics-molten-blade.ts": {
+    "mtime": 1788546124.4106343,
+    "ast_hash": "a2154b1d0c30dd85679ae85afcef2bbd",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/moonweavers-dawn.ts": {
+    "mtime": 1788546124.420111,
+    "ast_hash": "bf45d52ad8a90434d486faae421c46b2",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/serenitys-call.ts": {
+    "mtime": 1788546124.4127088,
+    "ast_hash": "19c7c2d509e425fbf0159e3c49b265e0",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/sword-of-narzissenkreuz.ts": {
+    "mtime": 1788546124.422729,
+    "ast_hash": "147a30553a6b5895ac541fc1dce917bd",
+    "semantic_hash": ""
+  },
+  "src/data/registry/weapons/swords/whitelake-frostfeather.ts": {
+    "mtime": 1788546124.424289,
+    "ast_hash": "01695e7b204a6c8d0fef2fc7d65e5916",
+    "semantic_hash": ""
+  },
+  "src/lib/engine/effective-stats.test.ts": {
+    "mtime": 1788485928.313843,
+    "ast_hash": "9955b452830c2cf015cee9e41ec7312e",
+    "semantic_hash": ""
+  },
+  "src/lib/engine/effective-stats.ts": {
+    "mtime": 1788491475.158043,
+    "ast_hash": "d9d35263d45dac8e734f6f1ecd10e682",
     "semantic_hash": ""
   }
 }
