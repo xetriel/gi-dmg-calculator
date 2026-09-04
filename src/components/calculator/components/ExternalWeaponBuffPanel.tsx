@@ -64,7 +64,7 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
           <button
             type="button"
             onClick={onOpenModal}
-            className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-amber-400 font-semibold shadow-2xs cursor-pointer transition-colors"
+            className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 font-semibold shadow-2xs cursor-pointer transition-colors"
           >
             ⚙️ Edit
           </button>
@@ -72,7 +72,7 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
             <span className="text-[10px] text-gray-500 dark:text-zinc-400">Apply</span>
             <input
               type="checkbox"
-              className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+              className="h-3.5 w-3.5 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
               checked={masterEnabled}
               onChange={() => updateInstance(inst.id, () => ({ externalWeaponBuffsEnabled: !masterEnabled }))}
             />
