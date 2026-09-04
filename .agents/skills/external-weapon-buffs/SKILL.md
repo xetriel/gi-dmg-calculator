@@ -60,7 +60,7 @@ All external weapon buff UI components follow the centralized **Rarity-Focused D
 1. **Panel Header & Quantity Notation (`ExternalWeaponBuffPanel.tsx`)**:
    - Header button text uses neutral default: `text-gray-900 dark:text-white hover:text-black dark:hover:text-white`.
    - Icon badge: neutral `bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700`.
-   - Quantity notation formatted as `{activeCount}/{total}` in bright white and `(Max 3)` in grey:
+   - Quantity notation formatted as `{activeCount}/{total}` in bright white and `(Max 4)` in grey:
      `<span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{weapons.length}</span> <span className="text-gray-400 dark:text-zinc-500 font-medium">(Max {MAX_EXTERNAL_WEAPONS})</span>`.
    - Empty state button uses neutral dashed border with clean white/gray hover.
 2. **Aggregated Buff Pills**:

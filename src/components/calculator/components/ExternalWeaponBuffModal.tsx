@@ -24,6 +24,8 @@ const fmt = (n: number, decimals = 1) =>
 
 
 
+export const MAX_EXTERNAL_WEAPONS = 4;
+
 export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = ({
   isOpen,
   setIsOpen,
@@ -46,6 +48,9 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   const weapons = currentInst.externalWeapons ?? [];
   const masterEnabled = currentInst.externalWeaponBuffsEnabled !== false;
   const baseAtk = toNum(currentInst.stats["atk.base"]) ?? 0;
+
+  // Max external weapons limit reached check
+  const isMaxReached = weapons.length >= MAX_EXTERNAL_WEAPONS;
 
   // Compute live total weapon buff results
   const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled);
@@ -82,6 +87,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   });
 
   const addWeapon = (weaponId: string) => {
+    if (isMaxReached) return;
+
     const wConfig = weaponById(weaponId);
     if (!wConfig) return;
 
@@ -138,11 +145,11 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                   External Weapon Buffs
                 </h2>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                  {weapons.filter((w) => w.enabled).length}/{weapons.length} Active
+                  {weapons.filter((w) => w.enabled).length}/{weapons.length} Active (Max {MAX_EXTERNAL_WEAPONS})
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-zinc-400">
-                Configure party support weapons or wielder weapons applied to {config.name}
+                Configure party support weapons or wielder weapons applied to {config.name} (Max {MAX_EXTERNAL_WEAPONS} weapons per team)
               </p>
             </div>
           </div>
@@ -320,14 +327,17 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                         {/* Add Button */}
                         <button
                           onClick={() => addWeapon(w.id)}
-                          disabled={isAdded}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer shrink-0 ${
+                          disabled={isAdded || isMaxReached}
+                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all shrink-0 ${
                             isAdded
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : `${theme.addButton} shadow-xs`
+                              : isMaxReached
+                              ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
+                              : `${theme.addButton} shadow-xs cursor-pointer`
                           }`}
+                          title={isMaxReached && !isAdded ? `Maximum of ${MAX_EXTERNAL_WEAPONS} weapons reached` : undefined}
                         >
-                          {isAdded ? "Added ✓" : "+ Add"}
+                          {isAdded ? "Added ✓" : isMaxReached ? `Max ${MAX_EXTERNAL_WEAPONS}` : "+ Add"}
                         </button>
                       </div>
 
@@ -358,8 +368,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                   Configured Weapons for Setup {instances.findIndex((i) => i.id === currentInst.id) + 1}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-zinc-500">
-                  ({weapons.length})
+                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                  ({weapons.length}/{MAX_EXTERNAL_WEAPONS})
                 </span>
               </div>
 
@@ -386,7 +396,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                     No External Weapons Configured
                   </p>
                   <p className="text-xs max-w-sm">
-                    Select supportive weapons (e.g. *Freedom-Sworn*, *Key of Khaj-Nisut*, *Athame Artis*) or wielder weapons from the catalog on the left to add their team buffs.
+                    Select supportive weapons (e.g. *Freedom-Sworn*, *Key of Khaj-Nisut*, *Athame Artis*) or wielder weapons from the catalog on the left to add their team buffs (max {MAX_EXTERNAL_WEAPONS} per team).
                   </p>
                 </div>
               )}

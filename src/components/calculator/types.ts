@@ -34,7 +34,7 @@ export interface CalcInstance {
   constellationLevel: number;
   teamSupports?: SupportInstance[];    // max 3 support characters
   teamBuffsEnabled?: boolean;          // master toggle, defaults to true
-  externalWeapons?: ExternalWeaponInstance[]; // external weapon team buffs
+  externalWeapons?: ExternalWeaponInstance[]; // external weapon team buffs (max 4)
   externalWeaponBuffsEnabled?: boolean;       // master toggle for external weapons, defaults to true
   externalArtifacts?: ExternalArtifactInstance[]; // external artifact team buffs (max 4)
   externalArtifactBuffsEnabled?: boolean;         // master toggle for external artifacts, defaults to true

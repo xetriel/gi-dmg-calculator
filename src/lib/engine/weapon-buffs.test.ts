@@ -516,5 +516,34 @@ describe("Stacking and Master Toggle Control", () => {
     const result = resolveExternalWeaponBuffs(weapons, 1000, arlecchino, true);
     expect(result.statDeltas.em).toBe(100);
   });
+
+  it("enforces maximum of 4 external weapons (ignores 5th weapon and beyond)", () => {
+    const baseAtk = 1000;
+    const weapons = [
+      { id: "1", weaponId: "a-thousand-floating-dreams", refinement: 1, enabled: true }, // +40 EM
+      { id: "2", weaponId: "elegy-for-the-end", refinement: 1, enabled: true }, // +100 EM, +200 ATK
+      { id: "3", weaponId: "thrilling-tales-of-dragon-slayers", refinement: 5, enabled: true }, // +480 ATK
+      { id: "4", weaponId: "freedom-sworn", refinement: 1, enabled: true }, // +200 ATK, +16% NA/CA/Plunge DMG
+      { id: "5", weaponId: "forest-regalia", refinement: 1, enabled: true, inputs: { "leaf-of-consciousness": 1 } }, // +60 EM, should be IGNORED
+    ];
+
+    const result = resolveExternalWeaponBuffs(weapons, baseAtk, arlecchino, true);
+    // Weapons 1 to 4 applied:
+    // EM: 40 (ATFD) + 100 (Elegy) = 140. (Forest Regalia +60 is NOT applied)
+    expect(result.statDeltas.em).toBe(140);
+    // ATK: 200 (Elegy) + 480 (TTDS) + 200 (Freedom-Sworn) = 880
+    expect(result.statDeltas.atk).toBe(880);
+    // Normal DMG: 16% (Freedom-Sworn)
+    expect(result.statDeltas.normalDmgBonus).toBe(16);
+
+    // Only sources from the first 4 weapons exist
+    const sourceWeaponIds = new Set(result.sources.map((s) => s.weaponId));
+    expect(sourceWeaponIds.has("a-thousand-floating-dreams")).toBe(true);
+    expect(sourceWeaponIds.has("elegy-for-the-end")).toBe(true);
+    expect(sourceWeaponIds.has("thrilling-tales-of-dragon-slayers")).toBe(true);
+    expect(sourceWeaponIds.has("freedom-sworn")).toBe(true);
+    expect(sourceWeaponIds.has("forest-regalia")).toBe(false);
+  });
 });
+
 

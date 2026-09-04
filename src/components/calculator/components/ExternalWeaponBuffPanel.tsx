@@ -55,6 +55,7 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
           {weapons.length > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
               <span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{weapons.length}</span>
+              <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max 4)</span>
             </span>
           )}
         </button>
@@ -139,6 +140,7 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
         >
           <span>➕</span>
           <span>Configure External Weapons</span>
+          <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max 4)</span>
         </button>
       )}
     </div>
