@@ -109,5 +109,40 @@ export const itto: CharacterConfig = {
       description: "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Geo carry and Oni brawler. Provides a team-wide +20% ATK and +20% DEF buff to all nearby party members for 10s at C4 (Jailhouse Bread and Butter).",
+    buffExplanations: [
+      {
+        name: "C4: Jailhouse Bread and Butter",
+        brief: "+20% ATK & +20% DEF to party",
+        full: "When the Raging Oni King state ends, all nearby party members gain 20% DEF and 20% ATK for 10s.",
+        category: "stat_share",
+      },
+    ],
+    statFields: [
+      { key: "def", label: "Total DEF", defaultValue: "2400" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "atk",
+        label: "ATK% (Itto C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 0.20 * (ctx.baseAtk || ctx.atk) : 0),
+      },
+      {
+        stat: "def",
+        label: "DEF% (Itto C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 0.20 * (ctx.baseDef || ctx.def) : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total DEF", value: fmt(ctx.def) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

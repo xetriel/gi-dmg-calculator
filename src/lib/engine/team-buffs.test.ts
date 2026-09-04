@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveTeamBuffs, resolveSupportCtx, type SupportInstance } from "./team-buffs";
-import { supportById, byId } from "../../data/registry/characters";
+import { supportById, byId, SUPPORT_CONFIGS, CHARACTERS } from "../../data/registry/characters";
 
 function makeIneffa(overrides: Partial<SupportInstance> = {}): SupportInstance {
   return {
@@ -518,6 +518,212 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.buffs[0].compute).toBe("function");
       expect(typeof ineffaSupport?.lunarBaseBonusCompute).toBe("function");
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
+    });
+
+    it("all 46 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(46);
+      for (const char of CHARACTERS) {
+        expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
+        const serialized = JSON.stringify(char);
+        expect(serialized).toBeDefined();
+        const parsed = JSON.parse(serialized);
+        expect(parsed.id).toBe(char.id);
+      }
+    });
+  });
+
+  // ── 46-Character Support Roster Coverage ────────────────────────────────
+  describe("46-Character Support Roster Completeness & Mechanics", () => {
+    it("has exactly 46 support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(46);
+      for (const char of CHARACTERS) {
+        const sup = supportById(char.id);
+        expect(sup, `Missing support for ${char.id}`).toBeDefined();
+        expect(sup?.name).toBe(char.name);
+        expect(sup?.statFields?.length).toBeGreaterThanOrEqual(1);
+        expect(typeof sup?.formatBriefStats).toBe("function");
+      }
+    });
+
+    it("Columbina: Moonsign Base DMG, C2 HP-share, C6 CRIT DMG", () => {
+      const sup = supportById("columbina");
+      expect(sup).toBeDefined();
+      const inst: SupportInstance = {
+        supportId: "columbina-support",
+        stats: { hp: "40000", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "lunar-brilliance": "1", "c6-crit-dmg-buff": "1" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      // Moonsign: min(7, (40000 / 1000) * 0.2) = min(7, 8) = 7
+      expect(res.lunarBaseBonusPct).toBe(7);
+      // C2: (40000 / 100) * 0.15 = 60 ATK
+      expect(res.statDeltas.atk).toBe(60);
+      // C6: +80% CRIT DMG in Lunar Domain
+      expect(res.statDeltas.critDmg).toBe(80);
+      // C6 total elevation: 1.5 + 7.0 + 1.5 + 7.0 = 17.0%
+      expect(res.statDeltas.lunarChargedElevation).toBe(17);
+    });
+
+    it("Mavuika: Kiongozi DMG + C2 DEF shred", () => {
+      const inst: SupportInstance = {
+        supportId: "mavuika-support",
+        stats: { baseAtk: "900", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "burst-kiongozi": "1", "c2-def-shred": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.dmgBonus).toBe(40);
+      expect(res.statDeltas.defReduction).toBe(20);
+    });
+
+    it("Zibai: Moonsign Lunar Base DMG + C2 Reaction DMG", () => {
+      const inst: SupportInstance = {
+        supportId: "zibai-support",
+        stats: { def: "2000", critRate: "60", critDmg: "140" },
+        mechanicInputs: { "c2-reaction-dmg": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      // Moonsign: min(14, (2000 / 100) * 0.7) = 14
+      expect(res.lunarBaseBonusPct).toBe(14);
+      expect(res.statDeltas.lunarCrystallizeDmgBonus).toBe(30);
+    });
+
+    it("Klee: C2 DEF shred + C6 Pyro DMG", () => {
+      const inst: SupportInstance = {
+        supportId: "klee-support",
+        stats: { baseAtk: "800", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "c2-def-shred": "1", "c6-pyro-buff": "1" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.defReduction).toBe(23);
+      expect(res.statDeltas.pyroDmgBonus).toBe(10);
+    });
+
+    it("Hu Tao: A1 CRIT Rate", () => {
+      const inst: SupportInstance = {
+        supportId: "hu-tao-support",
+        stats: { hp: "32000", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "a1-flutter-by": "1" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.critRate).toBe(12);
+    });
+
+    it("Ayaka: C4 DEF shred", () => {
+      const inst: SupportInstance = {
+        supportId: "ayaka-support",
+        stats: { baseAtk: "800", critRate: "60", critDmg: "200" },
+        mechanicInputs: {},
+        constellationLevel: 4,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.defReduction).toBe(30);
+    });
+
+    it("Eula: Icetide Vortex Hold Phys/Cryo RES shred", () => {
+      const inst: SupportInstance = {
+        supportId: "eula-support",
+        stats: { baseAtk: "900", critRate: "60", critDmg: "160" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        talentLevels: { skill: "10" },
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      // Lv 10: -(15 + 10) = -25
+      expect(res.statDeltas.enemyRes).toBe(-25);
+    });
+
+    it("Aloy: A1 Combat Override party ATK%", () => {
+      const inst: SupportInstance = {
+        supportId: "aloy-support",
+        stats: { baseAtk: "700", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "a1-combat-override": "1" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.atk).toBe(56);
+    });
+
+    it("Durin: A1 RES shred & C6 DEF shred", () => {
+      const inst: SupportInstance = {
+        supportId: "durin-support",
+        stats: { baseAtk: "800", critRate: "60", critDmg: "140" },
+        mechanicInputs: { "purity-res-shred": "1", "hexerei-party-members": "1", "c6-def-shred": "1" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.enemyRes).toBe(-35);
+      expect(res.statDeltas.defReduction).toBe(30);
+    });
+
+    it("Dendro MC: A1 EM + C6 Dendro DMG", () => {
+      const inst: SupportInstance = {
+        supportId: "traveler-dendro-support",
+        stats: { baseAtk: "700", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "a1-lotus-light-stacks": "10", "c6-dendro-buff": "1" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.em).toBe(60);
+      expect(res.statDeltas.dendroDmgBonus).toBe(12);
+    });
+
+    it("Cryo MC: Stellar Base DMG + C2 EM + C6 Stellar reaction DMG", () => {
+      const inst: SupportInstance = {
+        supportId: "traveler-cryo-support",
+        stats: { "atk.base": "800", "atk.percent": "100", "atk.flat": "400", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "c2-stellar-em": "1", "frostglow-stacks": "8" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const res = resolveTeamBuffs([inst]);
+      // ATK = 800 * 2 + 400 = 2000
+      // Stellar Base = min(14, 20 * 0.7) = 14
+      expect(res.lunarBaseBonusPct).toBe(14);
+      expect(res.statDeltas.em).toBe(120);
+      expect(res.statDeltas.stellarGlimmerDmgBonus).toBe(40);
+    });
+
+    it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
+      const hypercarries = [
+        "arlecchino", "diluc", "xiao", "cyno", "clorinde",
+        "neuvillette", "gaming", "keqing", "mualani", "alhaitham", "varesa",
+      ];
+      for (const hid of hypercarries) {
+        const sup = supportById(hid);
+        expect(sup, `Missing support for ${hid}`).toBeDefined();
+        expect(sup?.buffs).toHaveLength(0);
+
+        const inst: SupportInstance = {
+          supportId: `${hid}-support`,
+          stats: { baseAtk: "800", hp: "30000", em: "100", critRate: "60", critDmg: "120" },
+          mechanicInputs: {},
+          constellationLevel: 0,
+          enabled: true,
+        };
+
+        const res = resolveTeamBuffs([inst]);
+        expect(res.sources).toHaveLength(0);
+
+        const ctx = resolveSupportCtx(inst);
+        expect(ctx).toBeDefined();
+        const pills = sup!.formatBriefStats!(ctx!);
+        expect(pills.length).toBeGreaterThanOrEqual(2);
+      }
     });
   });
 });

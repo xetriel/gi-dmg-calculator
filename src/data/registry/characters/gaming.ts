@@ -104,5 +104,29 @@ export const gaming: CharacterConfig = {
       description: "Charmed Cloudstrider CRIT Rate increased by 20%, CRIT DMG increased by 40%, and attack radius increased.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Pyro plunging carry aided by Man Chai. Provides team presence, Pyro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Plunging Hypercarry",
+        brief: "On-Field Pyro Hypercarry",
+        full: "Gaming leaps into the air with Bestial Ascent and executes Charmed Cloudstrider Pyro plunges, without providing buffs to other party members.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "750" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "65" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "150" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

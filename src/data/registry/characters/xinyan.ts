@@ -124,5 +124,46 @@ export const xinyan: CharacterConfig = {
       description: "Decreases the Stamina Consumption of Xinyan's Charged Attacks by 30%. Additionally, Xinyan's Charged Attacks gain an ATK Bonus equal to 50% of her DEF.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro shielder and Physical buffer. Grants +15% Physical DMG Bonus to shielded characters via A4, and shreds 15% Physical RES at C4.",
+    buffExplanations: [
+      {
+        name: "A4: Now That's Rock 'N' Roll!",
+        brief: "+15% Physical DMG Bonus",
+        full: "Characters shielded by Sweeping Fervor deal 15% increased Physical DMG.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C4: Wildfire Rhythm",
+        brief: "-15% Physical RES Shred",
+        full: "Sweeping Fervor's swing DMG decreases opponent's Physical RES by 15% for 12s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "def", label: "Total DEF", defaultValue: "2000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "physicalDmgBonus",
+        label: "Physical DMG (Xinyan A4 Shield)",
+        compute: (ctx) => 15,
+      },
+      {
+        stat: "enemyRes",
+        label: "Physical RES Shred (Xinyan C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? -15 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total DEF", value: fmt(ctx.def) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

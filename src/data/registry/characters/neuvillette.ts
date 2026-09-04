@@ -97,4 +97,28 @@ export const neuvillette: CharacterConfig = {
       effects: [{ type: "informational" }]
     },
   ],
+  support: {
+    description: "Pure on-field Hydro hypercarry channeling catastrophic water torrents scaled on Max HP. Provides team presence, Hydro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Hydro Hypercarry",
+        brief: "On-Field Hydro Hypercarry",
+        full: "Neuvillette channels Equitable Judgment to deal sustained AoE Hydro DMG based on Max HP, without providing active stat buffs to teammates.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "40000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "64" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "220" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

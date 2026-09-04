@@ -104,5 +104,46 @@ export const huTao: CharacterConfig = {
         condition: "HP < 25%"
       }]
     },
-  ]
+  ],
+  support: {
+    description: "Pyro carry providing party-wide CRIT Rate buffs. Grants +12% CRIT Rate to allies via Flutter By (A1) and an additional +12% CRIT Rate at C4.",
+    buffExplanations: [
+      {
+        name: "A1: Flutter By",
+        brief: "+12% CRIT Rate to allies",
+        full: "When Paramita Papilio state ends, all allies in the party gain a 12% CRIT Rate increase for 8s.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C4: Garden of Eternal Rest",
+        brief: "+12% CRIT Rate to allies",
+        full: "Upon defeating an enemy affected by Blood Blossom, all nearby allies gain a 12% CRIT Rate increase for 15s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "32000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "critRate",
+        label: "CRIT Rate (Hu Tao A1 Flutter By)",
+        compute: (ctx) => ((ctx.inputs["a1-flutter-by"] ?? 1) > 0 ? 12 : 0),
+      },
+      {
+        stat: "critRate",
+        label: "CRIT Rate (Hu Tao C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 12 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

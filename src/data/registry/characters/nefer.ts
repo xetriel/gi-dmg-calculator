@@ -126,5 +126,30 @@ export const nefer: CharacterConfig = {
       description: "When Nefer unleashes Phantasm Performance, the second stage of DMG dealt by herself will be converted to deal AoE Dendro DMG equal to 85% of her Elemental Mastery. Additionally, when the attacks from Phantasm Performance end, an extra instance of AoE Dendro DMG equal to 120% of Nefer's Elemental Mastery will be dealt. All of the aforementioned DMG is considered Lunar-Bloom DMG dealt by Phantasm Performance. Moonsign: Ascendant Gleam Nefer's Lunar-Bloom DMG is elevated by 15%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Moonsign Dendro sub-DPS and Lunar-Bloom reaction amplifier. Converts Bloom into Lunar-Bloom reactions and enhances team Lunar-Bloom Base DMG scaling with Elemental Mastery.",
+    buffExplanations: [
+      {
+        name: "Moonsign Benediction",
+        brief: "+0.0175% Lunar-Bloom Base DMG per 1 EM (max 14%)",
+        full: "Converts party Bloom reactions into Lunar-Bloom reactions. Every point of Elemental Mastery Nefer has increases Lunar-Bloom Base DMG by 0.0175%, capped at 14.0%.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "em", label: "Elemental Mastery", defaultValue: "800" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.0175 * ctx.em, 14),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

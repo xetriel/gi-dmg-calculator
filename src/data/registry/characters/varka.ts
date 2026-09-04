@@ -171,5 +171,35 @@ export const varka: CharacterConfig = {
       description: "Sturm und Drang is enhanced: Azure Devour and Four Winds' Ascension can trigger extra instances without expending uses. Azure Fang's Oath stacks grant +20% CRIT DMG each.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Anemo Grand Master and sub-DPS. Grants +20% Anemo and swirled Elemental DMG Bonus to all party members for 10s upon triggering Swirl at C4.",
+    buffExplanations: [
+      {
+        name: "C4: Freedom of Song",
+        brief: "+20% Anemo & Elemental DMG Bonus",
+        full: "Triggering Swirl grants all party members +20% Anemo DMG and +20% corresponding Element DMG Bonus for 10s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2400" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "dmgBonus",
+        label: "Anemo & Elemental DMG (Varka C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 20 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

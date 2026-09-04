@@ -133,5 +133,35 @@ export const lyney: CharacterConfig = {
       description: "When Lyney fires a Prop Arrow, he will fire a Pyrotechnic Strike: Reprise that deals 80% of Pyrotechnic Strike's DMG as Charged Attack DMG.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro carry and magician. Reduces enemy Pyro RES by 20% for 6s at C4 (Well-Rehearsed Verses) after hitting with a Pyro Charged Attack.",
+    buffExplanations: [
+      {
+        name: "C4: Well-Rehearsed Verses",
+        brief: "-20% Pyro RES Shred",
+        full: "After Lyney's Pyro Charged Attack hits an opponent, that opponent's Pyro RES is decreased by 20% for 6s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2200" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Pyro RES Shred (Lyney C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? -20 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

@@ -98,4 +98,28 @@ export const arlecchino: CharacterConfig = {
       effects: [{ type: "informational" }]
     },
   ],
+  support: {
+    description: "Pure on-field Pyro hypercarry utilizing Bond of Life mechanics. Provides team presence, Pyro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Bond of Life Hypercarry",
+        brief: "On-Field Pyro Hypercarry",
+        full: "Arlecchino focuses entirely on her own personal damage via Masque of the Red Death and does not provide active buffs to party members.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "900" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "180" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

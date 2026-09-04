@@ -136,5 +136,31 @@ export const mualani: CharacterConfig = {
       description: "The DMG boost from the Constellation \"The Leisurely 'Meztli'\" is no longer restricted to triggering once per Nightsoul's Blessing state.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Hydro hypercarry delivering massive single-hit Vaporize Sharky Bites based on Max HP. Provides team presence, Hydro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Hydro Surfer Hypercarry",
+        brief: "On-Field Hydro Hypercarry",
+        full: "Mualani rides Sharky Surfboard in Nightsoul's Blessing to deliver colossal HP-scaled Sharky Bites, without granting buffs to other party members.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "35000" },
+      { key: "em", label: "Elemental Mastery", defaultValue: "150" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "180" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

@@ -122,5 +122,29 @@ export const yanfei: CharacterConfig = {
       description: "Increases the maximum number of Scarlet Seals Yanfei can hold by 1.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro catalyst DPS and defensive shielder. At C4, Done Deal creates a shield absorbing DMG equal to 45% of Yanfei's Max HP.",
+    buffExplanations: [
+      {
+        name: "C4: Supreme Amnesty",
+        brief: "45% Max HP Shield",
+        full: "When Done Deal is used: Creates a shield that absorbs DMG equal to 45% of Yanfei's Max HP for 15s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "28000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

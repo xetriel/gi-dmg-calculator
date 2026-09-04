@@ -124,5 +124,35 @@ export const ayaka: CharacterConfig = {
       description: "Every 10s, Ayaka gains a Charged Attack buff, increasing its DMG by 298%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Cryo DPS capable of supporting the team at C4 with powerful 30% enemy DEF reduction upon Burst hits.",
+    buffExplanations: [
+      {
+        name: "C4: Ebb and Flow",
+        brief: "-30% Enemy DEF Shred",
+        full: "Opponents damaged by Kamisato Art: Soumetsu's Frostflake Seki no To have their DEF decreased by 30% for 6s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "800" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "200" },
+    ],
+    buffs: [
+      {
+        stat: "defReduction",
+        label: "Enemy DEF Shred (Ayaka C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 30 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

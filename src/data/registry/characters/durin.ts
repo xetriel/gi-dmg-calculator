@@ -155,5 +155,49 @@ export const durin: CharacterConfig = {
       description: "Burst hits ignore 30% DEF (Dark Decay ignores 70%). White Flame hits decrease enemy DEF by 30%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro sword unit providing elemental RES shred via Purity Form (A1) and 30% enemy DEF reduction at C6.",
+    buffExplanations: [
+      {
+        name: "A1: Purity Form RES Shred",
+        brief: "-20% / -35% Enemy RES Shred",
+        full: "In Purity Form, shreds opponent Elemental RES by 20% (boosted to 35% when a Hexerei partner is present in the party).",
+        category: "elemental",
+      },
+      {
+        name: "C6: Dual Birth",
+        brief: "-30% Enemy DEF Shred",
+        full: "Burst White Flame hits decrease opponent DEF by 30% for 6s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "800" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "140" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Enemy RES Shred (Durin A1)",
+        compute: (ctx) => {
+          if ((ctx.inputs["purity-res-shred"] ?? 1) === 0) return 0;
+          return (ctx.inputs["hexerei-party-members"] ?? 0) > 0 ? -35 : -20;
+        },
+      },
+      {
+        stat: "defReduction",
+        label: "Enemy DEF Shred (Durin C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 && (ctx.inputs["c6-def-shred"] ?? 1) > 0 ? 30 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

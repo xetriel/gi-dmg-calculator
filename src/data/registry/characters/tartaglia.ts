@@ -120,5 +120,29 @@ export const tartaglia: CharacterConfig = {
       description: "When Havoc: Obliteration is cast in Melee Stance, the CD of Foul Legacy: Raging Wave is cleared upon returning to Ranged Stance.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Hydro enabler and weapon master. Passive talent Master of Weaponry increases all party members' Normal Attack Talent Level by 1.",
+    buffExplanations: [
+      {
+        name: "Master of Weaponry (Passive)",
+        brief: "+1 Normal Attack Talent Level",
+        full: "Increases all party members' Normal Attack Talent Level by 1.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

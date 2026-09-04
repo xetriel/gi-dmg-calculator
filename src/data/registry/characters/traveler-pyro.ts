@@ -91,5 +91,49 @@ export const travelerPyro: CharacterConfig = {
     { level: 4, name: "Ravaging Flame", description: "After using Elemental Burst, grants 20% Pyro DMG Bonus for 12s.", effects: [{ type: "informational" }] },
     { level: 5, name: "The Fire Inextinguishable", description: "Increases the Level of Plains Scorcher by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
     { level: 6, name: "The Sacred Flame Imperishable", description: "Normal, Charged, and Plunging Attacks deal Pyro DMG while in Nightsoul's Blessing state and gain 40% CRIT DMG.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Pyro support providing active character DMG Bonus via Starfire's Flowing Light (C1) and +20% Pyro DMG Bonus at C4.",
+    buffExplanations: [
+      {
+        name: "C1: Starfire's Flowing Light",
+        brief: "+6% / +15% All DMG Bonus",
+        full: "While Blazing Threshold or Scorching Threshold is active, the active character deals 6% increased DMG. If in Nightsoul's Blessing, they deal an additional 9% DMG (total 15%).",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C4: Ravaging Flame",
+        brief: "+20% Pyro DMG Bonus",
+        full: "After using Elemental Burst, increases Pyro DMG Bonus by 20% for 12s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "dmgBonus",
+        label: "All DMG (Pyro MC C1)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 1 || (ctx.inputs["c1-starfire"] ?? 1) === 0) return 0;
+          return (ctx.inputs["c1-nightsoul-active"] ?? 1) > 0 ? 15 : 6;
+        },
+      },
+      {
+        stat: "pyroDmgBonus",
+        label: "Pyro DMG (Pyro MC C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 && (ctx.inputs["c4-ravaging-flame"] ?? 1) > 0 ? 20 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

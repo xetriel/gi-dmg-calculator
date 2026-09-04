@@ -124,5 +124,50 @@ export const mizuki: CharacterConfig = {
       description: "While in Dreamdrifter state, Swirl reaction DMG dealt by party members can score CRIT Hits (fixed 30% CRIT Rate, 100% CRIT DMG). Additionally, Stellar Swirl reaction DMG gains +20% CRIT Rate and +40% CRIT DMG.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Anemo sub-DPS and elemental amplifier. Grants team-wide Pyro, Hydro, Cryo, and Electro DMG Bonuses scaling with her Elemental Mastery at C2 (+0.04% per EM, up to +40%).",
+    buffExplanations: [
+      {
+        name: "C2: Your Echo I Meet in Dreams",
+        brief: "Up to +40% Pyro/Hydro/Cryo/Electro DMG Bonus",
+        full: "While in Dreamdrifter state, every point of Elemental Mastery increases the Pyro, Hydro, Cryo, and Electro DMG Bonuses of nearby party members by 0.04%, capped at +40.0%.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "em", label: "Elemental Mastery", defaultValue: "900" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "pyroDmgBonus",
+        label: "Pyro DMG (Mizuki C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? Math.min(ctx.em * 0.04, 40) : 0),
+      },
+      {
+        stat: "hydroDmgBonus",
+        label: "Hydro DMG (Mizuki C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? Math.min(ctx.em * 0.04, 40) : 0),
+      },
+      {
+        stat: "cryoDmgBonus",
+        label: "Cryo DMG (Mizuki C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? Math.min(ctx.em * 0.04, 40) : 0),
+      },
+      {
+        stat: "electroDmgBonus",
+        label: "Electro DMG (Mizuki C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? Math.min(ctx.em * 0.04, 40) : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

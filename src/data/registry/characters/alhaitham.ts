@@ -121,5 +121,31 @@ export const alhaitham: CharacterConfig = {
       description: "Generating mirrors at maximum stack count increases CRIT Rate by 10% and CRIT DMG by 70% for 6s.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Dendro sword hypercarry utilizing Chisel-Light Mirrors for projection attack combos. Provides team presence, Dendro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Dendro Hypercarry",
+        brief: "On-Field Dendro Hypercarry",
+        full: "Alhaitham orchestrates intricate Chisel-Light Mirror projection attacks scaling on both ATK and EM, without providing party buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "800" },
+      { key: "em", label: "Elemental Mastery", defaultValue: "350" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "160" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

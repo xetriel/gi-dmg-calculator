@@ -89,6 +89,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
   // Filter catalog of support characters
   const filteredCatalog = SUPPORT_CONFIGS.filter((s) => {
+    // A character cannot support themselves in the same party
+    if (s.characterId === config.id) return false;
+
     // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();

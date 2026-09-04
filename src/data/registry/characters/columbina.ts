@@ -127,5 +127,121 @@ export const columbina: CharacterConfig = {
       description: "Triggering Lunar reactions in Lunar Domain increases CRIT DMG of corresponding elements by 80% for 8s. All nearby party members' Lunar Reaction DMG elevated by 7%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Moonsign Hydro sub-DPS and Lunar reaction buffer. Enhances party Lunar reactions scaling from Max HP, provides massive team buffs at C2 (ATK, EM, DEF), and grants +80% CRIT DMG at C6.",
+    buffExplanations: [
+      {
+        name: "Moonsign Benediction",
+        brief: "+0.2% Lunar Reaction Base DMG per 1,000 Max HP (max 7%)",
+        full: "Converts Electro-Charged, Bloom, and Hydro-Crystallize to Lunar variants. Increases Lunar Reaction Base DMG by 0.2% per 1,000 Max HP (capped at 7%).",
+        category: "lunar",
+      },
+      {
+        name: "Lunar Elevation (C1/C2/C4/C6)",
+        brief: "Up to +17% Lunar Reaction DMG Elevation",
+        full: "Elevates nearby party members' Lunar Reaction DMG: +1.5% at C1, +7.0% at C2, +1.5% at C4, and +7.0% at C6 (accumulating up to +17.0%).",
+        category: "lunar",
+      },
+      {
+        name: "C2: Lunar Brilliance Stat Share",
+        brief: "Shares ATK, EM, and DEF based on Columbina's Max HP",
+        full: "When Lunar Brilliance is active at C2, the active character gains Flat ATK (15% of HP/100), EM (10% of HP/1000), and Flat DEF (15% of HP/100).",
+        category: "stat_share",
+      },
+      {
+        name: "C6: Lunar Domain CRIT DMG",
+        brief: "+80% CRIT DMG inside Lunar Domain",
+        full: "Triggering Lunar reactions inside Lunar Domain grants +80% CRIT DMG for 8s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "40000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "140" },
+    ],
+    buffs: [
+      {
+        stat: "lunarChargedElevation",
+        label: "Lunar-Charged Elevation (Columbina Cons)",
+        compute: (ctx) => {
+          let elevation = 0;
+          if (ctx.constellationLevel >= 1) elevation += 1.5;
+          if (ctx.constellationLevel >= 2) elevation += 7.0;
+          if (ctx.constellationLevel >= 4) elevation += 1.5;
+          if (ctx.constellationLevel >= 6) elevation += 7.0;
+          return elevation;
+        },
+      },
+      {
+        stat: "lunarBloomElevation",
+        label: "Lunar-Bloom Elevation (Columbina Cons)",
+        compute: (ctx) => {
+          let elevation = 0;
+          if (ctx.constellationLevel >= 1) elevation += 1.5;
+          if (ctx.constellationLevel >= 2) elevation += 7.0;
+          if (ctx.constellationLevel >= 4) elevation += 1.5;
+          if (ctx.constellationLevel >= 6) elevation += 7.0;
+          return elevation;
+        },
+      },
+      {
+        stat: "lunarCrystallizeElevation",
+        label: "Lunar-Crystallize Elevation (Columbina Cons)",
+        compute: (ctx) => {
+          let elevation = 0;
+          if (ctx.constellationLevel >= 1) elevation += 1.5;
+          if (ctx.constellationLevel >= 2) elevation += 7.0;
+          if (ctx.constellationLevel >= 4) elevation += 1.5;
+          if (ctx.constellationLevel >= 6) elevation += 7.0;
+          return elevation;
+        },
+      },
+      {
+        stat: "atk",
+        label: "ATK (Columbina C2 Lunar Brilliance)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          if ((ctx.inputs["lunar-brilliance"] ?? 0) <= 0) return 0;
+          return (ctx.hp / 100) * 0.15;
+        },
+      },
+      {
+        stat: "em",
+        label: "EM (Columbina C2 Lunar Brilliance)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          if ((ctx.inputs["lunar-brilliance"] ?? 0) <= 0) return 0;
+          return (ctx.hp / 1000) * 0.10;
+        },
+      },
+      {
+        stat: "def",
+        label: "DEF (Columbina C2 Lunar Brilliance)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          if ((ctx.inputs["lunar-brilliance"] ?? 0) <= 0) return 0;
+          return (ctx.hp / 100) * 0.15;
+        },
+      },
+      {
+        stat: "critDmg",
+        label: "CRIT DMG (Columbina C6 Lunar Domain)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 6) return 0;
+          if ((ctx.inputs["c6-crit-dmg-buff"] ?? 0) <= 0) return 0;
+          return 80;
+        },
+      },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.2 * (ctx.hp / 1000), 7),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

@@ -118,5 +118,45 @@ export const kaveh: CharacterConfig = {
       description: "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, it will trigger Pairidaeza's Light at the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within its AoE to burst.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Dendro Bloom enabler and rupture driver. Painted Dome boosts party Bloom reaction DMG (+27.5%), and C4 Feast of Apadana grants +60% Bloom DMG to Dendro Cores.",
+    buffExplanations: [
+      {
+        name: "Painted Dome (Burst)",
+        brief: "+27.5% Bloom DMG Bonus",
+        full: "Painted Dome increases the Bloom reaction DMG dealt by all nearby party members by +27.5%.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C4: Feast of Apadana",
+        brief: "+60% Bloom DMG Bonus",
+        full: "Dendro Cores created by party members via Bloom deal 60% more DMG when they burst.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "em", label: "Elemental Mastery", defaultValue: "600" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "lunarBloomDmgBonus",
+        label: "Bloom DMG (Kaveh Burst & C4)",
+        compute: (ctx) => {
+          const base = 27.5;
+          const c4 = ctx.constellationLevel >= 4 ? 60 : 0;
+          return base + c4;
+        },
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

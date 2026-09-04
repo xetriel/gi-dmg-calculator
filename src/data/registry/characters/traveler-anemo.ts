@@ -80,5 +80,35 @@ export const travelerAnemo: CharacterConfig = {
     { level: 4, name: "Cherishing Breeze", description: "Reduces DMG taken while casting Palm Vortex by 10%.", effects: [{ type: "informational" }] },
     { level: 5, name: "Vortex Stellaris", description: "Increases the Level of Palm Vortex by 3.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 6, name: "Intertwined Winds", description: "Targets hit by Gust Surge have Anemo RES decreased by 20%.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Anemo support providing crowd control and -20% Anemo / absorbed element RES shred via Intertwined Winds (C6).",
+    buffExplanations: [
+      {
+        name: "C6: Intertwined Winds",
+        brief: "-20% Anemo / Absorbed Element RES Shred",
+        full: "Targets who take DMG from Gust Surge have their Anemo RES decreased by 20%. If an elemental absorption occurred, their RES towards the corresponding Element is also decreased by 20%.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Anemo / Element RES Shred (Anemo MC C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 ? -20 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

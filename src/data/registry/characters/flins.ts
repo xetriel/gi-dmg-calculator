@@ -125,5 +125,53 @@ export const flins: CharacterConfig = {
       description: "The DMG dealt to opponents by Flins's Lunar-Charged reactions is elevated by 35%. Moonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Moonsign Electro sub-DPS and Lunar-Charged amplifier. Converts Electro-Charged into Lunar-Charged reactions, boosts Lunar-Charged Base DMG scaling with ATK, reduces enemy Electro RES by 25% at C2, and elevates party Lunar-Charged DMG by 10% at C6.",
+    buffExplanations: [
+      {
+        name: "Moonsign Benediction",
+        brief: "+0.7% Lunar-Charged Base DMG per 100 ATK (max 14%)",
+        full: "Converts Electro-Charged into Lunar-Charged reactions. Every 100 ATK increases party Lunar-Charged Base DMG by 0.7%, capped at 14.0%.",
+        category: "lunar",
+      },
+      {
+        name: "C2: Electro RES Shred",
+        brief: "-25% Electro RES",
+        full: "While Flins is on the field, after his Electro attacks hit an opponent, decreases that opponent's Electro RES by 25% for 7s.",
+        category: "elemental",
+      },
+      {
+        name: "C6: Songs and Dances of Death",
+        brief: "+10% Lunar-Charged DMG elevation to party",
+        full: "All nearby party members' Lunar-Charged DMG is elevated by 10%.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2200" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Electro RES Shred (Flins C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? -25 : 0),
+      },
+      {
+        stat: "lunarChargedElevation",
+        label: "Lunar-Charged Elevation (Flins C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 ? 10 : 0),
+      },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };
