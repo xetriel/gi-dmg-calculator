@@ -476,7 +476,7 @@ describe("remastered support system", () => {
       const char = byId("bennett");
       expect(char).toBeDefined();
       // Must not have function-bearing support property
-      expect((char as Record<string, unknown>).support).toBeUndefined();
+      expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
 
       // Deep serialization check: must serialize without errors
       const serialized = JSON.stringify(char);
@@ -493,7 +493,7 @@ describe("remastered support system", () => {
     it("byId(ineffa) has no functions and is 100% JSON-serializable", () => {
       const char = byId("ineffa");
       expect(char).toBeDefined();
-      expect((char as Record<string, unknown>).support).toBeUndefined();
+      expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
 
       const serialized = JSON.stringify(char);
       expect(serialized).toBeDefined();

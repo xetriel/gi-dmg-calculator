@@ -225,5 +225,7 @@ export function resolveStats(raw: RawInputs): DamageStats {
     lunarChargedFlatDmg: g("lunarChargedFlatDmg"),
     lunarBloomFlatDmg: g("lunarBloomFlatDmg"),
     lunarCrystallizeFlatDmg: g("lunarCrystallizeFlatDmg"),
+    stellarSwirlDmgBonus: g("stellarSwirlDmgBonus"),
+    stellarGlimmerDmgBonus: g("stellarGlimmerDmgBonus"),
   };
 }

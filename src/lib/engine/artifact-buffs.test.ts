@@ -1,43 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { resolveExternalArtifactBuffs } from "./artifact-buffs";
-import type { CharacterConfig } from "../../data/registry/types";
 import { ARTIFACTS, artifactById, supportArtifacts, wielderArtifacts } from "../../data/registry/artifacts";
+import { byId } from "../../data/registry/characters";
 
-const mockMizuki: CharacterConfig = {
-  id: "mizuki",
-  name: "Mizuki",
-  rarity: 5,
-  element: "Anemo",
-  weapon: "Catalyst",
-  region: "Nod-Krai",
-  dmgBonusLabel: "Anemo DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
-
-const mockArlecchino: CharacterConfig = {
-  id: "arlecchino",
-  name: "Arlecchino",
-  rarity: 5,
-  element: "Pyro",
-  weapon: "Polearm",
-  region: "Fontaine",
-  dmgBonusLabel: "Pyro DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
-
-const mockAyaka: CharacterConfig = {
-  id: "ayaka",
-  name: "Kamisato Ayaka",
-  rarity: 5,
-  element: "Cryo",
-  weapon: "Sword",
-  region: "Inazuma",
-  dmgBonusLabel: "Cryo DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
+const mockMizuki = byId("mizuki")!;
+const mockArlecchino = byId("arlecchino")!;
+const mockAyaka = byId("ayaka")!;
 
 describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
   describe("Registry Integrity", () => {

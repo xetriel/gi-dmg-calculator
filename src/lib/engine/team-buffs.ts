@@ -45,10 +45,11 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
   if (!config) return null;
 
   // Resolve ATK/HP/DEF from base+percent+flat, or simple scalar
+  const stats = inst.stats ?? {};
   const resolveTriple = (key: string) => {
-    const base = toNum(inst.stats[`${key}.base`]);
-    const pct = toNum(inst.stats[`${key}.percent`]);
-    const flat = toNum(inst.stats[`${key}.flat`]);
+    const base = toNum(stats[`${key}.base`]);
+    const pct = toNum(stats[`${key}.percent`]);
+    const flat = toNum(stats[`${key}.flat`]);
     if (base > 0 || flat > 0) {
       return base * (1 + pct / 100) + flat;
     }
@@ -57,36 +58,39 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
 
   // Robust attribute resolution: check both calculator triple keys (atk.base) and mini-card scalar keys (baseAtk)
   const baseAtk =
-    toNum(inst.stats["atk.base"]) ||
-    toNum(inst.stats["baseAtk"]) ||
-    toNum(inst.stats["atk"]);
+    toNum(stats["atk.base"]) ||
+    toNum(stats["baseAtk"]) ||
+    toNum(stats["atk"]) ||
+    0;
   const baseHp =
-    toNum(inst.stats["hp.base"]) ||
-    toNum(inst.stats["baseHp"]) ||
-    toNum(inst.stats["hp"]);
+    toNum(stats["hp.base"]) ||
+    toNum(stats["baseHp"]) ||
+    toNum(stats["hp"]) ||
+    0;
   const baseDef =
-    toNum(inst.stats["def.base"]) ||
-    toNum(inst.stats["baseDef"]) ||
-    toNum(inst.stats["def"]);
+    toNum(stats["def.base"]) ||
+    toNum(stats["baseDef"]) ||
+    toNum(stats["def"]) ||
+    0;
 
   const atk =
     resolveTriple("atk") ||
-    toNum(inst.stats["atk"]) ||
-    toNum(inst.stats["baseAtk"]) ||
+    toNum(stats["atk"]) ||
+    toNum(stats["baseAtk"]) ||
     baseAtk;
   const hp =
     resolveTriple("hp") ||
-    toNum(inst.stats["hp"]) ||
-    toNum(inst.stats["baseHp"]) ||
+    toNum(stats["hp"]) ||
+    toNum(stats["baseHp"]) ||
     baseHp;
   const def =
     resolveTriple("def") ||
-    toNum(inst.stats["def"]) ||
-    toNum(inst.stats["baseDef"]) ||
+    toNum(stats["def"]) ||
+    toNum(stats["baseDef"]) ||
     baseDef;
-  const em = toNum(inst.stats["em"]);
-  const critRate = toNum(inst.stats["critRate"]);
-  const critDmg = toNum(inst.stats["critDmg"]);
+  const em = toNum(stats["em"]);
+  const critRate = toNum(stats["critRate"]);
+  const critDmg = toNum(stats["critDmg"]);
 
   // Parse mechanic inputs with fallback to mechanic definition defaultValue
   const inputs: Record<string, number> = {};

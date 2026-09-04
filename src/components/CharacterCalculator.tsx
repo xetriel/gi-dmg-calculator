@@ -34,6 +34,8 @@ import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponB
 import { ExternalWeaponBuffModal } from "./calculator/components/ExternalWeaponBuffModal";
 import { ExternalArtifactBuffPanel } from "./calculator/components/ExternalArtifactBuffPanel";
 import { ExternalArtifactBuffModal } from "./calculator/components/ExternalArtifactBuffModal";
+import { EffectiveStatsModal } from "./calculator/components/EffectiveStatsModal";
+import { resolveAllEffectiveStats } from "@/lib/engine/effective-stats";
 
 
 const REACTION_LABEL: Record<ReactionType, string> = {
@@ -82,6 +84,12 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "cryoDmgBonus", label: "Cryo DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "geoDmgBonus", label: "Geo DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "physicalDmgBonus", label: "Physical DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "lunarChargedElevation", label: "Lunar-Charged Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomElevation", label: "Lunar-Bloom Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeElevation", label: "Lunar-Crystallize Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarChargedDmgBonus", label: "Lunar-Charged DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlDmgBonus", label: "Stellar Swirl DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "stellarGlimmerDmgBonus", label: "Stellar Glimmer DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "dmgReduction", label: "DMG Reduction / -(DMG Bonus)", unit: "percent", hideIfZero: true },
   { key: "enemyRes", label: "Enemy RES", unit: "percent" },
   { key: "levelChar", label: "Level", unit: "flat" },
@@ -223,6 +231,8 @@ export function CharacterCalculator({
   const [activeArtifactModalSetupId, setActiveArtifactModalSetupId] = useState<string>("");
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [activeTeamModalSetupId, setActiveTeamModalSetupId] = useState<string>(() => initialSetupId ?? "");
+  const [isEffectiveStatsModalOpen, setIsEffectiveStatsModalOpen] = useState(false);
+  const [activeEffectiveStatsModalSetupId, setActiveEffectiveStatsModalSetupId] = useState<string>(() => initialSetupId ?? "");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);
@@ -577,7 +587,9 @@ export function CharacterCalculator({
       rotationStepsDetails[r.id] = stepDetails;
     }
 
-    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg, rotationStepsDetails };
+    const statBreakdowns = resolveAllEffectiveStats(config, scaling, inst, inputStats, s);
+
+    return { validation, results: out, extras, inputStats, effectiveStats: s, statBreakdowns, rotationTotals, rotationStepsDmg, rotationStepsDetails };
   }
 
   const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
@@ -1352,6 +1364,18 @@ export function CharacterCalculator({
                 ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                 : 0;
 
+              const handleEffectiveStatsRedirectWithAnchor = (targetAnchorId?: string) => {
+                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
+                const encoded = encodeBuild(payload);
+                const hash = targetAnchorId ? `#${targetAnchorId}` : "";
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
+                  } catch (e) {}
+                }
+                router.push(`/characters/${config.id}/effective-stats?share=${encoded}&setup=${inst.id}${hash}`);
+              };
+
               return (
                 <div className="space-y-4">
                   {/* Reaction selector */}
@@ -1412,245 +1436,47 @@ export function CharacterCalculator({
                   {/* Remastered Effective stats panel box */}
                   <div className="mb-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/40 p-3 shadow-2xs select-none">
                     <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
-                        Effective Stats & Buff Breakdown
-                      </h2>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
-                        Formula: Raw + Additions = Total
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
+                          Effective Stats & Buff Breakdown
+                        </h2>
+                        {computed?.statBreakdowns?.some(b => b.hasExternalBuffs) && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" title="External buffs active" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveEffectiveStatsModalSetupId(inst.id);
+                            setIsEffectiveStatsModalOpen(true);
+                          }}
+                          className="px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded border border-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                          title="Open dedicated Effective Stats breakdown modal"
+                        >
+                          <span>🔍 Focus View ↗</span>
+                        </button>
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
+                          Formula: Raw + Additions = Total
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      {/* Base & Combat Stats Breakdown */}
-                      {EFFECTIVE_ROWS.map(row => {
-                        const raw = inputStats[row.key] ?? 0;
-                        const total = effectiveStats[row.key] ?? 0;
-                        const delta = total - raw;
-
-                        const additions: StatBuffSource[] = [];
-
-                        // Add mechanics sources
-                        const parsedInputs: Record<string, number> = {};
-                        if (inst.mechanicInputs) {
-                          for (const [k, v] of Object.entries(inst.mechanicInputs)) {
-                            parsedInputs[k] = Number(v) || 0;
-                          }
-                        }
-
-                        const mechResult = resolveMechanics(config, {
-                          stats: inputStats,
-                          baseAtk: toNum(inst.stats["atk.base"]) ?? 800,
-                          baseDef: toNum(inst.stats["def.base"]) ?? 500,
-                          baseHp: toNum(inst.stats["hp.base"]) ?? 15000,
-                          constellationLevel: inst.constellationLevel,
-                          talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs),
-                          scaling,
-                          inputs: parsedInputs,
-                        });
-
-                        if (mechResult.statBuffSources?.[row.key]) {
-                          additions.push(...mechResult.statBuffSources[row.key]);
-                        }
-
-                        // Add constellation stat bonuses
-                        if (config.constellations) {
-                          for (const c of config.constellations) {
-                            if (c.level <= inst.constellationLevel) {
-                              for (const e of c.effects) {
-                                if (e.type === "stat_bonus" && e.statKey === row.key && e.statValue) {
-                                  additions.push({
-                                    source: `C${c.level} (${c.name})`,
-                                    value: e.statValue,
-                                    description: c.description || `Grants +${e.statValue} ${row.label}`,
-                                  });
-                                }
-                              }
-                            }
-                          }
-                        }
-
-                        // Add team support buff sources
-                        if (inst.teamBuffsEnabled !== false && inst.teamSupports?.length) {
-                          const teamRes = resolveTeamBuffs(inst.teamSupports, true);
-                          for (const src of teamRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.supportName} (Team)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-                        // Add external weapon buff sources
-                        if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
-                          const weaponRes = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
-                          for (const src of weaponRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.weaponName} (Weapon)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-                        // Add external artifact buff sources
-                        if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
-                          const artifactRes = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
-                          for (const src of artifactRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.artifactName} (Artifact)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-
-                        // Generic fallback addition if total differs from raw but no source was explicitly captured
-                        const recordedSum = additions.reduce((acc, curr) => acc + curr.value, 0);
-                        const unrecordedDelta = delta - recordedSum;
-                        if (Math.abs(unrecordedDelta) > 0.05) {
-                          additions.push({
-                            source: "Character Mechanics / Trait Buff",
-                            value: unrecordedDelta,
-                            description: "Special state or active passive mechanic modifier",
-                          });
-                        }
-
-                        return (
-                          <StatBreakdownRow
-                            key={row.key}
-                            name={row.label}
-                            unit={row.unit}
-                            raw={raw}
-                            additions={additions}
-                            total={total}
-                            hideIfZero={row.hideIfZero}
-                          />
-                        );
-                      })}
-
-                      {/* Reaction Multipliers & Reaction Buff Rows */}
-                      <StatBreakdownRow
-                        name="Transformative Reaction Bonus"
-                        unit="percent"
-                        raw={emTransformative}
-                        additions={
-                          reactionBonusPct > 0
-                            ? [{ source: "Panel Reaction Bonus", value: reactionBonusPct, description: "Direct reaction bonus input" }]
-                            : []
-                        }
-                        total={totalTransformativeBonus}
-                      />
-
-                      {showAmplifying && config.element === "Pyro" && (
-                        <>
-                          <StatBreakdownRow
-                            name="Vaporize Multiplier"
-                            unit="multiplier"
-                            raw={1.5}
-                            additions={[
-                              ...(emAmplifyingBonus > 0
-                                ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                                : []),
-                              ...(instReactionBonusPct > 0
-                                ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                                : []),
-                            ]}
-                            total={getAmpMult(1.5)}
-                          />
-                          <StatBreakdownRow
-                            name="Melt Multiplier"
-                            unit="multiplier"
-                            raw={2.0}
-                            additions={[
-                              ...(emAmplifyingBonus > 0
-                                ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                                : []),
-                              ...(instReactionBonusPct > 0
-                                ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                                : []),
-                            ]}
-                            total={getAmpMult(2.0)}
-                          />
-                        </>
-                      )}
-
-                      {showAmplifying && config.element === "Hydro" && (
+                      {(computed?.statBreakdowns ?? resolveAllEffectiveStats(config, scaling, inst, inputStats, effectiveStats)).map(row => (
                         <StatBreakdownRow
-                          name="Vaporize Multiplier"
-                          unit="multiplier"
-                          raw={2.0}
-                          additions={[
-                            ...(emAmplifyingBonus > 0
-                              ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                              : []),
-                            ...(instReactionBonusPct > 0
-                              ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                              : []),
-                          ]}
-                          total={getAmpMult(2.0)}
+                          key={row.key}
+                          statKey={row.key}
+                          name={row.label}
+                          unit={row.unit}
+                          raw={row.raw}
+                          additions={row.additions}
+                          total={row.total}
+                          hideIfZero={row.hideIfZero}
+                          hasExternalBuffs={row.hasExternalBuffs}
+                          onRedirect={handleEffectiveStatsRedirectWithAnchor}
                         />
-                      )}
-
-                      {showAmplifying && config.element === "Cryo" && (
-                        <StatBreakdownRow
-                          name="Melt Multiplier"
-                          unit="multiplier"
-                          raw={1.5}
-                          additions={[
-                            ...(emAmplifyingBonus > 0
-                              ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                              : []),
-                            ...(instReactionBonusPct > 0
-                              ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                              : []),
-                          ]}
-                          total={getAmpMult(1.5)}
-                        />
-                      )}
-
-                      {showCatalyze && (
-                        <StatBreakdownRow
-                          name="Aggravate Flat DMG Bonus"
-                          unit="flat"
-                          raw={1.15 * levelMultiplier(effectiveStats.levelChar)}
-                          additions={
-                            emCatalyzeBonus > 0 || instReactionBonusPct > 0
-                              ? [
-                                  {
-                                    source: "EM Catalyze & Panel Reaction Bonus",
-                                    value: aggravateFlat - 1.15 * levelMultiplier(effectiveStats.levelChar),
-                                    description: "Level base scaling * (1 + EM bonus% + panel reaction bonus%)",
-                                  },
-                                ]
-                              : []
-                          }
-                          total={aggravateFlat}
-                        />
-                      )}
-
-                      {toNum(inst.lunarBaseBonus) ? (
-                        <StatBreakdownRow
-                          name="Lunar Reaction Base DMG Bonus"
-                          unit="percent"
-                          raw={0}
-                          additions={[
-                            {
-                              source: "Moonsign Benediction / Panel Input",
-                              value: toNum(inst.lunarBaseBonus) || 0,
-                              description: "Lunar reaction base DMG bonus %",
-                            },
-                          ]}
-                          total={toNum(inst.lunarBaseBonus) || 0}
-                        />
-                      ) : null}
+                      ))}
                     </div>
                   </div>
 
@@ -2021,6 +1847,18 @@ export function CharacterCalculator({
         activeInstanceId={activeTeamModalSetupId || instances[0]?.id || ""}
         setActiveInstanceId={setActiveTeamModalSetupId}
         updateInstance={updateInstance}
+      />
+
+      {/* Effective Stats Breakdown Focus View Modal */}
+      <EffectiveStatsModal
+        isOpen={isEffectiveStatsModalOpen}
+        setIsOpen={setIsEffectiveStatsModalOpen}
+        config={config}
+        scaling={scaling}
+        instances={instances}
+        activeInstanceId={activeEffectiveStatsModalSetupId || instances[0]?.id || ""}
+        setActiveInstanceId={setActiveEffectiveStatsModalSetupId}
+        computedById={computedById}
       />
 
       {/* Rotation Builder Dialog Overlay popup */}

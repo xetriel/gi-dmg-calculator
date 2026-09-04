@@ -5,8 +5,10 @@ import type { MechanicsCtx } from "../mechanics-utils";
 
 function makeCtx(overrides: Partial<MechanicsCtx> = {}): MechanicsCtx {
   return {
+    stats: {} as any,
     baseAtk: 800,
-    totalAtk: 1200,
+    baseDef: 0,
+    scaling: {},
     inputs: {
       "fantastic-voyage-active": 1,
       "c6-pyro-bonus": 1,
