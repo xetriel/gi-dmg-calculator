@@ -4,7 +4,7 @@ export const gladiatorsFinale: ArtifactConfig = {
   id: "gladiators-finale",
   name: "Gladiator's Finale",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
+  twoPieceDesc: "ATK +18%.",
   fourPieceDesc: "If the wielder of this artifact set uses a Sword, Claymore or Polearm, increases their Normal Attack DMG by 35%.",
   isSupport: false,
   buffType: "self",

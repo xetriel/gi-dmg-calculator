@@ -4,7 +4,7 @@ export const tenacityOfTheMillelith: ArtifactConfig = {
   id: "tenacity-of-the-millelith",
   name: "Tenacity of the Millelith",
   rarity: 5,
-  twoPieceDesc: "HP increased by 20%.",
+  twoPieceDesc: "HP +20%",
   fourPieceDesc: "When an Elemental Skill hits an opponent, the ATK of all nearby party members is increased by 20% and their Shield Strength is increased by 30% for 3s. This effect can be triggered once every 0.5s. This effect can still be triggered even when the character who is using this artifact set is not on the field.",
   isSupport: true,
   buffType: "both",
@@ -26,7 +26,7 @@ export const tenacityOfTheMillelith: ArtifactConfig = {
       isTeamBuff: false,
       isPercent: true,
       value: 20,
-      compute: (ctx) => (20 / 100) * ctx.baseAtk,
+      compute: (ctx) => (20 / 100) * (ctx.baseHp ?? 0),
     },
     {
       id: "totm-4pc-party-atk",

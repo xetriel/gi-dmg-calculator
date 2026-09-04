@@ -4,7 +4,7 @@ export const theExile: ArtifactConfig = {
   id: "the-exile",
   name: "The Exile",
   rarity: 4,
-  twoPieceDesc: "Energy Recharge +20%.",
+  twoPieceDesc: "Energy Recharge +20%",
   fourPieceDesc: "Using an Elemental Burst regenerates 2 Energy for all party members (excluding the wearer) every 2s for 6s. This effect cannot stack.",
   isSupport: true,
   buffType: "both",

@@ -125,7 +125,14 @@ export function resolveAllEffectiveStats(
     : { statDeltas: {}, sources: [] };
 
   const artifactRes = inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length
-    ? resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true)
+    ? resolveExternalArtifactBuffs(
+        inst.externalArtifacts,
+        toNum(inst.stats["atk.base"]) ?? 0,
+        config,
+        true,
+        toNum(inst.stats["def.base"]) ?? 0,
+        toNum(inst.stats["hp.base"]) ?? 0,
+      )
     : { statDeltas: {}, sources: [] };
 
   // Multiplier math parameters

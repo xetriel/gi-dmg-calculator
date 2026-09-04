@@ -4,7 +4,7 @@ export const bloodstainedChivalry: ArtifactConfig = {
   id: "bloodstained-chivalry",
   name: "Bloodstained Chivalry",
   rarity: 5,
-  twoPieceDesc: "Physical DMG +25%.",
+  twoPieceDesc: "Physical DMG Bonus +25%",
   fourPieceDesc: "After defeating an opponent, increases Charged Attack DMG by 50%, and reduces its Stamina cost to 0 for 10s.",
   isSupport: false,
   buffType: "self",

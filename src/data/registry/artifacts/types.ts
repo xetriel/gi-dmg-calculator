@@ -8,6 +8,8 @@ export interface ArtifactBuffContext {
   pieceCount: ArtifactPieceCount;              // 1, 2 or 4
   slot: ArtifactSlot;                          // "wielder" (active DPS) or "support" (party member)
   baseAtk: number;                             // active character's base ATK
+  baseDef?: number;                            // active character's base DEF
+  baseHp?: number;                             // active character's base HP
   charElement?: Element;                       // active character's element
   charWeapon?: string;                         // active character's weapon type e.g. "Sword", "Claymore", "Polearm", "Bow", "Catalyst"
   energyRecharge?: number;                     // active character's ER% (e.g. 150 for Emblem)
@@ -30,7 +32,8 @@ export interface ArtifactBuffDef {
 export interface ArtifactConfig {
   id: string;                                  // slug identifier e.g. "scarlet-proof", "heart-of-the-furnace"
   name: string;                                // display name
-  rarity: ArtifactRarity;                      // 4 or 5
+  rarity: ArtifactRarity;                      // 1, 2, 3, 4 or 5
+  onePieceDesc?: string;                       // optional 1-Piece bonus description (for Tiara circlets)
   twoPieceDesc: string;                        // 2-Piece bonus description
   fourPieceDesc: string;                       // 4-Piece bonus description
   isSupport: boolean;                          // Has party/team buff capabilities

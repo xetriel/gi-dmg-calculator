@@ -2,10 +2,10 @@ import type { ArtifactConfig } from "./types";
 
 export const aDayCarvedFromRisingWinds: ArtifactConfig = {
   id: "a-day-carved-from-rising-winds",
-  name: "A Day Carved From Rising Winds",
+  name: "A Day Carved from Rising Winds",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
-  fourPieceDesc: "After NA/CA/Skill/Burst hits, gain Blessing of Pastoral Winds: ATK +25%. If equipping character has completed Witch's Homework, upgraded to Resolve of Pastoral Winds (+20% CRIT Rate extra).",
+  twoPieceDesc: "ATK +18%.",
+  fourPieceDesc: "After a Normal Attack, Charged Attack, Elemental Skill or Elemental Burst hits an opponent, gain the Blessing of Pastoral Winds effect for 6s: ATK is increased by 25%. If the equipping character has completed Witch's Homework, Blessing of Pastoral Winds will be upgraded to Resolve of Pastoral Winds, which also increases the CRIT Rate of the equipping character by an additional 20%. This effect can be triggered even when the character is off-field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

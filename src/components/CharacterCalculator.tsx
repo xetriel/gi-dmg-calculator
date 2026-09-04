@@ -460,7 +460,14 @@ export function CharacterCalculator({
 
     // Apply external artifact team buffs
     if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
-      const artifactResult = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+      const artifactResult = resolveExternalArtifactBuffs(
+        inst.externalArtifacts,
+        toNum(inst.stats["atk.base"]) ?? 0,
+        config,
+        true,
+        toNum(inst.stats["def.base"]) ?? 0,
+        toNum(inst.stats["hp.base"]) ?? 0,
+      );
       for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
         if (key in s && typeof val === "number") {
           (s as unknown as Record<string, number>)[key] += val;

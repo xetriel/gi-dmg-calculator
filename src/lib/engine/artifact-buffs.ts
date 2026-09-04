@@ -34,12 +34,16 @@ export interface ExternalArtifactBuffResult {
  * @param baseAtk - active character's base ATK
  * @param charConfig - active character's CharacterConfig (for element and routing)
  * @param masterEnabled - master toggle state for external artifact buffs (defaults to true)
+ * @param baseDef - active character's base DEF (defaults to 0)
+ * @param baseHp - active character's base HP (defaults to 0)
  */
 export function resolveExternalArtifactBuffs(
   artifacts: ExternalArtifactInstance[] | undefined,
   baseAtk: number = 0,
   charConfig?: CharacterConfig,
   masterEnabled: boolean = true,
+  baseDef: number = 0,
+  baseHp: number = 0,
 ): ExternalArtifactBuffResult {
   const result: ExternalArtifactBuffResult = {
     statDeltas: {},
@@ -69,6 +73,8 @@ export function resolveExternalArtifactBuffs(
       pieceCount,
       slot,
       baseAtk,
+      baseDef,
+      baseHp,
       charElement: charConfig?.element,
       charWeapon: charConfig?.weapon,
       inputs: inst.inputs ?? {},
@@ -101,8 +107,16 @@ export function resolveExternalArtifactBuffs(
         val = buff.compute(ctx);
       } else {
         const rawVal = buff.value ?? 0;
-        if (buff.isPercent && buff.stat === "atk") {
-          val = (rawVal / 100) * baseAtk;
+        if (buff.isPercent) {
+          if (buff.stat === "atk") {
+            val = (rawVal / 100) * baseAtk;
+          } else if (buff.stat === "def") {
+            val = (rawVal / 100) * baseDef;
+          } else if (buff.stat === "hp") {
+            val = (rawVal / 100) * baseHp;
+          } else {
+            val = rawVal;
+          }
         } else {
           val = rawVal;
         }

@@ -4,7 +4,7 @@ export const emblemOfSeveredFate: ArtifactConfig = {
   id: "emblem-of-severed-fate",
   name: "Emblem of Severed Fate",
   rarity: 5,
-  twoPieceDesc: "Energy Recharge +20%.",
+  twoPieceDesc: "Energy Recharge +20%",
   fourPieceDesc: "Increases Elemental Burst DMG by 25% of Energy Recharge. A maximum of 75% bonus DMG can be obtained in this way.",
   isSupport: false,
   buffType: "self",

@@ -4,7 +4,7 @@ export const blizzardStrayer: ArtifactConfig = {
   id: "blizzard-strayer",
   name: "Blizzard Strayer",
   rarity: 5,
-  twoPieceDesc: "Cryo DMG Bonus +15%.",
+  twoPieceDesc: "Cryo DMG Bonus +15%",
   fourPieceDesc: "When a character attacks an opponent affected by Cryo, their CRIT Rate is increased by 20%. If the opponent is Frozen, CRIT Rate is increased by an additional 20%.",
   isSupport: false,
   buffType: "self",

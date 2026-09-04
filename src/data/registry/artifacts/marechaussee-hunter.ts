@@ -5,7 +5,7 @@ export const marechausseeHunter: ArtifactConfig = {
   name: "Marechaussee Hunter",
   rarity: 5,
   twoPieceDesc: "Normal and Charged Attack DMG +15%.",
-  fourPieceDesc: "When current HP increases or decreases, CRIT Rate will be increased by 12% for 5s. Max 3 stacks (Total +36% CRIT Rate).",
+  fourPieceDesc: "When current HP increases or decreases, CRIT Rate will be increased by 12% for 5s. Max 3 stacks.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

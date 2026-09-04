@@ -5,7 +5,7 @@ export const vermillionHereafter: ArtifactConfig = {
   name: "Vermillion Hereafter",
   rarity: 5,
   twoPieceDesc: "ATK +18%.",
-  fourPieceDesc: "After using Elemental Burst, gain Nascent Light increasing ATK by 8%, plus 10% per HP loss stack (max 4 stacks, total +48% ATK).",
+  fourPieceDesc: "After using an Elemental Burst, this character will gain the Nascent Light effect, increasing their ATK by 8% for 16s. When the character's HP decreases, their ATK will further increase by 10%. This increase can occur this way maximum of 4 times. This effect can be triggered once every 0.8s. Nascent Light will be dispelled when the character leaves the field. If an Elemental Burst is used again during the duration of Nascent Light, the original Nascent Light will be dispelled.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

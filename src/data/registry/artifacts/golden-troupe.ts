@@ -5,7 +5,7 @@ export const goldenTroupe: ArtifactConfig = {
   name: "Golden Troupe",
   rarity: 5,
   twoPieceDesc: "Increases Elemental Skill DMG by 20%.",
-  fourPieceDesc: "Increases Elemental Skill DMG by 25%. Additionally, when not on the field, Elemental Skill DMG will be further increased by 25% (Total +70% Skill DMG).",
+  fourPieceDesc: "Increases Elemental Skill DMG by 25%. Additionally, when not on the field, Elemental Skill DMG will be further increased by 25%. This effect will be cleared 2s after taking the field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

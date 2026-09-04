@@ -151,7 +151,7 @@ export function explainHitFormulas(
 
   // Apply external artifact team buffs
   const artifactResult = (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length)
-    ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true)
+    ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true, baseDef, baseHp)
     : null;
   if (artifactResult) {
     for (const [key, val] of Object.entries(artifactResult.statDeltas)) {

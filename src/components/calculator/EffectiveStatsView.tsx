@@ -178,8 +178,15 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
       }
     }
 
-    if (currentInst.externalArtifactBuffsEnabled !== false && currentInst.externalArtifacts?.length) {
-      const artifactRes = resolveExternalArtifactBuffs(currentInst.externalArtifacts, toNum(currentInst.stats["atk.base"]) ?? 0, config, true);
+    if (currentInst.externalArtifacts?.length && currentInst.externalArtifactBuffsEnabled !== false) {
+      const artifactRes = resolveExternalArtifactBuffs(
+        currentInst.externalArtifacts,
+        toNum(currentInst.stats["atk.base"]) ?? 0,
+        config,
+        true,
+        toNum(currentInst.stats["def.base"]) ?? 0,
+        toNum(currentInst.stats["hp.base"]) ?? 0,
+      );
       for (const [key, val] of Object.entries(artifactRes.statDeltas)) {
         if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
       }

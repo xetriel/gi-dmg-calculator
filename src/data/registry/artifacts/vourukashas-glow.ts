@@ -4,8 +4,8 @@ export const vourukashasGlow: ArtifactConfig = {
   id: "vourukashas-glow",
   name: "Vourukasha's Glow",
   rarity: 5,
-  twoPieceDesc: "HP increased by 20%.",
-  fourPieceDesc: "Elemental Skill and Elemental Burst DMG +10%. Taking DMG increases this bonus by 80% per stack (max 5 stacks, total +50% Skill/Burst DMG).",
+  twoPieceDesc: "HP +20%",
+  fourPieceDesc: "Elemental Skill and Elemental Burst DMG will be increased by 10%. After the equipping character takes DMG, the aforementioned DMG Bonus is increased by 80% for 5s. This effect increase can have 5 stacks. The duration of each stack is counted independently. These effects can be triggered even when the equipping character is not on the field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -28,7 +28,7 @@ export const vourukashasGlow: ArtifactConfig = {
       isTeamBuff: false,
       isPercent: true,
       value: 20,
-      compute: (ctx) => (20 / 100) * ctx.baseAtk,
+      compute: (ctx) => (20 / 100) * (ctx.baseHp ?? 0),
     },
     {
       id: "vourukasha-4pc-skill",

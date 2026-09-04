@@ -4,7 +4,7 @@ export const scholar: ArtifactConfig = {
   id: "scholar",
   name: "Scholar",
   rarity: 4,
-  twoPieceDesc: "Energy Recharge +20%.",
+  twoPieceDesc: "Energy Recharge +20%",
   fourPieceDesc: "Gaining Elemental Particles or Orbs gives 3 Energy to all party members who have a bow or a catalyst equipped. Can only occur once every 3s.",
   isSupport: true,
   buffType: "both",

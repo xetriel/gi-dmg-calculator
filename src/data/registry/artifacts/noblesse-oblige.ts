@@ -4,7 +4,7 @@ export const noblesseOblige: ArtifactConfig = {
   id: "noblesse-oblige",
   name: "Noblesse Oblige",
   rarity: 5,
-  twoPieceDesc: "Elemental Burst DMG +20%.",
+  twoPieceDesc: "Elemental Burst DMG +20%",
   fourPieceDesc: "Using an Elemental Burst increases all party members' ATK by 20% for 12s. This effect cannot stack.",
   isSupport: true,
   buffType: "both",

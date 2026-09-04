@@ -4,7 +4,7 @@ export const adventurer: ArtifactConfig = {
   id: "adventurer",
   name: "Adventurer",
   rarity: 3,
-  twoPieceDesc: "Max HP increased by 1,000.",
+  twoPieceDesc: "Max HP increased by 1000.",
   fourPieceDesc: "Opening a chest regenerates 30% Max HP over 5s.",
   isSupport: false,
   buffType: "self",

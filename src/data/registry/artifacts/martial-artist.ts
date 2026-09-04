@@ -4,7 +4,7 @@ export const martialArtist: ArtifactConfig = {
   id: "martial-artist",
   name: "Martial Artist",
   rarity: 4,
-  twoPieceDesc: "Increases Normal Attack and Charged Attack DMG by 15%.",
+  twoPieceDesc: "Normal and Charged Attack DMG +15%",
   fourPieceDesc: "After using Elemental Skill, increases Normal Attack and Charged Attack DMG by 25% for 8s.",
   isSupport: false,
   buffType: "self",

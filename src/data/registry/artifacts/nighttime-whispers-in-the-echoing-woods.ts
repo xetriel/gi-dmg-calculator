@@ -4,8 +4,8 @@ export const nighttimeWhispersInTheEchoingWoods: ArtifactConfig = {
   id: "nighttime-whispers-in-the-echoing-woods",
   name: "Nighttime Whispers in the Echoing Woods",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
-  fourPieceDesc: "After using an Elemental Skill, gain a 20% Geo DMG Bonus for 10s. When under a shield granted by Crystallize or near Moondrifts, effect is increased by 150% (+50% Geo DMG total).",
+  twoPieceDesc: "ATK +18%.",
+  fourPieceDesc: "After using an Elemental Skill, gain a 20% Geo DMG Bonus for 10s. When under a shield granted by the Crystallize reaction, or when Moondrifts formed by Lunar-Crystallize reactions are nearby, the above effect will be increased by 150%. When these conditions are no longer met, this additional increase disappears after 1s.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

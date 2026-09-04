@@ -4,7 +4,7 @@ export const viridescentVenerer: ArtifactConfig = {
   id: "viridescent-venerer",
   name: "Viridescent Venerer",
   rarity: 5,
-  twoPieceDesc: "Anemo DMG Bonus +15%.",
+  twoPieceDesc: "Anemo DMG Bonus +15%",
   fourPieceDesc: "Increases Swirl Reaction DMG dealt by 60%, and Stellar Swirl reaction DMG dealt by 20%. Decreases opponent's Elemental RES to the element infused in the Swirl by 40% for 10s. Upon triggering a Stellar Swirl in the opponent, will also decrease their Cryo RES by 40%. RES debuffs of the same elemental type do not stack.",
   isSupport: true,
   buffType: "both",
