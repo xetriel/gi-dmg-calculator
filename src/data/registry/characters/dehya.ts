@@ -115,5 +115,29 @@ export const dehya: CharacterConfig = {
       description: "CRIT Rate of Leonine Bite is increased by 10%. Flame-Mane's Fist CRIT hits increase Burst CRIT DMG by 15% (max 4 stacks = +60% CRIT DMG).",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro claymore unit providing party damage mitigation, interruption resistance via Fiery Sanctum, and off-field Pyro application.",
+    buffExplanations: [
+      {
+        name: "Skill: Molten Inferno",
+        brief: "DMG Mitigation & Super Armor",
+        full: "Fiery Sanctum fields mitigate damage taken by active characters, redirecting it to Dehya's Redmane's Blood, while granting poise resistance.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "35000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

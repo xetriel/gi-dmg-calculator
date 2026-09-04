@@ -1,13 +1,18 @@
-import { aTeaspoonOfTranscendence } from "./a-teaspoon-of-transcendence";
 import { aThousandFloatingDreams } from "./a-thousand-floating-dreams";
+import { angelosHeptades } from "./angelos-heptades";
 import { apprenticesNotes } from "./apprentices-notes";
 import { ashGravenDrinkingHorn } from "./ash-graven-drinking-horn";
 import { balladOfTheBoundlessBlue } from "./ballad-of-the-boundless-blue";
 import { blackcliffAgate } from "./blackcliff-agate";
+import { blackmarrowLantern } from "./blackmarrow-lantern";
 import { cashflowSupervision } from "./cashflow-supervision";
+import { clashOfKings } from "./clash-of-kings";
 import { cranesEchoingCall } from "./cranes-echoing-call";
+import { dawningFrost } from "./dawning-frost";
 import { dodocoTales } from "./dodoco-tales";
+import { echoesOfTheHeart } from "./echoes-of-the-heart";
 import { emeraldOrb } from "./emerald-orb";
+import { etherlightSpindlelute } from "./etherlight-spindlelute";
 import { everlastingMoonglow } from "./everlasting-moonglow";
 import { eyeOfPerception } from "./eye-of-perception";
 import { favoniusCodex } from "./favonius-codex";
@@ -49,16 +54,21 @@ import { wineAndSong } from "./wine-and-song";
 import type { WeaponConfig } from "../types";
 
 export {
-  aTeaspoonOfTranscendence,
   aThousandFloatingDreams,
+  angelosHeptades,
   apprenticesNotes,
   ashGravenDrinkingHorn,
   balladOfTheBoundlessBlue,
   blackcliffAgate,
+  blackmarrowLantern,
   cashflowSupervision,
+  clashOfKings,
   cranesEchoingCall,
+  dawningFrost,
   dodocoTales,
+  echoesOfTheHeart,
   emeraldOrb,
+  etherlightSpindlelute,
   everlastingMoonglow,
   eyeOfPerception,
   favoniusCodex,
@@ -100,16 +110,21 @@ export {
 };
 
 export const CATALYSTS: WeaponConfig[] = [
-  aTeaspoonOfTranscendence,
   aThousandFloatingDreams,
+  angelosHeptades,
   apprenticesNotes,
   ashGravenDrinkingHorn,
   balladOfTheBoundlessBlue,
   blackcliffAgate,
+  blackmarrowLantern,
   cashflowSupervision,
+  clashOfKings,
   cranesEchoingCall,
+  dawningFrost,
   dodocoTales,
+  echoesOfTheHeart,
   emeraldOrb,
+  etherlightSpindlelute,
   everlastingMoonglow,
   eyeOfPerception,
   favoniusCodex,

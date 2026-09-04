@@ -4,7 +4,7 @@ export const heartOfDepth: ArtifactConfig = {
   id: "heart-of-depth",
   name: "Heart of Depth",
   rarity: 5,
-  twoPieceDesc: "Hydro DMG Bonus +15%.",
+  twoPieceDesc: "Hydro DMG Bonus +15%",
   fourPieceDesc: "After using an Elemental Skill, increases Normal Attack and Charged Attack DMG by 30% for 15s.",
   isSupport: false,
   buffType: "self",

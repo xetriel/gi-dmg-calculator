@@ -4,8 +4,8 @@ export const nymphsDream: ArtifactConfig = {
   id: "nymphs-dream",
   name: "Nymph's Dream",
   rarity: 5,
-  twoPieceDesc: "Hydro DMG Bonus +15%.",
-  fourPieceDesc: "After Normal/Charged/Plunge/Skill/Burst hits, gain Mirrored Nymph stacks. 1/2/3 stacks grant +7%/16%/25% ATK and +4%/9%/15% Hydro DMG.",
+  twoPieceDesc: "Hydro DMG Bonus +15%",
+  fourPieceDesc: "After Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts hit opponents, 1 stack of Mirrored Nymph will be triggered, lasting 8s. When under the effect of 1, 2, or 3 or more Mirrored Nymph stacks, ATK will be increased by 7%/16%/25%, and Hydro DMG will be increased by 4%/9%/15%. Mirrored Nymph created by Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts exist independently.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

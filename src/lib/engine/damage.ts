@@ -47,6 +47,8 @@ export interface DamageStats {
   lunarCrystallizeFlatDmg?: number;
   stellarSwirlDmgBonus?: number;
   stellarGlimmerDmgBonus?: number;
+  flatDmgBonus?: number;
+  allRes?: number;
 }
 
 // Per-hit direct-reaction parameters, shared by Stellar-Conduct and Direct Lunar
@@ -269,13 +271,14 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
 
     const abilityBase = s.coefficient * (hit.multiplier / 100) * scalingTotal(stats, hit.scaling);
     const scaledBase = abilityBase * emRxBonusFactor * baseDmgBonusFactor * baseMultFactor;
-    const totalBase = scaledBase + (hit.flatDmgBonus ?? 0) + specificFlatDmg;
+    const totalBase = scaledBase + (hit.flatDmgBonus ?? 0) + (stats.flatDmgBonus ?? 0) + specificFlatDmg;
     const specialBonusFactor = 1 + (specificElevation + (s.elevationBonusPct ?? 0)) / 100;
 
     nonCrit = totalBase * specialBonusFactor * resMultiplier(stats.enemyRes);
   } else {
     const additive =
       (hit.flatDmgBonus ?? 0) +
+      (stats.flatDmgBonus ?? 0) +
       (hit.element === "Physical" ? 0 : catalyzeAdditive(hit.element, hit.reaction, stats.levelChar, stats.em, hit.reactionBonusPct));
     const base =
       (hit.multiplier / 100) * scalingTotal(stats, hit.scaling) * (hit.baseDmgMultiplier ?? 1) +

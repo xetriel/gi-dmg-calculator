@@ -4,7 +4,7 @@ export const braveHeart: ArtifactConfig = {
   id: "brave-heart",
   name: "Brave Heart",
   rarity: 4,
-  twoPieceDesc: "ATK increased by 18%.",
+  twoPieceDesc: "ATK +18%.",
   fourPieceDesc: "Increases DMG by 30% against opponents with more than 50% HP.",
   isSupport: false,
   buffType: "self",

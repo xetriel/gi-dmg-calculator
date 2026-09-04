@@ -130,5 +130,31 @@ export const cyno: CharacterConfig = {
       description: "After using Burst or triggering Judication, Cyno gains 4 stacks of Day of the Jackal to fire off Duststalker Bolts.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Electro hypercarry specializing in extended Burst stance combat. Provides team presence, Electro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Electro Hypercarry",
+        brief: "On-Field Electro Hypercarry",
+        full: "Cyno enters the Pactsworn Pathclearer state during Sacred Rite: Wolf's Swiftness to deal continuous Electro DMG with high EM scaling, without providing party buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "850" },
+      { key: "em", label: "Elemental Mastery", defaultValue: "250" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "160" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "EM", value: fmt(ctx.em) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

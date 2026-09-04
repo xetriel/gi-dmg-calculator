@@ -128,5 +128,29 @@ export const xiao: CharacterConfig = {
       description: "While under the effects of Bane of All Evil, hitting at least 2 opponents with a Plunging Attack grants 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he can use Lemniscatic Wind Cycling while ignoring its CD.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Anemo plunging hypercarry. Provides team presence, Anemo resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Anemo Plunge Hypercarry",
+        brief: "On-Field Anemo Hypercarry",
+        full: "Xiao unleashes continuous high-flying Anemo plunging attacks during Bane of All Evil without conferring buffs to party members.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "900" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "180" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

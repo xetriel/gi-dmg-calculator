@@ -67,5 +67,35 @@ export const travelerElectro: CharacterConfig = {
     { level: 4, name: "Fickle Clouds", description: "Abundance Amulet restores additional Energy if Energy is below 35%.", effects: [{ type: "informational" }] },
     { level: 5, name: "Clap of Thunder", description: "Increases the Level of Lightning Blade by 3.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 6, name: "World-Shaking Thunder", description: "Every 3rd Falling Thunder deals +100% DMG.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Electro battery and support providing team energy generation via Abundance Amulets and -15% Electro RES shred via Violet Vehemence (C2).",
+    buffExplanations: [
+      {
+        name: "C2: Violet Vehemence",
+        brief: "-15% Electro RES Shred",
+        full: "When Falling Thunder created by Bellowing Thunder hits an opponent, it decreases their Electro RES by 15% for 8s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Electro RES Shred (Electro MC C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 && (ctx.inputs["c2-electro-shred"] ?? 1) > 0 ? -15 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

@@ -30,10 +30,11 @@ describe("Full Weapon Registry Integrity (Released Weapons)", () => {
     const catalysts = WEAPONS.filter(w => w.type === "Catalyst");
 
     expect(swords.length).toBe(56);
-    expect(claymores.length).toBe(47);
-    expect(polearms.length).toBe(44);
+    expect(claymores.length).toBe(45);
+    expect(polearms.length).toBe(43);
     expect(bows.length).toBe(49);
-    expect(catalysts.length).toBe(48);
+    expect(catalysts.length).toBe(53);
+    expect(WEAPONS.length).toBe(246);
   });
 });
 
@@ -236,24 +237,38 @@ describe("Elegy for the End & TTDS Buff Resolvers", () => {
     expect(result.statDeltas.em).toBe(140);
   });
 
-  it("Athame Artis provides team Elemental DMG Bonus and ATK%", () => {
+  it("Athame Artis provides team ATK% and Hexerei bonus", () => {
     const baseAtk = 1000;
-    const result = resolveExternalWeaponBuffs(
+    const resultR1 = resolveExternalWeaponBuffs(
       [{
         id: "1",
         weaponId: "athame-artis",
         refinement: 1,
         enabled: true,
-        inputs: { "athame-reaction-active": "1" },
+        inputs: { "athame-burst-hit": "1" },
       }],
       baseAtk,
       arlecchino,
       true
     );
 
-    // +12% All Elemental DMG bonus and +16% ATK
-    expect(result.statDeltas.dmgBonus).toBe(12);
-    expect(result.statDeltas.atk).toBe(160); // 16% of 1000
+    // +16% ATK at R1 (16% of 1000 = 160)
+    expect(resultR1.statDeltas.atk).toBe(160);
+
+    // With Hexerei: Secret Rite (+75% effect = 28% ATK = 280)
+    const resultHex = resolveExternalWeaponBuffs(
+      [{
+        id: "1",
+        weaponId: "athame-artis",
+        refinement: 1,
+        enabled: true,
+        inputs: { "athame-burst-hit": "1", "athame-hexerei-active": "1" },
+      }],
+      baseAtk,
+      arlecchino,
+      true
+    );
+    expect(resultHex.statDeltas.atk).toBe(280);
   });
 
   it("Freedom-Sworn provides team NA/CA/Plunge DMG and ATK%", () => {
@@ -516,5 +531,95 @@ describe("Stacking and Master Toggle Control", () => {
     const result = resolveExternalWeaponBuffs(weapons, 1000, arlecchino, true);
     expect(result.statDeltas.em).toBe(100);
   });
+
+  it("enforces maximum of 4 external weapons (ignores 5th weapon and beyond)", () => {
+    const baseAtk = 1000;
+    const weapons = [
+      { id: "1", weaponId: "a-thousand-floating-dreams", refinement: 1, enabled: true }, // +40 EM
+      { id: "2", weaponId: "elegy-for-the-end", refinement: 1, enabled: true }, // +100 EM, +200 ATK
+      { id: "3", weaponId: "thrilling-tales-of-dragon-slayers", refinement: 5, enabled: true }, // +480 ATK
+      { id: "4", weaponId: "freedom-sworn", refinement: 1, enabled: true }, // +200 ATK, +16% NA/CA/Plunge DMG
+      { id: "5", weaponId: "forest-regalia", refinement: 1, enabled: true, inputs: { "leaf-of-consciousness": 1 } }, // +60 EM, should be IGNORED
+    ];
+
+    const result = resolveExternalWeaponBuffs(weapons, baseAtk, arlecchino, true);
+    // Weapons 1 to 4 applied:
+    // EM: 40 (ATFD) + 100 (Elegy) = 140. (Forest Regalia +60 is NOT applied)
+    expect(result.statDeltas.em).toBe(140);
+    // ATK: 200 (Elegy) + 480 (TTDS) + 200 (Freedom-Sworn) = 880
+    expect(result.statDeltas.atk).toBe(880);
+    // Normal DMG: 16% (Freedom-Sworn)
+    expect(result.statDeltas.normalDmgBonus).toBe(16);
+
+    // Only sources from the first 4 weapons exist
+    const sourceWeaponIds = new Set(result.sources.map((s) => s.weaponId));
+    expect(sourceWeaponIds.has("a-thousand-floating-dreams")).toBe(true);
+    expect(sourceWeaponIds.has("elegy-for-the-end")).toBe(true);
+    expect(sourceWeaponIds.has("thrilling-tales-of-dragon-slayers")).toBe(true);
+    expect(sourceWeaponIds.has("freedom-sworn")).toBe(true);
+    expect(sourceWeaponIds.has("forest-regalia")).toBe(false);
+  });
 });
+
+describe("Refined Weapon Buffs Scaling & Mechanics", () => {
+  it("A Thousand Blazing Suns scales Scorching Brilliance and Nightsoul bonus across R1-R5", () => {
+    const weapon = weaponById("a-thousand-blazing-suns")!;
+    expect(weapon).toBeDefined();
+
+    const critBuff = weapon.buffs.find((b) => b.id === "blazing-suns-crit-dmg")!;
+    const atkBuff = weapon.buffs.find((b) => b.id === "blazing-suns-atk")!;
+
+    // Base Scorching Brilliance (without Nightsoul)
+    expect(critBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "0" } })).toBe(20);
+    expect(critBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "0" } })).toBe(40);
+    expect(atkBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "0" } })).toBe(280); // 28% of 1000
+    expect(atkBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "0" } })).toBe(560); // 56% of 1000
+
+    // With Nightsoul's Blessing (+75% effect)
+    expect(critBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "1" } })).toBe(35); // 20 * 1.75
+    expect(critBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "1" } })).toBe(70); // 40 * 1.75
+    expect(atkBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "1" } })).toBe(490); // 28% * 1.75 * 1000
+    expect(atkBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "blazing-suns-nightsoul": "1" } })).toBe(980); // 56% * 1.75 * 1000
+  });
+
+  it("Blade of Atonement scales reaction EM (64..128) and Stellar Glimmer ATK% (16..32%) across R1-R5", () => {
+    const weapon = weaponById("blade-of-atonement")!;
+    expect(weapon).toBeDefined();
+
+    const emBuff = weapon.buffs.find((b) => b.id === "atonement-reaction-em")!;
+    const atkBuff = weapon.buffs.find((b) => b.id === "atonement-stellar-atk")!;
+
+    expect(emBuff.refinementValues).toEqual([64, 80, 96, 112, 128]);
+    expect(atkBuff.refinementValues).toEqual([16, 20, 24, 28, 32]);
+
+    expect(emBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "atonement-reaction-active": "1" } })).toBe(64);
+    expect(emBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "atonement-reaction-active": "1" } })).toBe(128);
+
+    expect(atkBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "atonement-stellar-glimmer-active": "1" } })).toBe(160); // 16% of 1000
+    expect(atkBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "atonement-stellar-glimmer-active": "1" } })).toBe(320); // 32% of 1000
+  });
+
+  it("Fang of the Mountain King scales Canopy's Favor stacks (10..20% per stack, up to 60..120% at 6 stacks)", () => {
+    const weapon = weaponById("fang-of-the-mountain-king")!;
+    expect(weapon).toBeDefined();
+
+    const skillBuff = weapon.buffs.find((b) => b.id === "mountain-king-skill-dmg")!;
+    const burstBuff = weapon.buffs.find((b) => b.id === "mountain-king-burst-dmg")!;
+
+    expect(skillBuff.refinementValues).toEqual([60, 75, 90, 105, 120]);
+    expect(burstBuff.refinementValues).toEqual([60, 75, 90, 105, 120]);
+
+    // 1 stack at R1 and R5
+    expect(skillBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "mountain-king-stacks": 1 } })).toBe(10);
+    expect(skillBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "mountain-king-stacks": 1 } })).toBe(20);
+
+    // 6 stacks at R1 and R5
+    expect(skillBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "mountain-king-stacks": 6 } })).toBe(60);
+    expect(skillBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "mountain-king-stacks": 6 } })).toBe(120);
+    expect(burstBuff.compute!(1, { refinement: 1, baseAtk: 1000, inputs: { "mountain-king-stacks": 6 } })).toBe(60);
+    expect(burstBuff.compute!(5, { refinement: 5, baseAtk: 1000, inputs: { "mountain-king-stacks": 6 } })).toBe(120);
+  });
+});
+
+
 

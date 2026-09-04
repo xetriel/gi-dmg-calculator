@@ -120,5 +120,57 @@ export const ganyu: CharacterConfig = {
       description: "Using Trail of the Qilin causes the next Frostflake Arrow shot within 30s to not require charging.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Cryo off-field sub-DPS and Cryo buffer. Grants +20% Cryo DMG Bonus to party members within Celestial Shower, shreds 15% Cryo RES at C1, and increases damage taken by up to 25% at C4.",
+    buffExplanations: [
+      {
+        name: "A4: Celestial Shower",
+        brief: "+20% Cryo DMG Bonus",
+        full: "Celestial Shower grants a 20% Cryo DMG Bonus to active party members within its AoE.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C1: Dew-Drinker",
+        brief: "-15% Cryo RES Shred",
+        full: "Frostflake Arrow or Bloom hits decrease opponents' Cryo RES by 15% for 6s.",
+        category: "elemental",
+      },
+      {
+        name: "C4: Westward Sojourn",
+        brief: "Up to +25% All DMG Bonus",
+        full: "Opponents inside Celestial Shower take up to 25% increased DMG (+5% every 3s, max 25%).",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2200" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "cryoDmgBonus",
+        label: "Cryo DMG (Ganyu A4 Burst)",
+        compute: (ctx) => ((ctx.inputs["a4-cryo-buff"] ?? 1) > 0 ? 20 : 0),
+      },
+      {
+        stat: "enemyRes",
+        label: "Cryo RES Shred (Ganyu C1)",
+        compute: (ctx) => (ctx.constellationLevel >= 1 ? -15 : 0),
+      },
+      {
+        stat: "dmgBonus",
+        label: "All DMG Bonus (Ganyu C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 25 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

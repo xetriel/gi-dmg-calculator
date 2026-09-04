@@ -130,5 +130,35 @@ export const ayato: CharacterConfig = {
       description: "After using Kamisato Art: Kyouka, Ayato's next Shunsuiken attack will create 2 extra Shunsuiken strikes, each dealing 450% of Ayato's ATK as DMG.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Hydro off-field sub-DPS and Normal Attack buffer. Kamisato Art: Suiyuu provides a +20% Normal Attack DMG Bonus to party members within its radius.",
+    buffExplanations: [
+      {
+        name: "Kamisato Art: Suiyuu (Burst)",
+        brief: "+20% Normal Attack DMG Bonus",
+        full: "Characters within the radius of Kamisato Art: Suiyuu gain a 20% Normal Attack DMG Bonus.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "normalDmgBonus",
+        label: "Normal Attack DMG (Ayato Burst)",
+        compute: (ctx) => ((ctx.inputs["burst-na-buff"] ?? 1) > 0 ? 20 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

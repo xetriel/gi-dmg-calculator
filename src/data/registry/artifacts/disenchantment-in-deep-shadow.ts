@@ -4,7 +4,7 @@ export const disenchantmentInDeepShadow: ArtifactConfig = {
   id: "disenchantment-in-deep-shadow",
   name: "Disenchantment in Deep Shadow",
   rarity: 5,
-  twoPieceDesc: "Physical DMG +25%.",
+  twoPieceDesc: "ATK +18%.",
   fourPieceDesc: "Increases Superconduct Reaction DMG by 80% and Stellar-Conduct Reaction DMG by 40%. When the wielder attacks opponents affected by Superconduct or Stellar-Conduct, this attack's CRIT Rate is increased by 16%.",
   isSupport: false,
   buffType: "self",
@@ -19,13 +19,14 @@ export const disenchantmentInDeepShadow: ArtifactConfig = {
   ],
   buffs: [
     {
-      id: "disenchantment-2pc-phys",
-      label: "2-Piece Physical DMG% (Disenchantment in Deep Shadow)",
-      stat: "physicalDmgBonus",
+      id: "disenchantment-2pc-atk",
+      label: "2-Piece ATK% (Disenchantment in Deep Shadow)",
+      stat: "atk",
       pieceRequirement: 2,
       isTeamBuff: false,
-      value: 25,
-      compute: () => 25,
+      isPercent: true,
+      value: 18,
+      compute: (ctx) => (18 / 100) * ctx.baseAtk,
     },
     {
       id: "disenchantment-4pc-crit",

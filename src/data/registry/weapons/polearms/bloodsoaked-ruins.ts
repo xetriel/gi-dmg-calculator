@@ -3,15 +3,15 @@ import type { WeaponConfig } from "../types";
 export const bloodsoakedRuins: WeaponConfig = {
   id: "bloodsoaked-ruins",
   name: "Bloodsoaked Ruins",
-  type: "Claymore",
+  type: "Polearm",
   rarity: 5,
   baseAtk: 674,
   lvl1BaseAtk: 48,
   subStat: {
-    type: "critDmg",
-    label: "CRIT DMG%",
-    value: 44.1,
-    baseValue: 9.6,
+    type: "critRate",
+    label: "CRIT Rate%",
+    value: 22.1,
+    baseValue: 4.8,
   },
   passiveName: "Ancient Ruin",
   passiveDesc:

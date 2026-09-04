@@ -5,7 +5,7 @@ export const flowerOfParadiseLost: ArtifactConfig = {
   name: "Flower of Paradise Lost",
   rarity: 5,
   twoPieceDesc: "Increases Elemental Mastery by 80.",
-  fourPieceDesc: "The equipping character's Bloom, Hyperbloom, and Burgeon reaction DMG are increased by 40%, and their Lunar-Bloom reaction DMG is increased by 10%. Triggering reactions grants an additional +25% bonus per stack (max 4 stacks, up to +80% Bloom/Hyperbloom/Burgeon, +20% Lunar-Bloom).",
+  fourPieceDesc: "The equipping character's Bloom, Hyperbloom, and Burgeon reaction DMG are increased by 40%, and their Lunar-Bloom reaction DMG is increased by 10%. Additionally, after the equipping character triggers Bloom, Hyperbloom, Lunar-Bloom, or Burgeon, they will gain another 25% bonus to the effect mentioned prior. Each stack of this lasts 10s. Max 4 stacks simultaneously. This effect can only be triggered once per second. The character who equips this can still trigger its effects when not on the field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

@@ -50,7 +50,7 @@ export const HitFormulaTooltip: React.FC<HitFormulaTooltipProps> = ({
       <button
         type="button"
         onClick={handleRedirect}
-        className="w-3.5 h-3.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-black text-gray-600 dark:text-zinc-300 font-bold text-[9px] inline-flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+        className="w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-black text-gray-600 dark:text-zinc-300 font-bold text-[10px] inline-flex items-center justify-center transition-all cursor-pointer shadow-2xs"
         aria-label={`View formula for ${hitName}`}
         title={`Click to jump directly to ${hitName} formula section`}
       >
@@ -62,10 +62,10 @@ export const HitFormulaTooltip: React.FC<HitFormulaTooltipProps> = ({
         <div
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="absolute left-0 bottom-full mb-2 w-64 z-50 p-3 rounded-xl bg-zinc-900/95 dark:bg-zinc-950/95 text-white border border-zinc-700/80 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 pointer-events-auto"
+          className="absolute right-0 bottom-full mb-2 w-64 z-50 p-3 rounded-xl bg-zinc-900/95 dark:bg-zinc-950/95 text-white border border-zinc-700/80 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 pointer-events-auto"
         >
           {/* Speech bubble arrow point */}
-          <div className="absolute left-2.5 -bottom-1.5 w-3 h-3 bg-zinc-900 dark:bg-zinc-950 border-r border-b border-zinc-700/80 transform rotate-45"></div>
+          <div className="absolute right-2 -bottom-1.5 w-3 h-3 bg-zinc-900 dark:bg-zinc-950 border-r border-b border-zinc-700/80 transform rotate-45"></div>
 
           <div className="space-y-2">
             <div className="border-b border-zinc-800 pb-1 flex items-center justify-between">

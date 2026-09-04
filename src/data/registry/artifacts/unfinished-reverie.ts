@@ -4,8 +4,8 @@ export const unfinishedReverie: ArtifactConfig = {
   id: "unfinished-reverie",
   name: "Unfinished Reverie",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
-  fourPieceDesc: "After leaving combat for 3s, DMG dealt increased by 50%. In combat, when a Burning opponent exists, gain 50% DMG Bonus.",
+  twoPieceDesc: "ATK +18%.",
+  fourPieceDesc: "After leaving combat for 3s, DMG dealt increased by 50%. In combat, if no Burning opponents are nearby for more than 6s, this DMG Bonus will decrease by 10% per second until it reaches 0%. When a Burning opponent exists, it will increase by 10% instead until it reaches 50%. This effect still triggers if the equipping character is off-field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

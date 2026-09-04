@@ -5,7 +5,7 @@ export const gildedDreams: ArtifactConfig = {
   name: "Gilded Dreams",
   rarity: 5,
   twoPieceDesc: "Increases Elemental Mastery by 80.",
-  fourPieceDesc: "Within 8s of triggering an Elemental Reaction: ATK +14% for each same element party member (up to 3), and EM +50 for each different element party member (up to 3).",
+  fourPieceDesc: "Within 8s of triggering an Elemental Reaction, the character equipping this will obtain buffs based on the Elemental Type of the other party members. ATK is increased by 14% for each party member whose Elemental Type is the same as the equipping character, and Elemental Mastery is increased by 50 for every party member with a different Elemental Type. Each of the aforementioned buffs will count up to 3 characters. This effect can be triggered once every 8s. The character who equips this can still trigger its effects when not on the field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

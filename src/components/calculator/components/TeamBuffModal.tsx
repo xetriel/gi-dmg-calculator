@@ -7,6 +7,7 @@ import { SUPPORT_CONFIGS, supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
+import { DMG_COLORS } from "../utils/colors";
 
 interface TeamBuffModalProps {
   isOpen: boolean;
@@ -70,7 +71,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [elementFilter, setElementFilter] = useState<"ALL" | Element>("ALL");
+  const [hoveredElementFilter, setHoveredElementFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<number | "ALL">("ALL");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
 
   if (!isOpen) return null;
 
@@ -89,6 +92,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
   // Filter catalog of support characters
   const filteredCatalog = SUPPORT_CONFIGS.filter((s) => {
+    // A character cannot support themselves in the same party
+    if (s.characterId === config.id) return false;
+
     // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -247,7 +253,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-lg">
+            <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-lg">
               👥
             </div>
             <div>
@@ -255,7 +261,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 <h2 className="text-base font-bold text-gray-900 dark:text-white">
                   Team Support Buffs
                 </h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                   {supports.filter((s) => s.enabled).length}/{supports.length} Active (Max {MAX_SUPPORTS})
                 </span>
               </div>
@@ -282,7 +288,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 >
                   <span>{`Setup ${idx + 1}`}</span>
                   {activeCount > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold">
                       {activeCount}
                     </span>
                   )}
@@ -313,7 +319,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                   placeholder="Search support name, element, buff effects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500"
                 />
                 <span className="absolute left-2.5 top-2 text-xs text-gray-400">🔍</span>
                 {searchQuery && (
@@ -338,38 +344,70 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 >
                   All Elements ({SUPPORT_CONFIGS.length})
                 </button>
-                {(["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"] as const).map((elem) => (
-                  <button
-                    key={elem}
-                    onClick={() => setElementFilter(elem)}
-                    className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border flex items-center gap-1 ${
-                      elementFilter === elem
-                        ? "bg-amber-500 text-white border-amber-600 shadow-2xs"
-                        : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
-                    }`}
-                  >
-                    <ElementIcon element={elem} className="w-3 h-3" />
-                    <span>{elem}</span>
-                  </button>
-                ))}
+                {(["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"] as const).map((elem) => {
+                  const isSelected = elementFilter === elem;
+                  const isHovered = hoveredElementFilter === elem;
+                  const color = DMG_COLORS[elem];
+
+                  return (
+                    <button
+                      key={elem}
+                      onClick={() => setElementFilter(elem)}
+                      onMouseEnter={() => setHoveredElementFilter(elem)}
+                      onMouseLeave={() => setHoveredElementFilter(null)}
+                      style={
+                        isSelected
+                          ? { backgroundColor: color, borderColor: color, color: "#ffffff" }
+                          : isHovered
+                          ? { borderColor: color }
+                          : undefined
+                      }
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border flex items-center gap-1 ${
+                        isSelected
+                          ? "shadow-2xs text-white"
+                          : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                      }`}
+                    >
+                      <ElementIcon element={elem} className="w-3 h-3" />
+                      <span>{elem}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Rarity Filter */}
               <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-zinc-400">
                 <span className="font-semibold">Rarity:</span>
-                {(["ALL", 5, 4] as const).map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setRarityFilter(r)}
-                    className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${
-                      rarityFilter === r
-                        ? "bg-amber-500 text-white border-amber-600"
-                        : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
-                    }`}
-                  >
-                    {r === "ALL" ? "All" : `${r}★`}
-                  </button>
-                ))}
+                {(["ALL", 5, 4] as const).map((r) => {
+                  const isSelected = rarityFilter === r;
+                  const activeClass =
+                    r === "ALL"
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-2xs"
+                      : r === 5
+                      ? "bg-amber-500 text-white border-amber-600 shadow-2xs"
+                      : "bg-purple-600 text-white border-purple-700 shadow-2xs";
+
+                  const hoverClass =
+                    r === "ALL"
+                      ? "hover:border-gray-400"
+                      : r === 5
+                      ? "hover:border-amber-400"
+                      : "hover:border-purple-400";
+
+                  return (
+                    <button
+                      key={r}
+                      onClick={() => setRarityFilter(r)}
+                      className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${
+                        isSelected
+                          ? activeClass
+                          : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${hoverClass}`
+                      }`}
+                    >
+                      {r === "ALL" ? "All" : `${r}★`}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -492,7 +530,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                   Configured Supports for Setup {instances.findIndex((i) => i.id === currentInst.id) + 1}
                 </span>
-                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                <span className="text-xs font-bold text-zinc-900 dark:text-white">
                   ({supports.length}/{MAX_SUPPORTS})
                 </span>
               </div>
@@ -504,7 +542,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 </span>
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-amber-500 cursor-pointer"
+                  className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
                   checked={masterEnabled}
                   onChange={toggleMaster}
                 />
@@ -748,13 +786,65 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
 
             {/* Modal Bottom Bar: Aggregated Buff Totals */}
-            <div className="p-4 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50 flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
-                  Total Team Support Bonuses:
-                </span>
-                {totalResult.sources.length > 0 ? (
-                  totalResult.sources.map((s, i) => {
+            <div className="px-5 py-3 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setIsSummaryExpanded((prev) => !prev)}
+                    className="flex items-center gap-2 group cursor-pointer text-left select-none focus:outline-hidden"
+                    title={isSummaryExpanded ? "Shrink summary" : "Expand summary"}
+                    aria-expanded={isSummaryExpanded}
+                  >
+                    <span className="p-1 rounded-md bg-zinc-200/80 group-hover:bg-zinc-300 dark:bg-zinc-800 dark:group-hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors flex items-center justify-center">
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isSummaryExpanded ? "" : "rotate-180"}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                      Total Team Support Bonuses:
+                    </span>
+                  </button>
+
+                  {totalResult.sources.length > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {totalResult.sources.length} {totalResult.sources.length === 1 ? "Buff" : "Buffs"}
+                      </span>
+                      {!isSummaryExpanded && (
+                        <span
+                          className="text-[10px] text-gray-400 dark:text-zinc-500 italic cursor-pointer"
+                          onClick={() => setIsSummaryExpanded(true)}
+                        >
+                          (click arrow to expand)
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
+                      None active
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="px-5 py-2 text-xs font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm transition-all cursor-pointer shrink-0"
+                >
+                  Done
+                </button>
+              </div>
+
+              {/* Expandable Buff Pills Section */}
+              {isSummaryExpanded && totalResult.sources.length > 0 && (
+                <div className="pt-2.5 mt-2.5 border-t border-gray-200/60 dark:border-zinc-800/60 flex items-center gap-2 flex-wrap max-h-36 overflow-y-auto">
+                  {totalResult.sources.map((s, i) => {
                     const theme = getRarityTheme(s.rarity);
                     return (
                       <span
@@ -770,20 +860,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           : `${fmt(s.value)}%`}
                       </span>
                     );
-                  })
-                ) : (
-                  <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
-                    None active
-                  </span>
-                )}
-              </div>
-
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all cursor-pointer"
-              >
-                Done
-              </button>
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

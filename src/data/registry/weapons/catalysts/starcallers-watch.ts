@@ -8,10 +8,10 @@ export const starcallersWatch: WeaponConfig = {
   baseAtk: 542,
   lvl1BaseAtk: 44,
   subStat: {
-    type: "defPct",
-    label: "DEF%",
-    value: 82.7,
-    baseValue: 18,
+    type: "em",
+    label: "Elemental Mastery",
+    value: 265,
+    baseValue: 58,
   },
   passiveName: "Star Caller",
   passiveDesc:

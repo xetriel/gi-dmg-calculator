@@ -4,7 +4,7 @@ export const shimenawasReminiscence: ArtifactConfig = {
   id: "shimenawas-reminiscence",
   name: "Shimenawa's Reminiscence",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
+  twoPieceDesc: "ATK +18%.",
   fourPieceDesc: "When casting an Elemental Skill, if the character has 15 or more Energy, they lose 15 Energy and Normal/Charged/Plunging Attack DMG is increased by 50% for 10s. This effect will not trigger again during that duration.",
   isSupport: false,
   buffType: "self",

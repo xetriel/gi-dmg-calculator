@@ -24,6 +24,8 @@ const fmt = (n: number, decimals = 1) =>
 
 
 
+export const MAX_EXTERNAL_WEAPONS = 4;
+
 export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = ({
   isOpen,
   setIsOpen,
@@ -37,6 +39,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   const [scopeFilter, setScopeFilter] = useState<"all" | "support" | "wielder">("all");
   const [categoryFilter, setCategoryFilter] = useState<"ALL" | WeaponType>("ALL");
   const [rarityFilter, setRarityFilter] = useState<number | "ALL">("ALL");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
 
   if (!isOpen) return null;
 
@@ -46,6 +49,9 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   const weapons = currentInst.externalWeapons ?? [];
   const masterEnabled = currentInst.externalWeaponBuffsEnabled !== false;
   const baseAtk = toNum(currentInst.stats["atk.base"]) ?? 0;
+
+  // Max external weapons limit reached check
+  const isMaxReached = weapons.length >= MAX_EXTERNAL_WEAPONS;
 
   // Compute live total weapon buff results
   const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled);
@@ -82,6 +88,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   });
 
   const addWeapon = (weaponId: string) => {
+    if (isMaxReached) return;
+
     const wConfig = weaponById(weaponId);
     if (!wConfig) return;
 
@@ -129,7 +137,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
               <WeaponIcon weapon={config.weapon} className="w-5 h-5" />
             </div>
             <div>
@@ -137,12 +145,12 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 <h2 className="text-base font-bold text-gray-900 dark:text-white">
                   External Weapon Buffs
                 </h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                  {weapons.filter((w) => w.enabled).length}/{weapons.length} Active
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
+                  {weapons.filter((w) => w.enabled).length}/{weapons.length} Active (Max {MAX_EXTERNAL_WEAPONS})
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-zinc-400">
-                Configure party support weapons or wielder weapons applied to {config.name}
+                Configure party support weapons or wielder weapons applied to {config.name} (Max {MAX_EXTERNAL_WEAPONS} weapons per team)
               </p>
             </div>
           </div>
@@ -164,7 +172,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 >
                   <span>{`Setup ${idx + 1}`}</span>
                   {activeCount > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold">
                       {activeCount}
                     </span>
                   )}
@@ -195,7 +203,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                   placeholder="Search weapon name, passive, effect..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500"
                 />
                 <span className="absolute left-2.5 top-2 text-xs text-gray-400">🔍</span>
                 {searchQuery && (
@@ -214,8 +222,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                   onClick={() => setScopeFilter("all")}
                   className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer border ${
                     scopeFilter === "all"
-                      ? "bg-amber-500 text-white border-amber-600 shadow-xs"
-                      : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-xs"
+                      : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 hover:border-gray-400"
                   }`}
                 >
                   All Available ({availableForChar.length})
@@ -262,19 +270,40 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
               {/* Rarity Filter */}
               <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-zinc-400">
                 <span className="font-semibold">Rarity:</span>
-                {(["ALL", 5, 4, 3] as const).map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setRarityFilter(r)}
-                    className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${
-                      rarityFilter === r
-                        ? "bg-amber-500 text-white border-amber-600"
-                        : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-amber-400"
-                    }`}
-                  >
-                    {r === "ALL" ? "All" : `${r}★`}
-                  </button>
-                ))}
+                {(["ALL", 5, 4, 3] as const).map((r) => {
+                  const isSelected = rarityFilter === r;
+                  const activeClass =
+                    r === "ALL"
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-2xs"
+                      : r === 5
+                      ? "bg-amber-500 text-white border-amber-600 shadow-2xs"
+                      : r === 4
+                      ? "bg-purple-600 text-white border-purple-700 shadow-2xs"
+                      : "bg-sky-600 text-white border-sky-700 shadow-2xs";
+
+                  const hoverClass =
+                    r === "ALL"
+                      ? "hover:border-gray-400"
+                      : r === 5
+                      ? "hover:border-amber-400"
+                      : r === 4
+                      ? "hover:border-purple-400"
+                      : "hover:border-sky-400";
+
+                  return (
+                    <button
+                      key={r}
+                      onClick={() => setRarityFilter(r)}
+                      className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${
+                        isSelected
+                          ? activeClass
+                          : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${hoverClass}`
+                      }`}
+                    >
+                      {r === "ALL" ? "All" : `${r}★`}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -320,14 +349,17 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                         {/* Add Button */}
                         <button
                           onClick={() => addWeapon(w.id)}
-                          disabled={isAdded}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer shrink-0 ${
+                          disabled={isAdded || isMaxReached}
+                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all shrink-0 ${
                             isAdded
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : `${theme.addButton} shadow-xs`
+                              : isMaxReached
+                              ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
+                              : `${theme.addButton} shadow-xs cursor-pointer`
                           }`}
+                          title={isMaxReached && !isAdded ? `Maximum of ${MAX_EXTERNAL_WEAPONS} weapons reached` : undefined}
                         >
-                          {isAdded ? "Added ✓" : "+ Add"}
+                          {isAdded ? "Added ✓" : isMaxReached ? `Max ${MAX_EXTERNAL_WEAPONS}` : "+ Add"}
                         </button>
                       </div>
 
@@ -358,8 +390,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                   Configured Weapons for Setup {instances.findIndex((i) => i.id === currentInst.id) + 1}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-zinc-500">
-                  ({weapons.length})
+                <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                  ({weapons.length}/{MAX_EXTERNAL_WEAPONS})
                 </span>
               </div>
 
@@ -370,7 +402,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 </span>
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-amber-500 cursor-pointer"
+                  className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
                   checked={masterEnabled}
                   onChange={toggleMaster}
                 />
@@ -386,7 +418,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                     No External Weapons Configured
                   </p>
                   <p className="text-xs max-w-sm">
-                    Select supportive weapons (e.g. *Freedom-Sworn*, *Key of Khaj-Nisut*, *Athame Artis*) or wielder weapons from the catalog on the left to add their team buffs.
+                    Select supportive weapons (e.g. *Freedom-Sworn*, *Key of Khaj-Nisut*, *Athame Artis*) or wielder weapons from the catalog on the left to add their team buffs (max {MAX_EXTERNAL_WEAPONS} per team).
                   </p>
                 </div>
               )}
@@ -535,7 +567,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                                     }))
                                   }
                                   }
-                                  className="w-24 px-2 py-1 text-xs text-right border rounded-lg bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono font-bold"
+                                  className="w-24 px-2 py-1 text-xs text-right border rounded-lg bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 font-mono font-bold"
                                 />
                               </div>
                             );
@@ -579,13 +611,65 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
             </div>
 
             {/* Modal Bottom Bar: Aggregated Buff Totals */}
-            <div className="p-4 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50 flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
-                  Total External Weapon Bonuses:
-                </span>
-                {totalResult.sources.length > 0 ? (
-                  totalResult.sources.map((s, i) => {
+            <div className="px-5 py-3 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setIsSummaryExpanded((prev) => !prev)}
+                    className="flex items-center gap-2 group cursor-pointer text-left select-none focus:outline-hidden"
+                    title={isSummaryExpanded ? "Shrink summary" : "Expand summary"}
+                    aria-expanded={isSummaryExpanded}
+                  >
+                    <span className="p-1 rounded-md bg-zinc-200/80 group-hover:bg-zinc-300 dark:bg-zinc-800 dark:group-hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors flex items-center justify-center">
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isSummaryExpanded ? "" : "rotate-180"}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                      Total External Weapon Bonuses:
+                    </span>
+                  </button>
+
+                  {totalResult.sources.length > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {totalResult.sources.length} {totalResult.sources.length === 1 ? "Buff" : "Buffs"}
+                      </span>
+                      {!isSummaryExpanded && (
+                        <span
+                          className="text-[10px] text-gray-400 dark:text-zinc-500 italic cursor-pointer"
+                          onClick={() => setIsSummaryExpanded(true)}
+                        >
+                          (click arrow to expand)
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
+                      None active
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="px-5 py-2 text-xs font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm transition-all cursor-pointer shrink-0"
+                >
+                  Done
+                </button>
+              </div>
+
+              {/* Expandable Buff Pills Section */}
+              {isSummaryExpanded && totalResult.sources.length > 0 && (
+                <div className="pt-2.5 mt-2.5 border-t border-gray-200/60 dark:border-zinc-800/60 flex items-center gap-2 flex-wrap max-h-36 overflow-y-auto">
+                  {totalResult.sources.map((s, i) => {
                     const theme = getRarityTheme(s.rarity);
                     return (
                       <span
@@ -601,20 +685,9 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                           : `${fmt(s.value)}%`}
                       </span>
                     );
-                  })
-                ) : (
-                  <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
-                    None active
-                  </span>
-                )}
-              </div>
-
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all cursor-pointer"
-              >
-                Done
-              </button>
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

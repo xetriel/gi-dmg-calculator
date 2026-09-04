@@ -23,7 +23,7 @@ export interface ExternalWeaponBuffResult {
 /**
  * Resolves all active external weapon buffs for the current character calculation instance.
  *
- * @param weapons - array of ExternalWeaponInstance attached to the active setup
+ * @param weapons - array of ExternalWeaponInstance attached to the active setup (max 4)
  * @param baseAtk - active character's base ATK
  * @param charConfig - active character's CharacterConfig (for element and weapon type routing)
  * @param masterEnabled - master toggle state for external weapon buffs (defaults to true)
@@ -43,7 +43,10 @@ export function resolveExternalWeaponBuffs(
     return result;
   }
 
-  for (const inst of weapons) {
+  // Enforce max 4 weapons (including active character)
+  const validWeapons = weapons.slice(0, 4);
+
+  for (const inst of validWeapons) {
     if (!inst.enabled) continue;
 
     const config = weaponById(inst.weaponId);

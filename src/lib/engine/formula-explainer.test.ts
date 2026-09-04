@@ -204,6 +204,7 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
       externalArtifactsEnabled: true,
       externalArtifacts: [
         {
+          id: "art-obsidian",
           artifactId: "obsidian-codex",
           pieceCount: 4 as const,
           slot: "wielder" as const,

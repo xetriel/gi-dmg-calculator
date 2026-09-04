@@ -4,7 +4,7 @@ export const crimsonWitchOfFlames: ArtifactConfig = {
   id: "crimson-witch-of-flames",
   name: "Crimson Witch of Flames",
   rarity: 5,
-  twoPieceDesc: "Pyro DMG Bonus +15%.",
+  twoPieceDesc: "Pyro DMG Bonus +15%",
   fourPieceDesc: "Increases Overloaded and Burning, and Burgeon DMG by 40%. Increases Vaporize and Melt DMG by 15%. Using Elemental Skill increases the 2-Piece Set Bonus by 50% of its starting value for 10s. Max 3 stacks.",
   isSupport: false,
   buffType: "self",

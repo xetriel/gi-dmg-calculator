@@ -4,7 +4,7 @@ export const resolutionOfSojourner: ArtifactConfig = {
   id: "resolution-of-sojourner",
   name: "Resolution of Sojourner",
   rarity: 4,
-  twoPieceDesc: "ATK increased by 18%.",
+  twoPieceDesc: "ATK +18%.",
   fourPieceDesc: "Increases Charged Attack CRIT Rate by 30%.",
   isSupport: false,
   buffType: "self",

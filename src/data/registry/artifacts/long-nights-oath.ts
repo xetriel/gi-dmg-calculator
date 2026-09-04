@@ -4,8 +4,8 @@ export const longNightsOath: ArtifactConfig = {
   id: "long-nights-oath",
   name: "Long Night's Oath",
   rarity: 5,
-  twoPieceDesc: "Plunging Attack DMG increased by 20%.",
-  fourPieceDesc: "After Plunging/Charged/Skill hits, gain Radiance Everlasting: Plunging Attacks deal 15% increased DMG for 6s. Max 5 stacks (+75% Plunging DMG).",
+  twoPieceDesc: "Plunging Attack DMG increased by 25%.",
+  fourPieceDesc: "After the equipping character's Plunging Attack/Charged Attack/Elemental Skill hits an opponent, they will gain 1/2/2 stack(s) of \"Radiance Everlasting.\" Plunging Attacks, Charged Attacks or Elemental Skills can each trigger this effect once every 1s. Radiance Everlasting: Plunging Attacks deal 15% increased DMG for 6s. Max 5 stacks. Each stack's duration is counted independently.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -26,8 +26,8 @@ export const longNightsOath: ArtifactConfig = {
       stat: "plungeDmgBonus",
       pieceRequirement: 2,
       isTeamBuff: false,
-      value: 20,
-      compute: () => 20,
+      value: 25,
+      compute: () => 25,
     },
     {
       id: "long-night-4pc-plunge",

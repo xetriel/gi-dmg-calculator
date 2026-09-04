@@ -188,5 +188,29 @@ export const skirk: CharacterConfig = {
       description: "Each Void Rift absorbed grants one stack of Havoc: Sever. When using Burst, consumes all stacks to deal 750% ATK Cryo DMG per stack.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Cryo on-field carry and mentor. Mutual Weapons Mentorship increases all party members' Elemental Skill Level by 1 when party members are Hydro or Cryo.",
+    buffExplanations: [
+      {
+        name: "Mutual Weapons Mentorship",
+        brief: "+1 Elemental Skill Level",
+        full: "When all party members are either Hydro or Cryo (and at least 1 Hydro and 1 Cryo character in team), increases all party members' Elemental Skill Level by 1.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2200" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

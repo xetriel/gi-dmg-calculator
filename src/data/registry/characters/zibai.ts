@@ -125,4 +125,44 @@ export const zibai: CharacterConfig = {
       effects: [{ type: "informational" }]
     },
   ],
+  support: {
+    description: "Moonsign Geo buffer and Lunar-Crystallize enabler. Converts Hydro Crystallize into Lunar-Crystallize, elevates Lunar-Crystallize Base DMG scaling with DEF, and provides +30% Lunar-Crystallize Reaction DMG at C2.",
+    buffExplanations: [
+      {
+        name: "Moonsign Benediction",
+        brief: "+0.7% Lunar-Crystallize Base DMG per 100 DEF (max 14%)",
+        full: "Converts Hydro Crystallize into Lunar-Crystallize. Every 100 DEF increases party Lunar-Crystallize Base DMG by 0.7%, capped at 14.0%.",
+        category: "lunar",
+      },
+      {
+        name: "C2: Lunar-Crystallize Reaction DMG",
+        brief: "+30% Lunar-Crystallize Reaction DMG to party",
+        full: "While in Lunar Phase Shift, all nearby party members' Lunar-Crystallize Reaction DMG is increased by 30%.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "def", label: "Total DEF", defaultValue: "2500" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "lunarCrystallizeDmgBonus",
+        label: "Lunar-Crystallize DMG (Zibai C2)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          return 30;
+        },
+      },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.def / 100), 14),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total DEF", value: fmt(ctx.def) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

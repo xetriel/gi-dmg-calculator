@@ -165,16 +165,6 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                             {DIRECT_TAG[h.direct].label}
                           </span>
                         ) : null}
-                        {onFormulaRedirect && !isHeal && !isShield && (
-                          <HitFormulaTooltip
-                            hitName={h.name}
-                            targetAnchorId={`hit-${id}`}
-                            nonCrit={isInactive ? undefined : res?.nonCrit}
-                            crit={isInactive ? undefined : res?.crit}
-                            avg={isInactive ? undefined : res?.avg}
-                            onFormulaRedirect={onFormulaRedirect}
-                          />
-                        )}
                       </td>
                       <td className="py-1.5 text-right font-mono text-gray-600 dark:text-gray-400">
                         {levelVal != null ? (
@@ -235,14 +225,26 @@ export const DamageTable: React.FC<DamageTableProps> = ({
                                 )}
                               </td>
                               <td className="py-1.5 text-right tabular-nums font-semibold" style={cellStyle}>
-                                {res ? (
-                                  <div className="flex flex-col items-end">
-                                    <span>{fmt(res.avg)}</span>
-                                    {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
-                                  </div>
-                                ) : (
-                                  "—"
-                                )}
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {res ? (
+                                    <div className="flex flex-col items-end">
+                                      <span>{fmt(res.avg)}</span>
+                                      {renderPct(res.avg, benchmarkResults?.[id]?.avg)}
+                                    </div>
+                                  ) : (
+                                    "—"
+                                  )}
+                                  {onFormulaRedirect && !isHeal && !isShield && (
+                                    <HitFormulaTooltip
+                                      hitName={h.name}
+                                      targetAnchorId={`hit-${id}`}
+                                      nonCrit={isInactive ? undefined : res?.nonCrit}
+                                      crit={isInactive ? undefined : res?.crit}
+                                      avg={isInactive ? undefined : res?.avg}
+                                      onFormulaRedirect={onFormulaRedirect}
+                                    />
+                                  )}
+                                </div>
                               </td>
                             </>
                           );

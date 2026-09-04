@@ -135,7 +135,7 @@ describe("Columbina Mechanics & Scale Resolving", () => {
 
     // C2: +40% baseHp (15000 * 0.40 = 6000 HP increase).
     // Total HP after buff: 20000 (stats.hp) + 6000 (C2 buff) = 26000.
-    // ATK, EM, and DEF are shared simultaneously:
+    // When no explicit gleam reactions are specified, all are defaulted for backward compatibility:
     // ATK shared = 26000 * 0.01 = 260 ATK
     // EM shared = 26000 * 0.0035 = 91 EM
     // DEF shared = 26000 * 0.01 = 260 DEF
@@ -145,6 +145,19 @@ describe("Columbina Mechanics & Scale Resolving", () => {
     expect(r2.statDeltas.atk ?? 0).toBe(260);
     expect(r2.statDeltas.em ?? 0).toBe(91);
     expect(r2.statDeltas.def ?? 0).toBe(260);
+
+    // With explicit reaction toggle: e.g. Lunar-Bloom only
+    const ctxBloom = createCtx({
+      constellationLevel: 2,
+      baseHp: 15000,
+      stats: { hp: 20000 },
+      inputs: { "c2-lunar-brilliance": 1, "c2-gleam-charged": 0, "c2-gleam-bloom": 1, "c2-gleam-crystallize": 0 }
+    });
+    const rBloom = resolveMechanics(columbina, ctxBloom);
+    expect(rBloom.statDeltas.hp ?? 0).toBe(6000);
+    expect(rBloom.statDeltas.atk).toBeUndefined();
+    expect(rBloom.statDeltas.em ?? 0).toBe(91);
+    expect(rBloom.statDeltas.def).toBeUndefined();
   });
 
   it("C4 flat reaction DMG additions on Gravity Interference hits", () => {

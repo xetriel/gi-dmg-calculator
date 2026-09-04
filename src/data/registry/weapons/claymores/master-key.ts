@@ -3,15 +3,15 @@ import type { WeaponConfig } from "../types";
 export const masterKey: WeaponConfig = {
   id: "master-key",
   name: "Master Key",
-  type: "Sword",
+  type: "Claymore",
   rarity: 4,
-  baseAtk: 510,
-  lvl1BaseAtk: 42,
+  baseAtk: 454,
+  lvl1BaseAtk: 41,
   subStat: {
     type: "energyRecharge",
     label: "Energy Recharge%",
-    value: 45.9,
-    baseValue: 10,
+    value: 61.3,
+    baseValue: 13.3,
   },
   passiveName: "Lockpick",
   passiveDesc:

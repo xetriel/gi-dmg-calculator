@@ -142,22 +142,24 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                 >
                   <td className="py-1.5 font-medium" style={{ color }}>
                     {label}
-                    {onFormulaRedirect && (
-                      <HitFormulaTooltip
-                        hitName={`${label} Reaction`}
-                        targetAnchorId={`tr-${t.type}`}
-                        nonCrit={t.dmg}
-                        crit={t.dmg}
-                        avg={t.dmg}
-                        onFormulaRedirect={onFormulaRedirect}
-                      />
-                    )}
                   </td>
                   <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
-                    <span className="font-semibold">{fmt(t.dmg)}</span>
-                    <span className="ml-1 text-[10px] text-gray-400">
-                      (no crit)
-                    </span>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span className="font-semibold">{fmt(t.dmg)}</span>
+                      <span className="text-[10px] text-gray-400">
+                        (no crit)
+                      </span>
+                      {onFormulaRedirect && (
+                        <HitFormulaTooltip
+                          hitName={`${label} Reaction`}
+                          targetAnchorId={`tr-${t.type}`}
+                          nonCrit={t.dmg}
+                          crit={t.dmg}
+                          avg={t.dmg}
+                          onFormulaRedirect={onFormulaRedirect}
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -172,16 +174,6 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                 >
                   <td className="py-1.5 font-medium" style={{ color }}>
                     {LUNAR_LABEL[l.type]}
-                    {onFormulaRedirect && (
-                      <HitFormulaTooltip
-                        hitName={`${LUNAR_LABEL[l.type]} Reaction`}
-                        targetAnchorId={`lunar-${l.type}`}
-                        nonCrit={l.res.nonCrit}
-                        crit={l.res.crit}
-                        avg={l.res.avg}
-                        onFormulaRedirect={onFormulaRedirect}
-                      />
-                    )}
                   </td>
                   <td className="py-1.5 pr-1 text-right tabular-nums">
                     {fmt(l.res.nonCrit)}
@@ -190,7 +182,19 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                     {fmt(l.res.crit)}
                   </td>
                   <td className="py-1.5 text-right tabular-nums font-semibold">
-                    {fmt(l.res.avg)}
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span>{fmt(l.res.avg)}</span>
+                      {onFormulaRedirect && (
+                        <HitFormulaTooltip
+                          hitName={`${LUNAR_LABEL[l.type]} Reaction`}
+                          targetAnchorId={`lunar-${l.type}`}
+                          nonCrit={l.res.nonCrit}
+                          crit={l.res.crit}
+                          avg={l.res.avg}
+                          onFormulaRedirect={onFormulaRedirect}
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

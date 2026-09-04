@@ -75,5 +75,35 @@ export const aloy: CharacterConfig = {
     "Strong Strike (A4): While in Rushing Ice state, Cryo DMG Bonus increases by 3.5% every 1s (max 10 stacks = +35%).",
     "Coil Mechanics: 1–3 Coil stacks grant NA DMG Bonus. 4 stacks triggers Rushing Ice state (Cryo NA Infusion + Rushing Ice NA DMG Bonus)."
   ],
-  constellations: []
+  constellations: [],
+  support: {
+    description: "Cryo archer providing team ATK buffs. When Aloy triggers Combat Override (A1), party members gain an 8% ATK increase for 10s.",
+    buffExplanations: [
+      {
+        name: "A1: Combat Override",
+        brief: "+8% ATK to party",
+        full: "When Aloy obtains the Coil effect from Frozen Wilds, her ATK increases by 16%, while nearby party members gain an 8% ATK increase for 10s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "atk",
+        label: "Party ATK (Aloy A1)",
+        compute: (ctx) => ((ctx.inputs["a1-combat-override"] ?? 1) > 0 ? ctx.baseAtk * 0.08 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

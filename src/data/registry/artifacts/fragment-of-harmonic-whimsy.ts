@@ -4,8 +4,8 @@ export const fragmentOfHarmonicWhimsy: ArtifactConfig = {
   id: "fragment-of-harmonic-whimsy",
   name: "Fragment of Harmonic Whimsy",
   rarity: 5,
-  twoPieceDesc: "ATK increased by 18%.",
-  fourPieceDesc: "When the value of a Bond of Life increases or decreases, this character deals 18% increased DMG for 6s. Max 3 stacks (Total +54% DMG).",
+  twoPieceDesc: "ATK +18%.",
+  fourPieceDesc: "When the value of a Bond of Life increases or decreases, this character deals 18% increased DMG for 6s. Max 3 stacks.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [

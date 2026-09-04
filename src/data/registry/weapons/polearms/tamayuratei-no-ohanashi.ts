@@ -5,39 +5,43 @@ export const tamayurateiNoOhanashi: WeaponConfig = {
   name: "Tamayuratei no Ohanashi",
   type: "Polearm",
   rarity: 4,
-  baseAtk: 510,
-  lvl1BaseAtk: 42,
+  baseAtk: 565,
+  lvl1BaseAtk: 44,
   subStat: {
     type: "energyRecharge",
     label: "Energy Recharge%",
-    value: 45.9,
-    baseValue: 10,
+    value: 30.6,
+    baseValue: 6.7,
   },
-  passiveName: "Ephemera",
+  passiveName: "Busybody's Running Light",
   passiveDesc:
-    "Using an Elemental Skill increases ATK by 16~32% and Movement SPD by 10% for 10s.",
+    "Increase ATK by 20~40% and Movement SPD by 10% for 10s when using an Elemental Skill.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "tamayura-skill-used",
-      label: "Elemental Skill Used (+16~32% ATK)",
+      id: "tamayura-skill-active",
+      label: "Skill Used Active (+20~40% ATK)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% ATK for 10s",
-    }
+      hint: "+20~40% ATK for 10s",
+    },
   ],
   buffs: [
     {
       id: "tamayura-atk",
       label: "ATK% (Tamayuratei no Ohanashi)",
       stat: "atk",
-      refinementValues: [16, 20, 24, 28, 32],
+      refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "tamayura-skill-used",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['tamayura-skill-used'] ?? '1') === '1' || Number(ctx.inputs?.['tamayura-skill-used'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
-    }
+      conditionKey: "tamayura-skill-active",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["tamayura-skill-active"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["tamayura-skill-active"] ?? 1) > 0;
+        return on ? ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk : 0;
+      },
+    },
   ],
-  
 };

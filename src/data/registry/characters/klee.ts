@@ -141,5 +141,46 @@ export const klee: CharacterConfig = {
       description: "While under the effects of Sparks 'n' Splash, Klee will regenerate 3 Energy for all members of the party (excluding Klee) every 3s. When Sparks 'n' Splash is used, all party members will gain a 10% Pyro DMG Bonus for 25s.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro sub-DPS and team offensive enabler. Shreds enemy DEF by 23% via Jumpy Dumpty mines at C2, and grants a team-wide +10% Pyro DMG Bonus at C6.",
+    buffExplanations: [
+      {
+        name: "C2: Explosive Frags",
+        brief: "-23% Enemy DEF",
+        full: "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C6: Blazing Delight",
+        brief: "+10% Pyro DMG Bonus",
+        full: "When Sparks 'n' Splash is used, all party members gain a 10% Pyro DMG Bonus for 25s.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "defReduction",
+        label: "DEF Shred (Klee C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? 23 : 0),
+      },
+      {
+        stat: "pyroDmgBonus",
+        label: "Pyro DMG (Klee C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 ? 10 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

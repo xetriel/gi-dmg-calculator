@@ -124,5 +124,29 @@ export const keqing: CharacterConfig = {
       description: "When initiating a Normal Attack, a Charged Attack, Elemental Skill, or Elemental Burst, Keqing gains a 6% Electro DMG Bonus for 8s. Effects triggered by these actions are independent.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Electro sword carry specializing in swift Blink attacks and multi-hit Bursts. Provides team presence, Electro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Electro Hypercarry",
+        brief: "On-Field Electro Hypercarry",
+        full: "Keqing infuses her sword with Electro via Stellar Restoration and casts Starward Sword for rapid Electro DMG, without granting party buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "850" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "65" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "170" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

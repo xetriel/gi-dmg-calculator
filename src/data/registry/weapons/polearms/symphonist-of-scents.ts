@@ -3,15 +3,15 @@ import type { WeaponConfig } from "../types";
 export const symphonistOfScents: WeaponConfig = {
   id: "symphonist-of-scents",
   name: "Symphonist of Scents",
-  type: "Sword",
+  type: "Polearm",
   rarity: 5,
   baseAtk: 608,
   lvl1BaseAtk: 46,
   subStat: {
-    type: "critRate",
-    label: "CRIT Rate%",
-    value: 33.1,
-    baseValue: 7.2,
+    type: "critDmg",
+    label: "CRIT DMG%",
+    value: 66.2,
+    baseValue: 14.4,
   },
   passiveName: "Fragrant Harmony",
   passiveDesc:

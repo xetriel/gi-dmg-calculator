@@ -150,5 +150,55 @@ export const mavuika: CharacterConfig = {
       description: "Ring hits summon Flamestrider crash (200% ATK AoE Pyro). Flamestrider summons Scorching Ring (DEF −20%, 500% ATK AoE Pyro every 3s).",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pyro Archon sub-DPS and team offensive amplifier. Provides up to +40% All DMG Bonus to active character via Kiongozi (+50% at C4), and shreds nearby enemy DEF by 20% at C2.",
+    buffExplanations: [
+      {
+        name: "Kiongozi (Burst)",
+        brief: "Up to +40% All DMG Bonus (+10% at C4)",
+        full: "After casting Burst, each point of Fighting Spirit grants active characters an All DMG Bonus up to +40%. C4 The Leader's Resolve prevents decay and adds an extra +10% DMG Bonus (total +50%).",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C2: The Ashen Price",
+        brief: "-20% Enemy DEF",
+        full: "The Ring of Searing Radiance decreases nearby opponents' DEF by 20%.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2400" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "dmgBonus",
+        label: "All DMG Bonus (Mavuika Kiongozi)",
+        compute: (ctx) => {
+          if ((ctx.inputs["a4-kiongozi"] ?? 0) <= 0) return 0;
+          const base = 40;
+          const c4Bonus = ctx.constellationLevel >= 4 ? 10 : 0;
+          return base + c4Bonus;
+        },
+      },
+      {
+        stat: "defReduction",
+        label: "DEF Shred (Mavuika C2)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          if ((ctx.inputs["c2-def-shred"] ?? 0) <= 0) return 0;
+          return 20;
+        },
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

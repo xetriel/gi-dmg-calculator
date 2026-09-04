@@ -137,5 +137,29 @@ export const diluc: CharacterConfig = {
       description: "After casting Searing Onslaught, the next 2 Normal Attacks within 6s will deal 30% increased DMG and have 30% increased ATK SPD.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Pyro claymore carry. Provides team presence, Pyro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Pyro Hypercarry",
+        brief: "On-Field Pyro Hypercarry",
+        full: "Diluc deals consistent sustained Pyro DMG through Searing Onslaught weave combos and Dawn Pyro infusion, without team-wide stat buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "850" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "65" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "150" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

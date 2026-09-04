@@ -34,6 +34,9 @@ import { ExternalWeaponBuffPanel } from "./calculator/components/ExternalWeaponB
 import { ExternalWeaponBuffModal } from "./calculator/components/ExternalWeaponBuffModal";
 import { ExternalArtifactBuffPanel } from "./calculator/components/ExternalArtifactBuffPanel";
 import { ExternalArtifactBuffModal } from "./calculator/components/ExternalArtifactBuffModal";
+import { EffectiveStatsModal } from "./calculator/components/EffectiveStatsModal";
+import { CalculatorHeader } from "./calculator/components/CalculatorHeader";
+import { resolveAllEffectiveStats } from "@/lib/engine/effective-stats";
 
 
 const REACTION_LABEL: Record<ReactionType, string> = {
@@ -82,6 +85,12 @@ const EFFECTIVE_ROWS: { key: keyof DamageStats; label: string; unit: "flat" | "p
   { key: "cryoDmgBonus", label: "Cryo DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "geoDmgBonus", label: "Geo DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "physicalDmgBonus", label: "Physical DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "lunarChargedElevation", label: "Lunar-Charged Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomElevation", label: "Lunar-Bloom Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeElevation", label: "Lunar-Crystallize Elevation DMG", unit: "percent", hideIfZero: true },
+  { key: "lunarChargedDmgBonus", label: "Lunar-Charged DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlDmgBonus", label: "Stellar Swirl DMG Bonus", unit: "percent", hideIfZero: true },
+  { key: "stellarGlimmerDmgBonus", label: "Stellar Glimmer DMG Bonus", unit: "percent", hideIfZero: true },
   { key: "dmgReduction", label: "DMG Reduction / -(DMG Bonus)", unit: "percent", hideIfZero: true },
   { key: "enemyRes", label: "Enemy RES", unit: "percent" },
   { key: "levelChar", label: "Level", unit: "flat" },
@@ -223,6 +232,8 @@ export function CharacterCalculator({
   const [activeArtifactModalSetupId, setActiveArtifactModalSetupId] = useState<string>("");
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [activeTeamModalSetupId, setActiveTeamModalSetupId] = useState<string>(() => initialSetupId ?? "");
+  const [isEffectiveStatsModalOpen, setIsEffectiveStatsModalOpen] = useState(false);
+  const [activeEffectiveStatsModalSetupId, setActiveEffectiveStatsModalSetupId] = useState<string>(() => initialSetupId ?? "");
 
   const [isSplitView, setIsSplitView] = useState(false);
   const [splitRatio, setSplitRatio] = useState(45);
@@ -243,13 +254,13 @@ export function CharacterCalculator({
 
   const handleMouseDown = (e: React.MouseEvent, cardId: string) => {
     e.preventDefault();
-    const cardEl = document.getElementById(`setup-card-${cardId}`);
-    if (!cardEl) return;
-    const startRect = cardEl.getBoundingClientRect();
+    const containerEl = document.getElementById(`split-container-${cardId}`) || document.getElementById(`setup-card-${cardId}`);
+    if (!containerEl) return;
+    const startRect = containerEl.getBoundingClientRect();
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const relativeY = moveEvent.clientY - startRect.top;
-      const percentage = Math.max(20, Math.min(80, (relativeY / startRect.height) * 100));
+      const percentage = Math.max(15, Math.min(85, (relativeY / startRect.height) * 100));
       setSplitRatio(percentage);
     };
 
@@ -450,7 +461,14 @@ export function CharacterCalculator({
 
     // Apply external artifact team buffs
     if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
-      const artifactResult = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+      const artifactResult = resolveExternalArtifactBuffs(
+        inst.externalArtifacts,
+        toNum(inst.stats["atk.base"]) ?? 0,
+        config,
+        true,
+        toNum(inst.stats["def.base"]) ?? 0,
+        toNum(inst.stats["hp.base"]) ?? 0,
+      );
       for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
         if (key in s && typeof val === "number") {
           (s as unknown as Record<string, number>)[key] += val;
@@ -577,7 +595,9 @@ export function CharacterCalculator({
       rotationStepsDetails[r.id] = stepDetails;
     }
 
-    return { validation, results: out, extras, inputStats, effectiveStats: s, rotationTotals, rotationStepsDmg, rotationStepsDetails };
+    const statBreakdowns = resolveAllEffectiveStats(config, scaling, inst, inputStats, s);
+
+    return { validation, results: out, extras, inputStats, effectiveStats: s, statBreakdowns, rotationTotals, rotationStepsDmg, rotationStepsDetails };
   }
 
   const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
@@ -993,263 +1013,46 @@ export function CharacterCalculator({
           </a>
         </div>
       )}
-      <header className="mb-6 shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{config.name}</h1>
-            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg px-2 py-0.5">
-              <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-zinc-500">Combo:</span>
-              <select
-                className="bg-transparent border-none text-xs font-semibold py-0.5 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
-                value={rotationState.activeRotationId}
-                onChange={e => rotationState.setActiveRotationId(e.target.value)}
-              >
-                {rotationState.rotations.map(r => (
-                  <option key={r.id} value={r.id} className="bg-white dark:bg-zinc-950 text-black dark:text-white">
-                    {r.name || "Untitled"}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <p
-            onClick={() => setShowExtraInfo(!showExtraInfo)}
-            className="text-[11px] text-gray-550 dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors cursor-pointer select-none truncate max-w-sm mt-0.5 flex items-center gap-1"
-          >
-            <span>{config.weapon} · {config.element} · Rarity: {config.rarity}★</span>
-            <span className="text-gray-405">•</span>
-            <span className="underline">
-              {showExtraInfo ? "Hide info" : "Show character details"}
-            </span>
-            <span className={`inline-block transform transition-transform duration-200 text-gray-400 dark:text-zinc-500 font-mono text-xs ${showExtraInfo ? "rotate-180" : ""}`}>
-              ▼
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {saveStatus && (
-            <span className="text-xs text-gray-500 font-medium animate-pulse mr-2">
-              {saveStatus}
-            </span>
-          )}
-          <button
-            onClick={toggleSplitView}
-            className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5 ${
-              isSplitView
-                ? "bg-amber-500/10 border-amber-500/40 text-amber-600 dark:text-amber-400 font-extrabold"
-                : "border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white"
-            }`}
-            title="Toggle split layout for setups"
-          >
-            <span>{isSplitView ? "🥞 Column View" : "📖 Split View"}</span>
-          </button>
-          <button
-            onClick={() => setIsRotationOpen(true)}
-            className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
-          >
-            <span>📋 Rotation Builder</span>
-            {rotationState.rotations.length > 0 && (
-              <span className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {rotationState.rotations.length}
-              </span>
-            )}
-          </button>
-
-          {/* External Weapon Buffs Modal Button */}
-          {!fromCharacterId && (
-            <button
-              onClick={() => {
-                setActiveWeaponModalSetupId(instances[0]?.id || "");
-                setIsWeaponModalOpen(true);
-              }}
-              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
-              title="Configure External Weapon Buffs for team & wielder"
-            >
-              <span>⚔️ Weapon Buffs</span>
-              {instances.some((inst) => (inst.externalWeapons ?? []).length > 0) && (
-                <span className="bg-amber-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">
-                  {instances.reduce((acc, inst) => acc + (inst.externalWeapons ?? []).filter((w) => w.enabled).length, 0)}
-                </span>
-              )}
-            </button>
-          )}
-
-          {/* Dedicated Support Build Editor Link */}
-          <Link
-            href={`/characters/${config.id}/support${fromCharacterId ? `?from=${fromCharacterId}` : ""}`}
-            className="rounded-lg border border-amber-300 dark:border-amber-700/60 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300 transition-colors shadow-xs flex items-center gap-1.5"
-            title="Open dedicated Support Build Editor"
-          >
-            <span>🛡️ Support Editor</span>
-          </Link>
-
-          {/* Load Build Dropdown */}
-          <div className="relative load-dropdown-container">
-            <button
-              onClick={() => setIsLoadDropdownOpen(!isLoadDropdownOpen)}
-              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
-              title="Load a saved build from database"
-            >
-              <span>📂 {activeBuildName}</span>
-              <span className="text-[10px] text-gray-400 font-mono">▼</span>
-            </button>
-            {isLoadDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-64 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100 max-h-60 overflow-y-auto">
-                <div className="text-[10px] font-bold text-gray-450 dark:text-zinc-500 px-3 py-1.5 border-b border-gray-100 dark:border-zinc-900 mb-1">
-                  SELECT SAVED BUILD
-                </div>
-                <button
-                  onClick={() => {
-                    calcState.setActiveBuildId(null);
-                    calcState.setActiveBuildName("Scratchpad");
-                    setIsLoadDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${!activeBuildId ? "text-amber-600 dark:text-amber-400 bg-amber-500/5" : "text-gray-700 dark:text-zinc-300"}`}
-                >
-                  <span>📝 New Scratchpad Setup</span>
-                </button>
-                {savedBuildsList.length === 0 ? (
-                  <div className="text-xs text-gray-400 dark:text-zinc-650 px-3 py-2 italic text-center">
-                    No saved builds yet
-                  </div>
-                ) : (
-                  savedBuildsList.map(b => (
-                    <div
-                      key={b.id}
-                      onClick={() => loadBuild(b)}
-                      className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between cursor-pointer ${activeBuildId === b.id ? "text-amber-600 dark:text-amber-400 bg-amber-500/5 font-bold" : "text-gray-700 dark:text-zinc-300"}`}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="truncate max-w-[125px]" title={b.name}>{b.name}</span>
-                        {b.isOffline ? (
-                          <span className="text-[8px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1 py-0.5 border border-zinc-200 dark:border-zinc-700/60 rounded font-mono">Local</span>
-                        ) : (
-                          <span className="text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 border border-emerald-500/15 rounded font-mono">Cloud</span>
-                        )}
-                      </div>
-                      <button
-                        onClick={(e) => handleDeleteBuild(e, b.id)}
-                        className="text-zinc-400 hover:text-red-500 p-0.5 rounded transition-colors"
-                        title="Delete this build configuration"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={calcState.saveChanges}
-            disabled={isSaving}
-            className={
-              isDirty
-                ? "rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-sm font-semibold text-white dark:text-zinc-950 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-                : "rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-            }
-            title="Save changes to active build"
-          >
-            {activeBuildId ? "Save Changes" : "Save Setup"}
-          </button>
-
-          {/* Unified Actions Dropdown Group */}
-          <div className="relative export-dropdown-container">
-            <button
-              onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
-              className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-4 py-2 text-sm font-semibold text-black dark:text-white transition-colors shadow-sm cursor-pointer flex items-center gap-1"
-              title="Actions & Export options"
-            >
-              <span>⚙️ More Actions</span>
-              <span className="text-[10px] text-gray-400 font-mono">▼</span>
-            </button>
-            {isExportDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-56 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100">
-                <button
-                  onClick={() => {
-                    setIsExportDropdownOpen(false);
-                    document.getElementById("json-import-input")?.click();
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">📥</span> Import JSON Setup
-                </button>
-                <button
-                  onClick={() => {
-                    setIsExportDropdownOpen(false);
-                    shareBuild();
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">🔗</span> Share Build Link
-                </button>
-                {activeBuildId && (
-                  <button
-                    onClick={() => {
-                      setIsExportDropdownOpen(false);
-                      setNewBuildName(`${activeBuildName} Copy`);
-                      setIsSaveModalOpen(true);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                    title="Save current configuration as a new separate database entry"
-                  >
-                    <span className="text-zinc-400">💾</span> Save As New Setup
-                  </button>
-                )}
-
-                {/* Divider */}
-                <div className="border-t border-gray-150 dark:border-zinc-850 my-1.5"></div>
-
-                <button
-                  onClick={exportAsJson}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">📥</span> Export JSON (.json)
-                </button>
-                <button
-                  onClick={exportAsCsv}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">📊</span> Export CSV (.csv)
-                </button>
-                <button
-                  onClick={exportAsTxt}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">📄</span> Export TXT (.txt)
-                </button>
-                <button
-                  onClick={copyAsText}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">📋</span> Copy as text
-                </button>
-                <button
-                  onClick={exportAsPdf}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">🖨️</span> Save as PDF (.pdf)
-                </button>
-                <button
-                  onClick={exportAsPng}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 dark:text-zinc-300"
-                >
-                  <span className="text-zinc-400">🖼️</span> Download PNG (.png)
-                </button>
-              </div>
-            )}
-          </div>
-
-          <input
-            id="json-import-input"
-            type="file"
-            accept=".json"
-            onChange={importBuild}
-            className="hidden"
-          />
-        </div>
-      </header>
+      <CalculatorHeader
+        config={config}
+        fromCharacterId={fromCharacterId}
+        showExtraInfo={showExtraInfo}
+        setShowExtraInfo={setShowExtraInfo}
+        saveStatus={saveStatus}
+        rotationState={rotationState}
+        setIsRotationOpen={setIsRotationOpen}
+        isSplitView={isSplitView}
+        toggleSplitView={toggleSplitView}
+        instances={instances}
+        setIsWeaponModalOpen={setIsWeaponModalOpen}
+        setActiveWeaponModalSetupId={setActiveWeaponModalSetupId}
+        setIsArtifactModalOpen={setIsArtifactModalOpen}
+        setActiveArtifactModalSetupId={setActiveArtifactModalSetupId}
+        activeBuildId={activeBuildId}
+        activeBuildName={activeBuildName}
+        savedBuildsList={savedBuildsList}
+        isLoadDropdownOpen={isLoadDropdownOpen}
+        setIsLoadDropdownOpen={setIsLoadDropdownOpen}
+        setActiveBuildId={calcState.setActiveBuildId}
+        setActiveBuildName={calcState.setActiveBuildName}
+        loadBuild={loadBuild}
+        handleDeleteBuild={handleDeleteBuild}
+        saveChanges={calcState.saveChanges}
+        isSaving={isSaving}
+        isDirty={isDirty}
+        isExportDropdownOpen={isExportDropdownOpen}
+        setIsExportDropdownOpen={setIsExportDropdownOpen}
+        shareBuild={shareBuild}
+        importBuild={importBuild}
+        exportAsJson={exportAsJson}
+        exportAsCsv={exportAsCsv}
+        exportAsTxt={exportAsTxt}
+        copyAsText={copyAsText}
+        exportAsPdf={exportAsPdf}
+        exportAsPng={exportAsPng}
+        setNewBuildName={setNewBuildName}
+        setIsSaveModalOpen={setIsSaveModalOpen}
+      />
 
       {/* Shared Build Banner */}
       {showSharedBanner && (
@@ -1334,7 +1137,7 @@ export function CharacterCalculator({
               `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""}`;
             const baseBenchmarkInst = activeBenchmarkId === inst.id;
 
-            const renderOutputs = () => {
+            const renderConfiguration = () => {
               if (!effectiveStats || !inputStats || !extras) return null;
 
               const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
@@ -1352,19 +1155,16 @@ export function CharacterCalculator({
                 ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                 : 0;
 
-              const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
+              const handleEffectiveStatsRedirectWithAnchor = (targetAnchorId?: string) => {
                 const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
                 const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
-                let modeParam = "";
                 if (typeof window !== "undefined") {
                   try {
                     sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
-                    const storedMode = localStorage.getItem("gi_calc_dmg_type");
-                    if (storedMode) modeParam = `&mode=${storedMode}`;
                   } catch (e) {}
                 }
-                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
+                router.push(`/characters/${config.id}/effective-stats?share=${encoded}&setup=${inst.id}${hash}`);
               };
 
               return (
@@ -1427,245 +1227,47 @@ export function CharacterCalculator({
                   {/* Remastered Effective stats panel box */}
                   <div className="mb-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/40 p-3 shadow-2xs select-none">
                     <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
-                        Effective Stats & Buff Breakdown
-                      </h2>
-                      <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
-                        Formula: Raw + Additions = Total
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
+                          Effective Stats & Buff Breakdown
+                        </h2>
+                        {computed?.statBreakdowns?.some(b => b.hasExternalBuffs) && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" title="External buffs active" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveEffectiveStatsModalSetupId(inst.id);
+                            setIsEffectiveStatsModalOpen(true);
+                          }}
+                          className="px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded border border-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                          title="Open dedicated Effective Stats breakdown modal"
+                        >
+                          <span>🔍 Focus View ↗</span>
+                        </button>
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">
+                          Formula: Raw + Additions = Total
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      {/* Base & Combat Stats Breakdown */}
-                      {EFFECTIVE_ROWS.map(row => {
-                        const raw = inputStats[row.key] ?? 0;
-                        const total = effectiveStats[row.key] ?? 0;
-                        const delta = total - raw;
-
-                        const additions: StatBuffSource[] = [];
-
-                        // Add mechanics sources
-                        const parsedInputs: Record<string, number> = {};
-                        if (inst.mechanicInputs) {
-                          for (const [k, v] of Object.entries(inst.mechanicInputs)) {
-                            parsedInputs[k] = Number(v) || 0;
-                          }
-                        }
-
-                        const mechResult = resolveMechanics(config, {
-                          stats: inputStats,
-                          baseAtk: toNum(inst.stats["atk.base"]) ?? 800,
-                          baseDef: toNum(inst.stats["def.base"]) ?? 500,
-                          baseHp: toNum(inst.stats["hp.base"]) ?? 15000,
-                          constellationLevel: inst.constellationLevel,
-                          talentLevels: effectiveTalentLevels(config, scaling, inst.levels, inst.constellationLevel, inst.mechanicInputs),
-                          scaling,
-                          inputs: parsedInputs,
-                        });
-
-                        if (mechResult.statBuffSources?.[row.key]) {
-                          additions.push(...mechResult.statBuffSources[row.key]);
-                        }
-
-                        // Add constellation stat bonuses
-                        if (config.constellations) {
-                          for (const c of config.constellations) {
-                            if (c.level <= inst.constellationLevel) {
-                              for (const e of c.effects) {
-                                if (e.type === "stat_bonus" && e.statKey === row.key && e.statValue) {
-                                  additions.push({
-                                    source: `C${c.level} (${c.name})`,
-                                    value: e.statValue,
-                                    description: c.description || `Grants +${e.statValue} ${row.label}`,
-                                  });
-                                }
-                              }
-                            }
-                          }
-                        }
-
-                        // Add team support buff sources
-                        if (inst.teamBuffsEnabled !== false && inst.teamSupports?.length) {
-                          const teamRes = resolveTeamBuffs(inst.teamSupports, true);
-                          for (const src of teamRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.supportName} (Team)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-                        // Add external weapon buff sources
-                        if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
-                          const weaponRes = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
-                          for (const src of weaponRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.weaponName} (Weapon)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-                        // Add external artifact buff sources
-                        if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
-                          const artifactRes = resolveExternalArtifactBuffs(inst.externalArtifacts, toNum(inst.stats["atk.base"]) ?? 0, config, true);
-                          for (const src of artifactRes.sources) {
-                            if (src.stat === row.key) {
-                              additions.push({
-                                source: `${src.artifactName} (Artifact)`,
-                                value: src.value,
-                                description: src.label,
-                              });
-                            }
-                          }
-                        }
-
-
-                        // Generic fallback addition if total differs from raw but no source was explicitly captured
-                        const recordedSum = additions.reduce((acc, curr) => acc + curr.value, 0);
-                        const unrecordedDelta = delta - recordedSum;
-                        if (Math.abs(unrecordedDelta) > 0.05) {
-                          additions.push({
-                            source: "Character Mechanics / Trait Buff",
-                            value: unrecordedDelta,
-                            description: "Special state or active passive mechanic modifier",
-                          });
-                        }
-
-                        return (
-                          <StatBreakdownRow
-                            key={row.key}
-                            name={row.label}
-                            unit={row.unit}
-                            raw={raw}
-                            additions={additions}
-                            total={total}
-                            hideIfZero={row.hideIfZero}
-                          />
-                        );
-                      })}
-
-                      {/* Reaction Multipliers & Reaction Buff Rows */}
-                      <StatBreakdownRow
-                        name="Transformative Reaction Bonus"
-                        unit="percent"
-                        raw={emTransformative}
-                        additions={
-                          reactionBonusPct > 0
-                            ? [{ source: "Panel Reaction Bonus", value: reactionBonusPct, description: "Direct reaction bonus input" }]
-                            : []
-                        }
-                        total={totalTransformativeBonus}
-                      />
-
-                      {showAmplifying && config.element === "Pyro" && (
-                        <>
-                          <StatBreakdownRow
-                            name="Vaporize Multiplier"
-                            unit="multiplier"
-                            raw={1.5}
-                            additions={[
-                              ...(emAmplifyingBonus > 0
-                                ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                                : []),
-                              ...(instReactionBonusPct > 0
-                                ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                                : []),
-                            ]}
-                            total={getAmpMult(1.5)}
-                          />
-                          <StatBreakdownRow
-                            name="Melt Multiplier"
-                            unit="multiplier"
-                            raw={2.0}
-                            additions={[
-                              ...(emAmplifyingBonus > 0
-                                ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                                : []),
-                              ...(instReactionBonusPct > 0
-                                ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                                : []),
-                            ]}
-                            total={getAmpMult(2.0)}
-                          />
-                        </>
-                      )}
-
-                      {showAmplifying && config.element === "Hydro" && (
+                      {(computed?.statBreakdowns ?? resolveAllEffectiveStats(config, scaling, inst, inputStats, effectiveStats)).map(row => (
                         <StatBreakdownRow
-                          name="Vaporize Multiplier"
-                          unit="multiplier"
-                          raw={2.0}
-                          additions={[
-                            ...(emAmplifyingBonus > 0
-                              ? [{ source: "EM Amplifying Bonus", value: 2.0 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                              : []),
-                            ...(instReactionBonusPct > 0
-                              ? [{ source: "Panel Reaction Bonus%", value: 2.0 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                              : []),
-                          ]}
-                          total={getAmpMult(2.0)}
+                          key={row.key}
+                          statKey={row.key}
+                          name={row.label}
+                          unit={row.unit}
+                          raw={row.raw}
+                          additions={row.additions}
+                          total={row.total}
+                          hideIfZero={row.hideIfZero}
+                          hasExternalBuffs={row.hasExternalBuffs}
+                          onRedirect={handleEffectiveStatsRedirectWithAnchor}
                         />
-                      )}
-
-                      {showAmplifying && config.element === "Cryo" && (
-                        <StatBreakdownRow
-                          name="Melt Multiplier"
-                          unit="multiplier"
-                          raw={1.5}
-                          additions={[
-                            ...(emAmplifyingBonus > 0
-                              ? [{ source: "EM Amplifying Bonus", value: 1.5 * emAmplifyingBonus, description: "Amplifying EM bonus multiplier" }]
-                              : []),
-                            ...(instReactionBonusPct > 0
-                              ? [{ source: "Panel Reaction Bonus%", value: 1.5 * (instReactionBonusPct / 100), description: "Panel reaction bonus modifier" }]
-                              : []),
-                          ]}
-                          total={getAmpMult(1.5)}
-                        />
-                      )}
-
-                      {showCatalyze && (
-                        <StatBreakdownRow
-                          name="Aggravate Flat DMG Bonus"
-                          unit="flat"
-                          raw={1.15 * levelMultiplier(effectiveStats.levelChar)}
-                          additions={
-                            emCatalyzeBonus > 0 || instReactionBonusPct > 0
-                              ? [
-                                  {
-                                    source: "EM Catalyze & Panel Reaction Bonus",
-                                    value: aggravateFlat - 1.15 * levelMultiplier(effectiveStats.levelChar),
-                                    description: "Level base scaling * (1 + EM bonus% + panel reaction bonus%)",
-                                  },
-                                ]
-                              : []
-                          }
-                          total={aggravateFlat}
-                        />
-                      )}
-
-                      {toNum(inst.lunarBaseBonus) ? (
-                        <StatBreakdownRow
-                          name="Lunar Reaction Base DMG Bonus"
-                          unit="percent"
-                          raw={0}
-                          additions={[
-                            {
-                              source: "Moonsign Benediction / Panel Input",
-                              value: toNum(inst.lunarBaseBonus) || 0,
-                              description: "Lunar reaction base DMG bonus %",
-                            },
-                          ]}
-                          total={toNum(inst.lunarBaseBonus) || 0}
-                        />
-                      ) : null}
+                      ))}
                     </div>
                   </div>
 
@@ -1689,7 +1291,30 @@ export function CharacterCalculator({
                   {validation.general.map(g => (
                     <p key={g} className="mb-2 text-xs text-amber-600 select-none">{g}</p>
                   ))}
+                </div>
+              );
+            };
 
+            const renderDamageOutputs = () => {
+              if (!effectiveStats || !inputStats || !extras) return null;
+
+              const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
+                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
+                const encoded = encodeBuild(payload);
+                const hash = targetAnchorId ? `#${targetAnchorId}` : "";
+                let modeParam = "";
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
+                    const storedMode = localStorage.getItem("gi_calc_dmg_type");
+                    if (storedMode) modeParam = `&mode=${storedMode}`;
+                  } catch (e) {}
+                }
+                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
+              };
+
+              return (
+                <div className="space-y-4">
                   {/* Talent table list rendering */}
                   <DamageTable
                     inst={inst}
@@ -1768,7 +1393,7 @@ export function CharacterCalculator({
                 key={inst.id}
                 id={`setup-card-${inst.id}`}
                 className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 w-[480px] ${
-                  isSplitView ? "h-[700px]" : ""
+                  isSplitView ? "h-[75vh] min-h-[700px]" : ""
                 } ${
                   highlightedSetupId === inst.id
                     ? "border-amber-500 ring-2 ring-amber-500 shadow-md"
@@ -1814,8 +1439,8 @@ export function CharacterCalculator({
                 </div>
 
                 {isSplitView ? (
-                  <div className="flex flex-col flex-1 min-h-0">
-                    {/* Top Section: Input Settings */}
+                  <div id={`split-container-${inst.id}`} className="flex flex-col flex-1 min-h-0">
+                    {/* Top Section: Input Settings & Configuration */}
                     <div
                       ref={el => { upperRefs.current[inst.id] = el; }}
                       onScroll={(e) => handleUpperScroll(inst.id, e)}
@@ -1877,9 +1502,12 @@ export function CharacterCalculator({
                         validation={validation}
                         setStat={setStat}
                       />
+
+                      {/* Reaction & Effective Stats Configuration */}
+                      {renderConfiguration()}
                     </div>
 
-                    {/* Draggable Horizontal Splitter Divider */}
+                    {/* Draggable Horizontal Splitter Divider (placed right before Normal Attack panel / Damage Outputs) */}
                     <div
                       onMouseDown={(e) => handleMouseDown(e, inst.id)}
                       className="h-1.5 hover:h-2 bg-gray-200/80 hover:bg-amber-400 dark:bg-zinc-800/80 dark:hover:bg-amber-500 cursor-row-resize my-1 rounded-full transition-all flex items-center justify-center shrink-0 z-10 group"
@@ -1888,14 +1516,14 @@ export function CharacterCalculator({
                       <div className="w-8 h-0.5 bg-gray-400 dark:bg-zinc-650 group-hover:bg-white rounded-full transition-colors"></div>
                     </div>
 
-                    {/* Bottom Section: Output & Calculations */}
+                    {/* Bottom Section: Damage Outputs (DamageTable starting with Normal Attack, Reactions, Rotations) */}
                     <div
                       ref={el => { lowerRefs.current[inst.id] = el; }}
                       onScroll={(e) => handleLowerScroll(inst.id, e)}
-                      style={{ height: `${100 - splitRatio - 2}%` }}
+                      style={{ height: `${100 - splitRatio}%` }}
                       className="overflow-y-auto shrink-0 pt-2 flex flex-col gap-4 no-scrollbar"
                     >
-                      {renderOutputs()}
+                      {renderDamageOutputs()}
                     </div>
                   </div>
                 ) : (
@@ -1956,8 +1584,8 @@ export function CharacterCalculator({
                       setStat={setStat}
                     />
 
-
-                    {renderOutputs()}
+                    {renderConfiguration()}
+                    {renderDamageOutputs()}
                   </div>
                 )}
               </div>
@@ -2010,6 +1638,18 @@ export function CharacterCalculator({
         activeInstanceId={activeTeamModalSetupId || instances[0]?.id || ""}
         setActiveInstanceId={setActiveTeamModalSetupId}
         updateInstance={updateInstance}
+      />
+
+      {/* Effective Stats Breakdown Focus View Modal */}
+      <EffectiveStatsModal
+        isOpen={isEffectiveStatsModalOpen}
+        setIsOpen={setIsEffectiveStatsModalOpen}
+        config={config}
+        scaling={scaling}
+        instances={instances}
+        activeInstanceId={activeEffectiveStatsModalSetupId || instances[0]?.id || ""}
+        setActiveInstanceId={setActiveEffectiveStatsModalSetupId}
+        computedById={computedById}
       />
 
       {/* Rotation Builder Dialog Overlay popup */}

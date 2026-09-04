@@ -11,7 +11,7 @@ This skill documents the exact patterns, mathematical decomposition trees, routi
 
 ## 1. Core Architecture & Philosophy
 
-The Independent Formula Breakdown system provides complete mathematical transparency for every calculated damage hit, transformative reaction, lunar reaction, and team buff.
+The Independent Formula Breakdown system provides complete mathematical transparency for every calculated damage hit, transformative reaction, lunar reaction, and external team buff.
 
 ### Key Principles
 1. **Dedicated Independent Page Route (`/characters/[id]/formula`)**:
@@ -33,8 +33,6 @@ The Independent Formula Breakdown system provides complete mathematical transpar
 ---
 
 ## 2. File Architecture & Modules
-
-The formula breakdown system spans the following core modules:
 
 | File Path | Purpose |
 | --- | --- |
@@ -60,7 +58,7 @@ export interface FormulaBreakdown {
   category: string;                // "normal" | "charged" | "plunge" | "skill" | "burst" | "special" | "transformative" | "lunar" | "team-buffs"
   element: Element | "Physical";
   reaction: ReactionType;          // "none" | "vaporize" | "melt" | "aggravate" | "spread"
-  multiplierPct: number;           // Talent scaling %
+  multiplierPct: number;           // Talent scaling % (reflects +3 if talent constellation active)
   scalingSource: string;           // "atk" | "hp" | "def" | "em" | "special"
   nonCrit: number;
   crit: number;
@@ -106,7 +104,6 @@ Every formula card generates structured sub-breakdown lines formatted as:
    Base ATK 1016.4 = Char. ATK 342.03 + Weapon ATK 674.33
    Team ATK 115.0% = ATK (Arlecchino) 25% + ATK (Xilonen) 45% + ATK (Bennett) 20% + ATK (Kaedehara Kazuha) 25%
    ```
-   *(For HP/DEF/EM scaling characters, decomposes into Base + Artifact% + Flat components).*
 
 2. **Total DMG Increase Decompositions**:
    - **Arlecchino Masque of the Red Death**:
@@ -118,10 +115,6 @@ Every formula card generates structured sub-breakdown lines formatted as:
      ```text
      Total DMG Increase 5214 = Aggravate Catalyze DMG 5214
      ```
-   - **Flat DMG Bonus**:
-     ```text
-     Total DMG Increase 3500 = Flat DMG Bonus 3500
-     ```
 
 3. **Total DMG Bonus Decompositions**:
    ```text
@@ -130,15 +123,13 @@ Every formula card generates structured sub-breakdown lines formatted as:
    Total Normal Att. DMG Bonus 20% = Normal Att. DMG Bonus (Kaedehara Kazuha) 20%
    Total Pyro DMG Bonus 219.5% = Pyro DMG Bonus 40% + Art. Pyro DMG Bonus 46.6% + Team Pyro DMG Bonus 80.6% + Pyro DMG Bonus (Kaedehara Kazuha) 52.3%
    ```
-   > [!NOTE]
-   > For `special` hits (e.g. C2 Balemoon Bloodfire), category DMG bonus is omitted and labeled `(Independent Special Hit)`.
 
-4. **CRIT Rate & CRIT DMG Decompositions**:
+4. **CRIT Rate & CRIT DMG Decompositions (with Probability Clamping)**:
    ```text
-   Total Crit Rate 80.3% = Max(Min((Default Crit Rate 43.4% + Art. Crit Rate 36.9%), 100%), 0%)
-   Total Crit DMG 227.5% = Default Crit DMG 88.4% + Art. Crit DMG 139.1%
+   Total Crit Rate 80.3% = Max(Min((Initial Crit Rate 43.4% + Art. Crit Rate 36.9%), 100%), 0%)
+   Total Crit DMG 227.5% = Initial Crit DMG 88.4% + Art. Crit DMG 139.1%
    ```
-   *(Default accounts for 5% CRIT Rate / 50% CRIT DMG baseline + Ascension stat bonuses).*
+   *(Initial CRIT values reflect base stats from calculator inputs + weapon/ascension bonuses, clamped $\le 100\%$)*.
 
 5. **Enemy DEF Multiplier Decomposition**:
    ```text
@@ -152,10 +143,10 @@ Every formula card generates structured sub-breakdown lines formatted as:
 
 7. **Received Team Buffs Summary Card (`id: "received-team-buffs"`)**:
    ```text
-   Team ATK 115.0% = ATK (Xilonen) 45% + ATK (Bennett) 20% + ATK (Kaedehara Kazuha) 25% + ATK (Noblesse) 20%
-   Team Elemental Mastery 148.44 = EM (Ineffa A4) 148.44
-   Team Pyro DMG Bonus 80.6% = Pyro DMG Bonus (Xilonen) 65.6% + Pyro DMG Bonus (Bennett C6) 15%
-   Team Enemy Pyro DMG RES -76% = Enemy Pyro DMG RES (Xilonen) -36% + Enemy Pyro DMG RES (Kaedehara Kazuha) -40%
+   Team ATK 115.0% = ATK (Bennett Fantastic Voyage) 1202.4 + Party ATK% (Noblesse Oblige) 203.2 + Party ATK% (TTDS) 243.8
+   Team Elemental Mastery 148.44 = EM (Ineffa A4) 148.44 + Party EM (A Thousand Floating Dreams) 40.0
+   Team Pyro DMG Bonus 15.0% = Pyro DMG (Bennett C6) 15.0%
+   Team Enemy Pyro DMG RES -40% = Elemental RES Shred (Viridescent Venerer) -40.0%
    Team Lunar-Charged DMG Bonus 50.0% = Lunar-Charged DMG (Ineffa C1) 50.0%
    Team Lunar Base DMG 14.0% = Lunar Base DMG (Ineffa Moonsign) 14.0%
    ```
@@ -169,9 +160,9 @@ Every formula card generates structured sub-breakdown lines formatted as:
    - Uses `useRef<NodeJS.Timeout | null>` to store timeout ID.
    - `onMouseEnter`: cancels existing timeout, sets `showTooltip = true`.
    - `onMouseLeave`: sets a 200ms timer before setting `showTooltip = false`.
-   - Allows users to effortlessly move their mouse cursor across the gap between the `[?]` button and the popover without the bubble disappearing.
+   - Prevents popover flicker across cursor movement gaps.
 2. **Anchor Redirection**:
-   - `onFormulaRedirect(targetAnchorId)` handler encodes the build, adds `#<targetAnchorId>`, and pushes the route.
+   - `onFormulaRedirect(targetAnchorId)` handler encodes the build, appends `#<targetAnchorId>`, and pushes the route.
 
 ### B. Formula Breakdown View (`FormulaBreakdownView.tsx`)
 1. **Hydration & State Preservation**:
@@ -193,39 +184,20 @@ Every formula card generates structured sub-breakdown lines formatted as:
    }, [instances]);
    ```
 3. **Clipboard Copy (`handleCopyFormula`)**:
-   - Formats the active main equation + all sub-breakdown lines into a clean multiline string and writes to `navigator.clipboard`.
-   - Shows temporary "Copied!" feedback state.
+   - Formats active equations into clean multiline text and writes to `navigator.clipboard`.
 
 ---
 
-## 6. Special Constellation Hit Implementation Standard
+## 6. Verification Checklist
 
-When implementing or modifying special constellation hits (e.g., C2 Arlecchino *Balemoon Bloodfire*):
-
-1. **Talent Registry Definition (`src/data/registry/characters/<id>.ts`)**:
-   - Add a talent group with `type: "special"` or hit with `hitCategory: "special"` and `minConstellation: 2`.
-2. **Talent Seed Definition (`src/data/talents/<id>.ts`)**:
-   - Include level 1–14 seed rows for the special hit.
-3. **Damage Computation Engine (`src/lib/engine/damage.ts`)**:
-   - For hits with `hitCategory === "special"`, omit category DMG bonuses (`normalDmgBonus`, `skillDmgBonus`, `burstDmgBonus`) and apply only Common + Elemental DMG Bonuses.
-4. **Damage Table UI (`DamageTable.tsx`)**:
-   - When `inst.constellationLevel < h.minConstellation`, display `"—"` in the damage output table.
-5. **Formula Explainer (`formula-explainer.ts`)**:
-   - Skip inactive constellation hits (`if (h.minConstellation != null && inst.constellationLevel < h.minConstellation) return;`).
-   - Document `(Independent Special Hit)` in the Total DMG Bonus sub-breakdown line.
-
----
-
-## 7. Verification Checklist
-
-Before completing any formula breakdown or character formula task:
-1. **Anchor Matching**: Verify every hit in `DamageTable` passes an anchor ID (`hit-<groupId>:<hitIndex>`) that matches the ID generated in `explainHitFormulas`.
+Before completing any formula breakdown task:
+1. **Anchor Matching**: Verify every hit in `DamageTable` passes an anchor ID (`hit-<groupId>:<hitIndex>`) matching the ID generated in `explainHitFormulas`.
 2. **Hover Delay**: Confirm moving the cursor from the `[?]` button to the speech bubble popover does not cause jitter or premature closing.
 3. **Anchor Navigation**: Verify clicking `[?]` jumps directly to the target hit on `/characters/[id]/formula` and smoothly centers & highlights the card.
 4. **Constellation Inactivity**: Verify hits requiring higher constellations (e.g. C2) render `"—"` at C0/C1 and do not produce erroneous formulas.
-5. **Copy Formula**: Verify the "Copy Formula" button exports all breakdown lines accurately to the clipboard.
+5. **Probability Bounds**: Verify CRIT Rate sub-breakdown displays clamping bounds `Max(Min(..., 100%), 0%)`.
 6. **Unit Tests & Build**:
    ```bash
-   npx vitest run
-   npx next build
+   npm test
+   npm run build
    ```

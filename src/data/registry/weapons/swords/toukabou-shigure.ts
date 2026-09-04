@@ -13,7 +13,7 @@ export const toukabouShigure: WeaponConfig = {
     value: 165,
     baseValue: 36,
   },
-  passiveName: "Kaidan: Rain-Tied Yuka",
+  passiveName: "Kaidan: Rainfall Earthbinder",
   passiveDesc:
     "After an attack hits an opponent, it will inflict an instance of Cursed Parasol upon one of them for 10s. The character wielding this weapon will deal 16~32% more DMG to the opponent affected by Cursed Parasol.",
   isSupport: false,

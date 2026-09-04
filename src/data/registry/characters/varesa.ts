@@ -128,5 +128,29 @@ export const varesa: CharacterConfig = {
       description: "Volcano Kablam restores Nightsoul points. Plunging Attacks and Elemental Burst gain +10% CRIT Rate and +100% CRIT DMG.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Pure on-field Pyro plunging hypercarry powered by Nightsoul Passion and Apex Drive. Provides team presence, Pyro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Pyro Plunge Hypercarry",
+        brief: "On-Field Pyro Hypercarry",
+        full: "Varesa unleashes high-impact Volcano Kablam plunging attacks and Guardian Vent bursts, without providing party buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "850" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "170" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

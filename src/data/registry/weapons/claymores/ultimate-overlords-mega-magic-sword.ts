@@ -2,7 +2,7 @@ import type { WeaponConfig } from "../types";
 
 export const ultimateOverlordsMegaMagicSword: WeaponConfig = {
   id: "ultimate-overlords-mega-magic-sword",
-  name: "Ultimate Overlord's Mega Magic Sword",
+  name: "\"Ultimate Overlord's Mega Magic Sword\"",
   type: "Claymore",
   rarity: 4,
   baseAtk: 565,

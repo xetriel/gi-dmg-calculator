@@ -83,5 +83,29 @@ export const travelerHydro: CharacterConfig = {
     { level: 4, name: "Pouring Stream", description: "Creates a shield absorbing 10% Max HP upon casting Aquacrest Saber.", effects: [{ type: "informational" }] },
     { level: 5, name: "Churning Whirlpool", description: "Increases the Level of Torrential Deluge by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
     { level: 6, name: "Tides of Justice", description: "Restoring HP converts next Normal Attack to Hydro DMG and adds 40% Max HP as Flat DMG.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Hydro support providing off-field Hydro application, Sourcewater Droplet healing, and a 10% Max HP shield via Pouring Stream (C4).",
+    buffExplanations: [
+      {
+        name: "C4: Pouring Stream",
+        brief: "10% Max HP Shield",
+        full: "Creates a shield absorbing DMG equal to 10% of the Traveler's Max HP when casting Aquacrest Saber.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "hp", label: "Max HP", defaultValue: "24000" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Max HP", value: fmt(ctx.hp) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

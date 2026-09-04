@@ -3,13 +3,13 @@ import type { WeaponConfig } from "../types";
 export const forgedByTheGoldenMelody: WeaponConfig = {
   id: "forged-by-the-golden-melody",
   name: "Forged by the Golden Melody",
-  type: "Polearm",
+  type: "Claymore",
   rarity: 4,
-  baseAtk: 565,
-  lvl1BaseAtk: 44,
+  baseAtk: 510,
+  lvl1BaseAtk: 42,
   subStat: {
-    type: "atkPct",
-    label: "ATK%",
+    type: "critRate",
+    label: "CRIT Rate%",
     value: 27.6,
     baseValue: 6,
   },

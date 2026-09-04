@@ -90,5 +90,62 @@ export const travelerCryo: CharacterConfig = {
     { level: 4, name: "Enduring Ice", description: "Extends the duration of the Frostpierce Star by 25%.", effects: [{ type: "informational" }] },
     { level: 5, name: "Bittercold Fog", description: "Increases the Level of Ice Fog Piercer by 3. Maximum upgrade level is 15.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 6, name: "Brumal Grimfrost", description: "Each Frostglow stack consumed on Burst increases other party members' Stellar Glimmer reaction DMG by 5% per stack (max 40%) for 15s.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Cryo Stellar support providing Moonsign Lunar/Stellar Base DMG (+0.7%/100 ATK, cap 14%), party EM share via C2, and Stellar Glimmer reaction amplification at C6.",
+    buffExplanations: [
+      {
+        name: "Stellar Jubilee: Illusory Frostmirror",
+        brief: "+0.7% Lunar/Stellar Base DMG per 100 ATK",
+        full: "Base Stellar-Conduct and Stellar-Swirl DMG increases by 0.7% for every 100 points of the Traveler's ATK, up to a maximum of 14%.",
+        category: "lunar",
+      },
+      {
+        name: "C2: Frostfall Reverberation",
+        brief: "+60 / +120 EM",
+        full: "Increases active character's EM by 60 for 5s on Ice Crystal hit. Boosted to 120 EM when Stellar Glimmer reaction is active.",
+        category: "stat_share",
+      },
+      {
+        name: "C6: Brumal Grimfrost",
+        brief: "Up to +40% Stellar Reaction DMG",
+        full: "Each Frostglow stack consumed on Burst cast increases other party members' Stellar Glimmer reaction DMG by 5% per stack (max 8 stacks = +40%) for 15s.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(14, (ctx.atk / 100) * 0.7),
+    buffs: [
+      {
+        stat: "em",
+        label: "Elemental Mastery (Cryo MC C2)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 2) return 0;
+          return (ctx.inputs["c2-stellar-em"] ?? 1) > 0 ? 120 : 60;
+        },
+      },
+      {
+        stat: "stellarGlimmerDmgBonus",
+        label: "Stellar Glimmer Reaction DMG (Cryo MC C6)",
+        compute: (ctx) => {
+          if (ctx.constellationLevel < 6) return 0;
+          const stacks = Math.min(8, Math.max(0, ctx.inputs["frostglow-stacks"] ?? 8));
+          return stacks * 5;
+        },
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      const stellarBase = Math.min(14, (ctx.atk / 100) * 0.7);
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "Stellar Base", value: `+${fmt(stellarBase)}%` },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

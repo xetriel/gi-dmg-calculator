@@ -5,7 +5,7 @@ export const silkenMoonsSerenade: ArtifactConfig = {
   name: "Silken Moon's Serenade",
   rarity: 5,
   twoPieceDesc: "Energy Recharge +20%.",
-  fourPieceDesc: "When dealing Elemental DMG, gain Gleaming Moon: Devotion: Increases all party members' Elemental Mastery by 60/120 when Moonsign is Nascent/Ascendant Gleam (Triggerable off-field). All party members' Lunar Reaction DMG +10%.",
+  fourPieceDesc: "When dealing Elemental DMG, gain the Gleaming Moon: Devotion effect for 8s: Increases all party members' Elemental Mastery by 60/120 when the party's Moonsign is Nascent Gleam/Ascendant Gleam. The equipping character can trigger this effect while off-field. All party members' Lunar Reaction DMG is increased by 10% for each different Gleaming Moon effect that party members have. Effects from Gleaming Moon cannot stack.",
   isSupport: true,
   buffType: "both",
   mechanicDefs: [

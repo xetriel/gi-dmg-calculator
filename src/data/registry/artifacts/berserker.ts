@@ -4,7 +4,7 @@ export const berserker: ArtifactConfig = {
   id: "berserker",
   name: "Berserker",
   rarity: 4,
-  twoPieceDesc: "CRIT Rate increased by 12%.",
+  twoPieceDesc: "CRIT Rate +12%",
   fourPieceDesc: "When HP is below 70%, CRIT Rate increases by an additional 24%.",
   isSupport: false,
   buffType: "self",

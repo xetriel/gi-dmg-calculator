@@ -1,9 +1,9 @@
 import type { WeaponConfig } from "../types";
 
-export const flameForgedInsight: WeaponConfig = {
-  id: "flame-forged-insight",
-  name: "Flame-Forged Insight",
-  type: "Polearm",
+export const emberwell: WeaponConfig = {
+  id: "emberwell",
+  name: "Emberwell",
+  type: "Sword",
   rarity: 4,
   baseAtk: 510,
   lvl1BaseAtk: 42,
@@ -13,15 +13,15 @@ export const flameForgedInsight: WeaponConfig = {
     value: 165,
     baseValue: 36,
   },
-  passiveName: "Flame Forging",
+  passiveName: "Ember Surge",
   passiveDesc:
     "Increases Pyro DMG Bonus by 12~24%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "flame-insight-pyro-dmg",
-      label: "Pyro DMG Bonus (Flame-Forged Insight)",
+      id: "emberwell-pyro-dmg",
+      label: "Pyro DMG Bonus (Emberwell)",
       stat: "pyroDmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,

@@ -4,8 +4,8 @@ export const aubadeOfMorningstarAndMoon: ArtifactConfig = {
   id: "aubade-of-morningstar-and-moon",
   name: "Aubade of Morningstar and Moon",
   rarity: 5,
-  twoPieceDesc: "Increases Lunar Reaction DMG by 20%.",
-  fourPieceDesc: "When the equipping character is off-field, Lunar Reaction DMG is increased by 20%. When party's Moonsign Level is at least Ascendant Gleam, further increased by 40% (Total +60%).",
+  twoPieceDesc: "Increases Elemental Mastery by 80.",
+  fourPieceDesc: "When the equipping character is off-field, Lunar Reaction DMG is increased by 20%. When the party's Moonsign Level is at least Ascendant Gleam, Lunar Reaction DMG will be further increased by 40%. This effect will disappear after the equipping character is active for 3s.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -19,13 +19,13 @@ export const aubadeOfMorningstarAndMoon: ArtifactConfig = {
   ],
   buffs: [
     {
-      id: "aubade-2pc-lunar-charged",
-      label: "2-Piece Lunar-Charged DMG% (Aubade of Morningstar)",
-      stat: "lunarChargedDmgBonus",
+      id: "aubade-2pc-em",
+      label: "2-Piece Elemental Mastery (Aubade of Morningstar and Moon)",
+      stat: "em",
       pieceRequirement: 2,
       isTeamBuff: false,
-      value: 20,
-      compute: () => 20,
+      value: 80,
+      compute: () => 80,
     },
     {
       id: "aubade-4pc-lunar-charged",

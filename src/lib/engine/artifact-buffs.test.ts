@@ -1,43 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { resolveExternalArtifactBuffs } from "./artifact-buffs";
-import type { CharacterConfig } from "../../data/registry/types";
 import { ARTIFACTS, artifactById, supportArtifacts, wielderArtifacts } from "../../data/registry/artifacts";
+import { byId } from "../../data/registry/characters";
 
-const mockMizuki: CharacterConfig = {
-  id: "mizuki",
-  name: "Mizuki",
-  rarity: 5,
-  element: "Anemo",
-  weapon: "Catalyst",
-  region: "Nod-Krai",
-  dmgBonusLabel: "Anemo DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
-
-const mockArlecchino: CharacterConfig = {
-  id: "arlecchino",
-  name: "Arlecchino",
-  rarity: 5,
-  element: "Pyro",
-  weapon: "Polearm",
-  region: "Fontaine",
-  dmgBonusLabel: "Pyro DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
-
-const mockAyaka: CharacterConfig = {
-  id: "ayaka",
-  name: "Kamisato Ayaka",
-  rarity: 5,
-  element: "Cryo",
-  weapon: "Sword",
-  region: "Inazuma",
-  dmgBonusLabel: "Cryo DMG Bonus%",
-  talents: [],
-  constellations: [],
-};
+const mockMizuki = byId("mizuki")!;
+const mockArlecchino = byId("arlecchino")!;
+const mockAyaka = byId("ayaka")!;
 
 describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
   describe("Registry Integrity", () => {
@@ -440,6 +408,223 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
       expect(res.statDeltas.em).toBe(120);
       expect(res.statDeltas.dmgBonus).toBe(40);
       expect(res.sources.length).toBe(4);
+    });
+  });
+
+  describe("Audit & Formula Correction Tests", () => {
+    it("scales Defender's Will 2pc DEF% with baseDef, NOT baseAtk", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          { id: "a-1", artifactId: "defenders-will", pieceCount: 2, slot: "wielder", enabled: true },
+        ],
+        1000, // baseAtk
+        mockArlecchino,
+        true,
+        800,  // baseDef
+        15000 // baseHp
+      );
+
+      // 30% of 800 Base DEF = 240 DEF (NOT 30% of 1000 Base ATK = 300)
+      expect(res.statDeltas.def).toBeCloseTo(240);
+      expect(res.statDeltas.atk).toBeUndefined();
+    });
+
+    it("scales Husk of Opulent Dreams 2pc and 4pc Curiosity stacks with baseDef", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "husk-of-opulent-dreams",
+            pieceCount: 4,
+            slot: "wielder",
+            enabled: true,
+            inputs: { "curiosity-stacks": 4 },
+          },
+        ],
+        1000, // baseAtk
+        mockArlecchino,
+        true,
+        800,  // baseDef
+        15000 // baseHp
+      );
+
+      // 2pc: 30% of 800 = 240 DEF. 4pc: 4 * 6% = 24% of 800 = 192 DEF. Total = 432 DEF.
+      expect(res.statDeltas.def).toBeCloseTo(432);
+      expect(res.statDeltas.geoDmgBonus).toBe(24);
+    });
+
+    it("scales Tenacity of the Millelith 2pc HP% with baseHp, NOT baseAtk", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          { id: "a-1", artifactId: "tenacity-of-the-millelith", pieceCount: 2, slot: "wielder", enabled: true },
+        ],
+        1000, // baseAtk
+        mockArlecchino,
+        true,
+        800,  // baseDef
+        15000 // baseHp
+      );
+
+      // 20% of 15,000 Base HP = 3,000 HP (NOT 20% of 1000 Base ATK = 200)
+      expect(res.statDeltas.hp).toBeCloseTo(3000);
+      expect(res.statDeltas.atk).toBeUndefined();
+    });
+
+    it("scales Vourukasha's Glow 2pc HP% with baseHp, NOT baseAtk", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          { id: "a-1", artifactId: "vourukashas-glow", pieceCount: 2, slot: "wielder", enabled: true },
+        ],
+        1000, // baseAtk
+        mockArlecchino,
+        true,
+        800,  // baseDef
+        15000 // baseHp
+      );
+
+      // 20% of 15,000 Base HP = 3,000 HP
+      expect(res.statDeltas.hp).toBeCloseTo(3000);
+      expect(res.statDeltas.atk).toBeUndefined();
+    });
+
+    it("resolves Song of Days Past 4pc Waves of Days Past flat DMG bonus up to 1,200", () => {
+      const resSupport = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "song-of-days-past",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: { "days-past-healing": 15000 },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+
+      // 8% of 15,000 healing = 1,200 Flat DMG
+      expect(resSupport.statDeltas.flatDmgBonus).toBe(1200);
+
+      const resPartial = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-2",
+            artifactId: "song-of-days-past",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: { "days-past-healing": 10000 },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+
+      // 8% of 10,000 healing = 800 Flat DMG
+      expect(resPartial.statDeltas.flatDmgBonus).toBe(800);
+    });
+
+    it("resolves Echoes of an Offering 4pc Valley Rite Normal Attack DMG buff", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "echoes-of-an-offering",
+            pieceCount: 4,
+            slot: "wielder",
+            enabled: true,
+            inputs: { "valley-rite-active": "1" },
+          },
+        ],
+        1000, // baseAtk
+        mockArlecchino,
+        true
+      );
+
+      // 2pc: 18% of 1000 = 180 ATK. 4pc: 70% of 1000 = 700 Flat DMG
+      expect(res.statDeltas.atk).toBeCloseTo(180);
+      expect(res.statDeltas.flatDmgBonus).toBeCloseTo(700);
+    });
+
+    it("resolves Tiny Miracle 2pc and 4pc RES bonuses", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "tiny-miracle",
+            pieceCount: 4,
+            slot: "wielder",
+            enabled: true,
+            inputs: { "tiny-miracle-hit": "1" },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+
+      // 2pc: 20 All RES. 4pc: 30 Elemental RES. Total = 50.
+      expect(res.statDeltas.allRes).toBe(50);
+    });
+
+    it("resolves Maiden Beloved 4pc party healing bonus from support slot", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "maiden-beloved",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: { "maiden-skill-burst": "1" },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+
+      expect(res.statDeltas.healingBonus).toBe(20);
+    });
+
+    it("verifies accurate 2pc bonuses for recent/corrected artifact sets", () => {
+      // Long Night's Oath: 25% Plunge DMG
+      const rPlunge = resolveExternalArtifactBuffs(
+        [{ id: "a-1", artifactId: "long-nights-oath", pieceCount: 2, slot: "wielder", enabled: true }],
+        1000, mockArlecchino, true
+      );
+      expect(rPlunge.statDeltas.plungeDmgBonus).toBe(25);
+
+      // Finale of the Deep Galleries: 15% Cryo DMG
+      const rCryo = resolveExternalArtifactBuffs(
+        [{ id: "a-2", artifactId: "finale-of-the-deep-galleries", pieceCount: 2, slot: "wielder", enabled: true }],
+        1000, mockArlecchino, true
+      );
+      expect(rCryo.statDeltas.cryoDmgBonus).toBe(15);
+
+      // Night of the Sky's Unveiling: 80 EM
+      const rSky = resolveExternalArtifactBuffs(
+        [{ id: "a-3", artifactId: "night-of-the-skys-unveiling", pieceCount: 2, slot: "wielder", enabled: true }],
+        1000, mockArlecchino, true
+      );
+      expect(rSky.statDeltas.em).toBe(80);
+
+      // Aubade of Morningstar and Moon: 80 EM
+      const rAubade = resolveExternalArtifactBuffs(
+        [{ id: "a-4", artifactId: "aubade-of-morningstar-and-moon", pieceCount: 2, slot: "wielder", enabled: true }],
+        1000, mockArlecchino, true
+      );
+      expect(rAubade.statDeltas.em).toBe(80);
+
+      // Disenchantment in Deep Shadow: 18% ATK
+      const rDis = resolveExternalArtifactBuffs(
+        [{ id: "a-5", artifactId: "disenchantment-in-deep-shadow", pieceCount: 2, slot: "wielder", enabled: true }],
+        1000, mockArlecchino, true
+      );
+      expect(rDis.statDeltas.atk).toBeCloseTo(180);
     });
   });
 });

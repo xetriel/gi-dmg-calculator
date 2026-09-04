@@ -4,8 +4,8 @@ export const celestialGift: ArtifactConfig = {
   id: "celestial-gift",
   name: "Celestial Gift",
   rarity: 5,
-  twoPieceDesc: "Energy Recharge +20%.",
-  fourPieceDesc: "If character has Witch's Homework, using Skill grants Light's Guidance: all party members gain +20% Elemental DMG of wielder's element for 20s. With Hexerei: Secret Rite, upgraded to Mortal Hymn (+40% Elemental DMG to wielder & active member elements).",
+  twoPieceDesc: "Energy Recharge + 20%.",
+  fourPieceDesc: "If the equipping character has completed Witch's Homework, after they use an Elemental Skill, they also gain \"Light's Guidance\" for 20s: All nearby party members gain a 20% Elemental DMG Bonus corresponding to the equipping character's Elemental Type. The equipping character can trigger this effect while off-field. DMG Bonuses provided by Artifact Sets with the same name do not stack.When your party has the Hexerei: Secret Rite effect, Light's Guidance is upgraded to \"Mortal Hymn\": All nearby party members gain a 40% Elemental DMG Bonus corresponding to both the equipping character and the current active party member's Elemental Type instead. If both characters have the same Elemental Type, these bonuses will not stack.",
   isSupport: true,
   buffType: "both",
   mechanicDefs: [

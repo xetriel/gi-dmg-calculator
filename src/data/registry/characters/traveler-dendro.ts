@@ -97,5 +97,46 @@ export const travelerDendro: CharacterConfig = {
     { level: 4, name: "Treacle Sugar", description: "After Lea Lotus Lamp triggers Lotus Light Transfiguration, gains 5 Lotus Light stacks.", effects: [{ type: "informational" }] },
     { level: 5, name: "Viridian Transience", description: "Increases the Level of Surgent Manifestation by 3.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
     { level: 6, name: "Moment of Respite", description: "Characters under Lotus Light Transfiguration gain +12% Dendro DMG Bonus. If Lamp transmuted, they also gain +12% corresponding element DMG Bonus.", effects: [{ type: "informational" }] }
-  ]
+  ],
+  support: {
+    description: "Dendro applicator and support providing party Elemental Mastery stacking via Lea Lotus Lamp (A1) and +12% Dendro DMG Bonus at C6.",
+    buffExplanations: [
+      {
+        name: "A1: Verdant Overgrowth",
+        brief: "Up to +60 EM",
+        full: "Lea Lotus Lamp gains 1 stack per second while active, increasing the active character's EM by 6 per stack (max 10 stacks = +60 EM).",
+        category: "stat_share",
+      },
+      {
+        name: "C6: Moment of Respite",
+        brief: "+12% Dendro DMG Bonus",
+        full: "Characters under the effect of Lotus Light Transfiguration gain a 12% Dendro DMG Bonus.",
+        category: "dmg_bonus",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "700" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "em",
+        label: "Elemental Mastery (Dendro MC A1)",
+        compute: (ctx) => Math.min(10, Math.max(0, ctx.inputs["a1-lotus-light-stacks"] ?? 10)) * 6,
+      },
+      {
+        stat: "dendroDmgBonus",
+        label: "Dendro DMG (Dendro MC C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 && (ctx.inputs["c6-dendro-buff"] ?? 1) > 0 ? 12 : 0),
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

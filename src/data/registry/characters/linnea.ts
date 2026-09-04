@@ -119,5 +119,75 @@ export const linnea: CharacterConfig = {
       description: "Elemental Skill or Moondrift Harmony grants max stacks of Field Catalog. Consuming Field Catalog consumes double the stacks and increases the resulting DMG boost to 150% of original. Elevates Lunar-Crystallize DMG of nearby party members by 25%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Moonsign Geo buffer and Lunar-Crystallize amplifier. Converts Hydro Crystallize into Lunar-Crystallize, shares EM scaling from DEF (A4), boosts Hydro/Geo CRIT DMG by 40% at C2, grants +25% DEF at C4, and elevates party Lunar-Crystallize DMG by 25% at C6.",
+    buffExplanations: [
+      {
+        name: "Moonsign Benediction",
+        brief: "+0.7% Lunar-Crystallize Base DMG per 100 DEF (max 14%)",
+        full: "Converts Hydro Crystallize into Lunar-Crystallize. Every 100 DEF increases party Lunar-Crystallize Base DMG by 0.7%, capped at 14.0%.",
+        category: "lunar",
+      },
+      {
+        name: "A4: Universal Naturalist Archive",
+        brief: "Shares 5% of DEF as EM",
+        full: "Linnea increases the EM of party members by 5% of her DEF.",
+        category: "stat_share",
+      },
+      {
+        name: "C2: Tidings of Joy and Sorrow",
+        brief: "+40% CRIT DMG for Hydro/Geo allies",
+        full: "Hydro and Geo party members gain +40% CRIT DMG after Moondrift Harmony.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C4: Expert Instinct",
+        brief: "+25% DEF to active character",
+        full: "Increases the DEF of the active character by 25% of their base DEF.",
+        category: "stat_share",
+      },
+      {
+        name: "C6: Golden Beagle's Dream",
+        brief: "+25% Lunar-Crystallize DMG elevation",
+        full: "Elevates the Lunar-Crystallize DMG of nearby party members by 25%.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "def", label: "Total DEF", defaultValue: "2400" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "em",
+        label: "EM (Linnea A4)",
+        compute: (ctx) => 0.05 * ctx.def,
+      },
+      {
+        stat: "critDmg",
+        label: "CRIT DMG (Linnea C2)",
+        compute: (ctx) => (ctx.constellationLevel >= 2 ? 40 : 0),
+      },
+      {
+        stat: "def",
+        label: "DEF (Linnea C4)",
+        compute: (ctx) => (ctx.constellationLevel >= 4 ? 0.25 * (ctx.baseDef || ctx.def) : 0),
+      },
+      {
+        stat: "lunarCrystallizeDmgBonus",
+        label: "Lunar-Crystallize DMG (Linnea C6)",
+        compute: (ctx) => (ctx.constellationLevel >= 6 ? 25 : 0),
+      },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.def / 100), 14),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total DEF", value: fmt(ctx.def) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

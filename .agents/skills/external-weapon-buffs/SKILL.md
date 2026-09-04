@@ -5,7 +5,7 @@ description: Guidelines and architectural standard for implementing Genshin Impa
 
 # External Weapon Team Buff Skill & Implementation Standard
 
-This skill documents the exact architectural patterns, data structures, calculation engine, UI components, database schema synchronization, and verification workflow for implementing or extending **External Weapon Team Buff Sources** in `gi-dmg-calculator`.
+This skill documents the exact architectural patterns, data structures, calculation engine, UI components, rarity-focused design theming, database schema synchronization, and verification workflow for implementing or extending **External Weapon Team Buff Sources** in `gi-dmg-calculator`.
 
 ---
 
@@ -16,7 +16,7 @@ The External Weapon Buff system allows weapons equipped by party members (suppor
 ### Key Principles
 
 1. **Character-Specific & Supportive Weapon Filtering (`getWeaponsForCharacter`)**:
-   - For any active DPS character (e.g. Arlecchino, Polearm), available weapons in the selection dropdown MUST follow strict rules:
+   - For any active DPS character (e.g. Arlecchino, Polearm), available weapons in the selection catalog MUST follow strict rules:
      - **Matching Weapon Class**: All weapons of the character's weapon type (e.g., all Polearms for Arlecchino).
      - **Team Supportive Weapons**: All weapons marked with `isSupport: true` across *all* weapon classes (e.g. *A Thousand Floating Dreams* [Catalyst], *Freedom-Sworn* [Sword], *Elegy for the End* [Bow], *Song of Broken Pines* [Claymore], *Key of Khaj-Nisut* [Sword], *TTDS* [Catalyst], *Peak Patrol Song* [Sword], etc.).
      - Non-support weapons of non-matching classes (e.g. *Tome of the Eternal Flow* [Catalyst] for Arlecchino) are strictly excluded.
@@ -33,9 +33,10 @@ The External Weapon Buff system allows weapons equipped by party members (suppor
    - Weapons with conditional passives (e.g., Bond of Life states on *Crimson Moon's Semblance*, wielder HP for *Key of Khaj-Nisut*, party element match stacks for *A Thousand Floating Dreams*) declare `mechanicDefs` with toggles or sliders that render dynamically in the UI.
 6. **Pure Engine Stat Delta Accumulation**:
    - `resolveExternalWeaponBuffs` is a pure function that resolves all active weapon buffs into `statDeltas` (ATK, EM, CRIT, DMG Bonus%, ER, etc.) and a structured `sources` list for attribution.
-   - Percentage ATK buffs (e.g. TTDS +48% ATK, Freedom-Sworn +20% ATK) multiply against active character's `baseAtk`: `(pct / 100) * baseAtk`.
+   - Percentage ATK buffs (e.g. TTDS +48% ATK, Freedom-Sworn +20% ATK) multiply against the active character's `baseAtk`: `(pct / 100) * baseAtk`.
+   - Stamped with `rarity: config.rarity` on every emitted source for dynamic rarity theming.
 7. **Formula Breakdown & Tooltip Attribution**:
-   - Every buff is tracked with source name and label (e.g., `Freedom-Sworn (Weapon): +20.0% ATK (Freedom-Sworn Millennial Movement)`).
+   - Every buff is tracked with source name and label (e.g., `A Thousand Floating Dreams (Weapon): +40 Party EM (R1)`).
    - Displayed in the `Received Team Buffs` card on `/characters/[id]/formula` and in hover tooltip popovers on the character calculator page.
 8. **Database Synchronization (Prisma & MySQL)**:
    - Database schema has `model Weapon` in `prisma/schema.prisma` and matching DDL in `gi_stat_db.sql`.
@@ -43,7 +44,41 @@ The External Weapon Buff system allows weapons equipped by party members (suppor
 
 ---
 
-## 2. File Architecture & Modules
+## 2. Rarity-Focused Theming Architecture
+
+All external weapon buff UI components follow the centralized **Rarity-Focused Design System** (`src/components/calculator/rarity-theme.ts` via `getRarityTheme(rarity)`):
+
+| Rarity | Vibe Theme | Primary Tailwind Accents | Applied Weapons & Buff Notes |
+| :--- | :--- | :--- | :--- |
+| **5-Star (5★)** | **Gold-ish** | `amber-500` / `amber-400` / `amber-950/20` | A Thousand Floating Dreams, Freedom-Sworn, Elegy for the End, Key of Khaj-Nisut, Song of Broken Pines, Peak Patrol Song |
+| **4-Star (4★)** | **Purple-ish** | `purple-600` / `purple-400` / `purple-950/20` | Favonius Series, Sacrificial Series, Xiphos' Moonlight, Forest Regalia, Moonpiercer, Makhaira Aquamarine |
+| **3-Star (3★)** | **Blue-ish** | `sky-600` / `sky-400` / `sky-950/20` | **Thrilling Tales of Dragon Slayers (TTDS Party ATK%)**, Harbinger of Dawn, White Tassel |
+| **2-Star (2★)** | **Green-ish** | `emerald-600` / `emerald-400` / `emerald-950/20` | 2-star weapons |
+| **1-Star (1★)** | **Silver-ish** | `zinc-500` / `zinc-400` / `zinc-900/20` | 1-star weapons |
+
+### UI Theming Standards
+1. **Panel Header & Quantity Notation (`ExternalWeaponBuffPanel.tsx`)**:
+   - Header button text uses neutral default: `text-gray-900 dark:text-white hover:text-black dark:hover:text-white`.
+   - Icon badge: neutral `bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700`.
+   - Quantity notation formatted as `{activeCount}/{total}` in bright white and `(Max 4)` in grey:
+     `<span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{weapons.length}</span> <span className="text-gray-400 dark:text-zinc-500 font-medium">(Max {MAX_EXTERNAL_WEAPONS})</span>`.
+   - Empty state button uses neutral dashed border with clean white/gray hover.
+2. **Aggregated Buff Pills**:
+   - `ExternalWeaponBuffSource` carries `rarity?: number` reflecting `config.rarity`.
+   - Buff pills use `getRarityTheme(s.rarity).sourceBuffPill` (5★ weapons like A Thousand Floating Dreams render gold-ish; 3★ weapons like TTDS render blue-ish).
+3. **Modal Cards (`ExternalWeaponBuffModal.tsx`)**:
+   - Catalog card hover: `theme.catalogBorderHover`.
+   - Added card state: `theme.catalogAddedBg`.
+   - Active card outline: `theme.cardBorderActive`.
+   - Checkboxes: `theme.checkboxAccent`.
+   - Refinement buttons (R1–R5): `theme.activeButton` and `theme.buttonHover`.
+   - Rarity badge: `theme.badge`.
+4. **Placement in Vertical Split Screen**:
+   - Located in the **top container (inputs & configurations)** above the horizontal draggable splitter bar.
+
+---
+
+## 3. File Architecture & Modules
 
 | File Path | Purpose |
 | --- | --- |
@@ -57,9 +92,11 @@ The External Weapon Buff system allows weapons equipped by party members (suppor
 | `src/data/registry/weapons/index.ts` | Unified central registry export: `WEAPONS`, `weaponById`, `weaponsByType`, `supportWeapons`, and type re-exports. |
 | `src/lib/engine/weapon-buffs.ts` | Pure calculation engine: `resolveExternalWeaponBuffs(weapons, baseAtk, charConfig, masterEnabled)`. |
 | `src/lib/engine/weapon-buffs.test.ts` | Comprehensive Vitest suite testing character filtering, R1–R5 scaling, conditions, stacking, and toggle bypass. |
-| `src/components/calculator/components/ExternalWeaponBuffPanel.tsx` | Collapsible UI panel with master toggle, filtered weapon dropdown, weapon cards with class icons, R1–R5 picker, mechanic controls, and live buff previews. |
+| `src/components/calculator/rarity-theme.ts` | Centralized rarity color vibe token mapping (`getRarityTheme(rarity)`). |
+| `src/components/calculator/components/ExternalWeaponBuffPanel.tsx` | In-calculator summary panel in top container above splitter with master toggle, configured weapon pills, and live stat breakdown pills. |
+| `src/components/calculator/components/ExternalWeaponBuffModal.tsx` | 2-pane popup modal dialog with search, weapon category filter, R1–R5 picker, mechanic controls, and live previews. |
 | `src/components/calculator/types.ts` | State interfaces: `externalWeapons?: ExternalWeaponInstance[]`, `externalWeaponBuffsEnabled?: boolean`. |
-| `src/components/CharacterCalculator.tsx` | Calculator integration: applies `statDeltas` in `computeInstance`, adds weapon sources to `StatBreakdownRow`, and embeds `<ExternalWeaponBuffPanel>`. |
+| `src/components/CharacterCalculator.tsx` | Calculator integration: applies `statDeltas` in `computeInstance`, renders panel in top container above horizontal splitter. |
 | `src/lib/engine/formula-explainer.ts` | Explainer integration: includes weapon buff equations under "Received Team Buffs" on `/characters/[id]/formula`. |
 | `prisma/schema.prisma` | Database schema: `model Weapon` with indexes on `type` and `isSupport`. |
 | `prisma/seed.ts` | Database seed synchronization syncing `WEAPONS` into Prisma `prisma.weapon`. |
@@ -67,7 +104,7 @@ The External Weapon Buff system allows weapons equipped by party members (suppor
 
 ---
 
-## 3. Data Layer Standard (`WeaponConfig`)
+## 4. Data Layer Standard (`WeaponConfig`)
 
 ### A. Core Interfaces
 
@@ -88,7 +125,7 @@ export interface WeaponBuffDef {
   id: string;                                  // unique buff slug e.g. "freedom-party-atk"
   label: string;                               // display label
   description?: string;                        // detailed tooltip description
-  stat: string;                                // target stat key ("atk", "em", "normalDmgBonus", "allDmgBonus", "energyRecharge", etc.)
+  stat: string;                                // target stat key ("atk", "em", "normalDmgBonus", "allDmgBonus", etc.)
   refinementValues: [number, number, number, number, number]; // [R1, R2, R3, R4, R5]
   isTeamBuff: boolean;                         // true if applies to team / active DPS
   isPercent?: boolean;                         // true if percentage based (e.g. +20% ATK)
@@ -97,17 +134,17 @@ export interface WeaponBuffDef {
 }
 
 export interface WeaponConfig {
-  id: string;                                  // slug e.g. "crimson-moons-semblance"
+  id: string;                                  // slug e.g. "thrilling-tales-of-dragon-slayers"
   name: string;                                // display name
   type: WeaponType;
   rarity: WeaponRarity;
   baseAtk: number;                             // Lv90 Base ATK
   lvl1BaseAtk?: number;                        // Lv1 Base ATK
   subStat?: {
-    type: string;                              // "critRate", "em", "atkPct", "energyRecharge", "hpPct", "defPct", etc.
+    type: string;                              // "hpPct", "em", "critRate", etc.
     label: string;
-    value: number;                             // Lv90 value
-    baseValue?: number;                        // Lv1 value
+    value: number;
+    baseValue?: number;
   };
   passiveName: string;
   passiveDesc: string;
@@ -117,199 +154,15 @@ export interface WeaponConfig {
   mechanicDefs?: MechanicDef[];                // UI controls for conditional passives
   signatureFor?: string[];                     // Character slugs this weapon is signature for
 }
-```
 
----
-
-### B. Implementation Examples
-
-#### 1. Supportive Weapon Example (*Freedom-Sworn*)
-`src/data/registry/weapons/swords/freedom-sworn.ts`:
-```ts
-import type { WeaponConfig } from "../types";
-
-export const freedomSworn: WeaponConfig = {
-  id: "freedom-sworn",
-  name: "Freedom-Sworn",
-  type: "Sword",
-  rarity: 5,
-  baseAtk: 608,
-  lvl1BaseAtk: 46,
-  subStat: {
-    type: "em",
-    label: "Elemental Mastery",
-    value: 198,
-    baseValue: 43,
-  },
-  passiveName: "Revolutionary Chorale",
-  passiveDesc:
-    "A part of the 'Millennial Movement' that wanders amidst the winds. Increases DMG by 10~20%. When triggering Elemental Reactions, the wielder gains Sigils of Rebellion. When you possess 2 Sigils, all nearby party members gain 'Millennial Movement: Song of Resistance': Normal, Charged, and Plunging Attack DMG is increased by 16~32% and ATK is increased by 20~40% for 12s.",
-  isSupport: true,
-  buffType: "both",
-  buffs: [
-    {
-      id: "freedom-party-na-ca-plunge",
-      label: "NA/CA/Plunge DMG Bonus (Freedom-Sworn Millennial Movement)",
-      description: "All party members gain +16~32% Normal, Charged, and Plunging Attack DMG",
-      stat: "normalDmgBonus",
-      refinementValues: [16, 20, 24, 28, 32],
-      isTeamBuff: true,
-      compute: (r) => [16, 20, 24, 28, 32][r - 1],
-    },
-    {
-      id: "freedom-party-atk",
-      label: "ATK% (Freedom-Sworn Millennial Movement)",
-      description: "All party members gain +20~40% ATK",
-      stat: "atk",
-      refinementValues: [20, 25, 30, 35, 40],
-      isTeamBuff: true,
-      isPercent: true,
-      compute: (r, ctx) => {
-        const pct = [20, 25, 30, 35, 40][r - 1];
-        return (pct / 100) * ctx.baseAtk;
-      },
-    },
-  ],
-  signatureFor: ["kazuha"],
-};
-```
-
-#### 2. Signature / Self-Buff Weapon Example (*Crimson Moon's Semblance*)
-`src/data/registry/weapons/polearms/crimson-moons-semblance.ts`:
-```ts
-import type { WeaponConfig } from "../types";
-
-export const crimsonMoonsSemblance: WeaponConfig = {
-  id: "crimson-moons-semblance",
-  name: "Crimson Moon's Semblance",
-  type: "Polearm",
-  rarity: 5,
-  baseAtk: 674,
-  lvl1BaseAtk: 48,
-  subStat: {
-    type: "critRate",
-    label: "CRIT Rate%",
-    value: 22.1,
-    baseValue: 4.8,
-  },
-  passiveName: "Ashen Sun's Shadow",
-  passiveDesc:
-    "Grants a Bond of Life equal to 25% of Max HP when a Charged Attack hits an opponent. This effect can be triggered up to once every 14s. In addition, when the equipping character has a Bond of Life, they gain a 12~28% DMG Bonus; if the value of the Bond of Life is greater than or equal to 30% of Max HP, then gain an additional 24~56% DMG.",
-  isSupport: false,
-  buffType: "self",
-  mechanicDefs: [
-    {
-      id: "has-bol",
-      label: "Has Bond of Life",
-      control: "toggle",
-      defaultValue: 1,
-      hint: "Grants +12~28% DMG Bonus while Bond of Life is active",
-    },
-    {
-      id: "bol-ge-30",
-      label: "Bond of Life >= 30% Max HP",
-      control: "toggle",
-      defaultValue: 1,
-      hint: "Grants additional +24~56% DMG Bonus (Total +36~84% All DMG Bonus)",
-    },
-  ],
-  buffs: [
-    {
-      id: "semblance-bol-dmg",
-      label: "Bond of Life DMG Bonus (Crimson Moon's Semblance)",
-      stat: "dmgBonus",
-      refinementValues: [12, 16, 20, 24, 28],
-      isTeamBuff: false,
-      conditionKey: "has-bol",
-      compute: (r, ctx) => {
-        const on = (ctx.inputs?.["has-bol"] ?? "1") === "1" || Number(ctx.inputs?.["has-bol"] ?? 1) > 0;
-        if (!on) return 0;
-        return [12, 16, 20, 24, 28][r - 1];
-      },
-    },
-    {
-      id: "semblance-bol-30-dmg",
-      label: "High BoL DMG Bonus (Crimson Moon's Semblance)",
-      stat: "dmgBonus",
-      refinementValues: [24, 32, 40, 48, 56],
-      isTeamBuff: false,
-      conditionKey: "bol-ge-30",
-      compute: (r, ctx) => {
-        const on = (ctx.inputs?.["bol-ge-30"] ?? "1") === "1" || Number(ctx.inputs?.["bol-ge-30"] ?? 1) > 0;
-        if (!on) return 0;
-        return [24, 32, 40, 48, 56][r - 1];
-      },
-    },
-  ],
-  signatureFor: ["arlecchino"],
-};
-```
-
----
-
-## 4. Pure Calculation Engine Pattern (`weapon-buffs.ts`)
-
-The resolver function must be pure, deterministic, and handle all refinement values and mechanic inputs:
-
-```ts
-export function resolveExternalWeaponBuffs(
-  instances: ExternalWeaponInstance[] | undefined,
-  baseAtk: number,
-  charConfig?: CharacterConfig,
-  masterEnabled: boolean = true
-): ExternalWeaponBuffResult {
-  const statDeltas: Record<string, number> = {};
-  const sources: WeaponBuffSource[] = [];
-
-  if (!masterEnabled || !instances?.length) {
-    return { statDeltas, sources };
-  }
-
-  for (const inst of instances) {
-    if (!inst.enabled) continue;
-
-    const config = weaponById(inst.weaponId);
-    if (!config) continue;
-
-    const r = Math.max(1, Math.min(5, inst.refinement || 1));
-    const ctx: WeaponBuffContext = {
-      refinement: r,
-      baseAtk,
-      charElement: charConfig?.element,
-      charWeapon: charConfig?.weapon,
-      inputs: inst.inputs ?? {},
-    };
-
-    for (const buff of config.buffs) {
-      // For external team buffs, only apply buffs applicable to team OR matching character's weapon
-      const isEquippedWeapon = charConfig && config.type === charConfig.weapon;
-      if (!buff.isTeamBuff && !isEquippedWeapon) continue;
-
-      let value = 0;
-      if (buff.compute) {
-        value = buff.compute(r, ctx);
-      } else {
-        const rawVal = buff.refinementValues[r - 1] ?? 0;
-        value = buff.isPercent ? (rawVal / 100) * baseAtk : rawVal;
-      }
-
-      if (value !== 0) {
-        statDeltas[buff.stat] = (statDeltas[buff.stat] ?? 0) + value;
-        sources.push({
-          weaponId: config.id,
-          weaponName: config.name,
-          buffId: buff.id,
-          label: `${buff.label} (R${r})`,
-          stat: buff.stat,
-          value,
-          refinement: r,
-          isTeamBuff: buff.isTeamBuff,
-        });
-      }
-    }
-  }
-
-  return { statDeltas, sources };
+export interface ExternalWeaponBuffSource {
+  weaponId: string;
+  weaponName: string;
+  refinement: number;
+  stat: string;
+  label: string;
+  value: number;
+  rarity?: number;                             // Stamped from WeaponConfig.rarity for rarity theming
 }
 ```
 
@@ -320,20 +173,19 @@ export function resolveExternalWeaponBuffs(
 When adding a new weapon to the system:
 
 1. **Create the Weapon File**:
-   - Location: `src/data/registry/weapons/<category>/<weapon-slug>.ts` (e.g. `src/data/registry/weapons/swords/mistsplitter-reforged.ts`).
-   - Fill in Base ATK, Substat, R1–R5 refinement values, `mechanicDefs`, and `compute` callbacks.
-2. **Register in Category Index**:
-   - In `src/data/registry/weapons/<category>/index.ts`:
-     - Import the weapon and export it.
-     - Add to the category array (`SWORDS`, `POLEARMS`, etc.).
+   - Location: `src/data/registry/weapons/<category>/<weapon-slug>.ts`.
+   - Define `rarity` (1–5), `baseAtk`, `subStat`, `isSupport`, `buffType`, `refinementValues` for each buff, and `compute` callbacks.
+2. **Register in Index**:
+   - In `src/data/registry/weapons/<category>/index.ts`, export the weapon.
+   - In `src/data/registry/weapons/index.ts`, ensure it is included in `WEAPONS`.
 3. **Write Unit Tests**:
    - In `src/lib/engine/weapon-buffs.test.ts`:
-     - Test R1 and R5 scaling.
-     - Test conditional inputs / mechanic toggles.
-     - Test character filtering (included for matching weapon type / support, excluded for non-support mismatched class).
+     - Test character filtering matching `getWeaponsForCharacter`.
+     - Test R1 through R5 refinement scaling.
+     - Test mechanic condition toggles.
+     - Test proper stamping of `rarity` on `ExternalWeaponBuffSource`.
 4. **Run Test Suite & Build Verification**:
    - Run `npm test` to verify all Vitest tests pass.
    - Run `npm run build` to confirm zero TypeScript compilation errors.
 5. **Sync Database**:
-   - Run `npx prisma validate`.
-   - Update `gi_stat_db.sql` with sample seed insert if applicable.
+   - Run `npx prisma db seed` or verify DDL in `gi_stat_db.sql`.

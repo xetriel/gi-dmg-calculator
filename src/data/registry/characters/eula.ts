@@ -133,5 +133,38 @@ export const eula: CharacterConfig = {
       description: "Lightfall Swords start with 5 stacks of energy. Hits dealing DMG have a 50% chance to grant an extra stack.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Physical DPS providing Physical and Cryo RES shred via Icetide Vortex (Hold Mode) consuming Grimheart stacks.",
+    buffExplanations: [
+      {
+        name: "Skill (Hold): Icetide Vortex",
+        brief: "-16% to -25% Physical & Cryo RES Shred",
+        full: "Consuming Grimheart stacks decreases nearby opponents' Physical RES and Cryo RES (scales with Skill talent level, 25% at Lv 10) for 7s.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "900" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "160" },
+    ],
+    buffs: [
+      {
+        stat: "enemyRes",
+        label: "Phys & Cryo RES Shred (Eula Skill Hold)",
+        compute: (ctx) => {
+          const lvl = ctx.talentLevels?.skill ?? 10;
+          return -(15 + Math.min(10, lvl));
+        },
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

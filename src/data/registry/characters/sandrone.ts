@@ -114,4 +114,52 @@ export const sandrone: CharacterConfig = {
       effects: [{ type: "informational" }]
     },
   ],
+  support: {
+    description: "Cryo sub-DPS and Stellar-Conduct reaction specialist. Empowers party Stellar reaction Base DMG scaling with ATK, provides Cryo/Electro DMG Bonus via Polestar Field, and grants +30% Stellar Reaction DMG at C1.",
+    buffExplanations: [
+      {
+        name: "Light of Rationalisme",
+        brief: "+0.7% Stellar-Conduct Base DMG per 100 ATK (max 14%)",
+        full: "Converts Superconduct into Stellar-Conduct. Increases party Base Stellar-Conduct DMG by 0.7% per 100 ATK, capped at 14.0%.",
+        category: "lunar",
+      },
+      {
+        name: "Polestar Field",
+        brief: "+20% Cryo/Electro DMG Bonus",
+        full: "While Polestar Field is active, party members gain +20% Cryo and Electro DMG Bonus.",
+        category: "dmg_bonus",
+      },
+      {
+        name: "C1: Morrow After the Golden Dusk",
+        brief: "+30% Stellar-Conduct Reaction DMG",
+        full: "All party members deal +30% increased Stellar-Conduct Reaction DMG.",
+        category: "lunar",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "2200" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "dmgBonus",
+        label: "Cryo/Electro DMG (Sandrone Polestar Field)",
+        compute: (ctx) => ((ctx.inputs["polestar-field"] ?? 0) > 0 ? 20 : 0),
+      },
+      {
+        stat: "stellarSwirlDmgBonus",
+        label: "Stellar Reaction DMG (Sandrone C1)",
+        compute: (ctx) => (ctx.constellationLevel >= 1 ? 30 : 0),
+      },
+    ],
+    lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14),
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

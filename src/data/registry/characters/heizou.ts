@@ -117,5 +117,35 @@ export const heizou: CharacterConfig = {
       description: "Each Declension stack increases the CRIT Rate of Heartstopper Strike by 4%. When Heizou has Conviction (4 stacks), its CRIT DMG is increased by 32%.",
       effects: [{ type: "informational" }]
     }
-  ]
+  ],
+  support: {
+    description: "Anemo sub-DPS and EM buffer. Grants +80 Elemental Mastery to party members via Penetrative Reasoning (A4) after hitting with Heartstopper Strike.",
+    buffExplanations: [
+      {
+        name: "A4: Penetrative Reasoning",
+        brief: "+80 EM to party",
+        full: "After hitting an opponent with Heartstopper Strike, increases all party members' (excluding Heizou) Elemental Mastery by 80 for 10s.",
+        category: "stat_share",
+      },
+    ],
+    statFields: [
+      { key: "atk", label: "Total ATK", defaultValue: "1800" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
+    ],
+    buffs: [
+      {
+        stat: "em",
+        label: "EM (Heizou A4)",
+        compute: (ctx) => 80,
+      },
+    ],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Total ATK", value: fmt(ctx.atk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };

@@ -34,7 +34,7 @@ export interface CalcInstance {
   constellationLevel: number;
   teamSupports?: SupportInstance[];    // max 3 support characters
   teamBuffsEnabled?: boolean;          // master toggle, defaults to true
-  externalWeapons?: ExternalWeaponInstance[]; // external weapon team buffs
+  externalWeapons?: ExternalWeaponInstance[]; // external weapon team buffs (max 4)
   externalWeaponBuffsEnabled?: boolean;       // master toggle for external weapons, defaults to true
   externalArtifacts?: ExternalArtifactInstance[]; // external artifact team buffs (max 4)
   externalArtifactBuffsEnabled?: boolean;         // master toggle for external artifacts, defaults to true
@@ -63,19 +63,24 @@ export interface ReactionExtras {
 }
 
 export interface StatBuffSource {
-  source: string;       // e.g. "Paramita Papilio State (Skill)", "Sanguine Bleed (A4)"
+  source: string;       // e.g. "Paramita Papilio State (Skill)", "Bennett (Team)", "Noblesse Oblige (Artifact)"
   value: number;        // e.g. 400 or 33.0
   description?: string; // detailed explanation
+  type?: "external" | "mechanic" | "constellation" | "fallback";
+  category?: "team" | "weapon" | "artifact" | "character";
+  rarity?: number;      // Stamped from support/weapon/artifact config rarity for rarity vibe theming
 }
 
 export interface StatBreakdown {
   key: string;
   label: string;
+  category?: "attributes" | "categoryDmg" | "elementalDmg" | "reactionElevation" | "debuffs" | "multipliers";
   unit: "flat" | "percent" | "multiplier";
   raw: number;
   additions: StatBuffSource[];
   total: number;
   hideIfZero?: boolean;
+  hasExternalBuffs?: boolean;
 }
 
 export interface ComputedInstance {

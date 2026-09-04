@@ -5,7 +5,7 @@ description: Architectural standard and guidelines for implementing Genshin Impa
 
 # Weapon Role Consideration Skill & Implementation Standard
 
-This skill defines the authoritative standard for weapon role classification, filtering rules, data modeling, calculation closures, interactive mechanics, and test verification in `gi-dmg-calculator`.
+This skill defines the authoritative standard for weapon role classification, filtering rules, data modeling, calculation closures, rarity-focused UI styling, and test verification in `gi-dmg-calculator`.
 
 ---
 
@@ -46,7 +46,7 @@ Every weapon in Genshin Impact serves one or both of two distinct roles in comba
   - *Wolf's Gravestone* (Claymore): Grants **+40~80% ATK** to all party members against targets < 30% HP.
   - *Makhaira Aquamarine* (Claymore): Wielder converts EM into **+7.2~14.4% ATK share** to all party members.
   - *Forest Regalia* (Claymore): Generates Leaf of Consciousness granting **+60~120 EM** to the picking character.
-  - *Freedom-Sworn* (Sword), *Key of Khaj-Nisut* (Sword), *Athame Artis* (Sword), *Sapwood Blade* (Sword), *Xiphos' Moonlight* (Sword).
+  - *Freedom-Sworn* (Sword), *Key of Khaj-Nisut* (Sword), *Peak Patrol Song* (Sword), *Thrilling Tales of Dragon Slayers* (Catalyst), *A Thousand Floating Dreams* (Catalyst).
 - **Behavior**: Any character (e.g. Arlecchino [Polearm], Neuvillette [Catalyst], Sandrone [Claymore], Traveler [Sword]) can receive these supportive buffs through the External Weapon Buffs toggle.
 
 ---
@@ -74,7 +74,22 @@ export function getWeaponsForCharacter(
 
 ---
 
-## 3. Claymore Category Role Specification
+## 3. Rarity-Focused UI Theming & Layout Integration
+
+All weapon role components integrate with the centralized **Rarity-Focused Design System** (`src/components/calculator/rarity-theme.ts`):
+
+- **5★ Weapons (Gold-ish)**: `amber-500` / `amber-400` / `amber-950/20` (Pines, WGS, Freedom-Sworn, Floating Dreams).
+- **4★ Weapons (Purple-ish)**: `purple-600` / `purple-400` / `purple-950/20` (Makhaira, Forest Regalia, Favonius, Sacrificial, Xiphos).
+- **3★ Weapons (Blue-ish)**: `sky-600` / `sky-400` / `sky-950/20` (Thrilling Tales of Dragon Slayers, Harbinger of Dawn).
+
+### Placement in Character Calculator
+- Embedded via `<ExternalWeaponBuffPanel>` in the **top container (inputs & configuration)** above the draggable horizontal splitter bar.
+- Panel header uses neutral white text (`text-gray-900 dark:text-white`) with a neutral zinc icon badge and `{activeCount}/{total}` in white and `(Max 3)` in grey.
+- Aggregated buff pills in the panel footer dynamically inherit the source weapon's rarity vibe via `getRarityTheme(s.rarity).sourceBuffPill`.
+
+---
+
+## 4. Claymore Category Role Specification
 
 ### Party Support Claymores (`isSupport: true`)
 
@@ -89,14 +104,14 @@ export function getWeaponsForCharacter(
 
 ### Own Wielder Claymores (`isSupport: false`, `buffType: "self"`)
 
-All 42 other Claymores are self-buffing weapons active solely for Claymore wielders:
-- **5-Star**: *A Thousand Blazing Suns*, *Beacon of the Reed Sea*, *Bloodsoaked Ruins*, *Fang of the Mountain King*, *Gest of the Mighty Wolf*, *Redhorn Stonethresher*, *Skyward Pride*, *The Unforged*, *Verdict*.
-- **4-Star**: *"Ultimate Overlord's Mega Magic Sword"*, *Akuoumaru*, *Blackcliff Slasher*, *Blade of Atonement*, *Covenant of Frost and Snow*, *Earth Shaker*, *Emberwell*, *Ferrous Shadow*, *Fruitful Hook*, *Heretic's Molten Blade*, *Katsuragikiri Nagamasa*, *Lithic Blade*, *Luxurious Sea-Lord*, *Mailed Flower*, *Portable Power Saw*, *Prospector's Shovel*, *Prototype Archaic*, *Rainslasher*, *Royal Greatsword*, *Serenity's Call*, *Serpent Spine*, *Snow-Tombed Starsilver*, *Song of the Vigil*, *Talking Stick*, *The Bell*, *Tidal Shadow*, *Whiteblind*.
-- **3-Star, 2-Star, 1-Star**: *Bloodtainted Greatsword*, *Debate Club*, *Skyrider Greatsword*, *White Iron Greatsword*, *Old Merc's Pal*, *Waster Greatsword*.
+All 39 other Claymores are self-buffing weapons active solely for Claymore wielders (45 Total Claymores: 6 Party Support + 39 Own Wielder):
+- **5-Star**: *A Thousand Blazing Suns*, *A Teaspoon of Transcendence*, *Beacon of the Reed Sea*, *Fang of the Mountain King*, *Gest of the Mighty Wolf*, *Redhorn Stonethresher*, *Skyward Pride*, *The Unforged*, *Verdict*.
+- **4-Star**: *"Ultimate Overlord's Mega Magic Sword"*, *Akuoumaru*, *Blackcliff Slasher*, *Blade of Atonement*, *Earth Shaker*, *Flame-Forged Insight*, *Forged by the Golden Melody*, *Fruitful Hook*, *Katsuragikiri Nagamasa*, *Lithic Blade*, *Luxurious Sea-Lord*, *Mailed Flower*, *Master Key*, *Portable Power Saw*, *Prototype Archaic*, *Rainslasher*, *Royal Greatsword*, *Serpent Spine*, *Snow-Tombed Starsilver*, *Talking Stick*, *The Bell*, *Tidal Shadow*, *Whiteblind*.
+- **3-Star, 2-Star, 1-Star**: *Bloodtainted Greatsword*, *Debate Club*, *Ferrous Shadow*, *Skyrider Greatsword*, *White Iron Greatsword*, *Old Merc's Pal*, *Waster Greatsword*.
 
 ---
 
-## 4. Implementation Template for Weapon Files
+## 5. Implementation Template for Weapon Files
 
 ```ts
 import type { WeaponConfig } from "../types";
@@ -160,11 +175,11 @@ export const wolfsGravestone: WeaponConfig = {
 
 ---
 
-## 5. Verification Checklist
+## 6. Verification Checklist
 
 When implementing or updating weapon roles:
 1. **Filtering Assertions**: Assert that `getWeaponsForCharacter()` includes all same-category weapons and all supportive weapons, while excluding non-supportive foreign weapons.
 2. **Team Buff Passthrough Tests**: Assert in Vitest that Party Support weapons correctly calculate and inject `statDeltas` into characters of different weapon classes.
 3. **Own Wielder Isolation**: Assert that self-only buffs on own-wielder weapons only apply when equipped on matching character weapon types.
-4. **Zero Type Errors**: Run `npx tsc --noEmit` to confirm complete type compliance.
-5. **Production Build Validation**: Run `npm run build` to ensure all routes and components build cleanly.
+4. **Rarity Theming Verification**: Verify that weapon cards, badges, and buff pills render with the proper rarity vibe token.
+5. **Zero Type Errors**: Run `npm test` and `npm run build` to confirm complete type compliance and clean production compilation.

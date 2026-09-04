@@ -99,4 +99,28 @@ export const clorinde: CharacterConfig = {
       effects: [{ type: "informational" }]
     },
   ],
+  support: {
+    description: "Pure on-field Electro hypercarry using swift pistol and thrust swordplay with Bond of Life mechanics. Provides team presence, Electro resonance, and team CRIT passthrough.",
+    buffExplanations: [
+      {
+        name: "Nightvigil Hypercarry",
+        brief: "On-Field Electro Hypercarry",
+        full: "Clorinde engages in high-mobility Nightvigil combat alternating between piercing pistol shots and lunging thrusts, without team stat buffs.",
+        category: "elemental",
+      },
+    ],
+    statFields: [
+      { key: "atk.base", label: "Base ATK", defaultValue: "900" },
+      { key: "critRate", label: "CRIT Rate", defaultValue: "70" },
+      { key: "critDmg", label: "CRIT DMG", defaultValue: "180" },
+    ],
+    buffs: [],
+    formatBriefStats: (ctx) => {
+      const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+      return [
+        { label: "Base ATK", value: fmt(ctx.baseAtk) },
+        { label: "CRIT", value: `${fmt(ctx.critRate)}% / ${fmt(ctx.critDmg)}%` },
+      ];
+    },
+  },
 };
