@@ -73,6 +73,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   const [elementFilter, setElementFilter] = useState<"ALL" | Element>("ALL");
   const [hoveredElementFilter, setHoveredElementFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<number | "ALL">("ALL");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
 
   if (!isOpen) return null;
 
@@ -785,13 +786,65 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
 
             {/* Modal Bottom Bar: Aggregated Buff Totals */}
-            <div className="p-4 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50 flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
-                  Total Team Support Bonuses:
-                </span>
-                {totalResult.sources.length > 0 ? (
-                  totalResult.sources.map((s, i) => {
+            <div className="px-5 py-3 border-t border-gray-200 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setIsSummaryExpanded((prev) => !prev)}
+                    className="flex items-center gap-2 group cursor-pointer text-left select-none focus:outline-hidden"
+                    title={isSummaryExpanded ? "Shrink summary" : "Expand summary"}
+                    aria-expanded={isSummaryExpanded}
+                  >
+                    <span className="p-1 rounded-md bg-zinc-200/80 group-hover:bg-zinc-300 dark:bg-zinc-800 dark:group-hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors flex items-center justify-center">
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isSummaryExpanded ? "" : "rotate-180"}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                      Total Team Support Bonuses:
+                    </span>
+                  </button>
+
+                  {totalResult.sources.length > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {totalResult.sources.length} {totalResult.sources.length === 1 ? "Buff" : "Buffs"}
+                      </span>
+                      {!isSummaryExpanded && (
+                        <span
+                          className="text-[10px] text-gray-400 dark:text-zinc-500 italic cursor-pointer"
+                          onClick={() => setIsSummaryExpanded(true)}
+                        >
+                          (click arrow to expand)
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
+                      None active
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="px-5 py-2 text-xs font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm transition-all cursor-pointer shrink-0"
+                >
+                  Done
+                </button>
+              </div>
+
+              {/* Expandable Buff Pills Section */}
+              {isSummaryExpanded && totalResult.sources.length > 0 && (
+                <div className="pt-2.5 mt-2.5 border-t border-gray-200/60 dark:border-zinc-800/60 flex items-center gap-2 flex-wrap max-h-36 overflow-y-auto">
+                  {totalResult.sources.map((s, i) => {
                     const theme = getRarityTheme(s.rarity);
                     return (
                       <span
@@ -807,20 +860,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           : `${fmt(s.value)}%`}
                       </span>
                     );
-                  })
-                ) : (
-                  <span className="text-xs text-gray-400 dark:text-zinc-500 italic">
-                    None active
-                  </span>
-                )}
-              </div>
-
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-5 py-2 text-xs font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm transition-all cursor-pointer"
-              >
-                Done
-              </button>
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
