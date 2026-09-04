@@ -3,15 +3,15 @@ import type { WeaponConfig } from "../types";
 export const prospectorsShovel: WeaponConfig = {
   id: "prospectors-shovel",
   name: "Prospector's Shovel",
-  type: "Claymore",
+  type: "Polearm",
   rarity: 4,
   baseAtk: 510,
   lvl1BaseAtk: 42,
   subStat: {
-    type: "defPct",
-    label: "DEF%",
-    value: 51.7,
-    baseValue: 11.3,
+    type: "atkPct",
+    label: "ATK%",
+    value: 41.3,
+    baseValue: 9,
   },
   passiveName: "Tunneler",
   passiveDesc:

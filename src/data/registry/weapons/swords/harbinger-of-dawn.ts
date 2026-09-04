@@ -13,7 +13,7 @@ export const harbingerOfDawn: WeaponConfig = {
     value: 46.9,
     baseValue: 10.2,
   },
-  passiveName: "Skypiercing",
+  passiveName: "Vigorous",
   passiveDesc:
     "When HP is above 90%, increases CRIT Rate by 14~28%.",
   isSupport: false,

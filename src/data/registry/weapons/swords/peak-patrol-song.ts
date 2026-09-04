@@ -13,7 +13,7 @@ export const peakPatrolSong: WeaponConfig = {
     value: 82.7,
     baseValue: 18,
   },
-  passiveName: "High-Altitude Patrol",
+  passiveName: "Halcyon Years Unending",
   passiveDesc:
     "After Normal or Plunging Attacks hit opponents, gain the Ode to Flowers effect: DEF is increased by 8~16% and All Elemental DMG Bonus by 10~20% for 6s (max 2 stacks). At 2 stacks, every 1,000 DEF increases nearby party members' All Elemental DMG Bonus by 8~16% for 15s (max 25.6~51.2%).",
   isSupport: true,

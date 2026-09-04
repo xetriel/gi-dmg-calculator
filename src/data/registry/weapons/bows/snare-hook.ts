@@ -5,17 +5,17 @@ export const snareHook: WeaponConfig = {
   name: "Snare Hook",
   type: "Bow",
   rarity: 4,
-  baseAtk: 510,
-  lvl1BaseAtk: 42,
+  baseAtk: 454,
+  lvl1BaseAtk: 41,
   subStat: {
     type: "energyRecharge",
     label: "Energy Recharge%",
-    value: 45.9,
-    baseValue: 10,
+    value: 61.3,
+    baseValue: 13.3,
   },
   passiveName: "Phantom Flash",
   passiveDesc:
-    "Upon triggering an Elemental Reaction, Elemental Mastery increases by 60~120 for 12s. If Moonsign is active, increases EM by an additional 60~120 (up to +120~240 EM).",
+    "Upon causing an Elemental Reaction, increases Elemental Mastery by 60~120 for 12s. Moonsign: Ascendant Gleam: Elemental Mastery from this effect is further increased by 60~120 (up to +120~240 EM). This effect can be triggered even if the equipping character is off-field.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -28,22 +28,31 @@ export const snareHook: WeaponConfig = {
     },
     {
       id: "snare-moonsign-active",
-      label: "Moonsign Active (2x EM Buff)",
+      label: "Moonsign: Ascendant Gleam (+60~120 additional EM)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Doubles EM bonus (up to +120~240 EM)",
-    }
+      hint: "Further increases EM bonus by +60~120 (up to +120~240 EM total)",
+    },
   ],
   buffs: [
     {
       id: "snare-em",
-      label: "Elemental Mastery (Snare Hook)",
+      label: "Elemental Mastery (Phantom Flash)",
       stat: "em",
       refinementValues: [120, 150, 180, 210, 240],
       isTeamBuff: false,
       conditionKey: "snare-reaction-active",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['snare-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['snare-reaction-active'] ?? 1) > 0; if (!on) return 0; const moon = (ctx.inputs?.['snare-moonsign-active'] ?? '1') === '1' || Number(ctx.inputs?.['snare-moonsign-active'] ?? 1) > 0; const mult = moon ? 2 : 1; return [60, 75, 90, 105, 120][r - 1] * mult; },
-    }
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["snare-reaction-active"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["snare-reaction-active"] ?? 1) > 0;
+        if (!on) return 0;
+        const moon =
+          (ctx.inputs?.["snare-moonsign-active"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["snare-moonsign-active"] ?? 1) > 0;
+        const mult = moon ? 2 : 1;
+        return [60, 75, 90, 105, 120][r - 1] * mult;
+      },
+    },
   ],
-  
 };

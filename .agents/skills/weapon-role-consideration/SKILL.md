@@ -104,10 +104,10 @@ All weapon role components integrate with the centralized **Rarity-Focused Desig
 
 ### Own Wielder Claymores (`isSupport: false`, `buffType: "self"`)
 
-All 42 other Claymores are self-buffing weapons active solely for Claymore wielders:
-- **5-Star**: *A Thousand Blazing Suns*, *Beacon of the Reed Sea*, *Bloodsoaked Ruins*, *Fang of the Mountain King*, *Gest of the Mighty Wolf*, *Redhorn Stonethresher*, *Skyward Pride*, *The Unforged*, *Verdict*.
-- **4-Star**: *"Ultimate Overlord's Mega Magic Sword"*, *Akuoumaru*, *Blackcliff Slasher*, *Blade of Atonement*, *Covenant of Frost and Snow*, *Earth Shaker*, *Emberwell*, *Ferrous Shadow*, *Fruitful Hook*, *Heretic's Molten Blade*, *Katsuragikiri Nagamasa*, *Lithic Blade*, *Luxurious Sea-Lord*, *Mailed Flower*, *Portable Power Saw*, *Prospector's Shovel*, *Prototype Archaic*, *Rainslasher*, *Royal Greatsword*, *Serenity's Call*, *Serpent Spine*, *Snow-Tombed Starsilver*, *Song of the Vigil*, *Talking Stick*, *The Bell*, *Tidal Shadow*, *Whiteblind*.
-- **3-Star, 2-Star, 1-Star**: *Bloodtainted Greatsword*, *Debate Club*, *Skyrider Greatsword*, *White Iron Greatsword*, *Old Merc's Pal*, *Waster Greatsword*.
+All 39 other Claymores are self-buffing weapons active solely for Claymore wielders (45 Total Claymores: 6 Party Support + 39 Own Wielder):
+- **5-Star**: *A Thousand Blazing Suns*, *A Teaspoon of Transcendence*, *Beacon of the Reed Sea*, *Fang of the Mountain King*, *Gest of the Mighty Wolf*, *Redhorn Stonethresher*, *Skyward Pride*, *The Unforged*, *Verdict*.
+- **4-Star**: *"Ultimate Overlord's Mega Magic Sword"*, *Akuoumaru*, *Blackcliff Slasher*, *Blade of Atonement*, *Earth Shaker*, *Flame-Forged Insight*, *Forged by the Golden Melody*, *Fruitful Hook*, *Katsuragikiri Nagamasa*, *Lithic Blade*, *Luxurious Sea-Lord*, *Mailed Flower*, *Master Key*, *Portable Power Saw*, *Prototype Archaic*, *Rainslasher*, *Royal Greatsword*, *Serpent Spine*, *Snow-Tombed Starsilver*, *Talking Stick*, *The Bell*, *Tidal Shadow*, *Whiteblind*.
+- **3-Star, 2-Star, 1-Star**: *Bloodtainted Greatsword*, *Debate Club*, *Ferrous Shadow*, *Skyrider Greatsword*, *White Iron Greatsword*, *Old Merc's Pal*, *Waster Greatsword*.
 
 ---
 

@@ -13,7 +13,7 @@ export const calamityOfEshu: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Pure and True",
+  passiveName: "Diffusing Boundary",
   passiveDesc:
     "When the equipping character has >= 70% HP, increases Normal and Charged Attack DMG by 20~40% and Normal and Charged Attack CRIT Rate by 8~16%.",
   isSupport: false,

@@ -1,8 +1,8 @@
 import type { WeaponConfig } from "../types";
 
-export const swordOfNarzissenkreuzPneuma: WeaponConfig = {
-  id: "sword-of-narzissenkreuz-pneuma",
-  name: "Sword of Narzissenkreuz Pneuma",
+export const swordOfNarzissenkreuz: WeaponConfig = {
+  id: "sword-of-narzissenkreuz",
+  name: "Sword of Narzissenkreuz",
   type: "Sword",
   rarity: 4,
   baseAtk: 510,

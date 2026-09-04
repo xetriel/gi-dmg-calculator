@@ -3,7 +3,7 @@ import type { WeaponConfig } from "../types";
 export const etherlightSpindlelute: WeaponConfig = {
   id: "etherlight-spindlelute",
   name: "Etherlight Spindlelute",
-  type: "Polearm",
+  type: "Catalyst",
   rarity: 4,
   baseAtk: 510,
   lvl1BaseAtk: 42,

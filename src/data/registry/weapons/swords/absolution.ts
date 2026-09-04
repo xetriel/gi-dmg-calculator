@@ -13,7 +13,7 @@ export const absolution: WeaponConfig = {
     value: 44.1,
     baseValue: 9.6,
   },
-  passiveName: "Climb the Flowing Shadows",
+  passiveName: "Deathly Pact",
   passiveDesc:
     "CRIT DMG is increased by 20~40%. When the value of a Bond of Life increases, the wielder deals 16~32% increased DMG for 6s. Max 3 stacks.",
   isSupport: false,

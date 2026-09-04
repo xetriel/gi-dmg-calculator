@@ -2,23 +2,20 @@ import { balladOfTheFjords } from "./ballad-of-the-fjords";
 import { beginnersProtector } from "./beginners-protector";
 import { blackTassel } from "./black-tassel";
 import { blackcliffPole } from "./blackcliff-pole";
-import { blackmarrowLantern } from "./blackmarrow-lantern";
+import { bloodsoakedRuins } from "./bloodsoaked-ruins";
 import { calamityQueller } from "./calamity-queller";
 import { crescentPike } from "./crescent-pike";
 import { crimsonMoonsSemblance } from "./crimson-moons-semblance";
-import { dawningFrost } from "./dawning-frost";
 import { deathmatch } from "./deathmatch";
 import { dialoguesOfTheDesertSages } from "./dialogues-of-the-desert-sages";
 import { disasterAndRemorse } from "./disaster-and-remorse";
 import { dragonsBane } from "./dragons-bane";
 import { dragonspineSpear } from "./dragonspine-spear";
 import { engulfingLightning } from "./engulfing-lightning";
-import { etherlightSpindlelute } from "./etherlight-spindlelute";
 import { favoniusLance } from "./favonius-lance";
-import { flameForgedInsight } from "./flame-forged-insight";
 import { footprintOfTheRainbow } from "./footprint-of-the-rainbow";
-import { forgedByTheGoldenMelody } from "./forged-by-the-golden-melody";
 import { fracturedHalo } from "./fractured-halo";
+import { frostbreath } from "./frostbreath";
 import { halberd } from "./halberd";
 import { ironPoint } from "./iron-point";
 import { kitainCrossSpear } from "./kitain-cross-spear";
@@ -26,17 +23,19 @@ import { lithicSpear } from "./lithic-spear";
 import { lumidouceElegy } from "./lumidouce-elegy";
 import { missiveWindspear } from "./missive-windspear";
 import { moonpiercer } from "./moonpiercer";
-import { moonweaversDawn } from "./moonweavers-dawn";
 import { mountainBracingBolt } from "./mountain-bracing-bolt";
 import { primordialJadeWingedSpear } from "./primordial-jade-winged-spear";
 import { prospectorsDrill } from "./prospectors-drill";
+import { prospectorsShovel } from "./prospectors-shovel";
 import { prototypeStarglitter } from "./prototype-starglitter";
 import { rightfulReward } from "./rightful-reward";
 import { royalSpear } from "./royal-spear";
 import { sacrificersStaff } from "./sacrificers-staff";
 import { skywardSpine } from "./skyward-spine";
+import { songOfTheVigil } from "./song-of-the-vigil";
 import { staffOfHoma } from "./staff-of-homa";
 import { staffOfTheScarletSands } from "./staff-of-the-scarlet-sands";
+import { symphonistOfScents } from "./symphonist-of-scents";
 import { tamayurateiNoOhanashi } from "./tamayuratei-no-ohanashi";
 import { theCatch } from "./the-catch";
 import { vortexVanquisher } from "./vortex-vanquisher";
@@ -49,23 +48,20 @@ export {
   beginnersProtector,
   blackTassel,
   blackcliffPole,
-  blackmarrowLantern,
+  bloodsoakedRuins,
   calamityQueller,
   crescentPike,
   crimsonMoonsSemblance,
-  dawningFrost,
   deathmatch,
   dialoguesOfTheDesertSages,
   disasterAndRemorse,
   dragonsBane,
   dragonspineSpear,
   engulfingLightning,
-  etherlightSpindlelute,
   favoniusLance,
-  flameForgedInsight,
   footprintOfTheRainbow,
-  forgedByTheGoldenMelody,
   fracturedHalo,
+  frostbreath,
   halberd,
   ironPoint,
   kitainCrossSpear,
@@ -73,17 +69,19 @@ export {
   lumidouceElegy,
   missiveWindspear,
   moonpiercer,
-  moonweaversDawn,
   mountainBracingBolt,
   primordialJadeWingedSpear,
   prospectorsDrill,
+  prospectorsShovel,
   prototypeStarglitter,
   rightfulReward,
   royalSpear,
   sacrificersStaff,
   skywardSpine,
+  songOfTheVigil,
   staffOfHoma,
   staffOfTheScarletSands,
+  symphonistOfScents,
   tamayurateiNoOhanashi,
   theCatch,
   vortexVanquisher,
@@ -96,23 +94,20 @@ export const POLEARMS: WeaponConfig[] = [
   beginnersProtector,
   blackTassel,
   blackcliffPole,
-  blackmarrowLantern,
+  bloodsoakedRuins,
   calamityQueller,
   crescentPike,
   crimsonMoonsSemblance,
-  dawningFrost,
   deathmatch,
   dialoguesOfTheDesertSages,
   disasterAndRemorse,
   dragonsBane,
   dragonspineSpear,
   engulfingLightning,
-  etherlightSpindlelute,
   favoniusLance,
-  flameForgedInsight,
   footprintOfTheRainbow,
-  forgedByTheGoldenMelody,
   fracturedHalo,
+  frostbreath,
   halberd,
   ironPoint,
   kitainCrossSpear,
@@ -120,17 +115,19 @@ export const POLEARMS: WeaponConfig[] = [
   lumidouceElegy,
   missiveWindspear,
   moonpiercer,
-  moonweaversDawn,
   mountainBracingBolt,
   primordialJadeWingedSpear,
   prospectorsDrill,
+  prospectorsShovel,
   prototypeStarglitter,
   rightfulReward,
   royalSpear,
   sacrificersStaff,
   skywardSpine,
+  songOfTheVigil,
   staffOfHoma,
   staffOfTheScarletSands,
+  symphonistOfScents,
   tamayurateiNoOhanashi,
   theCatch,
   vortexVanquisher,

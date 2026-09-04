@@ -13,7 +13,7 @@ export const sturdyBone: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Sprint and Strike",
+  passiveName: "Trapper's Pride",
   passiveDesc:
     "Sprinting or Alternate Sprinting Stamina consumption is decreased by 15%. After sprinting, Normal and Charged Attack DMG is increased by 16~32% of ATK for 6s.",
   isSupport: false,

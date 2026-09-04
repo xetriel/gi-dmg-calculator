@@ -5,47 +5,73 @@ export const disasterAndRemorse: WeaponConfig = {
   name: "Disaster and Remorse",
   type: "Polearm",
   rarity: 5,
-  baseAtk: 608,
-  lvl1BaseAtk: 46,
+  baseAtk: 674,
+  lvl1BaseAtk: 48,
   subStat: {
     type: "critRate",
     label: "CRIT Rate%",
-    value: 33.1,
-    baseValue: 7.2,
+    value: 22.1,
+    baseValue: 4.8,
   },
-  passiveName: "Remorseful Cry",
+  passiveName: "Dolorous Stroke",
   passiveDesc:
-    "Increases All Elemental DMG Bonus by 12~24%. Using an Elemental Skill or Elemental Burst increases ATK by 16~32% for 12s.",
+    "After the equipping character uses an Elemental Skill, they gain \"Path of Conflict\" for 17s, as well as \"Unforgivable\" (Normal/Charged DMG +40~80%) and \"Irreparable\" (Skill/Burst DMG +40~80%) for 3s each. Hitting opponents extends these effects. Hexerei: Secret Rite: The above DMG boosts are increased by 75%.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
     {
-      id: "disaster-skill-burst-active",
-      label: "Skill/Burst Used (+16~32% ATK)",
+      id: "disaster-path-of-conflict",
+      label: "Path of Conflict (Skill used active)",
       control: "toggle",
       defaultValue: 1,
-      hint: "+16~32% ATK for 12s",
-    }
+      hint: "+40~80% NA/CA and Skill/Burst DMG",
+    },
+    {
+      id: "disaster-hexerei-active",
+      label: "Hexerei: Secret Rite Active (+75% DMG)",
+      control: "toggle",
+      defaultValue: 0,
+      hint: "Increases DMG boosts by an additional 75% (+70~140%)",
+    },
   ],
   buffs: [
     {
-      id: "disaster-elem-dmg",
-      label: "All Elemental DMG Bonus (Disaster and Remorse)",
-      stat: "dmgBonus",
-      refinementValues: [12, 15, 18, 21, 24],
+      id: "disaster-na-ca-dmg",
+      label: "Normal/Charged Attack DMG Bonus (Unforgivable)",
+      stat: "normalDmgBonus",
+      refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      compute: (r) => [12, 15, 18, 21, 24][r - 1],
+      conditionKey: "disaster-path-of-conflict",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["disaster-path-of-conflict"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["disaster-path-of-conflict"] ?? 1) > 0;
+        if (!on) return 0;
+        const hex =
+          (ctx.inputs?.["disaster-hexerei-active"] ?? "0") === "1" ||
+          Number(ctx.inputs?.["disaster-hexerei-active"] ?? 0) > 0;
+        const mult = hex ? 1.75 : 1.0;
+        return [40, 50, 60, 70, 80][r - 1] * mult;
+      },
     },
     {
-      id: "disaster-atk",
-      label: "ATK% (Disaster and Remorse)",
-      stat: "atk",
-      refinementValues: [16, 20, 24, 28, 32],
+      id: "disaster-skill-burst-dmg",
+      label: "Elemental Skill & Burst DMG Bonus (Irreparable)",
+      stat: "skillDmgBonus",
+      refinementValues: [40, 50, 60, 70, 80],
       isTeamBuff: false,
-      isPercent: true,
-      conditionKey: "disaster-skill-burst-active",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['disaster-skill-burst-active'] ?? '1') === '1' || Number(ctx.inputs?.['disaster-skill-burst-active'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
-    }
+      conditionKey: "disaster-path-of-conflict",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["disaster-path-of-conflict"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["disaster-path-of-conflict"] ?? 1) > 0;
+        if (!on) return 0;
+        const hex =
+          (ctx.inputs?.["disaster-hexerei-active"] ?? "0") === "1" ||
+          Number(ctx.inputs?.["disaster-hexerei-active"] ?? 0) > 0;
+        const mult = hex ? 1.75 : 1.0;
+        return [40, 50, 60, 70, 80][r - 1] * mult;
+      },
+    },
   ],
-  
 };

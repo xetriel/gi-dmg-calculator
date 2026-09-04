@@ -3,15 +3,15 @@ import type { WeaponConfig } from "../types";
 export const serenitysCall: WeaponConfig = {
   id: "serenitys-call",
   name: "Serenity's Call",
-  type: "Claymore",
+  type: "Sword",
   rarity: 4,
-  baseAtk: 510,
-  lvl1BaseAtk: 42,
+  baseAtk: 454,
+  lvl1BaseAtk: 41,
   subStat: {
     type: "energyRecharge",
     label: "Energy Recharge%",
-    value: 45.9,
-    baseValue: 10,
+    value: 61.3,
+    baseValue: 13.3,
   },
   passiveName: "Peaceful Mind",
   passiveDesc:

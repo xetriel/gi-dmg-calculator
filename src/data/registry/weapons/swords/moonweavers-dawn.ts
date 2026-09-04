@@ -1,9 +1,9 @@
 import type { WeaponConfig } from "../types";
 
-export const songOfTheVigil: WeaponConfig = {
-  id: "song-of-the-vigil",
-  name: "Song of the Vigil",
-  type: "Claymore",
+export const moonweaversDawn: WeaponConfig = {
+  id: "moonweavers-dawn",
+  name: "Moonweaver's Dawn",
+  type: "Sword",
   rarity: 4,
   baseAtk: 565,
   lvl1BaseAtk: 44,
@@ -13,15 +13,15 @@ export const songOfTheVigil: WeaponConfig = {
     value: 27.6,
     baseValue: 6,
   },
-  passiveName: "Vigilant Song",
+  passiveName: "Moonweaver's Light",
   passiveDesc:
     "All Elemental DMG Bonus is increased by 12~24%.",
   isSupport: false,
   buffType: "self",
   buffs: [
     {
-      id: "vigil-elem-dmg",
-      label: "All Elemental DMG Bonus (Song of the Vigil)",
+      id: "moonweaver-elem-dmg",
+      label: "All Elemental DMG Bonus (Moonweaver's Dawn)",
       stat: "dmgBonus",
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,

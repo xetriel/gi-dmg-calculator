@@ -5,17 +5,17 @@ export const fangOfTheMountainKing: WeaponConfig = {
   name: "Fang of the Mountain King",
   type: "Claymore",
   rarity: 5,
-  baseAtk: 608,
-  lvl1BaseAtk: 46,
+  baseAtk: 741,
+  lvl1BaseAtk: 49,
   subStat: {
     type: "critRate",
     label: "CRIT Rate%",
-    value: 33.1,
-    baseValue: 7.2,
+    value: 11,
+    baseValue: 2.4,
   },
-  passiveName: "Turquoise Dawn",
+  passiveName: "Turquoise Hunt",
   passiveDesc:
-    "Gain 1 stack of Canopy's Favor when an Elemental Skill hits an opponent. Max 6 stacks. At 6 stacks, Elemental Skill and Elemental Burst DMG is increased by 48~96%.",
+    "Gain 1 stack of Canopy's Favor after hitting an opponent with an Elemental Skill. This can be triggered once every 0.5s. After a nearby party member triggers a Burning or Burgeon reaction, the equipping character will gain 3 stacks. This effect can be triggered once every 2s and can be triggered even when the triggering party member is off-field. Canopy's Favor: Elemental Skill and Burst DMG is increased by 10%/12.5%/15%/17.5%/20% for 6s. Max 6 stacks. Each stack is counted independently.",
   isSupport: false,
   buffType: "self",
   mechanicDefs: [
@@ -25,28 +25,34 @@ export const fangOfTheMountainKing: WeaponConfig = {
       control: "stacks",
       defaultValue: 6,
       max: 6,
-      hint: "+8~16% Skill & Burst DMG per stack (up to +48~96%)",
-    }
+      hint: "+10/12.5/15/17.5/20% Skill & Burst DMG per stack (up to +60~120% at 6 stacks)",
+    },
   ],
   buffs: [
     {
       id: "mountain-king-skill-dmg",
-      label: "Elemental Skill DMG Bonus (Fang of Mountain King)",
+      label: "Elemental Skill DMG Bonus (Fang of the Mountain King)",
       stat: "skillDmgBonus",
-      refinementValues: [48, 60, 72, 84, 96],
+      refinementValues: [60, 75, 90, 105, 120],
       isTeamBuff: false,
       conditionKey: "mountain-king-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['mountain-king-stacks'] ?? 6); return s * [8, 10, 12, 14, 16][r - 1]; },
+      compute: (r, ctx) => {
+        const s = Math.min(6, Math.max(0, Number(ctx.inputs?.["mountain-king-stacks"] ?? 6)));
+        return s * [10, 12.5, 15, 17.5, 20][r - 1];
+      },
     },
     {
       id: "mountain-king-burst-dmg",
-      label: "Elemental Burst DMG Bonus (Fang of Mountain King)",
+      label: "Elemental Burst DMG Bonus (Fang of the Mountain King)",
       stat: "burstDmgBonus",
-      refinementValues: [48, 60, 72, 84, 96],
+      refinementValues: [60, 75, 90, 105, 120],
       isTeamBuff: false,
       conditionKey: "mountain-king-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['mountain-king-stacks'] ?? 6); return s * [8, 10, 12, 14, 16][r - 1]; },
-    }
+      compute: (r, ctx) => {
+        const s = Math.min(6, Math.max(0, Number(ctx.inputs?.["mountain-king-stacks"] ?? 6)));
+        return s * [10, 12.5, 15, 17.5, 20][r - 1];
+      },
+    },
   ],
   signatureFor: ["kinich"],
 };

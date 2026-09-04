@@ -5,58 +5,84 @@ export const athameArtis: WeaponConfig = {
   name: "Athame Artis",
   type: "Sword",
   rarity: 5,
-  baseAtk: 674,
-  lvl1BaseAtk: 48,
+  baseAtk: 608,
+  lvl1BaseAtk: 46,
   subStat: {
-    type: "critDmg",
-    label: "CRIT DMG%",
-    value: 44.1,
-    baseValue: 9.6,
+    type: "critRate",
+    label: "CRIT Rate%",
+    value: 33.1,
+    baseValue: 7.2,
   },
-  passiveName: "Ritual Cleaving",
+  passiveName: "Day King's Splendor Solis",
   passiveDesc:
-    "Increases Normal and Charged Attack DMG by 20~40%. When the equipping character triggers an Elemental Reaction, nearby party members gain 12~24% All Elemental DMG Bonus and 16~32% ATK for 12s.",
+    "CRIT DMG from Elemental Bursts is increased by 16~32%. When an Elemental Burst hits an opponent, gain the Blade of the Daylight Hours effect: ATK is increased by 20~40%. Nearby active party members other than the equipping character have their ATK increased by 16~32% for 3s. Additionally, when the party possesses Hexerei: Secret Rite effects, the effects of Blade of the Daylight Hours are increased by an additional 75%. This effect can be triggered even if the equipping character is off-field.",
   isSupport: true,
   buffType: "both",
   mechanicDefs: [
     {
-      id: "athame-reaction-active",
-      label: "Party Buff: Reaction Triggered Active",
+      id: "athame-burst-hit",
+      label: "Blade of the Daylight Hours (Burst hit active)",
       control: "toggle",
       defaultValue: 1,
-      hint: "Team buff: +12~24% All Elemental DMG and +16~32% ATK for 12s",
-    }
+      hint: "+20~40% wielder ATK, +16~32% party ATK",
+    },
+    {
+      id: "athame-hexerei-active",
+      label: "Hexerei: Secret Rite Active (+75% effect)",
+      control: "toggle",
+      defaultValue: 0,
+      hint: "Increases Blade of Daylight Hours ATK boosts by an additional 75%",
+    },
   ],
   buffs: [
     {
-      id: "athame-party-elem-dmg",
-      label: "Party All Elemental DMG Bonus (Athame Artis)",
-      description: "Nearby party members gain +12~24% All Elemental DMG Bonus for 12s",
-      stat: "dmgBonus",
-      refinementValues: [12, 15, 18, 21, 24],
-      isTeamBuff: true,
-      conditionKey: "athame-reaction-active",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['athame-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['athame-reaction-active'] ?? 1) > 0; return on ? [12, 15, 18, 21, 24][r - 1] : 0; },
+      id: "athame-burst-crit-dmg",
+      label: "Elemental Burst CRIT DMG (Athame Artis)",
+      stat: "critDmg",
+      refinementValues: [16, 20, 24, 28, 32],
+      isTeamBuff: false,
+      compute: (r) => [16, 20, 24, 28, 32][r - 1],
+    },
+    {
+      id: "athame-wielder-atk",
+      label: "Wielder ATK% (Blade of Daylight Hours)",
+      stat: "atk",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: false,
+      isPercent: true,
+      conditionKey: "athame-burst-hit",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["athame-burst-hit"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["athame-burst-hit"] ?? 1) > 0;
+        if (!on) return 0;
+        const hex =
+          (ctx.inputs?.["athame-hexerei-active"] ?? "0") === "1" ||
+          Number(ctx.inputs?.["athame-hexerei-active"] ?? 0) > 0;
+        const mult = hex ? 1.75 : 1.0;
+        return (([20, 25, 30, 35, 40][r - 1] * mult) / 100) * ctx.baseAtk;
+      },
     },
     {
       id: "athame-party-atk",
       label: "Party ATK% (Athame Artis)",
-      description: "Nearby party members gain +16~32% ATK for 12s",
+      description: "Nearby party members other than wielder gain +16~32% ATK for 3s (boosted by 75% under Hexerei)",
       stat: "atk",
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: true,
       isPercent: true,
-      conditionKey: "athame-reaction-active",
-      compute: (r, ctx) => { const on = (ctx.inputs?.['athame-reaction-active'] ?? '1') === '1' || Number(ctx.inputs?.['athame-reaction-active'] ?? 1) > 0; return on ? ([16, 20, 24, 28, 32][r - 1] / 100) * ctx.baseAtk : 0; },
+      conditionKey: "athame-burst-hit",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["athame-burst-hit"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["athame-burst-hit"] ?? 1) > 0;
+        if (!on) return 0;
+        const hex =
+          (ctx.inputs?.["athame-hexerei-active"] ?? "0") === "1" ||
+          Number(ctx.inputs?.["athame-hexerei-active"] ?? 0) > 0;
+        const mult = hex ? 1.75 : 1.0;
+        return (([16, 20, 24, 28, 32][r - 1] * mult) / 100) * ctx.baseAtk;
+      },
     },
-    {
-      id: "athame-na-ca-dmg",
-      label: "Normal/Charged Attack DMG Bonus (Athame Artis)",
-      stat: "normalDmgBonus",
-      refinementValues: [20, 25, 30, 35, 40],
-      isTeamBuff: false,
-      compute: (r) => [20, 25, 30, 35, 40][r - 1],
-    }
   ],
-  
 };
