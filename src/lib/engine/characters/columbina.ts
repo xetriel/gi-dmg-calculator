@@ -18,7 +18,8 @@ export function resolveColumbina(config: CharacterConfig, ctx: MechanicsCtx): Me
 
   // C2 Lunar Brilliance: increases her Max HP by 40% (based on base HP input).
   const baseHpEff = ctx.baseHp ?? 0;
-  const hpBonus = (cons >= 2 && on("lunar-brilliance")) ? 0.40 * baseHpEff : 0;
+  const lbActive = cons >= 2 && (on("c2-lunar-brilliance") || on("lunar-brilliance"));
+  const hpBonus = lbActive ? 0.40 * baseHpEff : 0;
   if (hpBonus > 0) {
     res.statDeltas.hp = (res.statDeltas.hp ?? 0) + hpBonus;
     res.notes.push(`C2 Lunar Brilliance: +${fmt(hpBonus)} Max HP (40% Base HP)`);
@@ -26,17 +27,38 @@ export function resolveColumbina(config: CharacterConfig, ctx: MechanicsCtx): Me
 
   const hpEff = stats.hp + hpBonus;
 
-  // C2 Moonsign: Ascendant Gleam character buffs (ATK, EM, and DEF)
-  if (cons >= 2 && on("lunar-brilliance")) {
-    const atkShared = 0.01 * hpEff;
-    const emShared = 0.0035 * hpEff;
-    const defShared = 0.01 * hpEff;
-    res.statDeltas.atk = (res.statDeltas.atk ?? 0) + atkShared;
-    res.statDeltas.em = (res.statDeltas.em ?? 0) + emShared;
-    res.statDeltas.def = (res.statDeltas.def ?? 0) + defShared;
-    res.notes.push(
-      `C2: +${fmt(atkShared)} ATK, +${fmt(emShared)} EM, +${fmt(defShared)} DEF (based on Columbina Max HP)`
-    );
+  // C2 Moonsign: Ascendant Gleam character buffs (ATK, EM, and DEF based on reaction type)
+  if (lbActive) {
+    const hasExplicitGleam =
+      inputs["c2-gleam-charged"] !== undefined ||
+      inputs["c2-gleam-bloom"] !== undefined ||
+      inputs["c2-gleam-crystallize"] !== undefined;
+
+    const gleamCharged = hasExplicitGleam ? on("c2-gleam-charged") : true;
+    const gleamBloom = hasExplicitGleam ? on("c2-gleam-bloom") : true;
+    const gleamCrystallize = hasExplicitGleam ? on("c2-gleam-crystallize") : true;
+
+    const notesParts: string[] = [];
+    if (gleamCharged) {
+      const atkShared = 0.01 * hpEff;
+      res.statDeltas.atk = (res.statDeltas.atk ?? 0) + atkShared;
+      notesParts.push(`+${fmt(atkShared)} ATK`);
+    }
+    if (gleamBloom) {
+      const emShared = 0.0035 * hpEff;
+      res.statDeltas.em = (res.statDeltas.em ?? 0) + emShared;
+      notesParts.push(`+${fmt(emShared)} EM`);
+    }
+    if (gleamCrystallize) {
+      const defShared = 0.01 * hpEff;
+      res.statDeltas.def = (res.statDeltas.def ?? 0) + defShared;
+      notesParts.push(`+${fmt(defShared)} DEF`);
+    }
+    if (notesParts.length > 0) {
+      res.notes.push(
+        `C2: ${notesParts.join(", ")} (based on Columbina Max HP)`
+      );
+    }
   }
 
   // Moonsign Benediction: +0.2% Lunar reaction Base DMG per 1000 Max HP, cap 7%.

@@ -545,25 +545,85 @@ describe("remastered support system", () => {
       }
     });
 
-    it("Columbina: Moonsign Base DMG, C2 HP-share, C6 CRIT DMG", () => {
+    it("Columbina: Moonsign Base DMG, C2 Ascendant Gleam reaction scaling, C6 CRIT DMG", () => {
       const sup = supportById("columbina");
       expect(sup).toBeDefined();
-      const inst: SupportInstance = {
+
+      // 1. Default C2 Ascendant Gleam: Lunar-Charged (1% of 40,000 HP = 400 ATK)
+      const instCharged: SupportInstance = {
         supportId: "columbina-support",
         stats: { hp: "40000", critRate: "70", critDmg: "180" },
-        mechanicInputs: { "lunar-brilliance": "1", "c6-crit-dmg-buff": "1" },
+        mechanicInputs: { "c2-lunar-brilliance": "1", "c6-crit-dmg-buff": "1" },
         constellationLevel: 6,
         enabled: true,
       };
-      const res = resolveTeamBuffs([inst]);
+      const resCharged = resolveTeamBuffs([instCharged]);
       // Moonsign: min(7, (40000 / 1000) * 0.2) = min(7, 8) = 7
-      expect(res.lunarBaseBonusPct).toBe(7);
-      // C2: (40000 / 100) * 0.15 = 60 ATK
-      expect(res.statDeltas.atk).toBe(60);
+      expect(resCharged.lunarBaseBonusPct).toBe(7);
+      // C2 Ascendant Gleam: Lunar-Charged = 1% of 40000 = 400 ATK
+      expect(resCharged.statDeltas.atk).toBe(400);
+      expect(resCharged.statDeltas.em).toBeUndefined();
+      expect(resCharged.statDeltas.def).toBeUndefined();
       // C6: +80% CRIT DMG in Lunar Domain
-      expect(res.statDeltas.critDmg).toBe(80);
+      expect(resCharged.statDeltas.critDmg).toBe(80);
       // C6 total elevation: 1.5 + 7.0 + 1.5 + 7.0 = 17.0%
-      expect(res.statDeltas.lunarChargedElevation).toBe(17);
+      expect(resCharged.statDeltas.lunarChargedElevation).toBe(17);
+      expect(resCharged.statDeltas.lunarBloomElevation).toBe(17);
+      expect(resCharged.statDeltas.lunarCrystallizeElevation).toBe(17);
+
+      // 2. Ascendant Gleam: Lunar-Bloom (0.35% of 40,000 HP = 140 EM)
+      const instBloom: SupportInstance = {
+        supportId: "columbina-support",
+        stats: { hp: "40000", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "c2-lunar-brilliance": "1", "c2-gleam-charged": "0", "c2-gleam-bloom": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const resBloom = resolveTeamBuffs([instBloom]);
+      expect(resBloom.statDeltas.atk).toBeUndefined();
+      expect(resBloom.statDeltas.em).toBe(140);
+      expect(resBloom.statDeltas.def).toBeUndefined();
+      // C2 elevation: 1.5 + 7.0 = 8.5%
+      expect(resBloom.statDeltas.lunarBloomElevation).toBe(8.5);
+
+      // 3. Ascendant Gleam: Lunar-Crystallize (1% of 40,000 HP = 400 DEF)
+      const instCryst: SupportInstance = {
+        supportId: "columbina-support",
+        stats: { hp: "40000", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "c2-lunar-brilliance": "1", "c2-gleam-charged": "0", "c2-gleam-crystallize": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const resCryst = resolveTeamBuffs([instCryst]);
+      expect(resCryst.statDeltas.atk).toBeUndefined();
+      expect(resCryst.statDeltas.em).toBeUndefined();
+      expect(resCryst.statDeltas.def).toBe(400);
+
+      // 4. Constellation < 2 gates all C2 buffs
+      const instC1: SupportInstance = {
+        supportId: "columbina-support",
+        stats: { hp: "40000", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "c2-lunar-brilliance": "1", "c2-gleam-charged": "1" },
+        constellationLevel: 1,
+        enabled: true,
+      };
+      const resC1 = resolveTeamBuffs([instC1]);
+      expect(resC1.statDeltas.atk).toBeUndefined();
+      expect(resC1.statDeltas.em).toBeUndefined();
+      expect(resC1.statDeltas.def).toBeUndefined();
+      // C1 elevation: 1.5%
+      expect(resC1.statDeltas.lunarChargedElevation).toBe(1.5);
+
+      // 5. Lunar Brilliance toggle OFF gates C2 buffs
+      const instOff: SupportInstance = {
+        supportId: "columbina-support",
+        stats: { hp: "40000", critRate: "70", critDmg: "180" },
+        mechanicInputs: { "c2-lunar-brilliance": "0", "c2-gleam-charged": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const resOff = resolveTeamBuffs([instOff]);
+      expect(resOff.statDeltas.atk).toBeUndefined();
     });
 
     it("Mavuika: Kiongozi DMG + C2 DEF shred", () => {
