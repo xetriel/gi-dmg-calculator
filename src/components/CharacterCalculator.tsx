@@ -243,13 +243,13 @@ export function CharacterCalculator({
 
   const handleMouseDown = (e: React.MouseEvent, cardId: string) => {
     e.preventDefault();
-    const cardEl = document.getElementById(`setup-card-${cardId}`);
-    if (!cardEl) return;
-    const startRect = cardEl.getBoundingClientRect();
+    const containerEl = document.getElementById(`split-container-${cardId}`) || document.getElementById(`setup-card-${cardId}`);
+    if (!containerEl) return;
+    const startRect = containerEl.getBoundingClientRect();
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const relativeY = moveEvent.clientY - startRect.top;
-      const percentage = Math.max(20, Math.min(80, (relativeY / startRect.height) * 100));
+      const percentage = Math.max(15, Math.min(85, (relativeY / startRect.height) * 100));
       setSplitRatio(percentage);
     };
 
@@ -1334,7 +1334,7 @@ export function CharacterCalculator({
               `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""}`;
             const baseBenchmarkInst = activeBenchmarkId === inst.id;
 
-            const renderOutputs = () => {
+            const renderConfiguration = () => {
               if (!effectiveStats || !inputStats || !extras) return null;
 
               const reactionBonusPct = toNum(inst.reactionPanelBonus) ?? 0;
@@ -1351,21 +1351,6 @@ export function CharacterCalculator({
               const aggravateFlat = showCatalyze
                 ? 1.15 * levelMultiplier(effectiveStats.levelChar) * (1 + emCatalyzeBonus + instReactionBonusPct / 100)
                 : 0;
-
-              const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
-                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
-                const encoded = encodeBuild(payload);
-                const hash = targetAnchorId ? `#${targetAnchorId}` : "";
-                let modeParam = "";
-                if (typeof window !== "undefined") {
-                  try {
-                    sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
-                    const storedMode = localStorage.getItem("gi_calc_dmg_type");
-                    if (storedMode) modeParam = `&mode=${storedMode}`;
-                  } catch (e) {}
-                }
-                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
-              };
 
               return (
                 <div className="space-y-4">
@@ -1689,7 +1674,30 @@ export function CharacterCalculator({
                   {validation.general.map(g => (
                     <p key={g} className="mb-2 text-xs text-amber-600 select-none">{g}</p>
                   ))}
+                </div>
+              );
+            };
 
+            const renderDamageOutputs = () => {
+              if (!effectiveStats || !inputStats || !extras) return null;
+
+              const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
+                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
+                const encoded = encodeBuild(payload);
+                const hash = targetAnchorId ? `#${targetAnchorId}` : "";
+                let modeParam = "";
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
+                    const storedMode = localStorage.getItem("gi_calc_dmg_type");
+                    if (storedMode) modeParam = `&mode=${storedMode}`;
+                  } catch (e) {}
+                }
+                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
+              };
+
+              return (
+                <div className="space-y-4">
                   {/* Talent table list rendering */}
                   <DamageTable
                     inst={inst}
@@ -1768,7 +1776,7 @@ export function CharacterCalculator({
                 key={inst.id}
                 id={`setup-card-${inst.id}`}
                 className={`shrink-0 border rounded-xl p-5 shadow-xs flex flex-col transition-all bg-white/50 dark:bg-zinc-900/30 w-[480px] ${
-                  isSplitView ? "h-[700px]" : ""
+                  isSplitView ? "h-[75vh] min-h-[700px]" : ""
                 } ${
                   highlightedSetupId === inst.id
                     ? "border-amber-500 ring-2 ring-amber-500 shadow-md"
@@ -1814,8 +1822,8 @@ export function CharacterCalculator({
                 </div>
 
                 {isSplitView ? (
-                  <div className="flex flex-col flex-1 min-h-0">
-                    {/* Top Section: Input Settings */}
+                  <div id={`split-container-${inst.id}`} className="flex flex-col flex-1 min-h-0">
+                    {/* Top Section: Input Settings & Configuration */}
                     <div
                       ref={el => { upperRefs.current[inst.id] = el; }}
                       onScroll={(e) => handleUpperScroll(inst.id, e)}
@@ -1877,9 +1885,12 @@ export function CharacterCalculator({
                         validation={validation}
                         setStat={setStat}
                       />
+
+                      {/* Reaction & Effective Stats Configuration */}
+                      {renderConfiguration()}
                     </div>
 
-                    {/* Draggable Horizontal Splitter Divider */}
+                    {/* Draggable Horizontal Splitter Divider (placed right before Normal Attack panel / Damage Outputs) */}
                     <div
                       onMouseDown={(e) => handleMouseDown(e, inst.id)}
                       className="h-1.5 hover:h-2 bg-gray-200/80 hover:bg-amber-400 dark:bg-zinc-800/80 dark:hover:bg-amber-500 cursor-row-resize my-1 rounded-full transition-all flex items-center justify-center shrink-0 z-10 group"
@@ -1888,14 +1899,14 @@ export function CharacterCalculator({
                       <div className="w-8 h-0.5 bg-gray-400 dark:bg-zinc-650 group-hover:bg-white rounded-full transition-colors"></div>
                     </div>
 
-                    {/* Bottom Section: Output & Calculations */}
+                    {/* Bottom Section: Damage Outputs (DamageTable starting with Normal Attack, Reactions, Rotations) */}
                     <div
                       ref={el => { lowerRefs.current[inst.id] = el; }}
                       onScroll={(e) => handleLowerScroll(inst.id, e)}
-                      style={{ height: `${100 - splitRatio - 2}%` }}
+                      style={{ height: `${100 - splitRatio}%` }}
                       className="overflow-y-auto shrink-0 pt-2 flex flex-col gap-4 no-scrollbar"
                     >
-                      {renderOutputs()}
+                      {renderDamageOutputs()}
                     </div>
                   </div>
                 ) : (
@@ -1956,8 +1967,8 @@ export function CharacterCalculator({
                       setStat={setStat}
                     />
 
-
-                    {renderOutputs()}
+                    {renderConfiguration()}
+                    {renderDamageOutputs()}
                   </div>
                 )}
               </div>
