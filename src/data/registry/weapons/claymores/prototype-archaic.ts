@@ -18,8 +18,15 @@ export const prototypeArchaic: WeaponConfig = {
     "On hit, Normal or Charged Attacks have a 50% chance to deal an additional 240~480% ATK DMG to opponents in a small AoE. Can only occur once every 15s.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "prototype-archaic-proc",
+      name: "Crush AoE DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [240, 300, 360, 420, 480],
+      description: "Deals 240~480% ATK as AoE Physical DMG on Normal or Charged Attack hit",
+    },
   ],
-  
 };

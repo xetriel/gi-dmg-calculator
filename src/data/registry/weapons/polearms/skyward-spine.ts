@@ -26,7 +26,16 @@ export const skywardSpine: WeaponConfig = {
       refinementValues: [8, 10, 12, 14, 16],
       isTeamBuff: false,
       compute: (r) => [8, 10, 12, 14, 16][r - 1],
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "skyward-spine-proc",
+      name: "Vacuum Blade DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [40, 55, 70, 85, 100],
+      description: "Deals 40~100% ATK as Physical DMG",
+    },
+  ],
 };

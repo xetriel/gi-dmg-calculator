@@ -26,7 +26,16 @@ export const luxuriousSeaLord: WeaponConfig = {
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       compute: (r) => [12, 15, 18, 21, 24][r - 1],
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "sea-lord-proc",
+      name: "Titanic Tuna AoE DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [100, 125, 150, 175, 200],
+      description: "Deals 100~200% ATK as AoE Physical DMG when Elemental Burst hits opponents",
+    },
+  ],
 };

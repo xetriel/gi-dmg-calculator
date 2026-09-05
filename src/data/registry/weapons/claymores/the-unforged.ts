@@ -37,6 +37,15 @@ export const theUnforged: WeaponConfig = {
   ],
   buffs: [
     {
+      id: "unforged-shield-strength",
+      label: "Shield Strength (The Unforged)",
+      stat: "shieldStrength",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: false,
+      isPercent: true,
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+    },
+    {
       id: "unforged-atk",
       label: "ATK% (The Unforged Stacks)",
       stat: "atk",

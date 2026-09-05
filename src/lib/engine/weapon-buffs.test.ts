@@ -621,5 +621,118 @@ describe("Refined Weapon Buffs Scaling & Mechanics", () => {
   });
 });
 
+describe("Independent Weapon Damage Procs & Buff Refinements", () => {
+  const PROC_WEAPON_IDS = [
+    "ash-graven-drinking-horn",
+    "eye-of-perception",
+    "frostbearer",
+    "skyward-atlas",
+    "aquila-favonia",
+    "sword-of-narzissenkreuz",
+    "sword-of-descension",
+    "fillet-blade",
+    "the-flute",
+    "kagotsurube-isshin",
+    "skyward-spine",
+    "crescent-pike",
+    "dragonspine-spear",
+    "halberd",
+    "debate-club",
+    "prototype-archaic",
+    "snow-tombed-starsilver",
+    "skyward-pride",
+    "luxurious-sea-lord",
+    "end-of-the-line",
+    "messenger",
+    "sequence-of-solitude",
+    "skyward-harp",
+    "the-viridescent-hunt",
+  ];
 
+  it("all 24 tracked proc-damage weapons have valid damageInstances with 5 refinement multipliers", () => {
+    for (const id of PROC_WEAPON_IDS) {
+      const w = weaponById(id);
+      expect(w, `Weapon ${id} should exist`).toBeDefined();
+      expect(w!.damageInstances, `Weapon ${id} should have damageInstances`).toBeDefined();
+      expect(w!.damageInstances!.length).toBeGreaterThanOrEqual(1);
 
+      for (const d of w!.damageInstances!) {
+        expect(d.refinementMultipliers.length).toBe(5);
+        expect(d.scaling).toMatch(/^(atk|hp|def)$/);
+        expect(d.refinementMultipliers[0]).toBeGreaterThan(0);
+        expect(d.refinementMultipliers[4]).toBeGreaterThanOrEqual(d.refinementMultipliers[0]);
+
+        if (d.conditionKey) {
+          expect(d.conditionMultipliers?.length).toBe(5);
+          expect(d.conditionMultipliers![4]).toBeGreaterThan(d.refinementMultipliers[4]);
+        }
+      }
+    }
+  });
+
+  it("Ash-Graven Drinking Horn scales 40~80% Max HP as AoE Physical DMG", () => {
+    const w = weaponById("ash-graven-drinking-horn")!;
+    const proc = w.damageInstances![0];
+    expect(proc.scaling).toBe("hp");
+    expect(proc.element).toBe("Physical");
+    expect(proc.refinementMultipliers).toEqual([40, 50, 60, 70, 80]);
+  });
+
+  it("Eye of Perception scales 240~360% ATK as Physical DMG", () => {
+    const w = weaponById("eye-of-perception")!;
+    const proc = w.damageInstances![0];
+    expect(proc.scaling).toBe("atk");
+    expect(proc.element).toBe("Physical");
+    expect(proc.refinementMultipliers).toEqual([240, 270, 300, 330, 360]);
+  });
+
+  it("Frostbearer has base icicle (80~140%) and Cryo-affected condition (200~360%)", () => {
+    const w = weaponById("frostbearer")!;
+    const proc = w.damageInstances![0];
+    expect(proc.refinementMultipliers).toEqual([80, 95, 110, 125, 140]);
+    expect(proc.conditionMultipliers).toEqual([200, 240, 280, 320, 360]);
+    expect(proc.conditionKey).toBe("frostbearer-cryo");
+  });
+
+  it("Messenger has weakspot proc with guaranteedCrit flag", () => {
+    const w = weaponById("messenger")!;
+    const proc = w.damageInstances![0];
+    expect(proc.refinementMultipliers).toEqual([100, 125, 150, 175, 200]);
+    expect(proc.guaranteedCrit).toBe(true);
+  });
+
+  it("Golden Majesty series weapons have Shield Strength buffs (20~40%)", () => {
+    const gmWeapons = ["summit-shaper", "vortex-vanquisher", "memory-of-dust", "the-unforged"];
+    for (const id of gmWeapons) {
+      const w = weaponById(id)!;
+      expect(w).toBeDefined();
+      const shieldBuff = w.buffs.find(b => b.stat === "shieldStrength");
+      expect(shieldBuff, `${id} should have shieldStrength buff`).toBeDefined();
+      expect(shieldBuff!.refinementValues).toEqual([20, 25, 30, 35, 40]);
+      expect(shieldBuff!.isPercent).toBe(true);
+    }
+  });
+
+  it("Sword of Descension sets isPercent: false on flat ATK for Traveler", () => {
+    const w = weaponById("sword-of-descension")!;
+    const flatAtkBuff = w.buffs.find(b => b.id === "descension-traveler-atk")!;
+    expect(flatAtkBuff.isPercent).toBe(false);
+    expect(flatAtkBuff.refinementValues).toEqual([66, 66, 66, 66, 66]);
+  });
+
+  it("Angelos' Heptades has party DMG bonus conditioned on shield active", () => {
+    const w = weaponById("angelos-heptades")!;
+    const partyBuff = w.buffs.find(b => b.id === "angelos-party-dmg")!;
+    expect(partyBuff).toBeDefined();
+    expect(partyBuff.isTeamBuff).toBe(true);
+    expect(partyBuff.refinementValues).toEqual([26, 34, 42, 50, 58]);
+  });
+
+  it("Fractured Halo has party Lunar-Charged DMG bonus conditioned on shield active", () => {
+    const w = weaponById("fractured-halo")!;
+    const partyBuff = w.buffs.find(b => b.id === "halo-lunar-charged")!;
+    expect(partyBuff).toBeDefined();
+    expect(partyBuff.isTeamBuff).toBe(true);
+    expect(partyBuff.refinementValues).toEqual([40, 50, 60, 70, 80]);
+  });
+});

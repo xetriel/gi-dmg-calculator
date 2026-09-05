@@ -27,7 +27,17 @@ export const aquilaFavonia: WeaponConfig = {
       isTeamBuff: false,
       isPercent: true,
       compute: (r, ctx) => ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk,
-    }
+    },
+  ],
+  damageInstances: [
+    {
+      id: "aquila-proc",
+      name: "Soul of the Falcon DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [200, 230, 260, 290, 320],
+      description: "Deals 200~320% ATK as AoE Physical DMG to surrounding opponents",
+    },
   ],
   signatureFor: ["jean"],
 };

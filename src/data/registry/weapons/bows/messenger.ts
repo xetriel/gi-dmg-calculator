@@ -18,8 +18,16 @@ export const messenger: WeaponConfig = {
     "Charged Attack hits on weak spots deal an additional 100~200% ATK DMG as CRIT hit.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "messenger-proc",
+      name: "Flying Messenger Weakspot DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [100, 125, 150, 175, 200],
+      guaranteedCrit: true,
+      description: "Charged Attack hits on weak spots deal an additional 100~200% ATK as Physical DMG (guaranteed CRIT)",
+    },
   ],
-  
 };

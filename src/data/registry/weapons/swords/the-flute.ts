@@ -18,8 +18,15 @@ export const theFlute: WeaponConfig = {
     "Normal or Charged Attacks grant Harmonics on hits (max 5). At 5 Harmonics, deals 100~200% ATK DMG to surrounding opponents.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "the-flute-proc",
+      name: "Harmonics DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [100, 125, 150, 175, 200],
+      description: "Deals 100~200% ATK as AoE Physical DMG to surrounding opponents at 5 Harmonics",
+    },
   ],
-  
 };

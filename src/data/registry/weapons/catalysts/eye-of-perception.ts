@@ -18,8 +18,15 @@ export const eyeOfPerception: WeaponConfig = {
     "Normal and Charged Attacks have a 50% chance to fire a Bolt of Perception, dealing 240~360% ATK as DMG.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "eye-of-perception-proc",
+      name: "Bolt of Perception DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [240, 270, 300, 330, 360],
+      description: "Deals 240~360% ATK as Physical DMG on hit",
+    },
   ],
-  
 };

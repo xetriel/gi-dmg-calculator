@@ -25,8 +25,18 @@ export const swordOfDescension: WeaponConfig = {
       stat: "atk",
       refinementValues: [66, 66, 66, 66, 66],
       isTeamBuff: false,
+      isPercent: false,
       compute: (r) => 66,
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "sword-of-descension-proc",
+      name: "Descension DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [200, 200, 200, 200, 200],
+      description: "Deals 200% ATK as Physical DMG",
+    },
+  ],
 };

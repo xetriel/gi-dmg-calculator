@@ -37,6 +37,15 @@ export const memoryOfDust: WeaponConfig = {
   ],
   buffs: [
     {
+      id: "memory-dust-shield-strength",
+      label: "Shield Strength (Memory of Dust)",
+      stat: "shieldStrength",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: false,
+      isPercent: true,
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+    },
+    {
       id: "memory-dust-atk",
       label: "ATK% (Memory of Dust Stacks)",
       stat: "atk",

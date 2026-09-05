@@ -37,5 +37,23 @@ export const angelosHeptades: WeaponConfig = {
       isPercent: true,
       compute: (r, ctx) => ([12, 15, 18, 21, 24][r - 1] / 100) * ctx.baseAtk,
     },
+    {
+      id: "angelos-party-dmg",
+      label: "Party All DMG Bonus% (Pathfinder's Light)",
+      stat: "dmgBonus",
+      refinementValues: [26, 34, 42, 50, 58],
+      isTeamBuff: true,
+      isPercent: true,
+      conditionKey: "angelos-shield-active",
+      compute: (r, ctx) => {
+        const on = (ctx.inputs?.["angelos-shield-active"] ?? "1") === "1" || Number(ctx.inputs?.["angelos-shield-active"] ?? 1) > 0;
+        if (!on) return 0;
+        const maxVal = [26, 34, 42, 50, 58][r - 1];
+        const rate = [10, 13, 16, 19, 22][r - 1];
+        // If wielder ATK is provided in inputs or ctx.baseAtk
+        const wielderAtk = Number(ctx.inputs?.["wielderAtk"] ?? ctx.baseAtk ?? 2000);
+        return Math.min(maxVal, (rate / 1000) * wielderAtk);
+      },
+    },
   ],
 };

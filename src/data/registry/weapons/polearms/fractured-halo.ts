@@ -50,5 +50,20 @@ export const fracturedHalo: WeaponConfig = {
         return on ? ([24, 30, 36, 42, 48][r - 1] / 100) * ctx.baseAtk : 0;
       },
     },
+    {
+      id: "halo-lunar-charged",
+      label: "Party Lunar-Charged DMG% (Electrifying Edict)",
+      stat: "lunarChargedDmgBonus",
+      refinementValues: [40, 50, 60, 70, 80],
+      isTeamBuff: true,
+      isPercent: true,
+      conditionKey: "halo-shield-active",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["halo-shield-active"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["halo-shield-active"] ?? 1) > 0;
+        return on ? [40, 50, 60, 70, 80][r - 1] : 0;
+      },
+    },
   ],
 };

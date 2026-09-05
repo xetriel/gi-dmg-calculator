@@ -31,6 +31,19 @@ export interface WeaponBuffDef {
   compute?: (refinement: number, ctx: WeaponBuffContext) => number;
 }
 
+export interface WeaponDamageDef {
+  id: string;                                  // unique identifier e.g. "eye-of-perception-proc"
+  name: string;                                // display name e.g. "Bolt of Perception"
+  scaling: "atk" | "hp" | "def";               // scaling stat
+  element?: Element | "Physical";              // DMG element (default: "Physical")
+  refinementMultipliers: [number, number, number, number, number]; // e.g. [240, 270, 300, 330, 360]
+  conditionKey?: string;                       // e.g. "cryo-affected"
+  conditionLabel?: string;                     // e.g. "Opponent affected by Cryo"
+  conditionMultipliers?: [number, number, number, number, number]; // e.g. [200, 240, 280, 320, 360]
+  guaranteedCrit?: boolean;                    // e.g. Messenger (100% crit on weakspot)
+  description?: string;
+}
+
 export interface WeaponConfig {
   id: string;                                  // slug identifier e.g. "crimson-moons-semblance", "a-thousand-floating-dreams"
   name: string;                                // "Crimson Moon's Semblance"
@@ -44,6 +57,7 @@ export interface WeaponConfig {
   isSupport: boolean;                          // Has party/team buff capabilities
   buffType: "team" | "self" | "both";
   buffs: WeaponBuffDef[];
+  damageInstances?: WeaponDamageDef[];         // Independent proc damage instances (e.g. Bolt of Perception, Everfrost Icicle)
   mechanicDefs?: MechanicDef[];                // UI controls for conditional passives (stacks, toggles)
   signatureFor?: string[];                     // Character IDs this weapon is specifically made for (e.g. ["arlecchino"])
 }
