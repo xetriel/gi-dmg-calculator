@@ -18,8 +18,15 @@ export const theViridescentHunt: WeaponConfig = {
     "Normal and Aimed Shot hits have a 50% chance to generate a Cyclone, dealing 40~80% ATK as DMG and pulling enemies.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "viridescent-hunt-proc",
+      name: "Cyclone DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [40, 50, 60, 70, 80],
+      description: "Generates a Cyclone dealing 40~80% ATK as Physical DMG per tick to enemies in the cyclone",
+    },
   ],
-  
 };

@@ -36,6 +36,7 @@ export interface DamageStats {
   defIgnore: number;     // percent
   energyRecharge: number; // percent
   healingBonus: number;   // percent
+  shieldStrength?: number; // percent
   lunarChargedDmgBonus?: number;
   lunarBloomDmgBonus?: number;
   lunarCrystallizeDmgBonus?: number;

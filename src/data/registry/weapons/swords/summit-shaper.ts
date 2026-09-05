@@ -37,6 +37,15 @@ export const summitShaper: WeaponConfig = {
   ],
   buffs: [
     {
+      id: "summit-shield-strength",
+      label: "Shield Strength (Summit Shaper)",
+      stat: "shieldStrength",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: false,
+      isPercent: true,
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+    },
+    {
       id: "summit-atk",
       label: "ATK% (Summit Shaper Stacks)",
       stat: "atk",

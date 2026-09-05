@@ -26,7 +26,16 @@ export const skywardPride: WeaponConfig = {
       refinementValues: [8, 10, 12, 14, 16],
       isTeamBuff: false,
       compute: (r) => [8, 10, 12, 14, 16][r - 1],
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "skyward-pride-proc",
+      name: "Vacuum Blade DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [80, 100, 120, 140, 160],
+      description: "Deals 80~160% ATK as Physical DMG to opponents along its path",
+    },
+  ],
 };

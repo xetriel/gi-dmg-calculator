@@ -15,6 +15,7 @@ import { resolveTeamBuffs, type TeamBuffSource } from "@/lib/engine/team-buffs";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
 import { byId as characterById } from "@/data/registry/characters";
+import { weaponById } from "@/data/registry/weapons";
 import { renderStyledText } from "./calculator/utils/colors";
 
 // Import custom hooks and components
@@ -25,6 +26,7 @@ import type { SavedBuild, CalcInstance, ComputedInstance, RotationStep, StatBuff
 import { StatsGrid } from "./calculator/components/StatsGrid";
 import { MechanicsPanel } from "./calculator/components/MechanicsPanel";
 import { DamageTable } from "./calculator/components/DamageTable";
+import { WeaponDamageTable, type ResolvedWeaponHit } from "./calculator/components/WeaponDamageTable";
 import { TransformativePanel } from "./calculator/components/TransformativePanel";
 import { RotationModal } from "./calculator/components/RotationModal";
 import { StatBreakdownRow } from "./calculator/components/StatBreakdownRow";
@@ -595,9 +597,76 @@ export function CharacterCalculator({
       rotationStepsDetails[r.id] = stepDetails;
     }
 
+    const weaponDamageResults: ResolvedWeaponHit[] = [];
+    if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
+      for (const wInst of inst.externalWeapons) {
+        if (!wInst.enabled) continue;
+        const wConfig = weaponById(wInst.weaponId);
+        if (!wConfig || !wConfig.damageInstances || wConfig.damageInstances.length === 0) continue;
+
+        const r = Math.max(1, Math.min(5, wInst.refinement || 1));
+        for (const d of wConfig.damageInstances) {
+          const mult = d.refinementMultipliers[r - 1];
+          const hitRes = computeHit(s, {
+            multiplier: mult,
+            scaling: d.scaling,
+            element: d.element ?? "Physical",
+            reaction: "none",
+            reactionBonusPct: 0,
+            critRateBonusPct: d.guaranteedCrit ? 100 : 0,
+            hitCategory: "special",
+            charElement: config.element,
+            dmgBonusLabel: config.dmgBonusLabel,
+          });
+
+          weaponDamageResults.push({
+            id: `${wInst.id}-${d.id}`,
+            weaponId: wConfig.id,
+            weaponName: wConfig.name,
+            weaponRarity: wConfig.rarity,
+            refinement: r,
+            hitName: d.name,
+            element: d.element || "Physical",
+            scaling: d.scaling,
+            multiplier: mult,
+            result: hitRes,
+          });
+
+          if (d.conditionKey && d.conditionMultipliers) {
+            const condMult = d.conditionMultipliers[r - 1];
+            const condHitRes = computeHit(s, {
+              multiplier: condMult,
+              scaling: d.scaling,
+              element: d.element ?? "Physical",
+              reaction: "none",
+              reactionBonusPct: 0,
+              critRateBonusPct: d.guaranteedCrit ? 100 : 0,
+              hitCategory: "special",
+              charElement: config.element,
+              dmgBonusLabel: config.dmgBonusLabel,
+            });
+
+            weaponDamageResults.push({
+              id: `${wInst.id}-${d.id}-cond`,
+              weaponId: wConfig.id,
+              weaponName: wConfig.name,
+              weaponRarity: wConfig.rarity,
+              refinement: r,
+              hitName: `${d.name} (${d.conditionLabel || "Conditional"})`,
+              element: d.element || "Physical",
+              scaling: d.scaling,
+              multiplier: condMult,
+              result: condHitRes,
+              conditionLabel: d.conditionLabel || "Conditional",
+            });
+          }
+        }
+      }
+    }
+
     const statBreakdowns = resolveAllEffectiveStats(config, scaling, inst, inputStats, s);
 
-    return { validation, results: out, extras, inputStats, effectiveStats: s, statBreakdowns, rotationTotals, rotationStepsDmg, rotationStepsDetails };
+    return { validation, results: out, extras, inputStats, effectiveStats: s, statBreakdowns, rotationTotals, rotationStepsDmg, rotationStepsDetails, weaponDamageResults };
   }
 
   const computedById = new Map(instances.map(i => [i.id, computeInstance(i)]));
@@ -1327,6 +1396,13 @@ export function CharacterCalculator({
                     setLevel={setLevel}
                     setHit={setHit}
                     onFormulaRedirect={handleFormulaRedirectWithAnchor}
+                  />
+
+                  {/* Weapon Proc DMG Table */}
+                  <WeaponDamageTable
+                    weaponHits={computed.weaponDamageResults || []}
+                    benchmarkWeaponHits={computedById.get(activeBenchmarkId)?.weaponDamageResults}
+                    showPct={instances.length > 1}
                   />
 
                   {/* Transformative Reaction lists */}

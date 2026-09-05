@@ -18,8 +18,15 @@ export const ashGravenDrinkingHorn: WeaponConfig = {
     "When hitting an opponent, deals 40~80% Max HP as AoE DMG at the target location. Can occur once every 15s.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "ash-graven-proc",
+      name: "Tuco's Grace AoE DMG",
+      scaling: "hp",
+      element: "Physical",
+      refinementMultipliers: [40, 50, 60, 70, 80],
+      description: "Deals 40~80% Max HP as AoE Physical DMG at the target location",
+    },
   ],
-  
 };

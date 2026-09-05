@@ -39,5 +39,14 @@ export const kagotsurubeIsshin: WeaponConfig = {
       compute: (r, ctx) => { const on = (ctx.inputs?.['isshin-atk-active'] ?? '1') === '1' || Number(ctx.inputs?.['isshin-atk-active'] ?? 1) > 0; return on ? (0.15 * ctx.baseAtk) : 0; },
     }
   ],
-  
+  damageInstances: [
+    {
+      id: "isshin-proc",
+      name: "Hewing Gale DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [180, 180, 180, 180, 180],
+      description: "Deals 180% ATK as AoE Physical DMG",
+    },
+  ],
 };

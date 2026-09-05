@@ -26,7 +26,16 @@ export const skywardAtlas: WeaponConfig = {
       refinementValues: [12, 15, 18, 21, 24],
       isTeamBuff: false,
       compute: (r) => [12, 15, 18, 21, 24][r - 1],
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "skyward-atlas-clouds",
+      name: "Wandering Clouds DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [160, 200, 240, 280, 320],
+      description: "Deals 160~320% ATK as Physical DMG",
+    },
+  ],
 };

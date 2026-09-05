@@ -37,6 +37,15 @@ export const vortexVanquisher: WeaponConfig = {
   ],
   buffs: [
     {
+      id: "vortex-shield-strength",
+      label: "Shield Strength (Vortex Vanquisher)",
+      stat: "shieldStrength",
+      refinementValues: [20, 25, 30, 35, 40],
+      isTeamBuff: false,
+      isPercent: true,
+      compute: (r) => [20, 25, 30, 35, 40][r - 1],
+    },
+    {
       id: "vortex-atk",
       label: "ATK% (Vortex Vanquisher Stacks)",
       stat: "atk",

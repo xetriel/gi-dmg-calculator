@@ -93,4 +93,5 @@ export interface ComputedInstance {
   rotationTotals: Record<string, number>;
   rotationStepsDmg: Record<string, number[]>;
   rotationStepsDetails: Record<string, HitResult[]>;
+  weaponDamageResults?: import("./components/WeaponDamageTable").ResolvedWeaponHit[];
 }

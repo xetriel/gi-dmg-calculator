@@ -26,7 +26,16 @@ export const skywardHarp: WeaponConfig = {
       refinementValues: [20, 25, 30, 35, 40],
       isTeamBuff: false,
       compute: (r) => [20, 25, 30, 35, 40][r - 1],
-    }
+    },
   ],
-  
+  damageInstances: [
+    {
+      id: "skyward-harp-proc",
+      name: "Echoing Ballad AoE DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [125, 125, 125, 125, 125],
+      description: "Deals 125% ATK as AoE Physical DMG",
+    },
+  ],
 };

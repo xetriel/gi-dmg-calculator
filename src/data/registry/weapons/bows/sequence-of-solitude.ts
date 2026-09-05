@@ -18,8 +18,15 @@ export const sequenceOfSolitude: WeaponConfig = {
     "Deals 40~80% Max HP as AoE DMG at the target location once every 15s.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "sequence-of-solitude-proc",
+      name: "Silent Trigger AoE DMG",
+      scaling: "hp",
+      element: "Physical",
+      refinementMultipliers: [40, 50, 60, 70, 80],
+      description: "Deals 40~80% Max HP as AoE Physical DMG at target location",
+    },
   ],
-  
 };

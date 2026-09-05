@@ -18,8 +18,15 @@ export const filletBlade: WeaponConfig = {
     "On hit, has 50% chance to deal 240~400% ATK DMG to a single opponent. Can only occur once every 15~11s.",
   isSupport: false,
   buffType: "self",
-  buffs: [
-
+  buffs: [],
+  damageInstances: [
+    {
+      id: "fillet-blade-proc",
+      name: "Gash DMG",
+      scaling: "atk",
+      element: "Physical",
+      refinementMultipliers: [240, 280, 320, 360, 400],
+      description: "Deals 240~400% ATK as Physical DMG to a single opponent",
+    },
   ],
-  
 };

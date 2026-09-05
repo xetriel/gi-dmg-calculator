@@ -18,9 +18,27 @@ export function WeaponsWikiView() {
   // Per-weapon refinement state: record of weaponId -> refinement (1..5)
   const [refinements, setRefinements] = useState<Record<string, number>>({});
 
+  // Interactive stat inputs for proc damage preview: record of weaponId -> { stat?: number; condition?: boolean }
+  const [procInputs, setProcInputs] = useState<Record<string, { stat?: number; condition?: boolean }>>({});
+
   const getRefinement = (id: string) => refinements[id] ?? 1;
   const setRefinement = (id: string, r: number) => {
     setRefinements((prev) => ({ ...prev, [id]: r }));
+  };
+
+  const getProcStat = (id: string, defVal: number) => procInputs[id]?.stat ?? defVal;
+  const setProcStat = (id: string, val: number) => {
+    setProcInputs((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], stat: val },
+    }));
+  };
+  const getProcCondition = (id: string) => procInputs[id]?.condition ?? false;
+  const toggleProcCondition = (id: string) => {
+    setProcInputs((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], condition: !prev[id]?.condition },
+    }));
   };
 
   const filteredWeapons = useMemo(() => {
@@ -217,7 +235,9 @@ export function WeaponsWikiView() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredWeapons.map((weapon) => {
           const r = getRefinement(weapon.id);
-          const hasRefinements = weapon.buffs.some((b) => b.refinementValues && b.refinementValues.length === 5);
+          const hasRefinements =
+            weapon.buffs.some((b) => b.refinementValues && b.refinementValues.length === 5) ||
+            Boolean(weapon.damageInstances && weapon.damageInstances.some((d) => d.refinementMultipliers && d.refinementMultipliers.length === 5));
 
           return (
             <div
@@ -341,6 +361,13 @@ export function WeaponsWikiView() {
                       <div className="mt-2 space-y-1 pt-1.5 border-t border-gray-100 dark:border-zinc-800/80">
                         {weapon.buffs.map((b) => {
                           const val = b.refinementValues ? b.refinementValues[r - 1] : b.compute ? b.compute(r, { refinement: r, baseAtk: weapon.baseAtk }) : 0;
+                          const isPercent =
+                            b.isPercent !== undefined
+                              ? b.isPercent
+                              : (b.stat !== "em" &&
+                                 !b.stat.toLowerCase().includes("flat") &&
+                                 !b.label.toLowerCase().includes("flat") &&
+                                 !b.id.toLowerCase().includes("flat"));
                           return (
                             <div
                               key={b.id}
@@ -351,8 +378,85 @@ export function WeaponsWikiView() {
                               </span>
                               <span className="font-mono font-bold text-amber-600 dark:text-amber-400 shrink-0">
                                 Rank {r}: +{val}
-                                {b.isPercent !== false && "%"}
+                                {isPercent && "%"}
                               </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Interactive Independent Weapon DMG Procs Calculator */}
+                    {weapon.damageInstances && weapon.damageInstances.length > 0 && (
+                      <div className="mt-3 space-y-2 pt-2 border-t border-gray-100 dark:border-zinc-800/80">
+                        <div className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                          <span>⚔️ Weapon Output DMG Calculator</span>
+                        </div>
+                        {weapon.damageInstances.map((d) => {
+                          const defaultStat = d.scaling === "hp" ? 30000 : 2000;
+                          const currentStat = getProcStat(weapon.id, defaultStat);
+                          const isCond = getProcCondition(weapon.id);
+                          const mult = isCond && d.conditionMultipliers
+                            ? d.conditionMultipliers[r - 1]
+                            : d.refinementMultipliers[r - 1];
+                          const outputDmg = Math.round((mult / 100) * currentStat);
+                          const statLabel = d.scaling === "hp" ? "Max HP" : d.scaling.toUpperCase();
+
+                          return (
+                            <div
+                              key={d.id}
+                              className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/80 space-y-2"
+                            >
+                              <div className="flex items-center justify-between gap-1 text-[11px]">
+                                <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                                  <span>{d.name}</span>
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-mono font-bold">
+                                    {d.element || "Physical"}
+                                  </span>
+                                  {d.guaranteedCrit && (
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
+                                      100% CRIT
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300 text-[11px]">
+                                  R{r}: {mult}% {statLabel}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-200/60 dark:border-zinc-700/40">
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[10px] text-gray-500 dark:text-zinc-400 font-medium">
+                                    {statLabel}:
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="100"
+                                    value={currentStat}
+                                    onChange={(e) => setProcStat(weapon.id, Number(e.target.value) || 0)}
+                                    className="w-20 px-1.5 py-0.5 text-xs font-mono rounded bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                  />
+                                  {d.conditionKey && (
+                                    <label className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-zinc-300 cursor-pointer ml-1 select-none">
+                                      <input
+                                        type="checkbox"
+                                        checked={isCond}
+                                        onChange={() => toggleProcCondition(weapon.id)}
+                                        className="rounded accent-amber-500 cursor-pointer w-3.5 h-3.5"
+                                      />
+                                      <span>{d.conditionLabel || "Condition Active"}</span>
+                                    </label>
+                                  )}
+                                </div>
+
+                                <div className="flex items-baseline gap-1.5 font-mono">
+                                  <span className="text-[10px] text-gray-400 dark:text-zinc-500">Output:</span>
+                                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                                    {outputDmg.toLocaleString("en-US")} DMG
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           );
                         })}
