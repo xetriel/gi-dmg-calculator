@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { HeaderNavTabs } from "@/components/HeaderNavTabs";
 import { getDbStatus } from "@/app/actions/db-status";
 import { DbStatusBadge, SavedBuildsBadge } from "@/components/DbStatusBadge";
 
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GI Damage Calculator",
-  description: "Genshin Impact per-character damage calculator",
+  description: "Genshin Impact per-character damage calculator and game mechanics wiki",
 };
 
 export default async function RootLayout({
@@ -50,6 +51,11 @@ export default async function RootLayout({
               <DbStatusBadge initialStatus={dbStatus} />
             </div>
 
+            {/* Center Mode Switch Tabs */}
+            <div className="flex items-center">
+              <HeaderNavTabs />
+            </div>
+
             {/* Right Meta Section */}
             <div className="flex items-center gap-4 text-[11px] font-semibold text-gray-500 dark:text-zinc-400">
               <Link href="/history" className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" title="Export history">
@@ -74,7 +80,7 @@ export default async function RootLayout({
             </div>
           </header>
           <div className="flex flex-1 overflow-hidden">
-            <Sidebar />
+            <AppSidebar />
             <main className="flex-1 overflow-y-auto p-6 bg-zinc-50/30 dark:bg-zinc-950/30">{children}</main>
           </div>
         </div>
