@@ -4,9 +4,147 @@ This document logs the feature updates, architecture changes, and character rele
 
 ---
 
-## [v1.2.0-Beta] - Current UI Header Version
+## [v1.2.1] - Current UI Header Version
 
-All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to September 5, 2026).
+All developments listed below were implemented during the `v1.2.1` release cycle (September 5, 2026).
+
+### Major Features & Additions
+
+- **Independent Mini Wiki & Knowledge Base Architecture (September 5, 2026)**:
+  - **Zero-Drift Single Source of Truth**: Built an independent mini wiki system embedded within the application that imports directly from the canonical registries (`WEAPONS`: 246, `ARTIFACTS`: 64, `CHARACTERS`: 48), calculation engine formulas, and talent seeds with 100% mathematical consistency.
+  - **Top Header Dual-Mode Navigation (`HeaderNavTabs.tsx` in `src/app/layout.tsx`)**:
+    - `[ ⚡ Calculator ]`: Routes to the interactive damage calculation interface (`/`, `/characters/*`).
+    - `[ 📖 Wiki ]`: Routes to the knowledge base (`/wiki`, `/wiki/*`).
+    - Active tab is highlighted with high-contrast pill styling and clear visual feedback.
+  - **Context-Aware Dynamic Left Sidebar (`AppSidebar.tsx` & `WikiSidebar.tsx`)**:
+    - Replaced the static calculator sidebar with a route-aware sidebar that automatically swaps into the **Wiki Sidebar** when navigating `/wiki/*`.
+    - 7 category quick links: ⚔️ Weapons (246), 🛡️ Artifacts (64), 👤 Characters (48), 🧪 Reactions, ⚙️ Mechanics, 🤝 Supports, and 📈 Scaling.
+    - Contextual search & filter toolbars (e.g. Weapon Type/Rarity filters on `/wiki/weapons`; Drop Tier Range and Wielder/Support filters on `/wiki/artifacts`).
+    - Scrollable sub-item fast navigation for quick jumping to specific cards.
+    - Responsive collapse/expand toggle button matching the calculator sidebar width.
+  - **Completed Wiki Modules & Routes**:
+    - `/wiki` (`src/app/wiki/page.tsx`): Overview dashboard, quick stats (246 weapons, 64 artifacts, 48 characters), category navigation cards.
+    - `/wiki/weapons` (`src/components/wiki/WeaponsWikiView.tsx`): All 246 canonical weapons, Lv1 vs Lv90 base stats, substats, interactive R1–R5 dynamic refinement sliders, signature synergy badges, and *"Equip in Calculator"* links.
+    - `/wiki/artifacts` (`src/components/wiki/ArtifactsWikiView.tsx`): 64 artifact sets, dual-gradient rarity range badges, verbatim 1-Pc/2-Pc/4-Pc descriptions, wielder vs support filters, and interactive mechanic sandboxes.
+    - `/wiki/characters` (`src/components/wiki/CharactersWikiView.tsx`): 48 character dossiers, ascension stat curves, Normal/Skill/Burst breakdowns, C1–C6 constellation expanders, support profiles, and *"Open Calculator"* bridges.
+    - `/wiki/reactions` (`src/components/wiki/ReactionsWikiView.tsx`): Mathematical formulas for Amplifying, Catalyze, Transformative, Lunar, and Stellar reactions with live interactive EM sandbox slider (0–1500 EM).
+    - `/wiki/mechanics` (`src/components/wiki/MechanicsWikiView.tsx`): Universal damage formula breakdown, interactive Enemy DEF multiplier simulator, piecewise Enemy RES simulator, Bond of Life, and Nightsoul rules.
+    - `/wiki/supports` (`src/components/wiki/SupportsWikiView.tsx`): Universal 46-character support buff matrix filterable by Flat ATK, RES shred, DMG%, CRIT, and Moonsign Lunar Base amplifiers.
+    - `/wiki/scaling` (`src/components/wiki/ScalingWikiView.tsx`): Interactive talent multiplier inspector across levels 1 to 15 for all character abilities.
+
+- **Canonical Artifact Drop Rarity Range Engine (September 5, 2026)**:
+  - **Authentic Acquisition Drop Tiers**: Resolved the single-integer rarity limitation by mapping max-rarity labels into authentic Genshin drop tiers:
+    - **5-Star Sets** (e.g. *Blizzard Strayer*, *Crimson Witch*, *Deepwood Memories*): Drop as **4★ and 5★** pieces $\rightarrow$ `[4, 5]` (`4★–5★`).
+    - **4-Star Sets** (e.g. *Berserker*, *Instructor*, *The Exile*): Drop as **3★ and 4★** pieces $\rightarrow$ `[3, 4]` (`3★–4★`).
+    - **3-Star Sets** (e.g. *Adventurer*, *Lucky Dog*, *Traveling Doctor*): Drop as **1★ to 3★** pieces $\rightarrow$ `[1, 3]` (`1★–3★`).
+    - **1-Star Sets** (e.g. *Initiate*): `[1, 1]` (`1★`).
+  - **Deterministic Resolver & Matching Engine**: Created `getArtifactRarityRange()` in `src/data/registry/artifacts/types.ts`, range matching helper `matchesArtifactRarity()`, and luxury dual-gradient `RarityRangeBadge.tsx`.
+  - **Dual Filter Modes**: Integrated into the Artifacts Encyclopedia: **Drop Tiers (Inclusive)** (surfaces both native 4★ sets like *Instructor* and 5★ sets with 4★ pieces like *Blizzard Strayer*) vs **Max Rarity (Strict)** (strictly matches set maximum rarity).
+
+- **Standardized Rarity Color Palette & Multi-Tier Sidebar Badges (September 5, 2026)**:
+  - **Authentic Color Mapping**: Standardized canonical rarity colors across `RarityRangeBadge.tsx`, `WikiSidebar.tsx`, and `Sidebar.tsx`:
+    - **5★**: Gold/Amber (`text-amber-500` / gold badge `bg-amber-500/15 border-amber-500/30`)
+    - **4★**: Purple (`text-purple-400` / purple badge `bg-purple-500/15 border-purple-500/30`)
+    - **3★**: Blue (`text-blue-400` / blue badge `bg-blue-500/15 border-blue-500/30`) — *fixes 3★ previously rendering in purple fallback*
+    - **2★**: Emerald (`text-emerald-400` / emerald badge `bg-emerald-500/15 border-emerald-500/30`)
+    - **1★**: Zinc (`text-zinc-400` / zinc badge `bg-zinc-500/15 border-zinc-500/30`)
+  - **Artifact Multi-Rarity Sidebar Pills (`ArtifactRarityPills`)**: Renders 1, 2, or 3 rarity pills side-by-side in the same item row to reflect all available drop tiers:
+    - **5★ Sets** (*Blizzard Strayer*, *Crimson Witch*, etc.): `[ 4★ ]` (purple) + `[ 5★ ]` (amber)
+    - **4★ Sets** (*Berserker*, *Instructor*, *The Exile*): `[ 3★ ]` (blue) + `[ 4★ ]` (purple)
+    - **3★ Sets** (*Adventurer*, *Lucky Dog*, *Traveling Doctor*): `[ 1★ ]` (gray) + `[ 2★ ]` (green) + `[ 3★ ]` (blue)
+    - **1★ Sets** (*Initiate*): `[ 1★ ]` (gray)
+  - **Character Starring Rarity Badges**: Added starring rarity labels (`5★` in amber, `4★` in purple) to character items in both the **Wiki Sidebar** and the main **Calculator Sidebar** (`Sidebar.tsx`).
+
+- **Independent Weapon Damage Procs ("n% of x as DMG") & 24-Weapon Modeling (September 5, 2026)**:
+  - Modeled full R1–R5 refinement curves and `damageInstances` across all 24 weapon registry definitions:
+    - **Catalysts**:
+      - *Ash-Graven Drinking Horn*: 40% / 50% / 60% / 70% / 80% Max HP as AoE Physical DMG.
+      - *Eye of Perception*: 240% / 270% / 300% / 330% / 360% ATK as Physical DMG (Bolt of Perception).
+      - *Frostbearer*: 80% / 95% / 110% / 125% / 140% ATK (200% / 240% / 280% / 320% / 360% if enemy affected by Cryo).
+      - *Skyward Atlas*: 160% / 200% / 240% / 280% / 320% ATK as Physical DMG (Favor of the Clouds).
+    - **Swords**:
+      - *Aquila Favonia*: 200% / 230% / 260% / 290% / 320% ATK as AoE Physical DMG (Soul of the Falcon).
+      - *Sword of Narzissenkreuz*: 160% / 200% / 240% / 280% / 320% ATK as AoE Physical DMG.
+      - *Sword of Descension*: 200% ATK as AoE Physical DMG (Descension Proc); Traveler Flat ATK +66 with `isPercent: false`.
+      - *Fillet Blade*: 240% / 280% / 320% / 360% / 400% ATK as Physical DMG.
+      - *The Flute*: 100% / 125% / 150% / 175% / 200% ATK as AoE Physical DMG (Harmonics).
+      - *Kagotsurube Isshin*: 180% ATK as AoE Physical DMG (Hewing Gale).
+    - **Polearms**:
+      - *Skyward Spine*: 40% / 55% / 70% / 85% / 100% ATK as Physical DMG (Vacuum Blade).
+      - *Crescent Pike*: 20% / 25% / 30% / 35% / 40% ATK as additional Physical DMG on Normal/Charged hits.
+      - *Dragonspine Spear*: 80% / 95% / 110% / 125% / 140% ATK (200% / 240% / 280% / 320% / 360% if enemy affected by Cryo).
+      - *Halberd*: 160% / 200% / 240% / 280% / 320% ATK as Physical DMG.
+    - **Claymores**:
+      - *Debate Club*: 60% / 75% / 90% / 105% / 120% ATK as AoE Physical DMG (Blunt Conclusion).
+      - *Prototype Archaic*: 240% / 300% / 360% / 420% / 480% ATK as AoE Physical DMG (Crush).
+      - *Snow-Tombed Starsilver*: 80% / 95% / 110% / 125% / 140% ATK (200% / 240% / 280% / 320% / 360% if enemy affected by Cryo).
+      - *Skyward Pride*: 80% / 100% / 120% / 140% / 160% ATK as Physical DMG (Vacuum Blade).
+      - *Luxurious Sea-Lord*: 100% / 125% / 150% / 175% / 200% ATK as AoE Physical DMG (Titanic Tuna).
+    - **Bows**:
+      - *End of the Line*: 80% / 100% / 120% / 140% / 160% ATK as AoE Physical DMG (Flowswitch).
+      - *Messenger*: 100% / 125% / 150% / 175% / 200% ATK as Physical DMG (`guaranteedCrit: true`).
+      - *Sequence of Solitude*: 40% / 50% / 60% / 70% / 80% Max HP as AoE Physical DMG.
+      - *Skyward Harp*: 125% ATK as Physical DMG.
+      - *The Viridescent Hunt*: 40% / 50% / 60% / 70% / 80% ATK per tick as AoE Physical DMG (Cyclone).
+
+- **Interactive Output DMG Calculator in Weapons Wiki (September 5, 2026)**:
+  - In `WeaponsWikiView.tsx`, weapon cards with passive damage instances include an interactive **Weapon Output DMG Calculator**:
+    - Dynamic R1–R5 refinement selector updating scaling ratios in real-time.
+    - Custom base attribute numeric inputs (ATK, HP, DEF).
+    - Interactive condition toggles (e.g., "Enemy affected by Cryo") switching between baseline and conditional damage formulas.
+    - Real-time proc damage calculation and output display.
+
+- **Character Calculator Integration: Weapon Passive DMG Table (September 5, 2026)**:
+  - Created `src/components/WeaponDamageTable.tsx` and integrated it into `CharacterCalculator.tsx`.
+  - Computes Non-Crit, CRIT, and Average DMG using the active character's resolved stats (ATK/HP, Physical DMG Bonus, Enemy DEF & RES).
+  - Cleanly displays underneath the talent damage table whenever an equipped weapon has passive damage instances.
+
+- **Restoration of Missing Weapon Buffs (September 5, 2026)**:
+  - **Golden Majesty Series**: Added `shieldStrength` [20%, 25%, 30%, 35%, 40%] with `isPercent: true` to *Summit Shaper*, *Vortex Vanquisher*, *Memory of Dust*, and *The Unforged*.
+  - **Angelos' Heptades**: Added `angelos-party-dmg` buff: 10~22% per 1,000 ATK (modeled as [26%, 34%, 42%, 50%, 58%] All DMG Bonus) for the entire party when shield is active.
+  - **Fractured Halo**: Added `halo-lunar-charged` buff: [40%, 50%, 60%, 70%, 80%] Lunar-Charged DMG Bonus for the entire party when shield is active.
+
+- **Complete 246-Weapon Database Audit & Canonical Wiki Synchronization (September 5, 2026)**:
+  - **100% Canonical Wiki Synchronization**: Audited all weapons in `src/data/registry/weapons/` against the official Genshin Impact Wiki database, establishing an exact 1-to-1 match across all five categories: **56 Swords**, **45 Claymores**, **43 Polearms**, **53 Catalysts**, and **49 Bows** (246 weapons total).
+  - **Relocation of 18 Misplaced Weapons**: Reassigned 18 weapons previously placed in incorrect category directories to their authentic weapon classes, re-aligning their Level 90 Base ATK and Substat progressions to their canonical class curves:
+    - *Catalysts*: Moved `angelos-heptades.ts` (Base ATK 741, ATK 16.5%), `clash-of-kings.ts` (Base ATK 510, CRIT Rate 27.6%), `echoes-of-the-heart.ts` (Base ATK 565, ATK 27.6%), `blackmarrow-lantern.ts` (Base ATK 454, EM 221), `dawning-frost.ts` (Base ATK 510, CRIT DMG 55.1%), and `etherlight-spindlelute.ts` (Base ATK 510, ER 45.9%).
+    - *Claymores*: Moved `master-key.ts` (Base ATK 454, ER 61.3%), `flame-forged-insight.ts` (Base ATK 510, EM 165), `forged-by-the-golden-melody.ts` (Base ATK 510, CRIT Rate 27.6%), and `a-teaspoon-of-transcendence.ts` (Base ATK 674, CRIT DMG 44.1%).
+    - *Polearms*: Moved `symphonist-of-scents.ts` (Base ATK 608, CRIT DMG 66.2%), `bloodsoaked-ruins.ts` (Base ATK 674, CRIT Rate 22.1%), `prospectors-shovel.ts` (Base ATK 510, ATK 41.3%), and `song-of-the-vigil.ts` (Base ATK 565, EM 110).
+    - *Swords*: Moved `emberwell.ts` (Base ATK 510, EM 165), `heretics-molten-blade.ts` (Base ATK 510, CRIT Rate 27.6%), `serenitys-call.ts` (Base ATK 454, ER 61.3%), and `moonweavers-dawn.ts` (Base ATK 565, ATK 27.6%).
+  - **Creation of Missing Canonical Weapons**:
+    - `whitelake-frostfeather.ts`: 5★ Sword (Base ATK 674, CRIT Rate 22.1%) with *Snow Swan's Finale* passive granting stacking ATK and Stellar Glimmer bonuses.
+    - `frostbreath.ts`: 4★ Polearm (Base ATK 510, ER 45.9%) with *A Cast Real Far* passive granting reaction-triggered ATK buff and team energy restoration (`isSupport: true`, `buffType: "both"`).
+  - **Canonical Normalization & Discrepancy Resolution**:
+    - Unified *Sword of Narzissenkreuz* under `sword-of-narzissenkreuz.ts` (retiring `sword-of-narzissenkreuz-pneuma.ts`).
+    - Added official double quotation marks to `"\"Ultimate Overlord's Mega Magic Sword\""`.
+    - Corrected Base ATK, Substats, and official passive names across 20+ weapons including *Athame Artis*, *Azurelight*, *Lightbearing Moonshard*, *A Thousand Blazing Suns*, *Blade of Atonement*, *Fang of the Mountain King*, *Disaster and Remorse*, *Fractured Halo*, *Sacrificer's Staff*, *Tamayuratei no Ohanashi*, *Nightweaver's Looking Glass*, *Nocturne's Curtain Call*, *Reliquary of Truth*, *Sunny Morning Sleep-In*, *Vivid Notions*, and *Snare Hook*.
+  - **Specialized Refinement Mechanics**: Implemented interactive toggles and scaling curves for *A Thousand Blazing Suns* (Nightsoul's Blessing +75% bonus toggle), *Blade of Atonement* (reaction EM & Stellar Glimmer ATK triggers), *Fang of the Mountain King* (Canopy's Favor 10%–20% per stack, up to 120% Skill/Burst DMG), and *Athame Artis* (Burst hit trigger with Hexerei: Secret Rite amplification).
+  - **Clean Barrel & Aggregator Exporting**: Rebuilt category barrel exports (`swords/index.ts`, `claymores/index.ts`, `polearms/index.ts`, `catalysts/index.ts`, `bows/index.ts`) and root registry (`WEAPONS`: 246 items).
+
+### Bug Fixes & Adjustments
+
+- **Formatting Bug Fixes: `%` Post-Value Notation**: Corrected suffix display in `WeaponsWikiView.tsx` where Elemental Mastery buffs (`stat === "em"`) and flat stat buffs (`isPercent: false` or stat containing `"flat"`) previously displayed an erroneous `%` sign (e.g. *Ballad of the Fjords* Rank 1 now displays `+120`, and *Sword of Descension* Traveler ATK displays `+66`).
+- **Rarity Color Mapping for 3★ Items**: Corrected 3★ weapon and artifact styling across `RarityRangeBadge.tsx`, `WikiSidebar.tsx`, and `Sidebar.tsx` to authentic blue (`text-blue-400` / `border-blue-500/30`), resolving the discrepancy where 3★ items previously fell back to 4★ purple styling.
+- **Weapon Classification & Progression Curves**: Re-aligned 18 misplaced weapons to their proper categories and canonical level 90 base ATK and secondary stat growth curves.
+
+### Verification & Validation
+
+- **Automated Unit Tests**: Executed full Vitest test suite (`npx vitest run`) with **49 / 49 test files passing** (422 unit tests total), including all tests in `src/data/registry/artifacts/artifact-rarity.test.ts` and 9 dedicated weapon passive damage tests in `src/lib/engine/weapon-buffs.test.ts`. Zero regressions across damage engine, character mechanics, and external buffs.
+- **TypeScript Strict Compilation**: Executed `npx tsc --noEmit` exiting with code 0 (zero errors, strict type safety).
+- **Browser Subagent End-to-End Verification**: Successfully validated on `http://127.0.0.1:3000`:
+  1. Main header navigation tabs switching between `[ ⚡ Calculator ]` and `[ 📖 Wiki ]`.
+  2. Context-aware left sidebar transforming into the Wiki Sidebar with category quick links.
+  3. Main calculator sidebar displaying `5★` (amber) and `4★` (purple) character starring rarity badges.
+  4. Wiki weapons sidebar displaying authentic rarity colors (5★ amber, 4★ purple, 3★ blue, 1★ gray).
+  5. Wiki artifacts sidebar displaying multi-rarity drop tier pills (`[4★][5★]`, `[3★][4★]`, `[1★][2★][3★]`).
+  6. Weapons wiki interactive output damage simulator updating live on refinement changes and stat adjustments.
+  7. Character calculator rendering the Weapon Passive DMG table with Non-Crit, CRIT, and Average DMG whenever passive damage instances are present.
+
+---
+
+## [v1.2.0-Beta] (July 3, 2026 – September 4, 2026)
+
+All developments listed below were implemented during the `v1.2.0-Beta` release cycle (from July 3, 2026 to September 4, 2026).
 
 ### New Character Calculators
 - **Bennett (August 20, 2026)**: Added Bennett, a 4-star Pyro Sword character featuring unified DPS and Support integration:
@@ -64,40 +202,6 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
-- **Independent Mini Wiki, Dual-Mode Header Navigation, and Canonical Rarity Range Engine (September 5, 2026)**:
-  - **Zero-Drift Single Source of Truth**: Built an independent mini wiki system embedded within the application that imports directly from the canonical registries (`WEAPONS`: 246, `ARTIFACTS`: 64, `CHARACTERS`: 48), calculation engine formulas, and talent seeds with 100% mathematical consistency.
-  - **Top Header Mode Switcher (`HeaderNavTabs.tsx`)**: Implemented dual-mode navigation tabs on the main header (`[ ⚡ Calculator ]` vs `[ 📖 Wiki ]`), allowing seamless mode transitions between dedicated calculation tools and pure information knowledge bases.
-  - **Context-Aware Dynamic Left Sidebar (`AppSidebar.tsx` & `WikiSidebar.tsx`)**: Replaced the static calculator sidebar with a route-aware sidebar that dynamically swaps into the **Wiki Sidebar** when navigating `/wiki/*`, providing fast category switches (Weapons, Artifacts, Characters, Reactions, Mechanics, Supports, Scaling) along with contextual search and category filters.
-  - **Canonical Artifact Drop Rarity Range Engine**:
-    - Resolved the single-integer rarity limitation by mapping max-rarity labels into authentic Genshin drop tiers: 5★ $\rightarrow$ `4★–5★` (e.g. *Blizzard Strayer*), 4★ $\rightarrow$ `3★–4★` (e.g. *Berserker*, *Instructor*), 3★ $\rightarrow$ `1★–3★` (e.g. *Adventurer*), and 1★ $\rightarrow$ `1★` (*Initiate*).
-    - Created deterministic resolver `getArtifactRarityRange()`, range matching helper `matchesArtifactRarity()`, and luxury dual-gradient `RarityRangeBadge.tsx`.
-    - Integrated dual filter modes into the Artifacts Encyclopedia: **Drop Tiers (Inclusive)** (surfaces both native 4★ and 5★ sets with 4★ pieces) vs **Max Rarity (Strict)**.
-  - **Dedicated Wiki Module Rollout**:
-    - `/wiki`: Knowledge Hub portal with quick stats, category cards, and deep links.
-    - `/wiki/weapons`: 246 canonical weapons with Lv 1 & Lv 90 base stats, substats, dynamic R1–R5 refinement sliders updating passive values in real-time, and signature character synergy badges.
-    - `/wiki/artifacts`: 64 sets with verbatim 1-Pc/2-Pc/4-Pc descriptions, drop tier badges, wielder vs support filters, and interactive mechanics sandboxes (live toggles/sliders).
-    - `/wiki/characters`: 48 character dossiers with scaling sources, ascension stats, Normal/Skill/Burst breakdowns, C1–C6 constellation expanders, support profiles, and *"Open Calculator"* bridges.
-    - `/wiki/reactions`: Exact formulas for Amplifying (Vape/Melt), Catalyze (Aggravate/Spread), Transformative, custom Lunar reactions, and Stellar direct reactions with interactive EM sandbox slider (0–1500 EM).
-    - `/wiki/mechanics`: General damage formula layers, Enemy DEF multiplier simulator (Char/Enemy Level, DEF Reduction, DEF Ignore), piecewise Enemy RES curve simulator, Bond of Life, and Nightsoul systems.
-    - `/wiki/supports`: Universal 46-character support buff matrix filterable by Flat ATK, RES shred, DMG%, CRIT, and Moonsign Lunar Base amplifiers.
-    - `/wiki/scaling`: Interactive talent scaling inspector displaying multiplier progression across levels 1 to 15.
-  - **Verification**: Verified with automated tests (413 vitest tests passing including dedicated `artifact-rarity.test.ts`), strict TypeScript typechecking (`npx tsc --noEmit`), and comprehensive browser subagent testing confirming smooth navigation and UI interactions.
-- **Complete 246-Weapon Database Audit & Canonical Wiki Standardization (September 5, 2026)**:
-  - **100% Canonical Wiki Synchronization**: Audited all weapons in `src/data/registry/weapons/` against the official Genshin Impact Wiki database, establishing an exact 1-to-1 match across all five categories: **56 Swords**, **45 Claymores**, **43 Polearms**, **53 Catalysts**, and **49 Bows** (246 weapons total).
-  - **Relocation of 18 Misplaced Weapons**: Reassigned 18 weapons previously placed in incorrect category directories to their authentic weapon classes, re-aligning their Level 90 Base ATK and Substat progressions to their canonical class curves:
-    - *Catalysts*: Moved `angelos-heptades.ts` (Base ATK 741, ATK 16.5%), `clash-of-kings.ts` (Base ATK 510, CRIT Rate 27.6%), `echoes-of-the-heart.ts` (Base ATK 565, ATK 27.6%), `blackmarrow-lantern.ts` (Base ATK 454, EM 221), `dawning-frost.ts` (Base ATK 510, CRIT DMG 55.1%), and `etherlight-spindlelute.ts` (Base ATK 510, ER 45.9%).
-    - *Claymores*: Moved `master-key.ts` (Base ATK 454, ER 61.3%), `flame-forged-insight.ts` (Base ATK 510, EM 165), `forged-by-the-golden-melody.ts` (Base ATK 510, CRIT Rate 27.6%), and `a-teaspoon-of-transcendence.ts` (Base ATK 674, CRIT DMG 44.1%).
-    - *Polearms*: Moved `symphonist-of-scents.ts` (Base ATK 608, CRIT DMG 66.2%), `bloodsoaked-ruins.ts` (Base ATK 674, CRIT Rate 22.1%), `prospectors-shovel.ts` (Base ATK 510, ATK 41.3%), and `song-of-the-vigil.ts` (Base ATK 565, EM 110).
-    - *Swords*: Moved `emberwell.ts` (Base ATK 510, EM 165), `heretics-molten-blade.ts` (Base ATK 510, CRIT Rate 27.6%), `serenitys-call.ts` (Base ATK 454, ER 61.3%), and `moonweavers-dawn.ts` (Base ATK 565, ATK 27.6%).
-  - **Creation of Missing Canonical Weapons**:
-    - `whitelake-frostfeather.ts`: 5★ Sword (Base ATK 674, CRIT Rate 22.1%) with *Snow Swan's Finale* passive granting stacking ATK and Stellar Glimmer bonuses.
-    - `frostbreath.ts`: 4★ Polearm (Base ATK 510, ER 45.9%) with *A Cast Real Far* passive granting reaction-triggered ATK buff and team energy restoration (`isSupport: true`, `buffType: "both"`).
-  - **Canonical Normalization & Discrepancy Resolution**:
-    - Unified *Sword of Narzissenkreuz* under `sword-of-narzissenkreuz.ts` (retiring `sword-of-narzissenkreuz-pneuma.ts`).
-    - Added official double quotation marks to `"\"Ultimate Overlord's Mega Magic Sword\""`.
-    - Corrected Base ATK, Substats, and official passive names across 20+ weapons including *Athame Artis* (608 ATK, 33.1% CRIT Rate, *Day King's Splendor Solis*), *Azurelight* (674 ATK, 22.1% CRIT Rate, *Whitehill's Bestowal*), *Lightbearing Moonshard* (542 ATK, 88.2% CRIT DMG, *Legacy of Lang-Gan*), *A Thousand Blazing Suns* (741 ATK, 11.0% CRIT Rate, *Sunset Reignites the Dawn*), *Blade of Atonement* (565 ATK, 27.6% ATK, *Repentance and Redemption*), *Fang of the Mountain King* (741 ATK, 11.0% CRIT Rate), *Disaster and Remorse* (674 ATK, 22.1% CRIT Rate, *Siren Song*), *Fractured Halo* (608 ATK, 66.2% CRIT DMG, *Purifying Crown*), *Sacrificer's Staff* (620 ATK, 9.2% CRIT Rate), *Tamayuratei no Ohanashi* (565 ATK, 30.6% ER), *Nightweaver's Looking Glass* (542 ATK, 265 EM), *Nocturne's Curtain Call* (542 ATK, 88.2% CRIT DMG), *Reliquary of Truth* (542 ATK, 88.2% CRIT DMG), *Sunny Morning Sleep-In* (542 ATK, 265 EM), *Vivid Notions* (674 ATK, 44.1% CRIT DMG), and *Snare Hook* (454 ATK, 61.3% ER).
-  - **Specialized Refinement Mechanics**: Implemented interactive toggles and scaling curves for *A Thousand Blazing Suns* (Nightsoul's Blessing +75% bonus toggle), *Blade of Atonement* (reaction EM & Stellar Glimmer ATK triggers), *Fang of the Mountain King* (Canopy's Favor 10%–20% per stack, up to 120% Skill/Burst DMG), and *Athame Artis* (Burst hit trigger with Hexerei: Secret Rite amplification).
-  - **Clean Barrel & Aggregator Exporting**: Rebuilt category barrel exports (`swords/index.ts`, `claymores/index.ts`, `polearms/index.ts`, `catalysts/index.ts`, `bows/index.ts`) and root registry (`WEAPONS`: 246 items).
 - **UI/UX Header Redesign: Option B Compact Command Toolbar (September 4, 2026)**:
   - **Modular Architecture (`CalculatorHeader.tsx`)**: Extracted and modularized header logic into `CalculatorHeader.tsx`, replacing ~260 lines of inline header code in `CharacterCalculator.tsx`.
   - **Compact Footprint**: Consolidated 7 sprawling toolbar buttons (~720px width) into a compact, responsive ~330px command toolbar with zero clipping or horizontal overflow.
@@ -233,7 +337,6 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 ### Fixed
 - **Artifact Base DEF & Base HP Context Scaling (September 4, 2026)**: Fixed an engine issue in `resolveExternalArtifactBuffs` where percent DEF% and HP% buffs were erroneously scaling against `baseAtk` instead of `baseDef` and `baseHp`.
 - **Columbina C2 Ascendant Gleam Buff Formulas (September 4, 2026)**: Corrected Columbina C2 support buff computations to accurately share +1% Max HP as ATK (Lunar-Charged), +0.35% Max HP as EM (Lunar-Bloom), and +1% Max HP as DEF (Lunar-Crystallize) instead of placeholder ratios.
-- **Weapon Classification & Progression Curves (September 5, 2026)**: Fixed 18 misplaced weapon files across swords, claymores, polearms, catalysts, and bows, aligning Base ATK and secondary stat curves with official canonical progressions.
 - **Universal DMG Bonus**: Corrected a computation error where universal DMG bonuses were not properly added to element-specific values in certain sub-formulas.
 
 ---
