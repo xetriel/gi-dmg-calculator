@@ -118,7 +118,7 @@ export {
   bennett,
 };
 
-const RAW_CHARACTERS: CharacterConfig[] = [
+export const RAW_CHARACTERS: CharacterConfig[] = [
   arlecchino,
   huTao,
   neuvillette,

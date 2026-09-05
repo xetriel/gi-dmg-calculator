@@ -29,10 +29,13 @@ export interface ArtifactBuffDef {
   compute?: (ctx: ArtifactBuffContext) => number;
 }
 
+export type ArtifactRarityRange = [min: number, max: number];
+
 export interface ArtifactConfig {
   id: string;                                  // slug identifier e.g. "scarlet-proof", "heart-of-the-furnace"
   name: string;                                // display name
-  rarity: ArtifactRarity;                      // 1, 2, 3, 4 or 5
+  rarity: ArtifactRarity;                      // 1, 2, 3, 4 or 5 (highest/canonical max rarity)
+  rarityRange?: ArtifactRarityRange;           // optional explicit drop range [min, max]
   onePieceDesc?: string;                       // optional 1-Piece bonus description (for Tiara circlets)
   twoPieceDesc: string;                        // 2-Piece bonus description
   fourPieceDesc: string;                       // 4-Piece bonus description
@@ -49,6 +52,51 @@ export interface ExternalArtifactInstance {
   slot: ArtifactSlot;                          // "wielder" or "support"
   enabled: boolean;                            // per-artifact toggle
   inputs?: Record<string, string | number>;    // toggle/stack values for mechanics
+}
+
+/**
+ * Returns the canonical acquisition/drop rarity range for an artifact set.
+ * In Genshin Impact:
+ * - 5-Star max sets (Blizzard Strayer, Deepwood, etc.) drop as 4★ and 5★ pieces [4, 5].
+ * - 4-Star max sets (Berserker, Instructor, The Exile, etc.) drop as 3★ and 4★ pieces [3, 4].
+ * - 3-Star max sets (Adventurer, Lucky Dog, Traveling Doctor) drop as 1★ to 3★ pieces [1, 3].
+ * - 1-Star max sets (Initiate) drop as 1★ pieces [1, 1].
+ */
+export function getArtifactRarityRange(artifact: ArtifactConfig): ArtifactRarityRange {
+  if (artifact.rarityRange) {
+    return artifact.rarityRange;
+  }
+  switch (artifact.rarity) {
+    case 5:
+      return [4, 5];
+    case 4:
+      return [3, 4];
+    case 3:
+      return [1, 3];
+    case 2:
+      return [1, 2];
+    case 1:
+    default:
+      return [1, 1];
+  }
+}
+
+/**
+ * Checks whether an artifact matches a target rarity number (1..5).
+ * - "max": matches only if artifact.rarity === targetRarity (e.g. 5★ matches Blizzard Strayer only).
+ * - "range": matches if targetRarity falls within the artifact's drop range [min, max]
+ *   (e.g. 4★ matches both native 4★ sets like Instructor AND 5★ sets like Blizzard Strayer).
+ */
+export function matchesArtifactRarity(
+  artifact: ArtifactConfig,
+  targetRarity: number,
+  mode: "max" | "range" = "range"
+): boolean {
+  if (mode === "max") {
+    return artifact.rarity === targetRarity;
+  }
+  const [min, max] = getArtifactRarityRange(artifact);
+  return targetRarity >= min && targetRarity <= max;
 }
 
 /**

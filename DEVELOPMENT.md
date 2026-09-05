@@ -64,6 +64,24 @@ All developments listed below were implemented during the `v1.2.0-Beta` release 
 - **Zibai (July 6, 2026)**: Implemented Zibai character (with specialized Lunar-Crystallize mechanics).
 
 ### Features & Major Additions
+- **Independent Mini Wiki, Dual-Mode Header Navigation, and Canonical Rarity Range Engine (September 5, 2026)**:
+  - **Zero-Drift Single Source of Truth**: Built an independent mini wiki system embedded within the application that imports directly from the canonical registries (`WEAPONS`: 246, `ARTIFACTS`: 64, `CHARACTERS`: 48), calculation engine formulas, and talent seeds with 100% mathematical consistency.
+  - **Top Header Mode Switcher (`HeaderNavTabs.tsx`)**: Implemented dual-mode navigation tabs on the main header (`[ ⚡ Calculator ]` vs `[ 📖 Wiki ]`), allowing seamless mode transitions between dedicated calculation tools and pure information knowledge bases.
+  - **Context-Aware Dynamic Left Sidebar (`AppSidebar.tsx` & `WikiSidebar.tsx`)**: Replaced the static calculator sidebar with a route-aware sidebar that dynamically swaps into the **Wiki Sidebar** when navigating `/wiki/*`, providing fast category switches (Weapons, Artifacts, Characters, Reactions, Mechanics, Supports, Scaling) along with contextual search and category filters.
+  - **Canonical Artifact Drop Rarity Range Engine**:
+    - Resolved the single-integer rarity limitation by mapping max-rarity labels into authentic Genshin drop tiers: 5★ $\rightarrow$ `4★–5★` (e.g. *Blizzard Strayer*), 4★ $\rightarrow$ `3★–4★` (e.g. *Berserker*, *Instructor*), 3★ $\rightarrow$ `1★–3★` (e.g. *Adventurer*), and 1★ $\rightarrow$ `1★` (*Initiate*).
+    - Created deterministic resolver `getArtifactRarityRange()`, range matching helper `matchesArtifactRarity()`, and luxury dual-gradient `RarityRangeBadge.tsx`.
+    - Integrated dual filter modes into the Artifacts Encyclopedia: **Drop Tiers (Inclusive)** (surfaces both native 4★ and 5★ sets with 4★ pieces) vs **Max Rarity (Strict)**.
+  - **Dedicated Wiki Module Rollout**:
+    - `/wiki`: Knowledge Hub portal with quick stats, category cards, and deep links.
+    - `/wiki/weapons`: 246 canonical weapons with Lv 1 & Lv 90 base stats, substats, dynamic R1–R5 refinement sliders updating passive values in real-time, and signature character synergy badges.
+    - `/wiki/artifacts`: 64 sets with verbatim 1-Pc/2-Pc/4-Pc descriptions, drop tier badges, wielder vs support filters, and interactive mechanics sandboxes (live toggles/sliders).
+    - `/wiki/characters`: 48 character dossiers with scaling sources, ascension stats, Normal/Skill/Burst breakdowns, C1–C6 constellation expanders, support profiles, and *"Open Calculator"* bridges.
+    - `/wiki/reactions`: Exact formulas for Amplifying (Vape/Melt), Catalyze (Aggravate/Spread), Transformative, custom Lunar reactions, and Stellar direct reactions with interactive EM sandbox slider (0–1500 EM).
+    - `/wiki/mechanics`: General damage formula layers, Enemy DEF multiplier simulator (Char/Enemy Level, DEF Reduction, DEF Ignore), piecewise Enemy RES curve simulator, Bond of Life, and Nightsoul systems.
+    - `/wiki/supports`: Universal 46-character support buff matrix filterable by Flat ATK, RES shred, DMG%, CRIT, and Moonsign Lunar Base amplifiers.
+    - `/wiki/scaling`: Interactive talent scaling inspector displaying multiplier progression across levels 1 to 15.
+  - **Verification**: Verified with automated tests (413 vitest tests passing including dedicated `artifact-rarity.test.ts`), strict TypeScript typechecking (`npx tsc --noEmit`), and comprehensive browser subagent testing confirming smooth navigation and UI interactions.
 - **Complete 246-Weapon Database Audit & Canonical Wiki Standardization (September 5, 2026)**:
   - **100% Canonical Wiki Synchronization**: Audited all weapons in `src/data/registry/weapons/` against the official Genshin Impact Wiki database, establishing an exact 1-to-1 match across all five categories: **56 Swords**, **45 Claymores**, **43 Polearms**, **53 Catalysts**, and **49 Bows** (246 weapons total).
   - **Relocation of 18 Misplaced Weapons**: Reassigned 18 weapons previously placed in incorrect category directories to their authentic weapon classes, re-aligning their Level 90 Base ATK and Substat progressions to their canonical class curves:
