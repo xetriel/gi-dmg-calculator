@@ -8,6 +8,7 @@ import { ARTIFACTS } from "@/data/registry/artifacts";
 import { CHARACTERS } from "@/data/registry/characters";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 import { matchesArtifactRarity } from "@/data/registry/artifacts/types";
+import { getRarityTextColor, ArtifactRarityPills } from "@/components/wiki/RarityRangeBadge";
 import type { Element, Weapon } from "@/data/registry/types";
 
 const WIKI_SECTIONS = [
@@ -399,9 +400,9 @@ export function WikiSidebar() {
                   className="flex items-center justify-between px-2 py-1 rounded text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors"
                 >
                   <span className="truncate">{w.name}</span>
-                  <div className="flex items-center gap-1 shrink-0 text-[10px] opacity-75">
+                  <div className="flex items-center gap-1 shrink-0 text-[10px] opacity-85">
                     <WeaponIcon weapon={w.type} className="w-3 h-3" />
-                    <span className={w.rarity === 5 ? "text-amber-500 font-bold" : "text-purple-400"}>
+                    <span className={getRarityTextColor(w.rarity)}>
                       {w.rarity}★
                     </span>
                   </div>
@@ -419,18 +420,10 @@ export function WikiSidebar() {
                 <a
                   key={a.id}
                   href={`/wiki/artifacts#artifact-${a.id}`}
-                  className="flex items-center justify-between px-2 py-1 rounded text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors"
+                  className="flex items-center justify-between px-2 py-1 rounded text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors gap-2"
                 >
                   <span className="truncate">{a.name}</span>
-                  <span
-                    className={`text-[9px] font-mono px-1 rounded ${
-                      a.rarity === 5
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                        : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                    }`}
-                  >
-                    {a.rarity}★
-                  </span>
+                  <ArtifactRarityPills artifact={a} />
                 </a>
               ))}
             </>
@@ -448,7 +441,10 @@ export function WikiSidebar() {
                   className="flex items-center justify-between px-2 py-1 rounded text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors"
                 >
                   <span className="truncate">{c.name}</span>
-                  <ElementIcon element={c.element} className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1.5 shrink-0 text-[10px]">
+                    <span className={getRarityTextColor(c.rarity)}>{c.rarity}★</span>
+                    <ElementIcon element={c.element} className="w-3.5 h-3.5" />
+                  </div>
                 </a>
               ))}
             </>

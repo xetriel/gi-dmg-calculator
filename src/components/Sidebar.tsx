@@ -260,8 +260,11 @@ export function Sidebar() {
                     : "text-gray-700 hover:bg-gray-155 hover:text-black dark:text-gray-300 dark:hover:bg-zinc-800/80 dark:hover:text-white"
                 }`}
               >
-                <span>{c.name}</span>
+                <span className="truncate">{c.name}</span>
                 <div className="flex items-center gap-1.5 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span className={`text-[10px] font-mono font-bold ${c.rarity === 5 ? "text-amber-500" : "text-purple-400"}`}>
+                    {c.rarity}★
+                  </span>
                   <ElementIcon element={c.element} className="w-3.5 h-3.5" />
                   <WeaponIcon weapon={c.weapon} className="w-3.5 h-3.5 text-gray-400 dark:text-zinc-500" />
                 </div>

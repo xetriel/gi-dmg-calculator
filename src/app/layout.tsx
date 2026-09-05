@@ -46,7 +46,7 @@ export default async function RootLayout({
                 <span className="text-sm tracking-tight">GI Damage Calculator</span>
               </Link>
               <span className="text-[9px] font-bold font-mono bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
-                v1.2.0-Beta
+                v1.2.1
               </span>
               <DbStatusBadge initialStatus={dbStatus} />
             </div>
