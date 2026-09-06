@@ -61,6 +61,7 @@ export interface MechanicDef {
   max?: number;                                // percent cap (e.g. 200) or max stacks (e.g. 3)
   defaultValue?: number;                       // toggle: 1 = on; percent/stacks initial value
   hint?: string;                               // short explanation shown next to the control
+  minConstellation?: number;                   // optional explicit required constellation level (1-6)
 }
 
 export interface WikiTalent {

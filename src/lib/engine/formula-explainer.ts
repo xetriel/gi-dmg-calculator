@@ -19,6 +19,7 @@ import {
   effectiveTalentLevels,
   toNum,
   hitId,
+  getRequiredConstellation,
 } from "./validation";
 import { resolveMechanics } from "./mechanics";
 import { levelMultiplier } from "./level-multiplier";
@@ -83,8 +84,13 @@ export function explainHitFormulas(
 
   const parsedInputs: Record<string, number> = {};
   for (const m of config.mechanicDefs ?? []) {
-    const rawVal = inst.mechanicInputs?.[m.id];
-    parsedInputs[m.id] = toNum(rawVal) ?? (m.defaultValue ?? 0);
+    const requiredCon = getRequiredConstellation(m);
+    if (requiredCon > 0 && inst.constellationLevel < requiredCon) {
+      parsedInputs[m.id] = 0;
+    } else {
+      const rawVal = inst.mechanicInputs?.[m.id];
+      parsedInputs[m.id] = toNum(rawVal) ?? (m.defaultValue ?? 0);
+    }
   }
 
   const baseAtk = toNum(inst.stats["atk.base"]) ?? 800;

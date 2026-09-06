@@ -66,6 +66,7 @@ import { travelerHydro } from "./traveler-hydro";
 import { travelerPyro } from "./traveler-pyro";
 import { travelerCryo } from "./traveler-cryo";
 import { bennett } from "./bennett";
+import { xilonen } from "./xilonen";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
@@ -116,6 +117,7 @@ export {
   travelerPyro,
   travelerCryo,
   bennett,
+  xilonen,
 };
 
 export const RAW_CHARACTERS: CharacterConfig[] = [
@@ -165,6 +167,7 @@ export const RAW_CHARACTERS: CharacterConfig[] = [
   travelerPyro,
   travelerCryo,
   bennett,
+  xilonen,
 ];
 
 // ==========================================

@@ -62,10 +62,13 @@ export interface WeaponConfig {
   signatureFor?: string[];                     // Character IDs this weapon is specifically made for (e.g. ["arlecchino"])
 }
 
+export type WeaponSlot = "wielder" | "support";
+
 export interface ExternalWeaponInstance {
   id: string;                                  // instance ID, e.g. "w-1"
   weaponId: string;                            // links to WeaponConfig.id
   refinement: number;                          // 1..5
+  slot?: WeaponSlot;                           // "wielder" (active DPS) or "support" (party member)
   enabled: boolean;
   inputs?: Record<string, string | number>;    // toggle/slider values for weapon mechanics
 }

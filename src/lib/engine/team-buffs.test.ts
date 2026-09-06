@@ -520,8 +520,8 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
     });
 
-    it("all 46 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(46);
+    it("all 47 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(47);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -532,10 +532,10 @@ describe("remastered support system", () => {
     });
   });
 
-  // ── 46-Character Support Roster Coverage ────────────────────────────────
-  describe("46-Character Support Roster Completeness & Mechanics", () => {
-    it("has exactly 46 support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(46);
+  // ── 47-Character Support Roster Coverage ────────────────────────────────
+  describe("47-Character Support Roster Completeness & Mechanics", () => {
+    it("has exactly 47 support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(47);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -756,6 +756,77 @@ describe("remastered support system", () => {
       expect(res.lunarBaseBonusPct).toBe(14);
       expect(res.statDeltas.em).toBe(120);
       expect(res.statDeltas.stellarGlimmerDmgBonus).toBe(40);
+    });
+
+    it("Xilonen: Skill RES shred, C2 element buffs, and C4 DEF flat DMG", () => {
+      // 1. Baseline Skill Lv10 RES shred (-36%)
+      const instC0: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: { def: "2000", critRate: "60", critDmg: "120" },
+        mechanicInputs: { "source-samples-active": "1", "c4-blooming-blessing": "0" },
+        constellationLevel: 0,
+        talentLevels: { skill: "10" },
+        enabled: true,
+      };
+      const resC0 = resolveTeamBuffs([instC0]);
+      expect(resC0.statDeltas.enemyRes).toBe(-36);
+      expect(resC0.sources.find((s) => s.stat === "enemyRes")?.rarity).toBe(5);
+
+      // 2. C3 auto-boost to Skill Lv13 (-45%)
+      const instC3: SupportInstance = {
+        ...instC0,
+        constellationLevel: 3,
+      };
+      const resC3 = resolveTeamBuffs([instC3]);
+      expect(resC3.statDeltas.enemyRes).toBe(-45);
+
+      // 3. C2 Chiucue Mix element buffs
+      const instC2: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: { def: "2000", critRate: "60", critDmg: "120" },
+        mechanicInputs: {
+          "source-samples-active": "1",
+          "c2-geo": "1",
+          "c2-pyro": "1",
+          "c2-hydro": "1",
+          "c2-cryo": "1",
+          "c4-blooming-blessing": "0",
+        },
+        constellationLevel: 2,
+        talentLevels: { skill: "10" },
+        enabled: true,
+      };
+      const resC2 = resolveTeamBuffs([instC2]);
+      expect(resC2.statDeltas.enemyRes).toBe(-36);
+      expect(resC2.statDeltas.dmgBonus).toBe(50);
+      expect(resC2.statDeltas.atk).toBe(360); // 45% of 800 base ATK
+      expect(resC2.statDeltas.hp).toBe(6750); // 45% of 15000 base HP
+      expect(resC2.statDeltas.critDmg).toBe(60);
+
+      // 4. C4 Blooming Blessing Flat DMG (65% of DEF)
+      const instC4: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: { "def.base": "1000", "def.percent": "100", "def.flat": "1000", critRate: "60", critDmg: "120" }, // 1000*2 + 1000 = 3000 DEF
+        mechanicInputs: {
+          "source-samples-active": "1",
+          "c4-blooming-blessing": "1",
+        },
+        constellationLevel: 4,
+        talentLevels: { skill: "10" },
+        enabled: true,
+      };
+      const resC4 = resolveTeamBuffs([instC4]);
+      // 0.65 * 3000 = 1950 flat DMG
+      expect(resC4.statDeltas.flatDmgBonus).toBe(1950);
+
+      // 5. Brief stats formatting
+      const ctx = resolveSupportCtx(instC0);
+      expect(ctx).toBeDefined();
+      const sup = supportById("xilonen");
+      expect(sup).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "RES Shred")?.value).toBe("-36%");
+      expect(pills.find((p) => p.label === "Total DEF")?.value).toBe("2,000");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {

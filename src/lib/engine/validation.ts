@@ -40,6 +40,31 @@ export function statInputIds(config: CharacterConfig): string[] {
 
 const LEVEL_FIELDS = ["levelChar", "levelEnemy"];
 
+/**
+ * Detects the required constellation level for a mechanic definition.
+ * Evaluates explicit minConstellation, ID pattern (e.g. c1-, c2-, c4-, c6-),
+ * or label pattern (e.g. (C1), (C2), C1:, etc.).
+ * Returns 1..6, or 0 if not gated by a constellation.
+ */
+export function getRequiredConstellation(m: { id: string; label?: string; minConstellation?: number }): number {
+  if (m.minConstellation != null && m.minConstellation > 0) {
+    return m.minConstellation;
+  }
+  const idMatch = m.id.match(/^c([1-6])[-_]|[-_]c([1-6])[-_]|[-_]c([1-6])$|\bc([1-6])\b/i);
+  if (idMatch) {
+    const n = Number(idMatch[1] || idMatch[2] || idMatch[3] || idMatch[4]);
+    if (n >= 1 && n <= 6) return n;
+  }
+  if (m.label) {
+    const labelMatch = m.label.match(/\bC([1-6])\b/);
+    if (labelMatch) {
+      const n = Number(labelMatch[1]);
+      if (n >= 1 && n <= 6) return n;
+    }
+  }
+  return 0;
+}
+
 // Compute the talent level bonus from active constellations.
 // Returns a map of TalentType -> bonus (e.g. { skill: 3, burst: 3 }).
 function talentLevelBonuses(

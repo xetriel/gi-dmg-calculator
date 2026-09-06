@@ -3,6 +3,7 @@ import { resolveExternalWeaponBuffs } from "./weapon-buffs";
 import { getWeaponsForCharacter, WEAPONS, weaponById } from "../../data/registry/weapons";
 import { arlecchino } from "../../data/registry/characters/arlecchino";
 import { neuvillette } from "../../data/registry/characters/neuvillette";
+import { xilonen } from "../../data/registry/characters/xilonen";
 
 
 describe("Full Weapon Registry Integrity (Released Weapons)", () => {
@@ -736,3 +737,127 @@ describe("Independent Weapon Damage Procs & Buff Refinements", () => {
     expect(partyBuff.refinementValues).toEqual([40, 50, 60, 70, 80]);
   });
 });
+
+describe("Peak Patrol Song Role Routing & Slot Resolution", () => {
+  it("does NOT provide DEF% or self DMG bonus when equipped in 'support' slot on a Sword character", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          slot: "support",
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      xilonen,
+      true
+    );
+
+    // Self DEF% bonus (16% at R1) must NOT be applied to active character
+    expect(result.statDeltas.def).toBeUndefined();
+
+    // Only party Elemental DMG bonus (25.6% at R1) is applied; self DMG bonus (20%) is excluded
+    expect(result.statDeltas.dmgBonus).toBe(25.6);
+    expect(result.sources.length).toBe(1);
+    expect(result.sources[0].buffId).toBe("patrol-party-elem-dmg");
+    expect(result.sources[0].slot).toBe("support");
+  });
+
+  it("provides DEF% and self DMG bonus when equipped in 'wielder' slot on a Sword character", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      xilonen,
+      true
+    );
+
+    // Self DEF% bonus is applied at R1 (16%)
+    expect(result.statDeltas.def).toBe(16);
+
+    // Both party Elemental DMG (25.6%) and self DMG (20%) are applied = 45.6%
+    expect(result.statDeltas.dmgBonus).toBe(45.6);
+    expect(result.sources.length).toBe(3);
+    expect(result.sources.some(s => s.buffId === "patrol-self-def")).toBe(true);
+    expect(result.sources.some(s => s.buffId === "patrol-self-dmg")).toBe(true);
+    expect(result.sources.some(s => s.buffId === "patrol-party-elem-dmg")).toBe(true);
+  });
+
+  it("scales correctly at R5 when equipped in 'wielder' slot", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 5,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      xilonen,
+      true
+    );
+
+    // Self DEF% bonus at R5 is 32%
+    expect(result.statDeltas.def).toBe(32);
+
+    // Party DMG (51.2%) + self DMG (40%) = 91.2%
+    expect(result.statDeltas.dmgBonus).toBe(91.2);
+  });
+
+  it("provides only party DMG bonus to non-Sword characters (e.g. Arlecchino) even if slot is set to support", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          slot: "support",
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      arlecchino,
+      true
+    );
+
+    expect(result.statDeltas.def).toBeUndefined();
+    expect(result.statDeltas.dmgBonus).toBe(25.6);
+  });
+
+  it("defaults to 'support' slot when slot property is omitted for supportive weapons", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      xilonen,
+      true
+    );
+
+    // Must default to support so teammate's Peak Patrol Song doesn't pollute active character's stats
+    expect(result.statDeltas.def).toBeUndefined();
+    expect(result.statDeltas.dmgBonus).toBe(25.6);
+  });
+});
+

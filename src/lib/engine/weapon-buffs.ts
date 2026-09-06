@@ -1,14 +1,16 @@
 import type { DamageStats } from "./damage";
 import type { CharacterConfig } from "@/data/registry/types";
-import { weaponById, type ExternalWeaponInstance, type WeaponBuffContext } from "../../data/registry/weapons";
+import { weaponById, type ExternalWeaponInstance, type WeaponBuffContext, type WeaponSlot } from "../../data/registry/weapons";
 
-export type { ExternalWeaponInstance } from "../../data/registry/weapons";
+export type { ExternalWeaponInstance, WeaponSlot } from "../../data/registry/weapons";
 
 
 export interface ExternalWeaponBuffSource {
   weaponId: string;
   weaponName: string;
   refinement: number;
+  slot?: WeaponSlot;
+  buffId?: string;
   stat: string;
   label: string;
   value: number;
@@ -61,11 +63,18 @@ export function resolveExternalWeaponBuffs(
       inputs: inst.inputs ?? {},
     };
 
-    const isWielder = charConfig ? config.type === charConfig.weapon : false;
+    const isMatchingClass = charConfig ? config.type === charConfig.weapon : false;
+    const slot: WeaponSlot = inst.slot ?? (isMatchingClass && config.buffType === "self" ? "wielder" : "support");
+    const isWielder = slot === "wielder" && isMatchingClass;
 
     for (const buff of config.buffs) {
-      // Team buffs apply to everyone; self-only buffs apply only if the active character matches the weapon class
-      if (!buff.isTeamBuff && !isWielder) {
+      // Support slot only receives team buffs (!buff.isTeamBuff is skipped)
+      if (slot === "support" && !buff.isTeamBuff) {
+        continue;
+      }
+
+      // Wielder slot receives team buffs and self buffs (if character matches weapon class)
+      if (slot === "wielder" && !buff.isTeamBuff && !isWielder) {
         continue;
       }
 
@@ -87,6 +96,8 @@ export function resolveExternalWeaponBuffs(
         weaponId: config.id,
         weaponName: config.name,
         refinement,
+        slot,
+        buffId: buff.id,
         stat: buff.stat,
         label: `${buff.label} (R${refinement})`,
         value: val,

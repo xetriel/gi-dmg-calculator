@@ -5,6 +5,7 @@ import type { CharacterConfig, Element } from "@/data/registry/types";
 import type { CalcInstance, SupportInstance } from "../types";
 import { SUPPORT_CONFIGS, supportById } from "@/data/registry/characters";
 import { resolveTeamBuffs, resolveSupportCtx } from "@/lib/engine/team-buffs";
+import { getRequiredConstellation } from "@/lib/engine/validation";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
 import { DMG_COLORS } from "../utils/colors";
@@ -726,8 +727,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         </span>
                         {(sConfig.mechanicDefs ?? []).map((m) => {
                           const mechVal = Number(sup.mechanicInputs[m.id] ?? "0") > 0;
-                          const conMatch = m.id.match(/c(\d+)/);
-                          const requiredCon = conMatch ? Number(conMatch[1]) : 0;
+                          const requiredCon = getRequiredConstellation(m);
                           const isGated = requiredCon > 0 && sup.constellationLevel < requiredCon;
 
                           return (

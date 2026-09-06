@@ -98,10 +98,14 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
       initInputs[m.id] = String(m.defaultValue ?? 0);
     }
 
+    const isMatchingClass = config.weapon === wConfig.type;
+    const initialSlot = !isMatchingClass ? "support" : (wConfig.buffType === "self" ? "wielder" : "support");
+
     const newInst: ExternalWeaponInstance = {
       id: `w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       weaponId,
       refinement: 1,
+      slot: initialSlot,
       enabled: true,
       inputs: initInputs,
     };
@@ -437,6 +441,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                 );
 
                 const isMatchingClass = wConfig.type === config.weapon;
+                const effectiveSlot = wInst.slot ?? (isMatchingClass && wConfig.buffType === "self" ? "wielder" : "support");
+                const isWielderSlot = effectiveSlot === "wielder";
                 const theme = getRarityTheme(wConfig.rarity);
 
                 return (
@@ -471,7 +477,7 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                         )}
                         {isMatchingClass && (
                           <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 font-semibold border border-sky-300 dark:border-sky-700">
-                            {wConfig.type} (Wielder)
+                            Wielder Compatible
                           </span>
                         )}
                       </div>
@@ -492,23 +498,72 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                       </div>
                     )}
 
-                    {/* Refinement Selector (R1 - R5) */}
-                    <div className="flex items-center gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2 rounded-xl border border-gray-200/80 dark:border-zinc-800/80">
-                      <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Refinement:</span>
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((r) => (
+                    {/* Dual Selector Controls: Role (Wielder / Support) + Refinement Selector (R1 - R5) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80">
+                      {/* Slot / Role Selector */}
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Equipped On:</span>
+                        <div className="flex items-center gap-1">
                           <button
-                            key={r}
-                            onClick={() => updateWeapon(index, () => ({ refinement: r }))}
-                            className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
-                              (wInst.refinement || 1) === r
-                                ? theme.activeButton
-                                : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
+                            type="button"
+                            disabled={!isMatchingClass}
+                            onClick={() => updateWeapon(index, () => ({ slot: "wielder" }))}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all border ${
+                              !isMatchingClass
+                                ? "bg-gray-100 dark:bg-zinc-800/40 text-gray-400 dark:text-zinc-600 border-gray-200 dark:border-zinc-800 cursor-not-allowed"
+                                : isWielderSlot
+                                ? "bg-sky-600 text-white border-sky-700 shadow-xs cursor-pointer"
+                                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-sky-400 cursor-pointer"
                             }`}
+                            title={
+                              isMatchingClass
+                                ? "Equipped on active DPS character (receives self and team buffs)"
+                                : `Cannot wield: ${config.name} uses ${config.weapon} (${wConfig.name} is a ${wConfig.type})`
+                            }
                           >
-                            R{r}
+                            ⚔️ Wielder
                           </button>
-                        ))}
+                          <button
+                            type="button"
+                            disabled={!wConfig.isSupport}
+                            onClick={() => updateWeapon(index, () => ({ slot: "support" }))}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all border ${
+                              !wConfig.isSupport
+                                ? "bg-gray-100 dark:bg-zinc-800/40 text-gray-400 dark:text-zinc-600 border-gray-200 dark:border-zinc-800 cursor-not-allowed"
+                                : !isWielderSlot
+                                ? "bg-emerald-600 text-white border-emerald-700 shadow-xs cursor-pointer"
+                                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-emerald-400 cursor-pointer"
+                            }`}
+                            title={
+                              wConfig.isSupport
+                                ? "Equipped on a party teammate (provides party buffs to active DPS)"
+                                : `${wConfig.name} has no party buffs`
+                            }
+                          >
+                            🛡️ Support
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Refinement Selector */}
+                      <div className="flex items-center justify-between sm:justify-end gap-1.5">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Refinement:</span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((r) => (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => updateWeapon(index, () => ({ refinement: r }))}
+                              className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
+                                (wInst.refinement || 1) === r
+                                  ? theme.activeButton
+                                  : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
+                              }`}
+                            >
+                              R{r}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
