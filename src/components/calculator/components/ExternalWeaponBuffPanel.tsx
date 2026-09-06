@@ -89,6 +89,8 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
               if (!wConfig) return null;
               const theme = getRarityTheme(wConfig.rarity);
               const isActive = masterEnabled && wInst.enabled;
+              const isMatchingClass = config.weapon === wConfig.type;
+              const isWielder = (wInst.slot ?? (isMatchingClass && wConfig.buffType === "self" ? "wielder" : "support")) === "wielder" && isMatchingClass;
 
               return (
                 <div
@@ -99,11 +101,20 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
                       ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
-                  title={`${wConfig.name} (R${wInst.refinement || 1}) - Click to configure`}
+                  title={`${wConfig.name} (R${wInst.refinement || 1}, ${isWielder ? "Wielder" : "Support"}) - Click to configure`}
                 >
                   <WeaponIcon weapon={wConfig.type} className="w-3.5 h-3.5 shrink-0" />
                   <span className="font-semibold text-[11px] truncate max-w-[130px]">{wConfig.name}</span>
                   <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${theme.badge}`}>R{wInst.refinement || 1}</span>
+                  <span
+                    className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                      isWielder
+                        ? "bg-sky-500/20 text-sky-700 dark:text-sky-300"
+                        : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                    }`}
+                  >
+                    {isWielder ? "Wielder" : "Support"}
+                  </span>
                 </div>
               );
             })}
