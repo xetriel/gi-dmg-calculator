@@ -12,6 +12,7 @@ import {
   saveSupportEquipmentSetup,
   getDefaultEquipmentSetup,
   resolveSupportEquipmentBuffs,
+  getRelevantArtifactMechanics,
   type SupportEquipmentSetup,
   type EquippedWeaponState,
   type EquippedArtifactState,
@@ -551,42 +552,62 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                   </div>
 
                   {/* Artifact Mechanic Inputs */}
-                  {(selectedArtifactCfg.mechanicDefs ?? []).length > 0 && (
-                    <div className="space-y-2 pt-1 border-t border-gray-150 dark:border-zinc-800">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 block">
-                        Artifact Passive Conditions
-                      </span>
-                      {selectedArtifactCfg.mechanicDefs?.map((m) => {
-                        const val = activeArtifact?.inputs?.[m.id] ?? m.defaultValue ?? 0;
-                        const isChecked = val === "1" || Number(val) > 0;
-                        return (
-                          <label key={m.id} className="flex items-center gap-2 text-xs cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) =>
-                                setActiveArtifact((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        inputs: {
-                                          ...(prev.inputs ?? {}),
-                                          [m.id]: e.target.checked ? "1" : "0",
-                                        },
+                  {(() => {
+                    const relevantMechanics = getRelevantArtifactMechanics(
+                      selectedArtifactCfg.mechanicDefs,
+                      selectedArtifactCfg.id,
+                      supportElement
+                    );
+                    if (relevantMechanics.length === 0) return null;
+
+                    return (
+                      <div className="space-y-2 pt-1 border-t border-gray-150 dark:border-zinc-800">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 block">
+                          Artifact Passive Conditions
+                        </span>
+                        {relevantMechanics.map((m) => {
+                          const val = activeArtifact?.inputs?.[m.id] ?? m.defaultValue ?? 0;
+                          const isChecked = val === "1" || Number(val) > 0;
+                          return (
+                            <label key={m.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  const isCinderReaction =
+                                    selectedArtifactCfg.id === "scroll-of-the-hero-of-cinder-city" &&
+                                    m.id !== "cinder-nightsoul-active";
+
+                                  setActiveArtifact((prev) => {
+                                    if (!prev) return null;
+                                    const nextInputs = { ...(prev.inputs ?? {}) };
+                                    if (e.target.checked && isCinderReaction) {
+                                      // If turning on a Cinder City reaction, clear other reaction toggles to ensure
+                                      // the buff strictly applies between the 2 elements involved in this reaction
+                                      for (const key of Object.keys(nextInputs)) {
+                                        if (key.startsWith("cinder-") && key !== "cinder-nightsoul-active") {
+                                          nextInputs[key] = "0";
+                                        }
                                       }
-                                    : null
-                                )
-                              }
-                              className="h-4 w-4 accent-amber-500 cursor-pointer"
-                            />
-                            <span className="text-gray-700 dark:text-zinc-300 font-medium">
-                              {m.label}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
+                                    }
+                                    nextInputs[m.id] = e.target.checked ? "1" : "0";
+                                    return {
+                                      ...prev,
+                                      inputs: nextInputs,
+                                    };
+                                  });
+                                }}
+                                className="h-4 w-4 accent-amber-500 cursor-pointer"
+                              />
+                              <span className="text-gray-700 dark:text-zinc-300 font-medium">
+                                {m.label}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

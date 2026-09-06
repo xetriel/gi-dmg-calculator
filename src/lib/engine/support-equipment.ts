@@ -90,9 +90,6 @@ export const DEFAULT_SUPPORT_PRESETS: Record<string, {
       inputs: {
         "cinder-nightsoul-active": "1",
         "cinder-crystallize-pyro": "1",
-        "cinder-crystallize-hydro": "1",
-        "cinder-crystallize-electro": "1",
-        "cinder-crystallize-cryo": "1",
       },
     },
   },
@@ -166,8 +163,6 @@ export const DEFAULT_SUPPORT_PRESETS: Record<string, {
       inputs: {
         "cinder-nightsoul-active": "1",
         "cinder-melt": "1",
-        "cinder-frozen": "1",
-        "cinder-superconduct": "1",
       },
     },
   },
@@ -187,26 +182,36 @@ export function getDefaultEquipmentSetup(characterId: string, setupId: string = 
       weapon: {
         weaponId: preset.weapon.weaponId,
         refinement: preset.weapon.refinement,
-        inputs: preset.weapon.inputs ? { ...preset.weapon.inputs } : {},
+        inputs: { ...preset.weapon.inputs },
         enabled: true,
       },
       artifact: {
         artifactId: preset.artifact.artifactId,
         pieceCount: preset.artifact.pieceCount,
-        inputs: preset.artifact.inputs ? { ...preset.artifact.inputs } : {},
+        inputs: { ...preset.artifact.inputs },
         enabled: true,
       },
       updatedAt: Date.now(),
     };
   }
 
-  // Fallback default setup
+  // Fallback defaults
   return {
     id: setupId,
     name: `Support Setup ${setupId}`,
     characterId: normId,
-    weapon: null,
-    artifact: null,
+    weapon: {
+      weaponId: "favonius-sword",
+      refinement: 1,
+      inputs: {},
+      enabled: true,
+    },
+    artifact: {
+      artifactId: "noblesse-oblige",
+      pieceCount: 4,
+      inputs: { "noblesse-burst": "1" },
+      enabled: true,
+    },
     updatedAt: Date.now(),
   };
 }
@@ -221,6 +226,24 @@ export function getSupportEquipmentSetups(characterId: string): SupportEquipment
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sanitize legacy Cinder City over-toggled inputs if all 4 crystallize reactions are enabled
+        for (const setup of parsed) {
+          if (setup.artifact?.artifactId === "scroll-of-the-hero-of-cinder-city" && setup.artifact.inputs) {
+            const inp = setup.artifact.inputs;
+            const crystallizeCount = [
+              inp["cinder-crystallize-pyro"],
+              inp["cinder-crystallize-hydro"],
+              inp["cinder-crystallize-electro"],
+              inp["cinder-crystallize-cryo"],
+            ].filter((v: unknown) => v === "1" || Number(v) > 0).length;
+
+            if (crystallizeCount >= 4) {
+              inp["cinder-crystallize-hydro"] = "0";
+              inp["cinder-crystallize-electro"] = "0";
+              inp["cinder-crystallize-cryo"] = "0";
+            }
+          }
+        }
         return parsed;
       }
     }
@@ -579,9 +602,25 @@ export function getActiveSupportEquippedWeapons(
 
   for (const sup of supports) {
     if (sup.enabled === false || sup.useCharacterBuild === false) continue;
-    if (!sup.equippedWeapon?.enabled || !sup.equippedWeapon.weaponId) continue;
+    const hasEquipment =
+      sup.useCharacterBuild === true ||
+      Boolean(sup.equippedWeapon || sup.equippedArtifact || sup.equipmentSetupId);
+    if (!hasEquipment) continue;
 
     const normId = sup.supportId.replace(/-support$/, "");
+    let equippedWeapon = sup.equippedWeapon;
+    if (sup.useCharacterBuild !== false) {
+      const setups = getSupportEquipmentSetups(normId);
+      const activeSetup = sup.equipmentSetupId
+        ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
+        : (!equippedWeapon ? setups[0] : undefined);
+      if (activeSetup?.weapon) {
+        equippedWeapon = activeSetup.weapon;
+      }
+    }
+
+    if (!equippedWeapon?.enabled || !equippedWeapon.weaponId) continue;
+
     const supportCfg = supportById(normId) || supportById(`${normId}-support`);
     const charCfg = characterById(normId);
     const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
@@ -611,7 +650,7 @@ export function getActiveSupportEquippedWeapons(
         talentLevels: {},
         inputs: {},
       },
-      weaponState: sup.equippedWeapon,
+      weaponState: equippedWeapon,
       activeCharElement: dpsElement,
       activeCharWeapon: dpsWeapon,
       activeCharBaseAtk: dpsBaseAtk,
@@ -623,7 +662,7 @@ export function getActiveSupportEquippedWeapons(
       supportId: sup.supportId,
       supportName,
       supportElement,
-      weapon: sup.equippedWeapon,
+      weapon: equippedWeapon,
       buffs: eqRes.partySources.filter((s) => s.type === "weapon"),
     });
   }
@@ -637,6 +676,7 @@ export function getActiveSupportEquippedArtifacts(
     enabled?: boolean;
     useCharacterBuild?: boolean;
     equippedArtifact?: EquippedArtifactState | null;
+    equipmentSetupId?: string;
     stats?: Record<string, string>;
     mechanicInputs?: Record<string, string>;
     constellationLevel?: number;
@@ -652,9 +692,25 @@ export function getActiveSupportEquippedArtifacts(
 
   for (const sup of supports) {
     if (sup.enabled === false || sup.useCharacterBuild === false) continue;
-    if (!sup.equippedArtifact?.enabled || !sup.equippedArtifact.artifactId) continue;
+    const hasEquipment =
+      sup.useCharacterBuild === true ||
+      Boolean(sup.equippedWeapon || sup.equippedArtifact || sup.equipmentSetupId);
+    if (!hasEquipment) continue;
 
     const normId = sup.supportId.replace(/-support$/, "");
+    let equippedArtifact = sup.equippedArtifact;
+    if (sup.useCharacterBuild !== false) {
+      const setups = getSupportEquipmentSetups(normId);
+      const activeSetup = sup.equipmentSetupId
+        ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
+        : (!equippedArtifact ? setups[0] : undefined);
+      if (activeSetup?.artifact) {
+        equippedArtifact = activeSetup.artifact;
+      }
+    }
+
+    if (!equippedArtifact?.enabled || !equippedArtifact.artifactId) continue;
+
     const supportCfg = supportById(normId) || supportById(`${normId}-support`);
     const charCfg = characterById(normId);
     const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
@@ -684,7 +740,7 @@ export function getActiveSupportEquippedArtifacts(
         talentLevels: {},
         inputs: {},
       },
-      artifactState: sup.equippedArtifact,
+      artifactState: equippedArtifact,
       activeCharElement: dpsElement,
       activeCharBaseAtk: dpsBaseAtk,
       activeCharBaseDef: dpsBaseDef,
@@ -695,10 +751,82 @@ export function getActiveSupportEquippedArtifacts(
       supportId: sup.supportId,
       supportName,
       supportElement,
-      artifact: sup.equippedArtifact,
+      artifact: equippedArtifact,
       buffs: eqRes.partySources.filter((s) => s.type === "artifact"),
     });
   }
 
   return result;
+}
+
+/**
+ * Filters mechanicDefs for artifacts like Scroll of the Hero of Cinder City to only show
+ * reactions related to the specific character's Elemental Type.
+ */
+export function getRelevantArtifactMechanics<
+  T extends { id: string; label: string; control?: string; defaultValue?: number; hint?: string }
+>(mechanicDefs: T[] | undefined, artifactId: string, charElement?: Element): T[] {
+  if (!mechanicDefs) return [];
+  if (artifactId !== "scroll-of-the-hero-of-cinder-city" || !charElement) {
+    return mechanicDefs;
+  }
+
+  return mechanicDefs.filter((m) => {
+    if (m.id === "cinder-nightsoul-active" || m.id === "cinder-reaction-active") return true;
+
+    if (charElement === "Geo") {
+      return m.id.startsWith("cinder-crystallize-");
+    }
+    if (charElement === "Anemo") {
+      return m.id.startsWith("cinder-swirl-");
+    }
+    if (charElement === "Pyro") {
+      return (
+        m.id === "cinder-vaporize" ||
+        m.id === "cinder-melt" ||
+        m.id === "cinder-overloaded" ||
+        m.id === "cinder-burning" ||
+        m.id === "cinder-crystallize-pyro" ||
+        m.id === "cinder-swirl-pyro"
+      );
+    }
+    if (charElement === "Hydro") {
+      return (
+        m.id === "cinder-vaporize" ||
+        m.id === "cinder-electro-charged" ||
+        m.id === "cinder-frozen" ||
+        m.id === "cinder-bloom" ||
+        m.id === "cinder-crystallize-hydro" ||
+        m.id === "cinder-swirl-hydro"
+      );
+    }
+    if (charElement === "Electro") {
+      return (
+        m.id === "cinder-overloaded" ||
+        m.id === "cinder-electro-charged" ||
+        m.id === "cinder-superconduct" ||
+        m.id === "cinder-quicken" ||
+        m.id === "cinder-crystallize-electro" ||
+        m.id === "cinder-swirl-electro"
+      );
+    }
+    if (charElement === "Cryo") {
+      return (
+        m.id === "cinder-melt" ||
+        m.id === "cinder-frozen" ||
+        m.id === "cinder-superconduct" ||
+        m.id === "cinder-crystallize-cryo" ||
+        m.id === "cinder-swirl-cryo"
+      );
+    }
+    if (charElement === "Dendro") {
+      return (
+        m.id === "cinder-burning" ||
+        m.id === "cinder-bloom" ||
+        m.id === "cinder-quicken"
+      );
+    }
+
+    return true;
+  });
 }

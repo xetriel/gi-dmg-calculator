@@ -5,6 +5,7 @@ import { getRequiredConstellation } from "./validation";
 import type { CharacterConfig } from "../../data/registry/types";
 import {
   resolveSupportEquipmentBuffs,
+  getSupportEquipmentSetups,
   type EquippedWeaponState,
   type EquippedArtifactState,
 } from "./support-equipment";
@@ -174,18 +175,34 @@ export function resolveTeamBuffs(
     const ctx = resolveSupportCtx(inst);
     if (!ctx) continue;
 
-    const isBuildEnabled = inst.useCharacterBuild !== false;
+    const isBuildEnabled =
+      inst.useCharacterBuild !== false &&
+      (inst.useCharacterBuild === true ||
+        Boolean(inst.equippedWeapon || inst.equippedArtifact || inst.equipmentSetupId));
+    const normId = inst.supportId.replace(/-support$/, "");
+    let equippedWeapon = inst.equippedWeapon;
+    let equippedArtifact = inst.equippedArtifact;
+    if (isBuildEnabled) {
+      const setups = getSupportEquipmentSetups(normId);
+      const activeSetup = inst.equipmentSetupId
+        ? (setups.find((s) => s.id === inst.equipmentSetupId) ?? setups[0])
+        : (!equippedWeapon && !equippedArtifact ? setups[0] : undefined);
+      if (activeSetup) {
+        if (activeSetup.weapon) equippedWeapon = activeSetup.weapon;
+        if (activeSetup.artifact) equippedArtifact = activeSetup.artifact;
+      }
+    }
 
     // Track equipped items for standalone override (only when build is enabled)
     if (isBuildEnabled) {
-      if (inst.equippedArtifact?.enabled && inst.equippedArtifact.artifactId) {
-        if (!result.equippedArtifactIds.includes(inst.equippedArtifact.artifactId)) {
-          result.equippedArtifactIds.push(inst.equippedArtifact.artifactId);
+      if (equippedArtifact?.enabled && equippedArtifact.artifactId) {
+        if (!result.equippedArtifactIds.includes(equippedArtifact.artifactId)) {
+          result.equippedArtifactIds.push(equippedArtifact.artifactId);
         }
       }
-      if (inst.equippedWeapon?.enabled && inst.equippedWeapon.weaponId) {
-        if (!result.equippedWeaponIds.includes(inst.equippedWeapon.weaponId)) {
-          result.equippedWeaponIds.push(inst.equippedWeapon.weaponId);
+      if (equippedWeapon?.enabled && equippedWeapon.weaponId) {
+        if (!result.equippedWeaponIds.includes(equippedWeapon.weaponId)) {
+          result.equippedWeaponIds.push(equippedWeapon.weaponId);
         }
       }
     }
@@ -227,12 +244,12 @@ export function resolveTeamBuffs(
     }
 
     // Compute Equipped Weapon and Artifact buffs for this support (only when build is enabled)
-    if (isBuildEnabled && (inst.equippedWeapon || inst.equippedArtifact)) {
+    if (isBuildEnabled && (equippedWeapon || equippedArtifact)) {
       const eqBuffs = resolveSupportEquipmentBuffs({
         supportCharacterId: inst.supportId,
         supportCtx: ctx,
-        weaponState: inst.equippedWeapon,
-        artifactState: inst.equippedArtifact,
+        weaponState: equippedWeapon,
+        artifactState: equippedArtifact,
         activeCharElement: dpsConfig?.element,
         activeCharWeapon: dpsConfig?.weapon,
         activeCharBaseAtk: dpsBaseAtk,

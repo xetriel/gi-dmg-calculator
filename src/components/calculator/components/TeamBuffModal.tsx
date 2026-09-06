@@ -226,18 +226,27 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     if (!sConfig) return;
 
     const draft = readSupportDraft(sConfig.characterId);
-    if (!draft || !draft.instances.length) return;
+    const targetInst = draft?.instances.find((i) => i.id === sup.selectedSetupId) ?? draft?.instances[0];
 
-    const targetInst = draft.instances.find((i) => i.id === sup.selectedSetupId) ?? draft.instances[0];
-    if (!targetInst) return;
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const targetEq = sup.equipmentSetupId
+      ? (savedEq.find((e) => e.id === sup.equipmentSetupId) ?? savedEq[0])
+      : savedEq[0];
 
     updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      talentLevels: targetInst.levels ?? sup.talentLevels,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Support Setup ${targetInst.id}`,
+      ...(targetInst ? {
+        stats: targetInst.stats,
+        mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+        constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+        talentLevels: targetInst.levels ?? sup.talentLevels,
+        selectedSetupId: targetInst.id,
+        selectedSetupName: `Setup ${targetInst.id}`,
+      } : {}),
+      ...(targetEq ? {
+        equipmentSetupId: targetEq.id,
+        equippedWeapon: targetEq.weapon,
+        equippedArtifact: targetEq.artifact,
+      } : {}),
     }));
   };
 
@@ -249,18 +258,25 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     if (!sConfig) return;
 
     const draft = readSupportDraft(sConfig.characterId);
-    if (!draft) return;
+    const targetInst = draft?.instances.find((i) => i.id === setupId);
 
-    const targetInst = draft.instances.find((i) => i.id === setupId);
-    if (!targetInst) return;
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const targetEq = savedEq.find((e) => e.id === setupId) ?? savedEq[0];
 
     updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      talentLevels: targetInst.levels ?? sup.talentLevels,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Support Setup ${targetInst.id}`,
+      ...(targetInst ? {
+        stats: targetInst.stats,
+        mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+        constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+        talentLevels: targetInst.levels ?? sup.talentLevels,
+        selectedSetupId: targetInst.id,
+        selectedSetupName: `Setup ${targetInst.id}`,
+      } : {}),
+      ...(targetEq ? {
+        equipmentSetupId: targetEq.id,
+        equippedWeapon: targetEq.weapon,
+        equippedArtifact: targetEq.artifact,
+      } : {}),
     }));
   };
 
