@@ -69,34 +69,33 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
   return (
     <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
       {/* Header with Quick Action */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2 gap-2">
         <button
           type="button"
           onClick={onOpenModal}
-          className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white hover:text-black dark:hover:text-white transition-colors cursor-pointer group"
-          title="Open External Artifact Buffs configuration modal"
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white hover:text-black dark:hover:text-white transition-colors cursor-pointer group whitespace-nowrap min-w-0"
+          title="Open External Artifact Buffs configuration modal (Max 4 Standalone artifact sets)"
         >
-          <span className="p-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 group-hover:scale-105 transition-transform">
+          <span className="p-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 group-hover:scale-105 transition-transform shrink-0">
             🏺
           </span>
-          <span>External Artifact Buffs</span>
+          <span className="truncate">External Artifact Buffs</span>
           {totalArtifactsCount > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shrink-0">
               <span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{totalArtifactsCount}</span>
-              <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max 4 Standalone)</span>
             </span>
           )}
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={onOpenModal}
-            className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 font-semibold shadow-2xs cursor-pointer transition-colors"
+            className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 font-semibold shadow-2xs cursor-pointer transition-colors whitespace-nowrap"
           >
             ⚙️ Edit
           </button>
-          <label className="flex items-center gap-1.5 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+          <label className="flex items-center gap-1 cursor-pointer select-none whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
             <span className="text-[10px] text-gray-500 dark:text-zinc-400">Apply</span>
             <input
               type="checkbox"
@@ -194,18 +193,20 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
             <div className="pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 flex items-center gap-1.5 flex-wrap">
               {combinedArtifactSources.map((s, i) => {
                 const theme = getRarityTheme(s.rarity);
+                const isFlat = s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def";
+                const sign = s.value > 0 ? "+" : "";
+                const formattedVal = `${sign}${fmt(s.value)}${isFlat ? "" : "%"}`;
+
                 return (
                   <span
                     key={i}
-                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border whitespace-nowrap ${
                       masterEnabled
                         ? theme.sourceBuffPill
                         : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
                     }`}
                   >
-                    {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                      ? fmt(s.value)
-                      : `${fmt(s.value)}%`}
+                    {s.label}: {formattedVal}
                   </span>
                 );
               })}

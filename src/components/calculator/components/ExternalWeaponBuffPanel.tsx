@@ -186,18 +186,20 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
             <div className="pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 flex items-center gap-1.5 flex-wrap">
               {combinedWeaponSources.map((s, i) => {
                 const theme = getRarityTheme(s.rarity);
+                const isFlat = s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def";
+                const sign = s.value > 0 ? "+" : "";
+                const formattedVal = `${sign}${fmt(s.value)}${isFlat ? "" : "%"}`;
+
                 return (
                   <span
                     key={i}
-                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border whitespace-nowrap ${
                       masterEnabled
                         ? theme.sourceBuffPill
                         : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
                     }`}
                   >
-                    {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                      ? fmt(s.value)
-                      : `${fmt(s.value)}%`}
+                    {s.label}: {formattedVal}
                   </span>
                 );
               })}

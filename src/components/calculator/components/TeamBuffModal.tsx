@@ -266,7 +266,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-6xl h-[90vh] max-h-[850px] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-7xl h-[90vh] max-h-[880px] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
@@ -326,8 +326,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         {/* Modal Main Content: Split Grid */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-zinc-800">
           
-          {/* LEFT PANE: Support Character Catalog & Filtering (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col min-h-0 bg-gray-50/30 dark:bg-zinc-900/20">
+          {/* LEFT PANE: Support Character Catalog & Filtering (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col min-h-0 bg-gray-50/30 dark:bg-zinc-900/20">
             {/* Filter Toolbar */}
             <div className="p-4 border-b border-gray-200 dark:border-zinc-800 space-y-2.5 shrink-0">
               {/* Search Bar */}
@@ -540,8 +540,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
           </div>
 
-          {/* RIGHT PANE: Configured Support Characters for Setup (7 cols) */}
-          <div className="lg:col-span-7 flex flex-col min-h-0 bg-white dark:bg-zinc-950">
+          {/* RIGHT PANE: Configured Support Characters for Setup (8 cols) */}
+          <div className="lg:col-span-8 flex flex-col min-h-0 bg-white dark:bg-zinc-950">
             {/* Right Pane Header */}
             <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-gray-50/30 dark:bg-zinc-900/30">
               <div className="flex items-center gap-2">
@@ -662,8 +662,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold">
                           C{sup.constellationLevel}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${theme.notePill}`}>
-                          Buffing: Character Setup {currentInst.id}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border whitespace-nowrap ${theme.notePill}`}>
+                          Target: Setup {currentInst.id}
                         </span>
                       </div>
 
@@ -694,9 +694,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     {/* Setup Switcher & Actions */}
                     <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1 whitespace-nowrap">
                           <span>⚙️</span>
-                          <span>Support Setup:</span>
+                          <span>Setup:</span>
                         </span>
 
                         {/* Setup option buttons */}
@@ -708,14 +708,14 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                 key={s.id}
                                 type="button"
                                 onClick={() => switchSetup(index, s.id)}
-                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 ${
+                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 whitespace-nowrap ${
                                   isSelected
                                     ? theme.activeButton
                                     : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                                 }`}
-                                title={`Switch to ${sConfig.name} Support Setup ${s.id}`}
+                                title={`Switch to ${sConfig.name} Setup ${s.id}`}
                               >
-                                <span>Support Setup {s.id}</span>
+                                <span>Setup {s.id}</span>
                               </button>
                             );
                           })}
@@ -894,20 +894,24 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         Active Stat Bonuses:
                       </span>
                       <div className="flex items-center gap-2 flex-wrap">
-                        {preview.sources.map((s, i) => (
-                          <span
-                            key={i}
-                            className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
-                              isActive
-                                ? theme.notePill
-                                : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
-                            }`}
-                          >
-                            {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                              ? fmt(s.value)
-                              : `${fmt(s.value)}%`}
-                          </span>
-                        ))}
+                        {preview.sources.map((s, i) => {
+                          const isFlat = s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def";
+                          const sign = s.value > 0 ? "+" : "";
+                          const formattedVal = `${sign}${fmt(s.value)}${isFlat ? "" : "%"}`;
+
+                          return (
+                            <span
+                              key={i}
+                              className={`text-xs font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${
+                                isActive
+                                  ? theme.notePill
+                                  : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
+                              }`}
+                            >
+                              {s.label}: {formattedVal}
+                            </span>
+                          );
+                        })}
                         {preview.sources.length === 0 && (
                           <span className="text-xs text-gray-400 dark:text-zinc-600 italic">
                             No active buffs for this setup
