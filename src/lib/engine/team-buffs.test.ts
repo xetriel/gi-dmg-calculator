@@ -752,8 +752,8 @@ describe("remastered support system", () => {
       };
       const res = resolveTeamBuffs([inst]);
       // ATK = 800 * 2 + 400 = 2000
-      // Stellar Base = min(14, 20 * 0.7) = 14
-      expect(res.lunarBaseBonusPct).toBe(14);
+      // Stellar Base = min(7, 20 * 0.35) = 7
+      expect(res.lunarBaseBonusPct).toBe(7);
       expect(res.statDeltas.em).toBe(120);
       expect(res.statDeltas.stellarGlimmerDmgBonus).toBe(40);
     });
