@@ -122,22 +122,27 @@ export function resolveAllEffectiveStats(
   const constellationStats = constellationStatBonuses(effects);
 
   // Resolve external buffs
+  const baseAtk = toNum(inst.stats["atk.base"]) ?? 0;
+  const baseDef = toNum(inst.stats["def.base"]) ?? 0;
+  const baseHp = toNum(inst.stats["hp.base"]) ?? 0;
+
   const teamRes = inst.teamBuffsEnabled !== false && inst.teamSupports?.length
-    ? resolveTeamBuffs(inst.teamSupports, true)
-    : { statDeltas: {}, lunarBaseBonusPct: 0, sources: [], teamCrit: { critRate: 0, critDmg: 0, supportCount: 0 } };
+    ? resolveTeamBuffs(inst.teamSupports, true, config, baseAtk, baseDef, baseHp)
+    : { statDeltas: {}, lunarBaseBonusPct: 0, sources: [], teamCrit: { critRate: 0, critDmg: 0 }, equippedArtifactIds: [], equippedWeaponIds: [] };
 
   const weaponRes = inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length
-    ? resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true)
+    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamRes.equippedWeaponIds)
     : { statDeltas: {}, sources: [] };
 
   const artifactRes = inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length
     ? resolveExternalArtifactBuffs(
         inst.externalArtifacts,
-        toNum(inst.stats["atk.base"]) ?? 0,
+        baseAtk,
         config,
         true,
-        toNum(inst.stats["def.base"]) ?? 0,
-        toNum(inst.stats["hp.base"]) ?? 0,
+        baseDef,
+        baseHp,
+        teamRes.equippedArtifactIds,
       )
     : { statDeltas: {}, sources: [] };
 

@@ -2,6 +2,13 @@ import type { DamageStats } from "./damage";
 import { supportById, type SupportCtx } from "../../data/registry/characters";
 import { getRequiredConstellation } from "./validation";
 
+import type { CharacterConfig } from "../../data/registry/types";
+import {
+  resolveSupportEquipmentBuffs,
+  type EquippedWeaponState,
+  type EquippedArtifactState,
+} from "./support-equipment";
+
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
   supportId: string;                    // e.g., "ineffa-support"
@@ -14,6 +21,9 @@ export interface SupportInstance {
   sourceBuildId?: string | null;       // DB build ID if loaded from a saved build
   sourceBuildName?: string | null;     // Build name if loaded from a saved build
   talentLevels?: Record<string, string>; // e.g. { normal: "10", skill: "10", burst: "13" }
+  equipmentSetupId?: string;           // saved equipment preset ID e.g. "1"
+  equippedWeapon?: EquippedWeaponState | null;
+  equippedArtifact?: EquippedArtifactState | null;
 }
 
 // Attribution for a single buff from a support
@@ -23,6 +33,7 @@ export interface TeamBuffSource {
   label: string;             // "EM (Ineffa A4)"
   value: number;             // 148.44
   rarity?: number;           // 4 or 5
+  sourceType?: "character" | "weapon" | "artifact";
 }
 
 // Aggregated result from all active supports
@@ -31,6 +42,8 @@ export interface TeamBuffResult {
   lunarBaseBonusPct: number;               // aggregated Lunar Base DMG Bonus
   sources: TeamBuffSource[];               // per-buff attribution
   teamCrit: { critRate: number; critDmg: number };  // team CRIT for Lunar panel
+  equippedArtifactIds: string[];           // IDs of artifact sets equipped on active supports (for standalone override)
+  equippedWeaponIds: string[];             // IDs of weapons equipped on active supports (for standalone override)
 }
 
 // Parse a string to a finite number, defaulting to 0
@@ -130,12 +143,18 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
 export function resolveTeamBuffs(
   supports: SupportInstance[],
   masterEnabled: boolean = true,
+  dpsConfig?: CharacterConfig,
+  dpsBaseAtk: number = 0,
+  dpsBaseDef: number = 0,
+  dpsBaseHp: number = 0,
 ): TeamBuffResult {
   const result: TeamBuffResult = {
     statDeltas: {},
     lunarBaseBonusPct: 0,
     sources: [],
     teamCrit: { critRate: 0, critDmg: 0 },
+    equippedArtifactIds: [],
+    equippedWeaponIds: [],
   };
 
   if (!masterEnabled || !supports.length) return result;
@@ -154,6 +173,18 @@ export function resolveTeamBuffs(
     const ctx = resolveSupportCtx(inst);
     if (!ctx) continue;
 
+    // Track equipped items for standalone override
+    if (inst.equippedArtifact?.enabled && inst.equippedArtifact.artifactId) {
+      if (!result.equippedArtifactIds.includes(inst.equippedArtifact.artifactId)) {
+        result.equippedArtifactIds.push(inst.equippedArtifact.artifactId);
+      }
+    }
+    if (inst.equippedWeapon?.enabled && inst.equippedWeapon.weaponId) {
+      if (!result.equippedWeaponIds.includes(inst.equippedWeapon.weaponId)) {
+        result.equippedWeaponIds.push(inst.equippedWeapon.weaponId);
+      }
+    }
+
     // Compute each buff
     for (const buff of config.buffs) {
       const value = buff.compute(ctx);
@@ -165,6 +196,7 @@ export function resolveTeamBuffs(
         label: buff.label,
         value,
         rarity: config.rarity,
+        sourceType: "character",
       });
 
       // Accumulate into statDeltas
@@ -184,7 +216,41 @@ export function resolveTeamBuffs(
           label: `Lunar Base DMG (${config.name} Moonsign)`,
           value: lunarBase,
           rarity: config.rarity,
+          sourceType: "character",
         });
+      }
+    }
+
+    // Compute Equipped Weapon and Artifact buffs for this support
+    if (inst.equippedWeapon || inst.equippedArtifact) {
+      const eqBuffs = resolveSupportEquipmentBuffs({
+        supportCharacterId: inst.supportId,
+        supportCtx: ctx,
+        weaponState: inst.equippedWeapon,
+        artifactState: inst.equippedArtifact,
+        activeCharElement: dpsConfig?.element,
+        activeCharWeapon: dpsConfig?.weapon,
+        activeCharBaseAtk: dpsBaseAtk,
+        activeCharBaseDef: dpsBaseDef,
+        activeCharBaseHp: dpsBaseHp,
+      });
+
+      for (const src of eqBuffs.partySources) {
+        result.sources.push({
+          supportName: config.name,
+          stat: src.stat,
+          label: src.label,
+          value: src.value,
+          rarity: src.rarity ?? config.rarity,
+          sourceType: src.type,
+        });
+      }
+
+      for (const [key, val] of Object.entries(eqBuffs.partyStatDeltas)) {
+        if (typeof val === "number" && val !== 0) {
+          (result.statDeltas as Record<string, number>)[key] =
+            ((result.statDeltas as Record<string, number>)[key] ?? 0) + val;
+        }
       }
     }
 

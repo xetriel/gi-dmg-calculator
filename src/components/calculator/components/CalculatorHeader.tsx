@@ -192,6 +192,15 @@ export const CalculatorHeader: React.FC<CalculatorHeaderProps> = ({
           <span className="text-sm leading-none">{isSplitView ? "🥞" : "◫"}</span>
           <span>{isSplitView ? "Column" : "Split"}</span>
         </button>
+        {/* Builds & Equipment Focus Link */}
+        <Link
+          href={`/builds?character=${config.id}${fromCharacterId ? `&from=${fromCharacterId}` : ""}`}
+          className="rounded-lg border border-gray-300 dark:border-zinc-700 bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 px-2.5 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all shadow-2xs cursor-pointer flex items-center gap-1.5"
+          title="Open character equipment in dedicated Builds tab"
+        >
+          <span className="text-sm leading-none">🛡️</span>
+          <span>Builds</span>
+        </Link>
 
         {/* 2. Grouped Tools Dropdown (Rotation Builder, Weapon Buffs, Artifact Buffs, Support Editor) */}
         <div className="relative tools-dropdown-container">
@@ -215,10 +224,29 @@ export const CalculatorHeader: React.FC<CalculatorHeaderProps> = ({
 
           {isToolsDropdownOpen && (
             <div className="absolute right-0 mt-1.5 w-64 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-30 animate-in fade-in slide-in-from-top-1 duration-100">
-              <div className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 px-3 py-1.5 uppercase tracking-wider border-b border-gray-100 dark:border-zinc-900 mb-1">
+              <div className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 px-3 py-1.5 border-b border-gray-100 dark:border-zinc-900 mb-1">
                 CALCULATION TOOLS
               </div>
 
+              {/* Builds & Equipment Focus Link */}
+              <Link
+                href={`/builds?character=${config.id}${fromCharacterId ? `&from=${fromCharacterId}` : ""}`}
+                onClick={() => setIsToolsDropdownOpen(false)}
+                className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-300 transition-colors flex items-center justify-between cursor-pointer"
+                title="Open dedicated Builds & Equipment Focus tab"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🛡️</span>
+                  <div>
+                    <div className="font-semibold">Builds &amp; Equipment</div>
+                    <div className="text-[10px] text-amber-600/70 dark:text-amber-400/70 font-normal">
+                      Weapons &amp; artifact setups
+                    </div>
+                  </div>
+                </div>
+                <span className="text-xs font-bold">↗</span>
+              </Link>
+              
               {/* Rotation Builder */}
               <button
                 onClick={() => {

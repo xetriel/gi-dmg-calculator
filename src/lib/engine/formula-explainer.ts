@@ -132,7 +132,7 @@ export function explainHitFormulas(
   // Apply team support buffs
   let lunarBaseFromTeam = 0;
   const teamResult = (inst.teamBuffsEnabled !== false && inst.teamSupports?.length)
-    ? resolveTeamBuffs(inst.teamSupports, true)
+    ? resolveTeamBuffs(inst.teamSupports, true, config, baseAtk, baseDef, baseHp)
     : null;
   if (teamResult) {
     for (const [key, val] of Object.entries(teamResult.statDeltas)) {
@@ -145,7 +145,7 @@ export function explainHitFormulas(
 
   // Apply external weapon team buffs
   const weaponResult = (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length)
-    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true)
+    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamResult?.equippedWeaponIds)
     : null;
   if (weaponResult) {
     for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
@@ -157,7 +157,7 @@ export function explainHitFormulas(
 
   // Apply external artifact team buffs
   const artifactResult = (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length)
-    ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true, baseDef, baseHp)
+    ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true, baseDef, baseHp, teamResult?.equippedArtifactIds)
     : null;
   if (artifactResult) {
     for (const [key, val] of Object.entries(artifactResult.statDeltas)) {

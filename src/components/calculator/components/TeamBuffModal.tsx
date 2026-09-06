@@ -9,6 +9,10 @@ import { getRequiredConstellation } from "@/lib/engine/validation";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
 import { DMG_COLORS } from "../utils/colors";
+import { SupportEquipmentModal } from "./SupportEquipmentModal";
+import { getSupportEquipmentSetups } from "@/lib/engine/support-equipment";
+import { weaponById } from "@/data/registry/weapons";
+import { artifactById } from "@/data/registry/artifacts";
 
 interface TeamBuffModalProps {
   isOpen: boolean;
@@ -75,6 +79,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   const [hoveredElementFilter, setHoveredElementFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<number | "ALL">("ALL");
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+  const [equipModalSupportIndex, setEquipModalSupportIndex] = useState<number | null>(null);
 
   if (!isOpen) return null;
 
@@ -84,8 +89,12 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   const supports = currentInst.teamSupports ?? [];
   const masterEnabled = currentInst.teamBuffsEnabled !== false;
 
+  const dpsBaseAtk = Number(currentInst.stats["atk.base"] || 0);
+  const dpsBaseDef = Number(currentInst.stats["def.base"] || 0);
+  const dpsBaseHp = Number(currentInst.stats["hp.base"] || 0);
+
   // Compute live total team buff results
-  const totalResult = resolveTeamBuffs(supports, masterEnabled);
+  const totalResult = resolveTeamBuffs(supports, masterEnabled, config, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
   // Set of already added support IDs for the active setup
   const addedSupportIds = new Set(supports.map((s) => s.supportId));
@@ -166,6 +175,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       setupName = "Support Setup 1";
     }
 
+    // Try to load saved equipment setups for this support character
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const activeEq = savedEq[0] ?? null;
+
     const newSupport: SupportInstance = {
       supportId,
       stats: finalStats,
@@ -175,6 +188,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       enabled: true,
       selectedSetupId: setupId,
       selectedSetupName: setupName,
+      equipmentSetupId: activeEq?.id,
+      equippedWeapon: activeEq?.weapon ?? null,
+      equippedArtifact: activeEq?.artifact ?? null,
     };
 
     updateInstance(currentInst.id, () => ({
@@ -574,7 +590,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 const briefStats = ctx && sConfig.formatBriefStats ? sConfig.formatBriefStats(ctx) : [];
 
                 // Compute individual support preview
-                const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true);
+                const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true, config, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
                 // Get available setups from working draft
                 const draft = readSupportDraft(sConfig.characterId);
@@ -690,6 +706,66 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           title="Open dedicated support builder for this character"
                         >
                           ✎ Edit Build ↗
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Equipment Status & Action Row */}
+                    <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1">
+                          <span>🛡️</span>
+                          <span>Equipment:</span>
+                        </span>
+
+                        {/* Weapon Pill */}
+                        {sup.equippedWeapon?.weaponId ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-bold">
+                            <span>⚔️</span>
+                            <span className="truncate max-w-[130px]">
+                              {weaponById(sup.equippedWeapon.weaponId)?.name || sup.equippedWeapon.weaponId}
+                            </span>
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20">
+                              R{sup.equippedWeapon.refinement}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">No Weapon</span>
+                        )}
+
+                        {/* Artifact Pill */}
+                        {sup.equippedArtifact?.artifactId ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-bold">
+                            <span>🏺</span>
+                            <span className="truncate max-w-[130px]">
+                              {artifactById(sup.equippedArtifact.artifactId)?.name || sup.equippedArtifact.artifactId}
+                            </span>
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-purple-500/20">
+                              {sup.equippedArtifact.pieceCount}-Pc
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">No Artifact</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => setEquipModalSupportIndex(index)}
+                          className={`text-xs px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all font-bold cursor-pointer flex items-center gap-1`}
+                          title={`Configure ${sConfig.name}'s weapon and artifact set`}
+                        >
+                          <span>⚙️</span>
+                          <span>Equip</span>
+                        </button>
+
+                        <Link
+                          href={`/builds?character=${sConfig.characterId}&from=${config.id}`}
+                          className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors font-semibold flex items-center gap-1"
+                          title={`Open ${sConfig.name} in dedicated Builds tab`}
+                        >
+                          <span>↗ Builds</span>
                         </Link>
                       </div>
                     </div>
@@ -866,6 +942,32 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Support Equipment Popup Modal */}
+        {equipModalSupportIndex !== null && supports[equipModalSupportIndex] && (
+          <SupportEquipmentModal
+            isOpen={true}
+            setIsOpen={(open) => {
+              if (!open) setEquipModalSupportIndex(null);
+            }}
+            supportId={supports[equipModalSupportIndex].supportId}
+            activeDpsCharacterId={config.id}
+            currentWeapon={supports[equipModalSupportIndex].equippedWeapon}
+            currentArtifact={supports[equipModalSupportIndex].equippedArtifact}
+            equipmentSetupId={supports[equipModalSupportIndex].equipmentSetupId}
+            supportStats={supports[equipModalSupportIndex].stats}
+            constellationLevel={supports[equipModalSupportIndex].constellationLevel}
+            mechanicInputs={supports[equipModalSupportIndex].mechanicInputs}
+            onSave={(eq) => {
+              updateSupport(equipModalSupportIndex, () => ({
+                equipmentSetupId: eq.equipmentSetupId,
+                equippedWeapon: eq.weapon,
+                equippedArtifact: eq.artifact,
+              }));
+              setEquipModalSupportIndex(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );

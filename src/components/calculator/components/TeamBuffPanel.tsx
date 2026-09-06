@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import type { CalcInstance } from "../types";
-import { supportById } from "@/data/registry/characters";
+import { supportById, byId as characterById } from "@/data/registry/characters";
 import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
 import { ElementIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
@@ -21,13 +22,19 @@ const fmt = (n: number, decimals = 1) =>
 export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
   inst,
   updateInstance,
+  dpsCharacterId,
   onOpenModal,
 }) => {
   const supports = inst.teamSupports ?? [];
   const masterEnabled = inst.teamBuffsEnabled !== false;
+  const dpsConfig = dpsCharacterId ? characterById(dpsCharacterId) : undefined;
+
+  const dpsBaseAtk = Number(inst.stats["atk.base"] || 0);
+  const dpsBaseDef = Number(inst.stats["def.base"] || 0);
+  const dpsBaseHp = Number(inst.stats["hp.base"] || 0);
 
   // Compute live preview of all team buffs
-  const teamResult = resolveTeamBuffs(supports, masterEnabled);
+  const teamResult = resolveTeamBuffs(supports, masterEnabled, dpsConfig, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
   const activeCount = supports.filter((s) => s.enabled).length;
 
@@ -58,6 +65,16 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
+          {dpsCharacterId && (
+            <Link
+              href={`/builds?character=${dpsCharacterId}`}
+              className="text-[11px] px-2 py-0.5 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 font-semibold shadow-2xs transition-colors flex items-center gap-1"
+              title="Open Builds & Equipment focus tab"
+            >
+              <span>🛡️</span>
+              <span>Builds</span>
+            </Link>
+          )}
           <button
             type="button"
             onClick={onOpenModal}
@@ -109,6 +126,13 @@ export const TeamBuffPanel: React.FC<TeamBuffPanelProps> = ({
                         ? sup.selectedSetupName
                         : `Support Setup ${sup.selectedSetupId ?? "1"}`}
                     </span>
+                  )}
+                  {/* Mini Equipment Icons */}
+                  {sup.equippedWeapon?.weaponId && (
+                    <span className="text-[10px]" title="Equipped Weapon">⚔️</span>
+                  )}
+                  {sup.equippedArtifact?.artifactId && (
+                    <span className="text-[10px]" title="Equipped Artifact Set">🏺</span>
                   )}
                 </div>
               );

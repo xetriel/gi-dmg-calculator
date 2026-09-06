@@ -432,6 +432,18 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                         <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${theme.badge}`}>
                           {"★".repeat(aConfig.rarity)}
                         </span>
+                        {(() => {
+                          const eqSup = (currentInst.teamSupports ?? []).find(
+                            (s) => s.enabled !== false && s.equippedArtifact?.enabled !== false && s.equippedArtifact?.artifactId === aConfig.id
+                          );
+                          if (!eqSup) return null;
+                          const supName = eqSup.supportId.replace(/-support$/, "");
+                          return (
+                            <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30 flex items-center gap-1" title={`Equipped by party support ${supName}. Standalone entry is overridden.`}>
+                              <span>⚡ Overridden by {supName}</span>
+                            </span>
+                          );
+                        })()}
                         {aConfig.isSupport && (
                           <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-700">
                             Party Support

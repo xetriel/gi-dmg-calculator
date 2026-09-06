@@ -44,6 +44,7 @@ export function resolveExternalArtifactBuffs(
   masterEnabled: boolean = true,
   baseDef: number = 0,
   baseHp: number = 0,
+  overriddenArtifactIds?: string[] | Set<string>,
 ): ExternalArtifactBuffResult {
   const result: ExternalArtifactBuffResult = {
     statDeltas: {},
@@ -54,6 +55,12 @@ export function resolveExternalArtifactBuffs(
     return result;
   }
 
+  const overriddenSet = new Set(
+    overriddenArtifactIds instanceof Set
+      ? Array.from(overriddenArtifactIds)
+      : (overriddenArtifactIds ?? [])
+  );
+
   // Set to track applied non-stacking team buff IDs across party members
   const appliedTeamBuffs = new Set<string>();
 
@@ -62,6 +69,11 @@ export function resolveExternalArtifactBuffs(
 
   for (const inst of validArtifacts) {
     if (!inst.enabled) continue;
+
+    // If this artifact set is already equipped by an active support character, it is overridden
+    if (overriddenSet.has(inst.artifactId)) {
+      continue;
+    }
 
     const config = artifactById(inst.artifactId);
     if (!config) continue;

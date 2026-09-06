@@ -446,19 +446,40 @@ export function CharacterCalculator({
 
     // Apply team support buffs
     let lunarBaseFromTeam = 0;
+    let equippedArtifactIds: string[] = [];
+    let equippedWeaponIds: string[] = [];
+    const baseAtkVal = toNum(inst.stats["atk.base"]) ?? 0;
+    const baseDefVal = toNum(inst.stats["def.base"]) ?? 0;
+    const baseHpVal = toNum(inst.stats["hp.base"]) ?? 0;
+
     if (inst.teamBuffsEnabled !== false && inst.teamSupports?.length) {
-      const teamResult = resolveTeamBuffs(inst.teamSupports, true);
+      const teamResult = resolveTeamBuffs(
+        inst.teamSupports,
+        true,
+        config,
+        baseAtkVal,
+        baseDefVal,
+        baseHpVal,
+      );
       for (const [key, val] of Object.entries(teamResult.statDeltas)) {
         if (key in s && typeof val === "number") {
           (s as unknown as Record<string, number>)[key] += val;
         }
       }
       lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
+      equippedArtifactIds = teamResult.equippedArtifactIds;
+      equippedWeaponIds = teamResult.equippedWeaponIds;
     }
 
-    // Apply external weapon team buffs
+    // Apply external weapon team buffs (bypassing any overridden by active support equipment)
     if (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length) {
-      const weaponResult = resolveExternalWeaponBuffs(inst.externalWeapons, toNum(inst.stats["atk.base"]) ?? 0, config, true);
+      const weaponResult = resolveExternalWeaponBuffs(
+        inst.externalWeapons,
+        baseAtkVal,
+        config,
+        true,
+        equippedWeaponIds,
+      );
       for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
         if (key in s && typeof val === "number") {
           (s as unknown as Record<string, number>)[key] += val;
@@ -466,15 +487,16 @@ export function CharacterCalculator({
       }
     }
 
-    // Apply external artifact team buffs
+    // Apply external artifact team buffs (bypassing any overridden by active support equipment)
     if (inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length) {
       const artifactResult = resolveExternalArtifactBuffs(
         inst.externalArtifacts,
-        toNum(inst.stats["atk.base"]) ?? 0,
+        baseAtkVal,
         config,
         true,
-        toNum(inst.stats["def.base"]) ?? 0,
-        toNum(inst.stats["hp.base"]) ?? 0,
+        baseDefVal,
+        baseHpVal,
+        equippedArtifactIds,
       );
       for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
         if (key in s && typeof val === "number") {
