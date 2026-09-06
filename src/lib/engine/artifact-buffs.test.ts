@@ -139,8 +139,9 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
       expect(res.statDeltas.em).toBe(120);
     });
 
-    it("Scroll of the Hero of Cinder City: applies +40% Elemental DMG with Nightsoul", () => {
-      const res = resolveExternalArtifactBuffs(
+    it("Scroll of the Hero of Cinder City: applies reaction-specific Elemental DMG (+40% with Nightsoul)", () => {
+      // Test Crystallize: Pyro reaction (Geo + Pyro)
+      const resPyro = resolveExternalArtifactBuffs(
         [
           {
             id: "a-1",
@@ -148,7 +149,7 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
             pieceCount: 4,
             slot: "support",
             enabled: true,
-            inputs: { "cinder-reaction-active": "1", "cinder-nightsoul-active": "1" },
+            inputs: { "cinder-crystallize-pyro": "1", "cinder-nightsoul-active": "1" },
           },
         ],
         1000,
@@ -156,7 +157,49 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
         true
       );
 
-      expect(res.statDeltas.dmgBonus).toBe(40);
+      expect(resPyro.statDeltas.pyroDmgBonus).toBe(40);
+      expect(resPyro.statDeltas.geoDmgBonus).toBe(40);
+      expect(resPyro.statDeltas.hydroDmgBonus ?? 0).toBe(0);
+      expect(resPyro.statDeltas.dendroDmgBonus ?? 0).toBe(0);
+
+      // Test without Nightsoul (12%)
+      const resNoNightsoul = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "scroll-of-the-hero-of-cinder-city",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: { "cinder-crystallize-pyro": "1", "cinder-nightsoul-active": "0" },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+      expect(resNoNightsoul.statDeltas.pyroDmgBonus).toBe(12);
+      expect(resNoNightsoul.statDeltas.geoDmgBonus).toBe(12);
+
+      // Test Burning (Pyro + Dendro)
+      const resBurning = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "scroll-of-the-hero-of-cinder-city",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: { "cinder-burning": "1", "cinder-nightsoul-active": "1" },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+      expect(resBurning.statDeltas.pyroDmgBonus).toBe(40);
+      expect(resBurning.statDeltas.dendroDmgBonus).toBe(40);
+      expect(resBurning.statDeltas.geoDmgBonus ?? 0).toBe(0);
     });
 
     it("Celestial Gift: applies +40% Elemental DMG with Hexerei Secret Rite", () => {
@@ -396,7 +439,7 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
           { id: "a-1", artifactId: "noblesse-oblige", pieceCount: 4, slot: "support", enabled: true, inputs: { "noblesse-burst": "1" } },
           { id: "a-2", artifactId: "tenacity-of-the-millelith", pieceCount: 4, slot: "support", enabled: true, inputs: { "totm-skill-hit": "1" } },
           { id: "a-3", artifactId: "instructor", pieceCount: 4, slot: "support", enabled: true, inputs: { "instructor-reaction": "1" } },
-          { id: "a-4", artifactId: "scroll-of-the-hero-of-cinder-city", pieceCount: 4, slot: "support", enabled: true, inputs: { "cinder-reaction-active": "1", "cinder-nightsoul-active": "1" } },
+          { id: "a-4", artifactId: "scroll-of-the-hero-of-cinder-city", pieceCount: 4, slot: "support", enabled: true, inputs: { "cinder-crystallize-pyro": "1", "cinder-nightsoul-active": "1" } },
         ],
         1000,
         mockArlecchino,
@@ -406,8 +449,9 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
       // Noblesse (20%) + ToTM (20%) = 40% of 1000 = 400 ATK
       expect(res.statDeltas.atk).toBeCloseTo(400);
       expect(res.statDeltas.em).toBe(120);
-      expect(res.statDeltas.dmgBonus).toBe(40);
-      expect(res.sources.length).toBe(4);
+      expect(res.statDeltas.pyroDmgBonus).toBe(40);
+      expect(res.statDeltas.geoDmgBonus).toBe(40);
+      expect(res.sources.length).toBe(5); // Noblesse + ToTM + Instructor + Scroll (Pyro + Geo)
     });
   });
 

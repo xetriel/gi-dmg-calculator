@@ -532,38 +532,41 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
 
                     {/* Mechanic Controls (Toggles / Stacks) */}
                     {(aInst.pieceCount || 4) === 4 && (aConfig.mechanicDefs ?? []).length > 0 && (
-                      <div className="space-y-2 mb-3 bg-gray-50/80 dark:bg-zinc-900/50 p-2.5 rounded-xl border border-gray-200/60 dark:border-zinc-800/60">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 block mb-1">
+                      <div className="mb-3 bg-gray-50/80 dark:bg-zinc-900/50 p-2.5 rounded-xl border border-gray-200/60 dark:border-zinc-800/60">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 block mb-1.5">
                           Mechanic Conditions
                         </span>
-                        {(aConfig.mechanicDefs ?? []).map((m) => {
-                          if (m.control === "toggle") {
-                            const isChecked =
-                              (aInst.inputs?.[m.id] ?? String(m.defaultValue ?? 1)) === "1" ||
-                              Number(aInst.inputs?.[m.id] ?? 1) > 0;
-                            return (
-                              <label
-                                key={m.id}
-                                className="flex items-center gap-2 text-xs text-gray-800 dark:text-zinc-200 cursor-pointer"
-                                title={m.hint}
-                              >
-                                <input
-                                  type="checkbox"
-                                  className={`h-4 w-4 ${theme.checkboxAccent} cursor-pointer`}
-                                  checked={isChecked}
-                                  onChange={(e) =>
-                                    updateArtifact(index, (a) => ({
-                                      inputs: { ...a.inputs, [m.id]: e.target.checked ? "1" : "0" },
-                                    }))
-                                  }
-                                />
-                                <span>{m.label}</span>
-                              </label>
-                            );
-                          }
+                        <div className={(aConfig.mechanicDefs ?? []).length > 4 ? "grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto scrollbar-thin pr-1" : "space-y-2"}>
+                          {(aConfig.mechanicDefs ?? []).map((m) => {
+                            if (m.control === "toggle") {
+                              const rawVal = aInst.inputs?.[m.id];
+                              const defaultVal = m.defaultValue ?? 0;
+                              const isChecked = rawVal !== undefined ? (rawVal === "1" || Number(rawVal) > 0) : defaultVal > 0;
 
-                          return null;
-                        })}
+                              return (
+                                <label
+                                  key={m.id}
+                                  className="flex items-start gap-2 text-xs text-gray-800 dark:text-zinc-200 cursor-pointer select-none p-1 rounded-md hover:bg-gray-100/50 dark:hover:bg-zinc-800/40 transition-colors"
+                                  title={m.hint}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className={`h-4 w-4 mt-0.5 shrink-0 ${theme.checkboxAccent} cursor-pointer`}
+                                    checked={isChecked}
+                                    onChange={(e) =>
+                                      updateArtifact(index, (a) => ({
+                                        inputs: { ...a.inputs, [m.id]: e.target.checked ? "1" : "0" },
+                                      }))
+                                    }
+                                  />
+                                  <span className="leading-tight">{m.label}</span>
+                                </label>
+                              );
+                            }
+
+                            return null;
+                          })}
+                        </div>
                       </div>
                     )}
 
