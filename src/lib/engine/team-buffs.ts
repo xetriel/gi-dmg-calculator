@@ -1,5 +1,6 @@
 import type { DamageStats } from "./damage";
 import { supportById, type SupportCtx } from "../../data/registry/characters";
+import { getRequiredConstellation } from "./validation";
 
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
@@ -98,7 +99,10 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
     inputs[k] = toNum(v);
   }
   for (const m of config.mechanicDefs ?? []) {
-    if (!(m.id in inputs)) {
+    const requiredCon = getRequiredConstellation(m);
+    if (requiredCon > 0 && inst.constellationLevel < requiredCon) {
+      inputs[m.id] = 0;
+    } else if (!(m.id in inputs)) {
       inputs[m.id] = m.defaultValue ?? 0;
     }
   }

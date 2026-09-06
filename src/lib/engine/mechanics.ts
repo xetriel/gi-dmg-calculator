@@ -54,11 +54,13 @@ import { resolveTravelerHydro } from "./characters/traveler-hydro";
 import { resolveTravelerPyro } from "./characters/traveler-pyro";
 import { resolveTravelerCryo } from "./characters/traveler-cryo";
 import { resolveBennett } from "./characters/bennett";
+import { resolveXilonen } from "./characters/xilonen";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
 const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
   "bennett": resolveBennett,
+  "xilonen": resolveXilonen,
   "hu-tao": resolveHuTao,
   "skirk": resolveSkirk,
   "arlecchino": resolveArlecchino,

@@ -3,7 +3,7 @@ import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { DamageStats } from "./damage";
 import type { CalcInstance, StatBuffSource, StatBreakdown } from "@/components/calculator/types";
 import { resolveMechanics } from "./mechanics";
-import { effectiveTalentLevels } from "./validation";
+import { effectiveTalentLevels, getRequiredConstellation } from "./validation";
 import { activeEffects, constellationStatBonuses } from "./constellations";
 import { resolveTeamBuffs } from "./team-buffs";
 import { resolveExternalWeaponBuffs } from "./weapon-buffs";
@@ -98,6 +98,12 @@ export function resolveAllEffectiveStats(
   if (inst.mechanicInputs) {
     for (const [k, v] of Object.entries(inst.mechanicInputs)) {
       parsedInputs[k] = Number(v) || 0;
+    }
+  }
+  for (const m of config.mechanicDefs ?? []) {
+    const requiredCon = getRequiredConstellation(m);
+    if (requiredCon > 0 && inst.constellationLevel < requiredCon) {
+      parsedInputs[m.id] = 0;
     }
   }
 

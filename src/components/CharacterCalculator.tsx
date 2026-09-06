@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
-import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, type RawInputs } from "@/lib/engine/validation";
+import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, getRequiredConstellation, type RawInputs } from "@/lib/engine/validation";
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine/lunar";
@@ -417,7 +417,12 @@ export function CharacterCalculator({
 
     const mechInputs: Record<string, number> = {};
     for (const m of config.mechanicDefs ?? []) {
-      mechInputs[m.id] = toNum(inst.mechanicInputs[m.id]) ?? 0;
+      const requiredCon = getRequiredConstellation(m);
+      if (requiredCon > 0 && inst.constellationLevel < requiredCon) {
+        mechInputs[m.id] = 0;
+      } else {
+        mechInputs[m.id] = toNum(inst.mechanicInputs[m.id]) ?? 0;
+      }
     }
     const mech = resolveMechanics(config, {
       stats: s,

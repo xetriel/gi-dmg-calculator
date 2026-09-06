@@ -1,7 +1,7 @@
 import React from "react";
 import type { CharacterConfig, MechanicDef } from "@/data/registry/types";
 import type { CalcInstance } from "../types";
-import type { validate } from "@/lib/engine/validation";
+import { type validate, getRequiredConstellation } from "@/lib/engine/validation";
 
 interface MechanicsPanelProps {
   inst: CalcInstance;
@@ -109,8 +109,10 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
           <div className="space-y-2">
             {config.mechanicDefs.map((m: MechanicDef) => {
               const val = inst.mechanicInputs[m.id] ?? "0";
-              let isDisabled = false;
-              if (config.id === "varka") {
+              const requiredCon = getRequiredConstellation(m);
+              const isGated = requiredCon > 0 && inst.constellationLevel < requiredCon;
+              let isDisabled = isGated;
+              if (!isDisabled && config.id === "varka") {
                 const isPyro = (inst.mechanicInputs["party-has-pyro"] ?? "1") === "1";
                 const isHydro = (inst.mechanicInputs["party-has-hydro"] ?? "0") === "1";
                 const isElectro = (inst.mechanicInputs["party-has-electro"] ?? "0") === "1";
@@ -145,18 +147,25 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
                   <div className="flex items-center justify-between gap-3">
                     <span
                       className={`text-xs font-medium ${
-                        isDisabled
+                        isGated
+                          ? "text-gray-400 dark:text-zinc-600 line-through"
+                          : isDisabled
                           ? "text-gray-400 dark:text-gray-600"
                           : "text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       {m.label}
+                      {isGated && (
+                        <span className="ml-1 text-[10px] text-amber-500 font-bold no-underline inline-block">
+                          (Requires C{requiredCon})
+                        </span>
+                      )}
                     </span>
                     {m.control === "toggle" ? (
                       <input
                         type="checkbox"
-                        className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        checked={Number(val) > 0}
+                        className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        checked={Number(val) > 0 && !isGated}
                         disabled={isDisabled}
                         onChange={(e) =>
                           setMechanic(inst.id, m.id, e.target.checked ? "1" : "0")
@@ -167,9 +176,10 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
                         {Array.from({ length: (m.max ?? 3) + 1 }, (_, i) => (
                           <button
                             key={i}
+                            disabled={isDisabled}
                             onClick={() => setMechanic(inst.id, m.id, String(i))}
-                            className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border ${
-                              Number(val) === i
+                            className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer transition-all border disabled:opacity-40 disabled:cursor-not-allowed ${
+                              (isGated ? i === 0 : Number(val) === i)
                                 ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-900 dark:border-zinc-100"
                                 : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600"
                             }`}
@@ -180,11 +190,12 @@ export const MechanicsPanel: React.FC<MechanicsPanelProps> = ({
                       </div>
                     ) : (
                       <input
-                        className={inputCls(`mech.${m.id}`, "w-20")}
+                        className={`${inputCls(`mech.${m.id}`, "w-20")} disabled:opacity-40 disabled:cursor-not-allowed`}
                         type="number"
                         min={0}
                         max={m.max}
-                        value={val}
+                        disabled={isDisabled}
+                        value={isGated ? 0 : val}
                         onChange={(e) =>
                           setMechanic(inst.id, m.id, e.target.value)
                         }
