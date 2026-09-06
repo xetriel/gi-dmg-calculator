@@ -189,6 +189,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       selectedSetupId: setupId,
       selectedSetupName: setupName,
       equipmentSetupId: activeEq?.id,
+      useCharacterBuild: true,
       equippedWeapon: activeEq?.weapon ?? null,
       equippedArtifact: activeEq?.artifact ?? null,
     };
@@ -552,18 +553,51 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 </span>
               </div>
 
-              {/* Master Enable Toggle */}
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300">
-                  Apply All Buffs
-                </span>
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
-                  checked={masterEnabled}
-                  onChange={toggleMaster}
-                />
-              </label>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {/* Global Use Character Builds Toggle */}
+                {supports.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const anyEnabled = supports.some((s) => s.useCharacterBuild !== false);
+                      const nextState = !anyEnabled;
+                      const updated = supports.map((s) => ({ ...s, useCharacterBuild: nextState }));
+                      updateInstance(currentInst.id, () => ({ teamSupports: updated }));
+                    }}
+                    className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      supports.every((s) => s.useCharacterBuild !== false)
+                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 shadow-2xs"
+                        : supports.some((s) => s.useCharacterBuild !== false)
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                        : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                    }`}
+                    title="Toggle Use Character Build for all supports in this team (Option 1 vs Option 2)"
+                  >
+                    <span>🛡️</span>
+                    <span>Use Character Builds:</span>
+                    <span className="font-bold">
+                      {supports.every((s) => s.useCharacterBuild !== false)
+                        ? "All ON"
+                        : supports.some((s) => s.useCharacterBuild !== false)
+                        ? "Partial"
+                        : "All OFF"}
+                    </span>
+                  </button>
+                )}
+
+                {/* Master Enable Toggle */}
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300">
+                    Apply All Buffs
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                    checked={masterEnabled}
+                    onChange={toggleMaster}
+                  />
+                </label>
+              </div>
             </div>
 
             {/* Configured Supports Scrollable List */}
@@ -713,16 +747,37 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     {/* Equipment Status & Action Row */}
                     <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1">
-                          <span>🛡️</span>
-                          <span>Equipment:</span>
+                        {/* Toggle switch for Use Character Build */}
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none mr-1" title="Enable to apply this support's equipped weapon and artifact build (Option 2) or disable for character kit buffs only (Option 1)">
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+                            checked={sup.useCharacterBuild !== false}
+                            onChange={() => updateSupport(index, () => ({ useCharacterBuild: sup.useCharacterBuild === false ? true : false }))}
+                          />
+                          <span className="text-xs font-bold text-gray-800 dark:text-zinc-200">
+                            Use Character Build
+                          </span>
+                        </label>
+
+                        {/* Status tag */}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
+                          sup.useCharacterBuild !== false
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                        }`}>
+                          {sup.useCharacterBuild !== false ? "Build Active" : "Kit Only"}
                         </span>
 
                         {/* Weapon Pill */}
                         {sup.equippedWeapon?.weaponId ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-bold">
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
+                            sup.useCharacterBuild !== false
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                              : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
+                          }`}>
                             <span>⚔️</span>
-                            <span className="truncate max-w-[130px]">
+                            <span className="truncate max-w-[120px]">
                               {weaponById(sup.equippedWeapon.weaponId)?.name || sup.equippedWeapon.weaponId}
                             </span>
                             <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20">
@@ -735,9 +790,13 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
                         {/* Artifact Pill */}
                         {sup.equippedArtifact?.artifactId ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-bold">
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
+                            sup.useCharacterBuild !== false
+                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                              : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
+                          }`}>
                             <span>🏺</span>
-                            <span className="truncate max-w-[130px]">
+                            <span className="truncate max-w-[120px]">
                               {artifactById(sup.equippedArtifact.artifactId)?.name || sup.equippedArtifact.artifactId}
                             </span>
                             <span className="text-[9px] px-1 py-0.2 rounded bg-purple-500/20">

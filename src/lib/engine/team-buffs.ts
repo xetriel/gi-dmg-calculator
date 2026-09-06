@@ -21,6 +21,7 @@ export interface SupportInstance {
   sourceBuildId?: string | null;       // DB build ID if loaded from a saved build
   sourceBuildName?: string | null;     // Build name if loaded from a saved build
   talentLevels?: Record<string, string>; // e.g. { normal: "10", skill: "10", burst: "13" }
+  useCharacterBuild?: boolean;         // if false, ignores equipped weapon/artifact (Option 1)
   equipmentSetupId?: string;           // saved equipment preset ID e.g. "1"
   equippedWeapon?: EquippedWeaponState | null;
   equippedArtifact?: EquippedArtifactState | null;
@@ -173,15 +174,19 @@ export function resolveTeamBuffs(
     const ctx = resolveSupportCtx(inst);
     if (!ctx) continue;
 
-    // Track equipped items for standalone override
-    if (inst.equippedArtifact?.enabled && inst.equippedArtifact.artifactId) {
-      if (!result.equippedArtifactIds.includes(inst.equippedArtifact.artifactId)) {
-        result.equippedArtifactIds.push(inst.equippedArtifact.artifactId);
+    const isBuildEnabled = inst.useCharacterBuild !== false;
+
+    // Track equipped items for standalone override (only when build is enabled)
+    if (isBuildEnabled) {
+      if (inst.equippedArtifact?.enabled && inst.equippedArtifact.artifactId) {
+        if (!result.equippedArtifactIds.includes(inst.equippedArtifact.artifactId)) {
+          result.equippedArtifactIds.push(inst.equippedArtifact.artifactId);
+        }
       }
-    }
-    if (inst.equippedWeapon?.enabled && inst.equippedWeapon.weaponId) {
-      if (!result.equippedWeaponIds.includes(inst.equippedWeapon.weaponId)) {
-        result.equippedWeaponIds.push(inst.equippedWeapon.weaponId);
+      if (inst.equippedWeapon?.enabled && inst.equippedWeapon.weaponId) {
+        if (!result.equippedWeaponIds.includes(inst.equippedWeapon.weaponId)) {
+          result.equippedWeaponIds.push(inst.equippedWeapon.weaponId);
+        }
       }
     }
 
@@ -221,8 +226,8 @@ export function resolveTeamBuffs(
       }
     }
 
-    // Compute Equipped Weapon and Artifact buffs for this support
-    if (inst.equippedWeapon || inst.equippedArtifact) {
+    // Compute Equipped Weapon and Artifact buffs for this support (only when build is enabled)
+    if (isBuildEnabled && (inst.equippedWeapon || inst.equippedArtifact)) {
       const eqBuffs = resolveSupportEquipmentBuffs({
         supportCharacterId: inst.supportId,
         supportCtx: ctx,

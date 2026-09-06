@@ -5,6 +5,7 @@ import type { WeaponType } from "@/data/registry/weapons/types";
 import type { CalcInstance, ExternalWeaponInstance } from "../types";
 import { WEAPONS, weaponById, getWeaponsForCharacter } from "@/data/registry/weapons";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
+import { getActiveSupportEquippedWeapons } from "@/lib/engine/support-equipment";
 import { toNum } from "@/lib/engine/validation";
 import { WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
@@ -50,11 +51,32 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   const masterEnabled = currentInst.externalWeaponBuffsEnabled !== false;
   const baseAtk = toNum(currentInst.stats["atk.base"]) ?? 0;
 
+  // Retrieve active support-equipped weapons
+  const teamSupports = currentInst.teamSupports ?? [];
+  const teamBuffsEnabled = currentInst.teamBuffsEnabled !== false;
+  const supportWeapons = getActiveSupportEquippedWeapons(
+    teamSupports,
+    teamBuffsEnabled,
+    config.element,
+    config.weapon,
+    baseAtk,
+    Number(currentInst.stats["def.base"] ?? 0),
+    Number(currentInst.stats["hp.base"] ?? 0)
+  );
+  const supportWeaponMap = new Map(supportWeapons.map((sw) => [sw.weapon.weaponId, sw]));
+  const supportWeaponIds = Array.from(supportWeaponMap.keys());
+
+  // Compute live total weapon buff results (bypassing overridden duplicates)
+  const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled, supportWeaponIds);
+
+  // Combined weapon buff sources for summary bar
+  const combinedWeaponSources = [
+    ...totalResult.sources,
+    ...(masterEnabled ? supportWeapons.flatMap((sw) => sw.buffs) : []),
+  ];
+
   // Max external weapons limit reached check
   const isMaxReached = weapons.length >= MAX_EXTERNAL_WEAPONS;
-
-  // Compute live total weapon buff results
-  const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled);
 
   // Set of already added weapon IDs for the active setup
   const addedWeaponIds = new Set(weapons.map((w) => w.weaponId));
@@ -415,7 +437,64 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
 
             {/* Configured Weapons Scrollable List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5 min-h-0">
-              {weapons.length === 0 && (
+              {/* 1. Support Character Equipped Weapons Section */}
+              {supportWeapons.length > 0 && (
+                <div className="space-y-2 mb-4 pb-3 border-b border-gray-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>🛡️</span>
+                      <span>Weapons Equipped by Team Supports ({supportWeapons.length})</span>
+                    </span>
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400">
+                      Configured in Team Support Buffs
+                    </span>
+                  </div>
+
+                  {supportWeapons.map((sw, sIdx) => {
+                    const wConfig = weaponById(sw.weapon.weaponId);
+                    if (!wConfig) return null;
+                    const theme = getRarityTheme(wConfig.rarity);
+                    return (
+                      <div
+                        key={`support-weapon-${sIdx}`}
+                        className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"
+                      >
+                        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <WeaponIcon weapon={wConfig.type} className="w-4 h-4" />
+                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                              {wConfig.name}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${theme.badge}`}>
+                              R{sw.weapon.refinement}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <span>🛡️</span>
+                              <span>Used by {sw.supportName}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Active buffs from this support weapon */}
+                        {sw.buffs.length > 0 && (
+                          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                            {sw.buffs.map((b, bi) => (
+                              <span
+                                key={bi}
+                                className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
+                              >
+                                {b.label}: +{b.stat === "em" || b.stat === "atk" || b.stat === "hp" || b.stat === "def" ? fmt(b.value) : `${fmt(b.value)}%`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {weapons.length === 0 && supportWeapons.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
                   <span className="text-4xl mb-3">⚔️</span>
                   <p className="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">
@@ -471,14 +550,11 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                           {"★".repeat(wConfig.rarity)}
                         </span>
                         {(() => {
-                          const eqSup = (currentInst.teamSupports ?? []).find(
-                            (s) => s.enabled !== false && s.equippedWeapon?.enabled !== false && s.equippedWeapon?.weaponId === wConfig.id
-                          );
-                          if (!eqSup) return null;
-                          const supName = eqSup.supportId.replace(/-support$/, "");
+                          const matchingSupport = supportWeaponMap.get(wConfig.id);
+                          if (!matchingSupport) return null;
                           return (
-                            <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30 flex items-center gap-1" title={`Equipped by party support ${supName}. Standalone entry is overridden.`}>
-                              <span>⚡ Overridden by {supName}</span>
+                            <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30 flex items-center gap-1" title={`Equipped by party support ${matchingSupport.supportName}. Standalone entry is overridden.`}>
+                              <span>⚡ Replaced by {matchingSupport.supportName}</span>
                             </span>
                           );
                         })()}
@@ -704,10 +780,10 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                     </span>
                   </button>
 
-                  {totalResult.sources.length > 0 ? (
+                  {combinedWeaponSources.length > 0 ? (
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {totalResult.sources.length} {totalResult.sources.length === 1 ? "Buff" : "Buffs"}
+                        {combinedWeaponSources.length} {combinedWeaponSources.length === 1 ? "Buff" : "Buffs"}
                       </span>
                       {!isSummaryExpanded && (
                         <span
@@ -734,9 +810,9 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
               </div>
 
               {/* Expandable Buff Pills Section */}
-              {isSummaryExpanded && totalResult.sources.length > 0 && (
+              {isSummaryExpanded && combinedWeaponSources.length > 0 && (
                 <div className="pt-2.5 mt-2.5 border-t border-gray-200/60 dark:border-zinc-800/60 flex items-center gap-2 flex-wrap max-h-36 overflow-y-auto">
-                  {totalResult.sources.map((s, i) => {
+                  {combinedWeaponSources.map((s, i) => {
                     const theme = getRarityTheme(s.rarity);
                     return (
                       <span

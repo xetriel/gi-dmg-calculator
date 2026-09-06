@@ -4,6 +4,7 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { CalcInstance, ExternalArtifactInstance } from "../types";
 import { ARTIFACTS, artifactById, filterArtifacts } from "@/data/registry/artifacts";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
+import { getActiveSupportEquippedArtifacts } from "@/lib/engine/support-equipment";
 import { toNum } from "@/lib/engine/validation";
 import { getRarityTheme } from "../rarity-theme";
 
@@ -44,9 +45,39 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
   const artifacts = currentInst.externalArtifacts ?? [];
   const masterEnabled = currentInst.externalArtifactBuffsEnabled !== false;
   const baseAtk = toNum(currentInst.stats["atk.base"]) ?? 0;
+  const baseDef = toNum(currentInst.stats["def.base"]) ?? 0;
+  const baseHp = toNum(currentInst.stats["hp.base"]) ?? 0;
 
-  // Compute live total artifact buff results
-  const totalResult = resolveExternalArtifactBuffs(artifacts, baseAtk, config, masterEnabled);
+  // Retrieve active support-equipped artifacts
+  const teamSupports = currentInst.teamSupports ?? [];
+  const teamBuffsEnabled = currentInst.teamBuffsEnabled !== false;
+  const supportArtifacts = getActiveSupportEquippedArtifacts(
+    teamSupports,
+    teamBuffsEnabled,
+    config.element,
+    baseAtk,
+    baseDef,
+    baseHp
+  );
+  const supportArtifactMap = new Map(supportArtifacts.map((sa) => [sa.artifact.artifactId, sa]));
+  const supportArtifactIds = Array.from(supportArtifactMap.keys());
+
+  // Compute live total artifact buff results (bypassing overridden duplicates)
+  const totalResult = resolveExternalArtifactBuffs(
+    artifacts,
+    baseAtk,
+    config,
+    masterEnabled,
+    baseDef,
+    baseHp,
+    supportArtifactIds
+  );
+
+  // Combined artifact buff sources for summary bar
+  const combinedArtifactSources = [
+    ...totalResult.sources,
+    ...(masterEnabled ? supportArtifacts.flatMap((sa) => sa.buffs) : []),
+  ];
 
   // Set of already added artifact IDs for the active setup
   const addedArtifactIds = new Set(artifacts.map((a) => a.artifactId));
@@ -379,7 +410,64 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
 
             {/* Configured Artifacts Scrollable List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5 min-h-0">
-              {artifacts.length === 0 && (
+              {/* 1. Support Character Equipped Artifact Sets Section */}
+              {supportArtifacts.length > 0 && (
+                <div className="space-y-2 mb-4 pb-3 border-b border-gray-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>🛡️</span>
+                      <span>Artifact Sets Equipped by Team Supports ({supportArtifacts.length})</span>
+                    </span>
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400">
+                      Configured in Team Support Buffs
+                    </span>
+                  </div>
+
+                  {supportArtifacts.map((sa, sIdx) => {
+                    const aConfig = artifactById(sa.artifact.artifactId);
+                    if (!aConfig) return null;
+                    const theme = getRarityTheme(aConfig.rarity);
+                    return (
+                      <div
+                        key={`support-artifact-${sIdx}`}
+                        className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"
+                      >
+                        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm">🏺</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                              {aConfig.name}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${theme.badge}`}>
+                              {sa.artifact.pieceCount}-Piece
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <span>🛡️</span>
+                              <span>Used by {sa.supportName}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Active buffs from this support artifact */}
+                        {sa.buffs.length > 0 && (
+                          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                            {sa.buffs.map((b, bi) => (
+                              <span
+                                key={bi}
+                                className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
+                              >
+                                {b.label}: +{b.stat === "em" || b.stat === "atk" || b.stat === "hp" || b.stat === "def" ? fmt(b.value) : `${fmt(b.value)}%`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {artifacts.length === 0 && supportArtifacts.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center text-gray-400 dark:text-zinc-500">
                   <span className="text-4xl mb-3">🏺</span>
                   <p className="text-sm font-bold text-gray-700 dark:text-zinc-300 mb-1">
@@ -433,14 +521,11 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                           {"★".repeat(aConfig.rarity)}
                         </span>
                         {(() => {
-                          const eqSup = (currentInst.teamSupports ?? []).find(
-                            (s) => s.enabled !== false && s.equippedArtifact?.enabled !== false && s.equippedArtifact?.artifactId === aConfig.id
-                          );
-                          if (!eqSup) return null;
-                          const supName = eqSup.supportId.replace(/-support$/, "");
+                          const matchingSupport = supportArtifactMap.get(aConfig.id);
+                          if (!matchingSupport) return null;
                           return (
-                            <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30 flex items-center gap-1" title={`Equipped by party support ${supName}. Standalone entry is overridden.`}>
-                              <span>⚡ Overridden by {supName}</span>
+                            <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/30 flex items-center gap-1" title={`Equipped by party support ${matchingSupport.supportName}. Standalone entry is overridden.`}>
+                              <span>⚡ Replaced by {matchingSupport.supportName}</span>
                             </span>
                           );
                         })()}
@@ -643,10 +728,10 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                     </span>
                   </button>
 
-                  {totalResult.sources.length > 0 ? (
+                  {combinedArtifactSources.length > 0 ? (
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {totalResult.sources.length} {totalResult.sources.length === 1 ? "Buff" : "Buffs"}
+                        {combinedArtifactSources.length} {combinedArtifactSources.length === 1 ? "Buff" : "Buffs"}
                       </span>
                       {!isSummaryExpanded && (
                         <span
@@ -673,9 +758,9 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
               </div>
 
               {/* Expandable Buff Pills Section */}
-              {isSummaryExpanded && totalResult.sources.length > 0 && (
+              {isSummaryExpanded && combinedArtifactSources.length > 0 && (
                 <div className="pt-2.5 mt-2.5 border-t border-gray-200/60 dark:border-zinc-800/60 flex items-center gap-2 flex-wrap max-h-36 overflow-y-auto">
-                  {totalResult.sources.map((s, i) => {
+                  {combinedArtifactSources.map((s, i) => {
                     const theme = getRarityTheme(s.rarity);
                     return (
                       <span

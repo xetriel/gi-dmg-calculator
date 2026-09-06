@@ -4,6 +4,7 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { CalcInstance } from "../types";
 import { artifactById } from "@/data/registry/artifacts";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
+import { getActiveSupportEquippedArtifacts } from "@/lib/engine/support-equipment";
 import { toNum } from "@/lib/engine/validation";
 import { getRarityTheme } from "../rarity-theme";
 
@@ -26,11 +27,44 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
   const artifacts = inst.externalArtifacts ?? [];
   const masterEnabled = inst.externalArtifactBuffsEnabled !== false;
   const baseAtk = toNum(inst.stats["atk.base"]) ?? 0;
+  const baseDef = toNum(inst.stats["def.base"]) ?? 0;
+  const baseHp = toNum(inst.stats["hp.base"]) ?? 0;
 
-  // Compute live preview of all artifact buffs
-  const artifactResult = resolveExternalArtifactBuffs(artifacts, baseAtk, config, masterEnabled);
+  // Retrieve active support-equipped artifacts
+  const teamSupports = inst.teamSupports ?? [];
+  const teamBuffsEnabled = inst.teamBuffsEnabled !== false;
+  const supportArtifacts = getActiveSupportEquippedArtifacts(
+    teamSupports,
+    teamBuffsEnabled,
+    config.element,
+    baseAtk,
+    baseDef,
+    baseHp
+  );
+  const supportArtifactMap = new Map(supportArtifacts.map((sa) => [sa.artifact.artifactId, sa]));
+  const supportArtifactIds = Array.from(supportArtifactMap.keys());
 
-  const activeCount = artifacts.filter((a) => a.enabled).length;
+  // Compute live preview of standalone artifact buffs (bypassing overridden duplicates)
+  const artifactResult = resolveExternalArtifactBuffs(
+    artifacts,
+    baseAtk,
+    config,
+    masterEnabled,
+    baseDef,
+    baseHp,
+    supportArtifactIds
+  );
+
+  // Combined artifact buff sources for live preview in this panel
+  const combinedArtifactSources = [
+    ...artifactResult.sources,
+    ...(masterEnabled ? supportArtifacts.flatMap((sa) => sa.buffs) : []),
+  ];
+
+  const totalArtifactsCount = artifacts.length + supportArtifacts.length;
+  const activeCount =
+    artifacts.filter((a) => a.enabled && !supportArtifactMap.has(a.artifactId)).length +
+    (masterEnabled ? supportArtifacts.length : 0);
 
   return (
     <div className="mb-4 border-b border-gray-200 dark:border-zinc-800 pb-3">
@@ -46,10 +80,10 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
             🏺
           </span>
           <span>External Artifact Buffs</span>
-          {artifacts.length > 0 && (
+          {totalArtifactsCount > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
-              <span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{artifacts.length}</span>
-              <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max 4)</span>
+              <span className="text-gray-900 dark:text-white font-extrabold">{activeCount}/{totalArtifactsCount}</span>
+              <span className="text-gray-400 dark:text-zinc-500 font-medium"> (Max 4 Standalone)</span>
             </span>
           )}
         </button>
@@ -75,14 +109,44 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
       </div>
 
       {/* Configured Artifacts Preview / Pill Cloud */}
-      {artifacts.length > 0 ? (
+      {totalArtifactsCount > 0 ? (
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* 1. Support Character Equipped Artifacts */}
+            {supportArtifacts.map((sa, sIdx) => {
+              const aConfig = artifactById(sa.artifact.artifactId);
+              if (!aConfig) return null;
+              const theme = getRarityTheme(aConfig.rarity);
+              return (
+                <div
+                  key={`sup-art-${sa.supportId}-${sIdx}`}
+                  onClick={onOpenModal}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
+                    masterEnabled
+                      ? theme.panelPillActive
+                      : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
+                  }`}
+                  title={`${aConfig.name} (${sa.artifact.pieceCount}-Pc, Equipped by ${sa.supportName}) - Click to configure`}
+                >
+                  <span className="text-xs">🏺</span>
+                  <span className="font-semibold text-[11px] truncate max-w-[130px]">{aConfig.name}</span>
+                  <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${theme.badge}`}>{sa.artifact.pieceCount}P</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-0.5">
+                    <span>🛡️</span>
+                    <span>{sa.supportName}</span>
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* 2. Standalone Configured Artifacts */}
             {artifacts.map((aInst, idx) => {
               const aConfig = artifactById(aInst.artifactId);
               if (!aConfig) return null;
               const theme = getRarityTheme(aConfig.rarity);
-              const isActive = masterEnabled && aInst.enabled;
+              const isOverridden = supportArtifactMap.has(aInst.artifactId);
+              const matchingSupport = supportArtifactMap.get(aInst.artifactId);
+              const isActive = masterEnabled && aInst.enabled && !isOverridden;
               const isWielder = (aInst.slot || "wielder") === "wielder";
 
               return (
@@ -90,33 +154,45 @@ export const ExternalArtifactBuffPanel: React.FC<ExternalArtifactBuffPanelProps>
                   key={aInst.id || `${aInst.artifactId}-${idx}`}
                   onClick={onOpenModal}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
-                    isActive
+                    isOverridden
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 opacity-75"
+                      : isActive
                       ? theme.panelPillActive
                       : "bg-gray-100/60 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 opacity-60"
                   }`}
-                  title={`${aConfig.name} (${aInst.pieceCount || 4}-Pc, ${isWielder ? "Wielder" : "Support"}) - Click to configure`}
+                  title={
+                    isOverridden && matchingSupport
+                      ? `${aConfig.name} is overridden by ${matchingSupport.supportName}'s equipped build`
+                      : `${aConfig.name} (${aInst.pieceCount || 4}-Pc, ${isWielder ? "Wielder" : "Support"}) - Click to configure`
+                  }
                 >
                   <span className="text-xs">🏺</span>
                   <span className="font-semibold text-[11px] truncate max-w-[130px]">{aConfig.name}</span>
                   <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${theme.badge}`}>{aInst.pieceCount || 4}P</span>
-                  <span
-                    className={`text-[9px] px-1 py-0.2 rounded font-bold ${
-                      isWielder
-                        ? "bg-sky-500/20 text-sky-700 dark:text-sky-300"
-                        : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                    }`}
-                  >
-                    {isWielder ? "Wielder" : "Support"}
-                  </span>
+                  {isOverridden && matchingSupport ? (
+                    <span className="text-[9px] px-1 py-0.2 rounded font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                      ⚡ Replaced by {matchingSupport.supportName}
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                        isWielder
+                          ? "bg-sky-500/20 text-sky-700 dark:text-sky-300"
+                          : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                      }`}
+                    >
+                      {isWielder ? "Wielder" : "Support"}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
 
           {/* Aggregated Buffs Pill Breakdown */}
-          {artifactResult.sources.length > 0 && (
+          {combinedArtifactSources.length > 0 && (
             <div className="pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 flex items-center gap-1.5 flex-wrap">
-              {artifactResult.sources.map((s, i) => {
+              {combinedArtifactSources.map((s, i) => {
                 const theme = getRarityTheme(s.rarity);
                 return (
                   <span

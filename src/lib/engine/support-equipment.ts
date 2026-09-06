@@ -540,3 +540,165 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
 
   return result;
 }
+
+export interface ActiveSupportEquippedWeapon {
+  supportId: string;
+  supportName: string;
+  supportElement?: Element;
+  weapon: EquippedWeaponState;
+  buffs: EquipmentBuffSource[];
+}
+
+export interface ActiveSupportEquippedArtifact {
+  supportId: string;
+  supportName: string;
+  supportElement?: Element;
+  artifact: EquippedArtifactState;
+  buffs: EquipmentBuffSource[];
+}
+
+export function getActiveSupportEquippedWeapons(
+  supports: Array<{
+    supportId: string;
+    enabled?: boolean;
+    useCharacterBuild?: boolean;
+    equippedWeapon?: EquippedWeaponState | null;
+    stats?: Record<string, string>;
+    mechanicInputs?: Record<string, string>;
+    constellationLevel?: number;
+  }>,
+  masterEnabled: boolean = true,
+  dpsElement?: Element,
+  dpsWeapon?: WeaponType,
+  dpsBaseAtk: number = 1000,
+  dpsBaseDef: number = 800,
+  dpsBaseHp: number = 15000
+): ActiveSupportEquippedWeapon[] {
+  if (!masterEnabled || !supports?.length) return [];
+  const result: ActiveSupportEquippedWeapon[] = [];
+
+  for (const sup of supports) {
+    if (sup.enabled === false || sup.useCharacterBuild === false) continue;
+    if (!sup.equippedWeapon?.enabled || !sup.equippedWeapon.weaponId) continue;
+
+    const normId = sup.supportId.replace(/-support$/, "");
+    const supportCfg = supportById(normId) || supportById(`${normId}-support`);
+    const charCfg = characterById(normId);
+    const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
+    const supportElement = supportCfg?.element ?? charCfg?.element;
+
+    const def =
+      Number(sup.stats?.["def.base"] ?? 0) * (1 + Number(sup.stats?.["def.percent"] ?? 0) / 100) +
+        Number(sup.stats?.["def.flat"] ?? 0) || Number(sup.stats?.["def"] ?? 1000);
+    const hp =
+      Number(sup.stats?.["hp.base"] ?? 0) * (1 + Number(sup.stats?.["hp.percent"] ?? 0) / 100) +
+        Number(sup.stats?.["hp.flat"] ?? 0) || Number(sup.stats?.["hp"] ?? 20000);
+    const baseAtk = Number(sup.stats?.["atk.base"] ?? sup.stats?.["baseAtk"] ?? 800);
+
+    const eqRes = resolveSupportEquipmentBuffs({
+      supportCharacterId: sup.supportId,
+      supportCtx: {
+        atk: baseAtk,
+        baseAtk,
+        hp,
+        baseHp: hp,
+        def,
+        baseDef: def,
+        em: Number(sup.stats?.["em"] ?? 0),
+        critRate: 0.05,
+        critDmg: 0.5,
+        constellationLevel: sup.constellationLevel ?? 0,
+        talentLevels: {},
+        inputs: {},
+      },
+      weaponState: sup.equippedWeapon,
+      activeCharElement: dpsElement,
+      activeCharWeapon: dpsWeapon,
+      activeCharBaseAtk: dpsBaseAtk,
+      activeCharBaseDef: dpsBaseDef,
+      activeCharBaseHp: dpsBaseHp,
+    });
+
+    result.push({
+      supportId: sup.supportId,
+      supportName,
+      supportElement,
+      weapon: sup.equippedWeapon,
+      buffs: eqRes.partySources.filter((s) => s.type === "weapon"),
+    });
+  }
+
+  return result;
+}
+
+export function getActiveSupportEquippedArtifacts(
+  supports: Array<{
+    supportId: string;
+    enabled?: boolean;
+    useCharacterBuild?: boolean;
+    equippedArtifact?: EquippedArtifactState | null;
+    stats?: Record<string, string>;
+    mechanicInputs?: Record<string, string>;
+    constellationLevel?: number;
+  }>,
+  masterEnabled: boolean = true,
+  dpsElement?: Element,
+  dpsBaseAtk: number = 1000,
+  dpsBaseDef: number = 800,
+  dpsBaseHp: number = 15000
+): ActiveSupportEquippedArtifact[] {
+  if (!masterEnabled || !supports?.length) return [];
+  const result: ActiveSupportEquippedArtifact[] = [];
+
+  for (const sup of supports) {
+    if (sup.enabled === false || sup.useCharacterBuild === false) continue;
+    if (!sup.equippedArtifact?.enabled || !sup.equippedArtifact.artifactId) continue;
+
+    const normId = sup.supportId.replace(/-support$/, "");
+    const supportCfg = supportById(normId) || supportById(`${normId}-support`);
+    const charCfg = characterById(normId);
+    const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
+    const supportElement = supportCfg?.element ?? charCfg?.element;
+
+    const def =
+      Number(sup.stats?.["def.base"] ?? 0) * (1 + Number(sup.stats?.["def.percent"] ?? 0) / 100) +
+        Number(sup.stats?.["def.flat"] ?? 0) || Number(sup.stats?.["def"] ?? 1000);
+    const hp =
+      Number(sup.stats?.["hp.base"] ?? 0) * (1 + Number(sup.stats?.["hp.percent"] ?? 0) / 100) +
+        Number(sup.stats?.["hp.flat"] ?? 0) || Number(sup.stats?.["hp"] ?? 20000);
+    const baseAtk = Number(sup.stats?.["atk.base"] ?? sup.stats?.["baseAtk"] ?? 800);
+
+    const eqRes = resolveSupportEquipmentBuffs({
+      supportCharacterId: sup.supportId,
+      supportCtx: {
+        atk: baseAtk,
+        baseAtk,
+        hp,
+        baseHp: hp,
+        def,
+        baseDef: def,
+        em: Number(sup.stats?.["em"] ?? 0),
+        critRate: 0.05,
+        critDmg: 0.5,
+        constellationLevel: sup.constellationLevel ?? 0,
+        talentLevels: {},
+        inputs: {},
+      },
+      artifactState: sup.equippedArtifact,
+      activeCharElement: dpsElement,
+      activeCharBaseAtk: dpsBaseAtk,
+      activeCharBaseDef: dpsBaseDef,
+      activeCharBaseHp: dpsBaseHp,
+    });
+
+    result.push({
+      supportId: sup.supportId,
+      supportName,
+      supportElement,
+      artifact: sup.equippedArtifact,
+      buffs: eqRes.partySources.filter((s) => s.type === "artifact"),
+    });
+  }
+
+  return result;
+}

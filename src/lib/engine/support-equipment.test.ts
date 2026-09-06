@@ -275,4 +275,85 @@ describe("Support Character Equipment System", () => {
       expect(removedRes.equippedWeaponIds.length).toBe(0);
     });
   });
+
+  describe("Use Character Build Toggle (Option 1 vs Option 2)", () => {
+    it("Option 1: ignores equipped weapon/artifact when useCharacterBuild is false", () => {
+      const arlecchino = characterById("arlecchino")!;
+
+      const supportInstance: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: { "def.base": "900", "def.percent": "150", "def.flat": "200" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: false, // Option 1: disabled
+        equippedWeapon: {
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          inputs: { "peak-patrol-ode": "1" },
+          enabled: true,
+        },
+        equippedArtifact: {
+          artifactId: "scroll-of-the-hero-of-cinder-city",
+          pieceCount: 4,
+          inputs: { "cinder-nightsoul-active": "1", "cinder-crystallize-pyro": "1" },
+          enabled: true,
+        },
+      };
+
+      const res = resolveTeamBuffs([supportInstance], true, arlecchino, 1000);
+
+      // Neither Peak Patrol Song nor Scroll of Cinder City should be tracked or applied
+      expect(res.equippedWeaponIds).toEqual([]);
+      expect(res.equippedArtifactIds).toEqual([]);
+      expect(res.sources.some((s) => s.sourceType === "weapon")).toBe(false);
+      expect(res.sources.some((s) => s.sourceType === "artifact")).toBe(false);
+
+      // Standalone items with matching IDs are NOT overridden
+      const standaloneWeapons = [
+        {
+          id: "wep-1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          enabled: true,
+          inputs: { "patrol-wielder-def": 3200, "patrol-ode-stacks": "2" },
+        },
+      ];
+      const standaloneRes = resolveExternalWeaponBuffs(standaloneWeapons, 1000, arlecchino, true, res.equippedWeaponIds);
+      expect(standaloneRes.sources.length).toBeGreaterThan(0);
+      expect(standaloneRes.statDeltas.dmgBonus).toBeGreaterThanOrEqual(25.6);
+    });
+
+    it("Option 2: deploys equipped weapon/artifact when useCharacterBuild is true", () => {
+      const arlecchino = characterById("arlecchino")!;
+
+      const supportInstance: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: { "def.base": "900", "def.percent": "150", "def.flat": "200" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true, // Option 2: enabled
+        equippedWeapon: {
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          inputs: { "peak-patrol-ode": "1" },
+          enabled: true,
+        },
+        equippedArtifact: {
+          artifactId: "scroll-of-the-hero-of-cinder-city",
+          pieceCount: 4,
+          inputs: { "cinder-nightsoul-active": "1", "cinder-crystallize-pyro": "1" },
+          enabled: true,
+        },
+      };
+
+      const res = resolveTeamBuffs([supportInstance], true, arlecchino, 1000);
+
+      expect(res.equippedWeaponIds).toContain("peak-patrol-song");
+      expect(res.equippedArtifactIds).toContain("scroll-of-the-hero-of-cinder-city");
+      expect(res.sources.some((s) => s.sourceType === "weapon")).toBe(true);
+      expect(res.sources.some((s) => s.sourceType === "artifact")).toBe(true);
+    });
+  });
 });
