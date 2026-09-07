@@ -17,9 +17,15 @@ describe("sandrone mechanics", () => {
     const zero = resolveSandrone(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 0 } }));
     expect(zero.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBe(1);
     expect(zero.statDeltas.dmgBonus).toBe(20);
+    expect(zero.statDeltas.enemyPhysicalRes).toBe(-40);
     const ten = resolveSandrone(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 10 } }));
     expect(ten.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBeCloseTo(1.9);
     expect(ten.statDeltas.dmgBonus).toBe(38);
+    expect(ten.statDeltas.enemyPhysicalRes).toBe(-40);
+    const twelve = resolveSandrone(sandrone, ctxFor("sandrone", { inputs: { "polestar-field": 1, "polestar-hits": 12 } }));
+    expect(twelve.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBeCloseTo(2.0);
+    expect(twelve.statDeltas.dmgBonus).toBe(40);
+    expect(twelve.statDeltas.enemyPhysicalRes).toBe(-40);
   });
   it("C1 adds +30% stellar reaction bonus", () => {
     const r = resolveSandrone(sandrone, ctxFor("sandrone", { constellationLevel: 1 }));

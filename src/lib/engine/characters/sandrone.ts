@@ -2,7 +2,8 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { MechanicsCtx, MechanicsResult } from "../mechanics-utils";
 import type { DirectReactionParams } from "../damage";
 import { addMods, fmt } from "../mechanics-utils";
-import { stellarBRC, stellarEmBonus, resMultiplier } from "../damage";
+import { stellarEmBonus, resMultiplier } from "../damage";
+import { stellarConductBRC, stellarConductFieldBuffs } from "../stellar";
 
 export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
   const res: MechanicsResult = { statDeltas: {}, perHit: {}, notes: [] };
@@ -16,8 +17,9 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
   // C1: all party members deal 30% increased Stellar-Conduct DMG (Reaction Bonus slot).
   const reactionBonusPct = cons >= 1 ? 30 : 0;
   const fieldOn = on("polestar-field");
-  const hits = Math.min(val("polestar-hits"), 10);
-  const brc = fieldOn ? stellarBRC(hits) : 1;
+  const hits = Math.min(val("polestar-hits"), 12);
+  const buffs = stellarConductFieldBuffs(hits);
+  const brc = fieldOn ? buffs.brc : 1;
   const direct: DirectReactionParams = { coefficient: brc, baseDmgBonusPct, reactionBonusPct };
 
   const stellarKeys = ["condensed-beam-stellar", "prism-shot-stellar", "convective-ray-stellar"];
@@ -26,12 +28,13 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
     `Light of Rationalisme: +${baseDmgBonusPct.toFixed(1)}% Base Stellar-Conduct DMG (0.7%/100 ATK${baseDmgBonusPct >= 14 ? ", capped" : ""})`
   );
   if (fieldOn) {
-    // Polestar Field: Cryo/Electro DMG Bonus +20% (0 hits) or +(28+n)% (n≥1).
-    // Only non-stellar hits benefit — the stellar branch ignores DMG Bonus%.
-    const fieldBonus = hits >= 1 ? 28 + hits : 20;
-    res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + fieldBonus;
+    // Polestar Field: Cryo/Electro DMG Bonus +20% (0 hits) or +(28+n)% (n≥1, up to +40%).
+    // Physical RES reduction: -40%.
+    // Only non-stellar hits benefit from DMG Bonus — the stellar branch ignores DMG Bonus%.
+    res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + buffs.cryoDmgBonus;
+    res.statDeltas.enemyPhysicalRes = (res.statDeltas.enemyPhysicalRes ?? 0) - buffs.enemyPhysicalResShred;
     res.notes.push(
-      `Polestar Field: BRC ×${brc.toFixed(2)} on Stellar hits (${hits} hit${hits === 1 ? "" : "s"}); +${fieldBonus}% Cryo DMG Bonus on non-Stellar hits`
+      `Polestar Field: BRC ×${brc.toFixed(2)} on Stellar hits (${hits} hit${hits === 1 ? "" : "s"}); +${buffs.cryoDmgBonus}% Cryo DMG Bonus on non-Stellar hits; -${buffs.enemyPhysicalResShred}% Enemy Phys RES`
     );
   }
   if (cons >= 1) res.notes.push("C1: +30% Stellar-Conduct DMG (Reaction Bonus)");

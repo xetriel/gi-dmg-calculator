@@ -23,6 +23,8 @@ export const DMG_COLORS = {
   "Lunar-Bloom": "rgb(200, 239, 196)",
   "Lunar-Crystallize": "rgb(255, 242, 186)",
   "Stellar-Conduct": "rgb(228, 209, 255)",
+  "Stellar Swirl": "rgb(190, 240, 255)",
+  "Stellar-Swirl": "rgb(190, 240, 255)",
   "Swirl DMG Bonus": "rgb(102, 255, 203)",
   "Heal-related": "rgb(192, 232, 108)",
   "Vaporize / Melt": "rgb(255, 203, 101)",

@@ -59,6 +59,8 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
       reactionBonus: "0",
       reactionPanelBonus: "0",
       lunarBaseBonus: "0",
+      stellarBaseBonus: "0",
+      stellarPanelBonus: "0",
       constellationLevel: 0,
       teamBuffsEnabled: false,
     };
@@ -523,6 +525,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
               config={config}
               validation={validation}
               setStat={setStat}
+              updateInstance={updateInstance}
             />
           </div>
         </div>

@@ -11,6 +11,7 @@ const REACTION_LABEL: Record<ReactionType, string> = {
   vaporize: "Vaporize",
   melt: "Melt",
   aggravate: "Aggravate",
+  spread: "Spread",
 };
 
 const selectCls =

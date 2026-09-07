@@ -25,6 +25,16 @@ import { resolveMechanics } from "./mechanics";
 import { levelMultiplier } from "./level-multiplier";
 import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "./transformative";
 import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, LUNAR_DIRECT_MULTIPLIER } from "./lunar";
+import {
+  indirectStellarDamage,
+  STELLAR_BY_ELEMENT,
+  STELLAR_LABEL,
+  STELLAR_SWIRL_VARIANT_LABEL,
+  STELLAR_INDIRECT_COEFFICIENT,
+  STELLAR_DIRECT_COEFFICIENT,
+  type StellarType,
+  type StellarSwirlVariant,
+} from "./stellar";
 import { activeEffects, constellationFlatBonus, constellationStatBonuses } from "./constellations";
 import { resolveTeamBuffs } from "./team-buffs";
 import { resolveExternalWeaponBuffs } from "./weapon-buffs";
@@ -131,6 +141,7 @@ export function explainHitFormulas(
 
   // Apply team support buffs
   let lunarBaseFromTeam = 0;
+  let stellarBaseFromTeam = 0;
   const teamResult = (inst.teamBuffsEnabled !== false && inst.teamSupports?.length)
     ? resolveTeamBuffs(inst.teamSupports, true, config, baseAtk, baseDef, baseHp)
     : null;
@@ -141,6 +152,7 @@ export function explainHitFormulas(
       }
     }
     lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
+    stellarBaseFromTeam = teamResult.stellarBaseBonusPct;
   }
 
   // Apply external weapon team buffs
@@ -166,6 +178,11 @@ export function explainHitFormulas(
       }
     }
   }
+
+  const lunarBaseTotal = (toNum(inst.lunarBaseBonus) ?? 0) + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam;
+  const panelBonusTotal = toNum(inst.reactionPanelBonus) ?? 0;
+  const stellarBaseTotal = (toNum(inst.stellarBaseBonus) ?? 0) + stellarBaseFromTeam;
+  const stellarPanelTotal = toNum(inst.stellarPanelBonus) ?? 0;
 
 
   const resolvedMultipliers = resolveHitMultipliers(
@@ -196,6 +213,19 @@ export function explainHitFormulas(
       const effectiveReaction = inst.reaction;
       const flatBonus = constellationFlatBonus(effects, h.key, effectiveStats) + (mods.flatDmgBonus ?? 0);
 
+      let directRx = h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined;
+      if (directRx) {
+        const isStellar = h.direct === "stellar" || directRx.stellarType !== undefined || (!directRx.lunarType && config.element === "Cryo");
+        const isLunar = h.direct === "lunar" || directRx.lunarType !== undefined;
+        const extraBase = isStellar ? stellarBaseTotal : isLunar ? lunarBaseTotal : 0;
+        const extraRx = isStellar ? stellarPanelTotal : isLunar ? panelBonusTotal : 0;
+        directRx = {
+          ...directRx,
+          baseDmgBonusPct: (directRx.baseDmgBonusPct ?? 0) + extraBase,
+          reactionBonusPct: (directRx.reactionBonusPct ?? 0) + extraRx,
+        };
+      }
+
       const hitRes = computeHit(effectiveStats, {
         multiplier: mult,
         scaling: h.scaling,
@@ -211,7 +241,7 @@ export function explainHitFormulas(
         hitCategory: h.hitCategory ?? (g.type as any),
         charElement: config.element,
         dmgBonusLabel: config.dmgBonusLabel,
-        directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+        directReaction: directRx,
       });
 
       const statVal = scalingTotal(effectiveStats, h.scaling);
@@ -251,14 +281,45 @@ export function explainHitFormulas(
       const totalDmgBonusPct = commonBonus + categoryBonus + elementBonus + extraBonus - effectiveStats.dmgReduction;
       const dmgBonusMult = 1 + totalDmgBonusPct / 100;
 
+      // Elemental and Talent CRIT Rate & CRIT DMG additions
+      let elementalCritRate = 0;
+      let elementalCritDmg = 0;
+      if (elem === "Pyro") { elementalCritRate = effectiveStats.pyroCritRate ?? 0; elementalCritDmg = effectiveStats.pyroCritDmg ?? 0; }
+      else if (elem === "Hydro") { elementalCritRate = effectiveStats.hydroCritRate ?? 0; elementalCritDmg = effectiveStats.hydroCritDmg ?? 0; }
+      else if (elem === "Cryo") { elementalCritRate = effectiveStats.cryoCritRate ?? 0; elementalCritDmg = effectiveStats.cryoCritDmg ?? 0; }
+      else if (elem === "Electro") { elementalCritRate = effectiveStats.electroCritRate ?? 0; elementalCritDmg = effectiveStats.electroCritDmg ?? 0; }
+      else if (elem === "Anemo") { elementalCritRate = effectiveStats.anemoCritRate ?? 0; elementalCritDmg = effectiveStats.anemoCritDmg ?? 0; }
+      else if (elem === "Geo") { elementalCritRate = effectiveStats.geoCritRate ?? 0; elementalCritDmg = effectiveStats.geoCritDmg ?? 0; }
+      else if (elem === "Dendro") { elementalCritRate = effectiveStats.dendroCritRate ?? 0; elementalCritDmg = effectiveStats.dendroCritDmg ?? 0; }
+      else if (elem === "Physical") { elementalCritRate = effectiveStats.physicalCritRate ?? 0; elementalCritDmg = effectiveStats.physicalCritDmg ?? 0; }
+
+      const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
+      let talentCritRate = 0;
+      let talentCritDmg = 0;
+      if (hitCat === "normal") { talentCritRate = effectiveStats.normalCritRate ?? 0; talentCritDmg = effectiveStats.normalCritDmg ?? 0; }
+      else if (hitCat === "charged") { talentCritRate = effectiveStats.chargedCritRate ?? 0; talentCritDmg = effectiveStats.chargedCritDmg ?? 0; }
+      else if (hitCat === "plunge") { talentCritRate = effectiveStats.plungingCritRate ?? 0; talentCritDmg = effectiveStats.plungingCritDmg ?? 0; }
+      else if (hitCat === "skill") { talentCritRate = effectiveStats.skillCritRate ?? 0; talentCritDmg = effectiveStats.skillCritDmg ?? 0; }
+      else if (hitCat === "burst") { talentCritRate = effectiveStats.burstCritRate ?? 0; talentCritDmg = effectiveStats.burstCritDmg ?? 0; }
+
       // CRIT Rate & CRIT DMG
-      const effectiveCritRate = Math.min(Math.max(effectiveStats.critRate + (mods.critRateBonusPct ?? 0), 0), 100);
-      const effectiveCritDmg = effectiveStats.critDmg + (mods.critDmgBonusPct ?? 0);
+      const effectiveCritRate = Math.min(Math.max(effectiveStats.critRate + (mods.critRateBonusPct ?? 0) + elementalCritRate + talentCritRate, 0), 100);
+      const effectiveCritDmg = effectiveStats.critDmg + (mods.critDmgBonusPct ?? 0) + elementalCritDmg + talentCritDmg;
       const critMult = 1 + effectiveCritDmg / 100;
 
       // DEF & RES multipliers
+      let targetRes = effectiveStats.enemyRes;
+      if (elem === "Pyro" && effectiveStats.enemyPyroRes !== undefined) targetRes = effectiveStats.enemyPyroRes;
+      else if (elem === "Hydro" && effectiveStats.enemyHydroRes !== undefined) targetRes = effectiveStats.enemyHydroRes;
+      else if (elem === "Cryo" && effectiveStats.enemyCryoRes !== undefined) targetRes = effectiveStats.enemyCryoRes;
+      else if (elem === "Electro" && effectiveStats.enemyElectroRes !== undefined) targetRes = effectiveStats.enemyElectroRes;
+      else if (elem === "Anemo" && effectiveStats.enemyAnemoRes !== undefined) targetRes = effectiveStats.enemyAnemoRes;
+      else if (elem === "Geo" && effectiveStats.enemyGeoRes !== undefined) targetRes = effectiveStats.enemyGeoRes;
+      else if (elem === "Dendro" && effectiveStats.enemyDendroRes !== undefined) targetRes = effectiveStats.enemyDendroRes;
+      else if (elem === "Physical" && effectiveStats.enemyPhysicalRes !== undefined) targetRes = effectiveStats.enemyPhysicalRes;
+
       const defMult = defMultiplier(effectiveStats, mods.defIgnorePct);
-      const resMult = resMultiplier(effectiveStats.enemyRes);
+      const resMult = resMultiplier(targetRes);
       const ampMult = elem === "Physical" ? 1 : amplifyingMultiplier(elem, effectiveReaction, effectiveStats.em, Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0));
 
       // Build main formula lines for Non-Crit, CRIT, and Avg modes
@@ -305,8 +366,16 @@ export function explainHitFormulas(
         if (elevationPct > 0) {
           specialPart = ` * (100% + Total Lunar Special DMG Bonus ${fmtPct(elevationPct)})`;
         }
+      } else if (h.direct === "stellar") {
+        const dr = directRx ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
+        const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
+        const coeff = dr.coefficient ?? (h.stellarType ? STELLAR_DIRECT_COEFFICIENT[h.stellarType] : 1) ?? 1;
+        const coeffFactorStr = coeff !== 1 ? ` * ${coeff}` : "";
+        const baseBonusStr = dr.baseDmgBonusPct > 0 ? ` * (100% + Stellar Base DMG Multiplier ${fmtPct(dr.baseDmgBonusPct)})` : "";
+        const rxBonusStr = dr.reactionBonusPct > 0 ? ` + Stellar Reaction Bonus ${fmtPct(dr.reactionBonusPct)}` : "";
+        basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${coeffFactorStr}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (Base Transformative Multiplier ${fmtPct(100 + emBonusPct)}${rxBonusStr})${baseBonusStr}`;
       } else if (h.direct) {
-        const dr = mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
+        const dr = directRx ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 };
         const emBonusPct = stellarEmBonus(effectiveStats.em) * 100;
         const coeff = dr.coefficient ?? 1;
         const coeffFactorStr = coeff !== 1 ? ` * ${coeff}` : "";
@@ -316,7 +385,7 @@ export function explainHitFormulas(
       } else {
         basePart = `(${fmtPct(mult)} * Total ${statName} ${fmt(statVal)}${totalIncrease > 0 ? ` + Total DMG Increase ${fmt(totalIncrease)}` : ""}) * (100% + Total DMG Bonus ${fmtPct(totalDmgBonusPct)})`;
       }
-      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`}${specialPart} * ${formatResMultiplier(effectiveStats.enemyRes, elem)}`;
+      const defResPart = `${h.direct ? "" : ` * Enemy DEF Multiplier ${fmtPct(defMult * 100)}`}${specialPart} * ${formatResMultiplier(targetRes, elem)}`;
 
       const mainFormulaNonCrit = `${h.name} ${fmt(hitRes.nonCrit)} = ${basePart}${defResPart}`;
       const mainFormulaCrit = `${h.name} ${fmt(hitRes.crit)} = ${basePart} * (100% + Total Crit DMG ${fmtPct(effectiveCritDmg)})${defResPart}`;
@@ -480,6 +549,13 @@ export function explainHitFormulas(
       if (mech.statDeltas.critRate) {
         crBuffs.push({ source: config.name, value: mech.statDeltas.critRate });
       }
+      const talentCatName = hitCat === "normal" ? "Normal Attack" : hitCat === "charged" ? "Charged Attack" : hitCat === "plunge" ? "Plunging Attack" : hitCat === "skill" ? "Elemental Skill" : "Elemental Burst";
+      if (elementalCritRate > 0) {
+        crBuffs.push({ source: `${elem} CRIT Rate`, value: elementalCritRate });
+      }
+      if (talentCritRate > 0) {
+        crBuffs.push({ source: `${talentCatName} CRIT Rate`, value: talentCritRate });
+      }
 
       const crTerms = [`Initial Crit Rate ${fmtPct(initialCritRate)}`];
       for (const b of crBuffs) {
@@ -510,6 +586,12 @@ export function explainHitFormulas(
       if (mech.statDeltas.critDmg) {
         cdBuffs.push({ source: config.name, value: mech.statDeltas.critDmg });
       }
+      if (elementalCritDmg > 0) {
+        cdBuffs.push({ source: `${elem} CRIT DMG`, value: elementalCritDmg });
+      }
+      if (talentCritDmg > 0) {
+        cdBuffs.push({ source: `${talentCatName} CRIT DMG`, value: talentCritDmg });
+      }
 
       const cdTerms = [`Initial Crit DMG ${fmtPct(initialCritDmg)}`];
       for (const b of cdBuffs) {
@@ -524,11 +606,11 @@ export function explainHitFormulas(
 
       // 6. RES Multiplier breakdown
       const baseEnemyRes = toNum(inst.stats["enemyRes"]) ?? 10;
-      const resDiff = effectiveStats.enemyRes - baseEnemyRes;
+      const resDiff = targetRes - baseEnemyRes;
       if (Math.abs(resDiff) > 0.001) {
-        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(baseEnemyRes)} + Team Enemy ${elem} DMG RES ${fmtPct(resDiff)}`);
+        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(targetRes)} = Base Enemy ${elem} DMG RES ${fmtPct(baseEnemyRes)} + Debuff/Buff RES ${fmtPct(resDiff)}`);
       } else {
-        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)} = Base Enemy ${elem} DMG RES ${fmtPct(effectiveStats.enemyRes)}`);
+        subBreakdowns.push(`Total Enemy ${elem} DMG RES ${fmtPct(targetRes)} = Base Enemy ${elem} DMG RES ${fmtPct(targetRes)}`);
       }
 
       breakdowns.push({
@@ -608,8 +690,13 @@ export function explainHitFormulas(
 
     const label = LUNAR_LABEL[lType];
     const emBonus = stellarEmBonus(effectiveStats.em);
-    const mainFormula = `${label} DMG ${fmt(res.avg)} = Base Lunar DMG * (100% + EM Bonus ${fmtPct(emBonus * 100)}) * (100% + Crit Rate ${fmtPct(effectiveStats.critRate)} * Crit DMG ${fmtPct(effectiveStats.critDmg)}) * Enemy RES Multiplier`;
+    const crRatio = res.benchmarkCritRate ?? effectiveStats.critRate;
+    const cdRatio = res.benchmarkCritDmg ?? effectiveStats.critDmg;
+    const mainFormula = `${label} DMG ${fmt(res.avg)} = Base Lunar DMG * (100% + EM Bonus ${fmtPct(emBonus * 100)}) * (100% + Benchmark Crit Rate ${fmtPct(crRatio)} * Benchmark Crit DMG ${fmtPct(cdRatio)}) * Enemy RES Multiplier`;
     const subBreakdowns = [
+      `Normalized Multi-Contributor DMG = 0.60 * D1 + 0.30 * D2 + 0.05 * D3 + 0.05 * D4`,
+      `Capacity Active: ${res.contributorCount ?? 1} contributor(s) (${res.contributorCount === 1 ? "60%" : res.contributorCount === 2 ? "90%" : res.contributorCount === 3 ? "95%" : "100%"} capacity)`,
+      `Benchmark CRIT: Highest individual contributor (D1) CRIT ratio (${fmtPct(crRatio)} / ${fmtPct(cdRatio)})`,
       `EM Bonus ${fmtPct(emBonus * 100)} = (6 * EM ${fmt(effectiveStats.em)}) / (EM + 2000)`,
       `Non-Crit DMG: ${fmt(res.nonCrit)} | Crit DMG: ${fmt(res.crit)} | Average DMG: ${fmt(res.avg)}`,
     ];
@@ -629,6 +716,52 @@ export function explainHitFormulas(
       subBreakdowns,
     });
   });
+
+  // 3.5 Process Stellar Glimmer Reactions
+  const stellarList = STELLAR_BY_ELEMENT[config.element] ?? [];
+
+  if (stellarList.includes("stellar-swirl")) {
+    const variants: StellarSwirlVariant[] = ["initial", "vortex-lv1", "vortex-lv2"];
+    variants.forEach(variant => {
+      const res = indirectStellarDamage(
+        variant,
+        effectiveStats,
+        stellarBaseTotal,
+        stellarPanelTotal,
+      );
+      const label = STELLAR_SWIRL_VARIANT_LABEL[variant];
+      const coeff = STELLAR_INDIRECT_COEFFICIENT[variant];
+      const emBonus = stellarEmBonus(effectiveStats.em);
+      const elem: Element | "Physical" = variant === "initial" ? "Anemo" : "Cryo";
+      const crRatio = res.benchmarkCritRate ?? effectiveStats.critRate;
+      const cdRatio = res.benchmarkCritDmg ?? effectiveStats.critDmg;
+
+      const mainFormula = `${label} DMG ${fmt(res.avg)} = Coeff ${coeff.toFixed(2)} * LevelMult * (100% + Base Bonus ${fmtPct(stellarBaseTotal)}) * (100% + EM Bonus ${fmtPct(emBonus * 100)}) * Benchmark Crit * Enemy RES Multiplier`;
+      const subBreakdowns = [
+        `Normalized Multi-Contributor DMG = 0.60 * D1 + 0.30 * D2 + 0.05 * D3 + 0.05 * D4`,
+        `Base Reaction Coefficient: ${coeff.toFixed(2)} (${variant === "initial" ? "Initial Anemo" : variant === "vortex-lv1" ? "Lv. 1 Vortex Cryo AoE" : "Lv. 2 Vortex Cryo AoE"})`,
+        `Capacity Active: ${res.contributorCount ?? 1} contributor(s) (${res.contributorCount === 1 ? "60%" : res.contributorCount === 2 ? "90%" : res.contributorCount === 3 ? "95%" : "100%"} capacity)`,
+        `Benchmark CRIT: Highest individual contributor (D1) CRIT ratio (${fmtPct(crRatio)} / ${fmtPct(cdRatio)})`,
+        `EM Bonus ${fmtPct(emBonus * 100)} = (6 * EM ${fmt(effectiveStats.em)}) / (EM + 2000)`,
+        `Non-Crit DMG: ${fmt(res.nonCrit)} | Crit DMG: ${fmt(res.crit)} | Average DMG: ${fmt(res.avg)}`,
+      ];
+
+      breakdowns.push({
+        id: `stellar-${variant}`,
+        hitName: label,
+        category: "stellar",
+        element: elem as Element,
+        reaction: "none",
+        multiplierPct: coeff * 100,
+        scalingSource: "em",
+        nonCrit: res.nonCrit,
+        crit: res.crit,
+        avg: res.avg,
+        mainFormula,
+        subBreakdowns,
+      });
+    });
+  }
 
   // 4. Add Received Team Buffs Section
   const teamBuffsLines: string[] = [];

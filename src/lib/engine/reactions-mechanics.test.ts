@@ -140,11 +140,12 @@ describe("seed data integrity", () => {
 });
 
 describe("stellar-conduct helpers", () => {
-  it("BRC: 0 hits → 1; n≥1 → 1.4 + 0.05n; clamps at 10", () => {
+  it("BRC: 0 hits → 1; n≥1 → 1.4 + 0.05n; clamps at 12 (up to 2.00)", () => {
     expect(stellarBRC(0)).toBe(1);
     expect(stellarBRC(1)).toBeCloseTo(1.45);
     expect(stellarBRC(10)).toBeCloseTo(1.9);
-    expect(stellarBRC(15)).toBeCloseTo(1.9);
+    expect(stellarBRC(12)).toBeCloseTo(2.0);
+    expect(stellarBRC(15)).toBeCloseTo(2.0);
     expect(stellarBRC(-3)).toBe(1);
   });
   it("EM bonus: 6·EM/(EM+2000)", () => {
