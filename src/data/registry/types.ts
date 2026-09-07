@@ -4,33 +4,107 @@ export type Weapon = "Sword" | "Claymore" | "Polearm" | "Catalyst" | "Bow";
 export type WeaponType = Weapon;
 
 // Hit-attached reactions supported by the engine: amplifying (vaporize/melt multiply
-// the whole hit) and catalyze (aggravate adds a level/EM-scaled additive base DMG).
+// the whole hit) and catalyze (aggravate/spread add a level/EM-scaled additive base DMG).
 // "none" = no reaction. Transformative and Lunar reactions are standalone outputs.
-export type ReactionType = "none" | "vaporize" | "melt" | "aggravate";
+export type ReactionType = "none" | "vaporize" | "melt" | "aggravate" | "spread";
 
 // The talent categories; each has one selectable level in the UI.
 export type TalentType = "normal" | "skill" | "burst" | "special";
 
 import type { LunarType } from "@/lib/engine/lunar";
+import type { StellarType } from "@/lib/engine/stellar";
 
 export type StatKey =
-  | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge"
-  | "dmgBonus" | "healingBonus" | "dmgReduction" | "enemyRes"
-  | "levelChar" | "levelEnemy" | "defReduction" | "defIgnore"
-  | "normalDmgBonus" | "chargedDmgBonus" | "plungeDmgBonus"
-  | "skillDmgBonus" | "burstDmgBonus"
+  // 1. Basic Stats
+  | "hp" | "atk" | "def" | "em" | "critRate" | "critDmg" | "energyRecharge" | "healingBonus"
+  | "hpPercent" | "atkPercent" | "defPercent"
+  // 2. Elemental DMG Bonuses
+  | "dmgBonus" | "commonDmgBonus"
   | "pyroDmgBonus" | "hydroDmgBonus" | "dendroDmgBonus" | "electroDmgBonus"
   | "anemoDmgBonus" | "cryoDmgBonus" | "geoDmgBonus" | "physicalDmgBonus"
+  // 3. Enemy Debuffs
+  | "enemyRes" | "enemyPhysicalRes" | "enemyAnemoRes" | "enemyGeoRes"
+  | "enemyElectroRes" | "enemyHydroRes" | "enemyPyroRes" | "enemyCryoRes" | "enemyDendroRes"
+  | "defReduction" | "defIgnore"
+  // 4. Self Resistances
+  | "selfPhysicalRes" | "selfAnemoRes" | "selfGeoRes" | "selfElectroRes"
+  | "selfHydroRes" | "selfPyroRes" | "selfCryoRes" | "selfDendroRes"
+  // 5. Reaction DMG Bonuses & Multipliers
+  | "overloadedDmgBonus" | "shatteredDmgBonus" | "electroChargedDmgBonus"
+  | "superconductDmgBonus" | "swirlDmgBonus" | "burningDmgBonus"
+  | "bloomDmgBonus" | "burgeonDmgBonus" | "hyperbloomDmgBonus"
+  | "vaporizeDmgBonus" | "meltDmgBonus" | "spreadDmgBonus" | "aggravateDmgBonus"
   | "lunarChargedDmgBonus" | "lunarBloomDmgBonus" | "lunarCrystallizeDmgBonus"
+  | "stellarConductDmgBonus" | "stellarSwirlDmgBonus" | "stellarGlimmerDmgBonus"
+  | "lunarReactionDmgBonus" | "stellarReactionDmgBonus"
+  | "lunarChargedBaseDmgMultiplier" | "lunarBloomBaseDmgMultiplier" | "lunarCrystallizeBaseDmgMultiplier"
+  | "stellarConductBaseDmgMultiplier" | "stellarSwirlBaseDmgMultiplier"
+  | "lunarReactionBaseDmgMultiplier" | "stellarReactionBaseDmgMultiplier"
+  | "lunarChargedSpecialDmgBonus" | "lunarBloomSpecialDmgBonus" | "lunarCrystallizeSpecialDmgBonus"
+  | "stellarConductSpecialDmgBonus" | "stellarSwirlSpecialDmgBonus"
+  | "lunarReactionSpecialDmgBonus" | "stellarReactionSpecialDmgBonus"
+  | "stellarConductMultiplier" | "stellarSwirlMultiplier" | "stellarReactionMultiplier"
   | "lunarChargedElevation" | "lunarBloomElevation" | "lunarCrystallizeElevation"
-  | "lunarChargedFlatDmg" | "lunarBloomFlatDmg" | "lunarCrystallizeFlatDmg"
-  | "stellarSwirlDmgBonus" | "stellarGlimmerDmgBonus";
+  // 6. Reaction CRIT Bonuses
+  | "lunarChargedCritRate" | "lunarChargedCritDmg"
+  | "burningCritRate" | "burningCritDmg"
+  | "bloomCritRate" | "bloomCritDmg"
+  | "burgeonCritRate" | "burgeonCritDmg"
+  | "hyperbloomCritRate" | "hyperbloomCritDmg"
+  | "lunarBloomCritRate" | "lunarBloomCritDmg"
+  | "swirlCritRate" | "swirlCritDmg"
+  | "lunarCrystallizeCritRate" | "lunarCrystallizeCritDmg"
+  | "stellarConductCritRate" | "stellarConductCritDmg"
+  | "stellarSwirlCritRate" | "stellarSwirlCritDmg"
+  | "lunarReactionCritRate" | "lunarReactionCritDmg"
+  | "stellarReactionCritRate" | "stellarReactionCritDmg"
+  // 7. Elemental Damage Increases
+  | "physicalDmgIncrease" | "anemoDmgIncrease" | "geoDmgIncrease" | "electroDmgIncrease"
+  | "hydroDmgIncrease" | "pyroDmgIncrease" | "cryoDmgIncrease" | "dendroDmgIncrease" | "commonDmgIncrease"
+  | "lunarBloomDmgIncrease" | "lunarCrystallizeDmgIncrease" | "stellarConductDmgIncrease" | "stellarSwirlDmgIncrease"
+  | "lunarChargedReactionDmgIncrease" | "lunarChargedDirectDmgIncrease"
+  | "lunarBloomReactionDmgIncrease" | "lunarBloomDirectDmgIncrease"
+  | "lunarCrystallizeReactionDmgIncrease" | "lunarCrystallizeDirectDmgIncrease"
+  | "stellarConductReactionDmgIncrease" | "stellarConductDirectDmgIncrease"
+  | "stellarSwirlReactionDmgIncrease" | "stellarSwirlDirectDmgIncrease"
+  | "lunarReactionDmgIncrease" | "stellarReactionDmgIncrease"
+  | "lunarChargedFlatDmg" | "lunarBloomFlatDmg" | "lunarCrystallizeFlatDmg" | "flatDmgBonus"
+  // 8. Talent Damage Increases
+  | "normalDmgIncrease" | "chargedDmgIncrease" | "plungingCollisionDmgIncrease"
+  | "plungingImpactDmgIncrease" | "skillDmgIncrease" | "burstDmgIncrease"
+  // 9. Elemental CRIT Bonuses
+  | "physicalCritRate" | "physicalCritDmg" | "anemoCritRate" | "anemoCritDmg"
+  | "geoCritRate" | "geoCritDmg" | "electroCritRate" | "electroCritDmg"
+  | "hydroCritRate" | "hydroCritDmg" | "pyroCritRate" | "pyroCritDmg"
+  | "cryoCritRate" | "cryoCritDmg" | "dendroCritRate" | "dendroCritDmg"
+  // 10. Talent DMG Bonuses
+  | "normalDmgBonus" | "chargedDmgBonus" | "plungeDmgBonus"
+  | "skillDmgBonus" | "burstDmgBonus"
+  | "plungingCollisionDmgBonus" | "plungingImpactDmgBonus" | "plungingDmgBonus"
+  | "elementalAttDmgBonus" | "normalAttEleDmgBonus"
+  // 11. Talent CRIT Bonuses
+  | "normalCritRate" | "normalCritDmg" | "chargedCritRate" | "chargedCritDmg"
+  | "plungingCollisionCritRate" | "plungingCollisionCritDmg"
+  | "plungingImpactCritRate" | "plungingImpactCritDmg"
+  | "plungingCritRate" | "plungingCritDmg"
+  | "skillCritRate" | "skillCritDmg" | "burstCritRate" | "burstCritDmg"
+  | "elementalAttCritRate" | "elementalAttCritDmg"
+  // 12. Talent Level Boosts
+  | "normalLevelBoost" | "skillLevelBoost" | "burstLevelBoost"
+  // 13. Base Stat Modifications
+  | "baseAtk" | "baseHp" | "baseDef"
+  // 14. Stamina Buffs
+  | "stamina" | "staminaDec" | "sprintingStaminaDec" | "glidingStaminaDec" | "chargedAttackStaminaDec"
+  // 15. Target & Misc Stats
+  | "levelChar" | "levelEnemy" | "dmgReduction"
+  | "incomingHealingBonus" | "shieldStrength" | "cdReduction" | "movementSpd"
+  | "atkSpd" | "weakspotDmg" | "healIncrease" | "allRes";
 
 export interface StatField {
   key: StatKey;
   label: string;                         // may be character-specific (e.g. "Pyro DMG Bonus%")
   unit: "flat" | "percent";
-  group: "base" | "advanced" | "combat" | "defense" | "lunar";
+  group: "base" | "advanced" | "combat" | "defense" | "lunar" | "stellar" | "reactions" | "talents" | "misc";
   hasBaseAndFlat?: boolean;              // HP/ATK/DEF show Base + Flat + Total (like the Excel)
   derived?: boolean;                     // RES/Level/Defense multipliers are computed, not typed
 }
@@ -49,7 +123,7 @@ export interface StatField {
 // "normal"/"charged"/"plunge" are sub-types within the "normal" talent group;
 // "skill"/"burst" map directly to their talent group type. "special" hits receive only All DMG Bonus.
 export type HitCategory = "normal" | "charged" | "plunge" | "skill" | "burst" | "special";
-export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; lunarType?: LunarType; hitCategory?: HitCategory; minConstellation?: number; element?: Element | "Physical"; }
+export interface TalentHit { key: string; name: string; scaling: ScalingSource; kind?: "damage" | "heal" | "buff" | "shield"; direct?: "stellar" | "lunar"; lunarType?: LunarType; stellarType?: StellarType; hitCategory?: HitCategory; minConstellation?: number; element?: Element | "Physical"; }
 export interface TalentGroup { type: TalentType; name: string; hits: TalentHit[]; }
 
 // Declarative per-character mechanic control rendered by the UI. The math lives in
@@ -162,6 +236,7 @@ export interface CharacterSupportBuffDef {
   statFields?: SupportStatField[];      // limited stat inputs to show (defaults to baseAtk/critRate/critDmg)
   buffs: SupportBuff[];                 // the buffs this support provides
   lunarBaseBonusCompute?: (ctx: SupportCtx) => number;  // Moonsign Lunar Base DMG
+  stellarBaseBonusCompute?: (ctx: SupportCtx) => number; // Stellar Base DMG
   formatBriefStats?: (ctx: SupportCtx) => BriefStatPill[];  // brief info pills for card UI
 }
 
@@ -180,6 +255,7 @@ export interface SupportConfig {
   constellations?: Constellation[];     // constellation definitions
   buffs: SupportBuff[];                 // the buffs this support provides
   lunarBaseBonusCompute?: (ctx: SupportCtx) => number;  // Moonsign Lunar Base DMG
+  stellarBaseBonusCompute?: (ctx: SupportCtx) => number; // Stellar Base DMG
   formatBriefStats?: (ctx: SupportCtx) => BriefStatPill[];  // brief info pills for card UI
 }
 

@@ -29,12 +29,17 @@ interface EffectiveStatsModalProps {
 const CATEGORY_TABS: Array<{ id: string; label: string; icon: string }> = [
   { id: "all", label: "All Stats", icon: "📋" },
   { id: "externalOnly", label: "External Buffed Only", icon: "⭐" },
-  { id: "attributes", label: "Core Attributes", icon: "⚔️" },
-  { id: "categoryDmg", label: "Category DMG", icon: "💥" },
+  { id: "attributes", label: "Attributes & Base", icon: "⚔️" },
   { id: "elementalDmg", label: "Elemental DMG", icon: "🔥" },
-  { id: "reactionElevation", label: "Reaction & Elevation", icon: "🌙" },
+  { id: "categoryDmg", label: "Talent DMG", icon: "💥" },
+  { id: "reactionDmg", label: "Reaction Bonuses", icon: "🔮" },
+  { id: "reactionElevation", label: "Elevation & Multipliers", icon: "🌙" },
+  { id: "reactionCrit", label: "Reaction CRIT", icon: "🎯" },
+  { id: "elementalCrit", label: "Elemental CRIT", icon: "✨" },
+  { id: "talentCrit", label: "Talent CRIT", icon: "🗡️" },
   { id: "debuffs", label: "Enemy Debuffs", icon: "🛡️" },
-  { id: "multipliers", label: "Multipliers", icon: "⚡" },
+  { id: "selfRes", label: "Self RES", icon: "🔰" },
+  { id: "staminaAndMisc", label: "Stamina & Misc", icon: "⚡" },
 ];
 
 export const EffectiveStatsModal: React.FC<EffectiveStatsModalProps> = ({

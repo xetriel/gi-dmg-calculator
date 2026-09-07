@@ -2,13 +2,28 @@ import type { DamageStats } from "./damage";
 import { supportById, type SupportCtx } from "../../data/registry/characters";
 import { getRequiredConstellation } from "./validation";
 
-import type { CharacterConfig } from "../../data/registry/types";
+import type { CharacterConfig, Element } from "../../data/registry/types";
 import {
   resolveSupportEquipmentBuffs,
   getSupportEquipmentSetups,
   type EquippedWeaponState,
   type EquippedArtifactState,
 } from "./support-equipment";
+
+// Contributor representation for indirect reaction calculations
+export interface TeamContributor {
+  id: string;
+  name: string;
+  element: Element;
+  levelChar: number;
+  em: number;
+  critRate: number;
+  critDmg: number;
+  reactionBonusPct: number;
+  baseDmgBonusPct: number;
+  elevationBonusPct: number;
+  flatDmg: number;
+}
 
 // A support character instance as stored in CalcInstance.teamSupports
 export interface SupportInstance {
@@ -42,8 +57,10 @@ export interface TeamBuffSource {
 export interface TeamBuffResult {
   statDeltas: Partial<DamageStats>;       // additive stat bonuses to DPS
   lunarBaseBonusPct: number;               // aggregated Lunar Base DMG Bonus
+  stellarBaseBonusPct: number;             // aggregated Stellar Base DMG Bonus
   sources: TeamBuffSource[];               // per-buff attribution
   teamCrit: { critRate: number; critDmg: number };  // team CRIT for Lunar panel
+  contributors: TeamContributor[];         // active support contributors
   equippedArtifactIds: string[];           // IDs of artifact sets equipped on active supports (for standalone override)
   equippedWeaponIds: string[];             // IDs of weapons equipped on active supports (for standalone override)
 }
@@ -153,8 +170,10 @@ export function resolveTeamBuffs(
   const result: TeamBuffResult = {
     statDeltas: {},
     lunarBaseBonusPct: 0,
+    stellarBaseBonusPct: 0,
     sources: [],
     teamCrit: { critRate: 0, critDmg: 0 },
+    contributors: [],
     equippedArtifactIds: [],
     equippedWeaponIds: [],
   };
@@ -174,6 +193,21 @@ export function resolveTeamBuffs(
 
     const ctx = resolveSupportCtx(inst);
     if (!ctx) continue;
+
+    const supportLevel = toNum(inst.stats["levelChar"]) || toNum(inst.stats["level"]) || 90;
+    result.contributors.push({
+      id: inst.supportId,
+      name: config.name,
+      element: config.element,
+      levelChar: supportLevel,
+      em: ctx.em,
+      critRate: ctx.critRate,
+      critDmg: ctx.critDmg,
+      reactionBonusPct: toNum(inst.stats["reactionBonus"]) || 0,
+      baseDmgBonusPct: 0,
+      elevationBonusPct: 0,
+      flatDmg: 0,
+    });
 
     const isBuildEnabled =
       inst.useCharacterBuild !== false &&
@@ -237,6 +271,22 @@ export function resolveTeamBuffs(
           stat: "lunarBaseBonusPct",
           label: `Lunar Base DMG (${config.name} Moonsign)`,
           value: lunarBase,
+          rarity: config.rarity,
+          sourceType: "character",
+        });
+      }
+    }
+
+    // Compute Stellar Base DMG Bonus
+    if (config.stellarBaseBonusCompute) {
+      const stellarBase = config.stellarBaseBonusCompute(ctx);
+      if (stellarBase > 0) {
+        result.stellarBaseBonusPct += stellarBase;
+        result.sources.push({
+          supportName: config.name,
+          stat: "stellarBaseBonusPct",
+          label: `Stellar Base DMG (${config.name})`,
+          value: stellarBase,
           rarity: config.rarity,
           sourceType: "character",
         });

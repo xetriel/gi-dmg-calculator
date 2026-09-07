@@ -51,6 +51,9 @@ export const initialStats: Record<string, string> = {
   "lunarChargedFlatDmg": "0",
   "lunarBloomFlatDmg": "0",
   "lunarCrystallizeFlatDmg": "0",
+  "stellarConductDmgBonus": "0",
+  "stellarSwirlDmgBonus": "0",
+  "stellarGlimmerDmgBonus": "0",
 };
 
 export const getInitialStats = (config: CharacterConfig): Record<string, string> => {
@@ -166,6 +169,8 @@ export function useCalculatorState({
       reactionBonus: "",
       reactionPanelBonus: "0",
       lunarBaseBonus: "0",
+      stellarBaseBonus: "0",
+      stellarPanelBonus: "0",
       constellationLevel: 0,
       teamSupports: [],
       teamBuffsEnabled: true,

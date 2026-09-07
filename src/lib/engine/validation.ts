@@ -93,10 +93,16 @@ export function effectiveTalentLevels(
   levels: Record<string, string>,
   constellationLevel: number = 0,
   mechanicInputs?: Record<string, string>,
+  talentBoosts?: { normal?: number; skill?: number; burst?: number },
 ): Record<string, number> {
   const lvlBonuses = talentLevelBonuses(config.constellations, constellationLevel);
   if (config.id === "skirk" && mechanicInputs && (mechanicInputs["mutual-weapons-mentorship"] ?? "1") === "1") {
     lvlBonuses.skill = (lvlBonuses.skill ?? 0) + 1;
+  }
+  if (talentBoosts) {
+    if (talentBoosts.normal) lvlBonuses.normal = (lvlBonuses.normal ?? 0) + talentBoosts.normal;
+    if (talentBoosts.skill) lvlBonuses.skill = (lvlBonuses.skill ?? 0) + talentBoosts.skill;
+    if (talentBoosts.burst) lvlBonuses.burst = (lvlBonuses.burst ?? 0) + talentBoosts.burst;
   }
   const out: Record<string, number> = {};
   for (const g of config.talents) {
@@ -120,9 +126,10 @@ export function resolveHitMultipliers(
   manualHits: Record<string, string>,
   constellationLevel: number = 0,
   mechanicInputs?: Record<string, string>,
+  talentBoosts?: { normal?: number; skill?: number; burst?: number },
 ): Record<string, number | null> {
   const out: Record<string, number | null> = {};
-  const effLevels = effectiveTalentLevels(config, scaling, levels, constellationLevel, mechanicInputs);
+  const effLevels = effectiveTalentLevels(config, scaling, levels, constellationLevel, mechanicInputs, talentBoosts);
   config.talents.forEach((g, gi) => {
     const s = scaling[g.type];
     const cappedLvl = effLevels[g.type];
@@ -138,7 +145,7 @@ export function resolveHitMultipliers(
 export function validate(
   config: CharacterConfig,
   raw: RawInputs,
-  resolvedHits: Record<string, number | null>,
+  resolvedHits: Record<string, number | null> = {},
 ): ValidationResult {
   const errors: Record<string, string> = {};
   const general: string[] = [];
@@ -211,20 +218,29 @@ export function validate(
 // Resolve validated raw inputs into engine-ready numeric stats.
 export function resolveStats(raw: RawInputs): DamageStats {
   const g = (id: string) => toNum(raw.stats[id]) ?? 0;
+  const opt = (id: string) => {
+    const v = toNum(raw.stats[id]);
+    return v !== null ? v : undefined;
+  };
   const total = (key: string) => g(`${key}.base`) + (g(`${key}.base`) * g(`${key}.percent`) / 100) + g(`${key}.flat`);
+
   return {
+    // 1. Basic Stats
     atk: total("atk"),
     hp: total("hp"),
     def: total("def"),
     em: g("em"),
     critRate: g("critRate"),
     critDmg: g("critDmg"),
+    energyRecharge: g("energyRecharge"),
+    healingBonus: g("healingBonus"),
+    hpPercent: opt("hp.percent"),
+    atkPercent: opt("atk.percent"),
+    defPercent: opt("def.percent"),
+
+    // 2. Elemental DMG Bonuses
     dmgBonus: g("dmgBonus"),
-    normalDmgBonus: g("normalDmgBonus"),
-    chargedDmgBonus: g("chargedDmgBonus"),
-    plungeDmgBonus: g("plungeDmgBonus"),
-    skillDmgBonus: g("skillDmgBonus"),
-    burstDmgBonus: g("burstDmgBonus"),
+    commonDmgBonus: opt("commonDmgBonus"),
     pyroDmgBonus: g("pyroDmgBonus"),
     hydroDmgBonus: g("hydroDmgBonus"),
     dendroDmgBonus: g("dendroDmgBonus"),
@@ -233,24 +249,222 @@ export function resolveStats(raw: RawInputs): DamageStats {
     cryoDmgBonus: g("cryoDmgBonus"),
     geoDmgBonus: g("geoDmgBonus"),
     physicalDmgBonus: g("physicalDmgBonus"),
-    dmgReduction: g("dmgReduction"),
+
+    // 3. Enemy Debuffs
     enemyRes: g("enemyRes"),
-    levelChar: g("levelChar"),
-    levelEnemy: g("levelEnemy"),
+    enemyPhysicalRes: opt("enemyPhysicalRes"),
+    enemyAnemoRes: opt("enemyAnemoRes"),
+    enemyGeoRes: opt("enemyGeoRes"),
+    enemyElectroRes: opt("enemyElectroRes"),
+    enemyHydroRes: opt("enemyHydroRes"),
+    enemyPyroRes: opt("enemyPyroRes"),
+    enemyCryoRes: opt("enemyCryoRes"),
+    enemyDendroRes: opt("enemyDendroRes"),
     defReduction: g("defReduction"),
     defIgnore: g("defIgnore"),
-    energyRecharge: g("energyRecharge"),
-    healingBonus: g("healingBonus"),
-    lunarChargedDmgBonus: g("lunarChargedDmgBonus"),
-    lunarBloomDmgBonus: g("lunarBloomDmgBonus"),
-    lunarCrystallizeDmgBonus: g("lunarCrystallizeDmgBonus"),
-    lunarChargedElevation: g("lunarChargedElevation"),
-    lunarBloomElevation: g("lunarBloomElevation"),
-    lunarCrystallizeElevation: g("lunarCrystallizeElevation"),
-    lunarChargedFlatDmg: g("lunarChargedFlatDmg"),
-    lunarBloomFlatDmg: g("lunarBloomFlatDmg"),
-    lunarCrystallizeFlatDmg: g("lunarCrystallizeFlatDmg"),
-    stellarSwirlDmgBonus: g("stellarSwirlDmgBonus"),
-    stellarGlimmerDmgBonus: g("stellarGlimmerDmgBonus"),
+
+    // 4. Self Resistances
+    selfPhysicalRes: opt("selfPhysicalRes"),
+    selfAnemoRes: opt("selfAnemoRes"),
+    selfGeoRes: opt("selfGeoRes"),
+    selfElectroRes: opt("selfElectroRes"),
+    selfHydroRes: opt("selfHydroRes"),
+    selfPyroRes: opt("selfPyroRes"),
+    selfCryoRes: opt("selfCryoRes"),
+    selfDendroRes: opt("selfDendroRes"),
+
+    // 5. Reaction DMG Bonuses & Multipliers
+    overloadedDmgBonus: opt("overloadedDmgBonus"),
+    shatteredDmgBonus: opt("shatteredDmgBonus"),
+    electroChargedDmgBonus: opt("electroChargedDmgBonus"),
+    superconductDmgBonus: opt("superconductDmgBonus"),
+    swirlDmgBonus: opt("swirlDmgBonus"),
+    burningDmgBonus: opt("burningDmgBonus"),
+    bloomDmgBonus: opt("bloomDmgBonus"),
+    burgeonDmgBonus: opt("burgeonDmgBonus"),
+    hyperbloomDmgBonus: opt("hyperbloomDmgBonus"),
+    vaporizeDmgBonus: opt("vaporizeDmgBonus"),
+    meltDmgBonus: opt("meltDmgBonus"),
+    spreadDmgBonus: opt("spreadDmgBonus"),
+    aggravateDmgBonus: opt("aggravateDmgBonus"),
+
+    lunarChargedDmgBonus: opt("lunarChargedDmgBonus"),
+    lunarBloomDmgBonus: opt("lunarBloomDmgBonus"),
+    lunarCrystallizeDmgBonus: opt("lunarCrystallizeDmgBonus"),
+    stellarConductDmgBonus: opt("stellarConductDmgBonus"),
+    stellarSwirlDmgBonus: opt("stellarSwirlDmgBonus"),
+    stellarGlimmerDmgBonus: opt("stellarGlimmerDmgBonus"),
+    lunarReactionDmgBonus: opt("lunarReactionDmgBonus"),
+    stellarReactionDmgBonus: opt("stellarReactionDmgBonus"),
+
+    lunarChargedBaseDmgMultiplier: opt("lunarChargedBaseDmgMultiplier"),
+    lunarBloomBaseDmgMultiplier: opt("lunarBloomBaseDmgMultiplier"),
+    lunarCrystallizeBaseDmgMultiplier: opt("lunarCrystallizeBaseDmgMultiplier"),
+    stellarConductBaseDmgMultiplier: opt("stellarConductBaseDmgMultiplier"),
+    stellarSwirlBaseDmgMultiplier: opt("stellarSwirlBaseDmgMultiplier"),
+    lunarReactionBaseDmgMultiplier: opt("lunarReactionBaseDmgMultiplier"),
+    stellarReactionBaseDmgMultiplier: opt("stellarReactionBaseDmgMultiplier"),
+
+    lunarChargedSpecialDmgBonus: opt("lunarChargedSpecialDmgBonus"),
+    lunarBloomSpecialDmgBonus: opt("lunarBloomSpecialDmgBonus"),
+    lunarCrystallizeSpecialDmgBonus: opt("lunarCrystallizeSpecialDmgBonus"),
+    stellarConductSpecialDmgBonus: opt("stellarConductSpecialDmgBonus"),
+    stellarSwirlSpecialDmgBonus: opt("stellarSwirlSpecialDmgBonus"),
+    lunarReactionSpecialDmgBonus: opt("lunarReactionSpecialDmgBonus"),
+    stellarReactionSpecialDmgBonus: opt("stellarReactionSpecialDmgBonus"),
+
+    stellarConductMultiplier: opt("stellarConductMultiplier"),
+    stellarSwirlMultiplier: opt("stellarSwirlMultiplier"),
+    stellarReactionMultiplier: opt("stellarReactionMultiplier"),
+
+    lunarChargedElevation: opt("lunarChargedElevation"),
+    lunarBloomElevation: opt("lunarBloomElevation"),
+    lunarCrystallizeElevation: opt("lunarCrystallizeElevation"),
+
+    // 6. Reaction CRIT Bonuses
+    lunarChargedCritRate: opt("lunarChargedCritRate"),
+    lunarChargedCritDmg: opt("lunarChargedCritDmg"),
+    burningCritRate: opt("burningCritRate"),
+    burningCritDmg: opt("burningCritDmg"),
+    bloomCritRate: opt("bloomCritRate"),
+    bloomCritDmg: opt("bloomCritDmg"),
+    burgeonCritRate: opt("burgeonCritRate"),
+    burgeonCritDmg: opt("burgeonCritDmg"),
+    hyperbloomCritRate: opt("hyperbloomCritRate"),
+    hyperbloomCritDmg: opt("hyperbloomCritDmg"),
+    lunarBloomCritRate: opt("lunarBloomCritRate"),
+    lunarBloomCritDmg: opt("lunarBloomCritDmg"),
+    swirlCritRate: opt("swirlCritRate"),
+    swirlCritDmg: opt("swirlCritDmg"),
+    lunarCrystallizeCritRate: opt("lunarCrystallizeCritRate"),
+    lunarCrystallizeCritDmg: opt("lunarCrystallizeCritDmg"),
+    stellarConductCritRate: opt("stellarConductCritRate"),
+    stellarConductCritDmg: opt("stellarConductCritDmg"),
+    stellarSwirlCritRate: opt("stellarSwirlCritRate"),
+    stellarSwirlCritDmg: opt("stellarSwirlCritDmg"),
+    lunarReactionCritRate: opt("lunarReactionCritRate"),
+    lunarReactionCritDmg: opt("lunarReactionCritDmg"),
+    stellarReactionCritRate: opt("stellarReactionCritRate"),
+    stellarReactionCritDmg: opt("stellarReactionCritDmg"),
+
+    // 7. Elemental Damage Increases
+    physicalDmgIncrease: opt("physicalDmgIncrease"),
+    anemoDmgIncrease: opt("anemoDmgIncrease"),
+    geoDmgIncrease: opt("geoDmgIncrease"),
+    electroDmgIncrease: opt("electroDmgIncrease"),
+    hydroDmgIncrease: opt("hydroDmgIncrease"),
+    pyroDmgIncrease: opt("pyroDmgIncrease"),
+    cryoDmgIncrease: opt("cryoDmgIncrease"),
+    dendroDmgIncrease: opt("dendroDmgIncrease"),
+    commonDmgIncrease: opt("commonDmgIncrease"),
+
+    lunarBloomDmgIncrease: opt("lunarBloomDmgIncrease"),
+    lunarCrystallizeDmgIncrease: opt("lunarCrystallizeDmgIncrease"),
+    stellarConductDmgIncrease: opt("stellarConductDmgIncrease"),
+    stellarSwirlDmgIncrease: opt("stellarSwirlDmgIncrease"),
+
+    lunarChargedReactionDmgIncrease: opt("lunarChargedReactionDmgIncrease"),
+    lunarChargedDirectDmgIncrease: opt("lunarChargedDirectDmgIncrease"),
+    lunarBloomReactionDmgIncrease: opt("lunarBloomReactionDmgIncrease"),
+    lunarBloomDirectDmgIncrease: opt("lunarBloomDirectDmgIncrease"),
+    lunarCrystallizeReactionDmgIncrease: opt("lunarCrystallizeReactionDmgIncrease"),
+    lunarCrystallizeDirectDmgIncrease: opt("lunarCrystallizeDirectDmgIncrease"),
+    stellarConductReactionDmgIncrease: opt("stellarConductReactionDmgIncrease"),
+    stellarConductDirectDmgIncrease: opt("stellarConductDirectDmgIncrease"),
+    stellarSwirlReactionDmgIncrease: opt("stellarSwirlReactionDmgIncrease"),
+    stellarSwirlDirectDmgIncrease: opt("stellarSwirlDirectDmgIncrease"),
+    lunarReactionDmgIncrease: opt("lunarReactionDmgIncrease"),
+    stellarReactionDmgIncrease: opt("stellarReactionDmgIncrease"),
+
+    lunarChargedFlatDmg: opt("lunarChargedFlatDmg"),
+    lunarBloomFlatDmg: opt("lunarBloomFlatDmg"),
+    lunarCrystallizeFlatDmg: opt("lunarCrystallizeFlatDmg"),
+    flatDmgBonus: opt("flatDmgBonus"),
+
+    // 8. Talent Damage Increases
+    normalDmgIncrease: opt("normalDmgIncrease"),
+    chargedDmgIncrease: opt("chargedDmgIncrease"),
+    plungingCollisionDmgIncrease: opt("plungingCollisionDmgIncrease"),
+    plungingImpactDmgIncrease: opt("plungingImpactDmgIncrease"),
+    skillDmgIncrease: opt("skillDmgIncrease"),
+    burstDmgIncrease: opt("burstDmgIncrease"),
+
+    // 9. Elemental CRIT Bonuses
+    physicalCritRate: opt("physicalCritRate"),
+    physicalCritDmg: opt("physicalCritDmg"),
+    anemoCritRate: opt("anemoCritRate"),
+    anemoCritDmg: opt("anemoCritDmg"),
+    geoCritRate: opt("geoCritRate"),
+    geoCritDmg: opt("geoCritDmg"),
+    electroCritRate: opt("electroCritRate"),
+    electroCritDmg: opt("electroCritDmg"),
+    hydroCritRate: opt("hydroCritRate"),
+    hydroCritDmg: opt("hydroCritDmg"),
+    pyroCritRate: opt("pyroCritRate"),
+    pyroCritDmg: opt("pyroCritDmg"),
+    cryoCritRate: opt("cryoCritRate"),
+    cryoCritDmg: opt("cryoCritDmg"),
+    dendroCritRate: opt("dendroCritRate"),
+    dendroCritDmg: opt("dendroCritDmg"),
+
+    // 10. Talent DMG Bonuses
+    normalDmgBonus: g("normalDmgBonus"),
+    chargedDmgBonus: g("chargedDmgBonus"),
+    plungeDmgBonus: g("plungeDmgBonus"),
+    skillDmgBonus: g("skillDmgBonus"),
+    burstDmgBonus: g("burstDmgBonus"),
+    plungingCollisionDmgBonus: opt("plungingCollisionDmgBonus"),
+    plungingImpactDmgBonus: opt("plungingImpactDmgBonus"),
+    plungingDmgBonus: opt("plungingDmgBonus"),
+    elementalAttDmgBonus: opt("elementalAttDmgBonus"),
+    normalAttEleDmgBonus: opt("normalAttEleDmgBonus"),
+
+    // 11. Talent CRIT Bonuses
+    normalCritRate: opt("normalCritRate"),
+    normalCritDmg: opt("normalCritDmg"),
+    chargedCritRate: opt("chargedCritRate"),
+    chargedCritDmg: opt("chargedCritDmg"),
+    plungingCollisionCritRate: opt("plungingCollisionCritRate"),
+    plungingCollisionCritDmg: opt("plungingCollisionCritDmg"),
+    plungingImpactCritRate: opt("plungingImpactCritRate"),
+    plungingImpactCritDmg: opt("plungingImpactCritDmg"),
+    plungingCritRate: opt("plungingCritRate"),
+    plungingCritDmg: opt("plungingCritDmg"),
+    skillCritRate: opt("skillCritRate"),
+    skillCritDmg: opt("skillCritDmg"),
+    burstCritRate: opt("burstCritRate"),
+    burstCritDmg: opt("burstCritDmg"),
+    elementalAttCritRate: opt("elementalAttCritRate"),
+    elementalAttCritDmg: opt("elementalAttCritDmg"),
+
+    // 12. Talent Level Boosts
+    normalLevelBoost: opt("normalLevelBoost"),
+    skillLevelBoost: opt("skillLevelBoost"),
+    burstLevelBoost: opt("burstLevelBoost"),
+
+    // 13. Base Stat Modifications
+    baseAtk: opt("baseAtk"),
+    baseHp: opt("baseHp"),
+    baseDef: opt("baseDef"),
+
+    // 14. Stamina Buffs
+    stamina: opt("stamina"),
+    staminaDec: opt("staminaDec"),
+    sprintingStaminaDec: opt("sprintingStaminaDec"),
+    glidingStaminaDec: opt("glidingStaminaDec"),
+    chargedAttackStaminaDec: opt("chargedAttackStaminaDec"),
+
+    // 15. Target & Misc Stats
+    levelChar: g("levelChar") || 90,
+    levelEnemy: g("levelEnemy") || 100,
+    dmgReduction: g("dmgReduction"),
+    incomingHealingBonus: opt("incomingHealingBonus"),
+    shieldStrength: opt("shieldStrength"),
+    cdReduction: opt("cdReduction"),
+    movementSpd: opt("movementSpd"),
+    atkSpd: opt("atkSpd"),
+    weakspotDmg: opt("weakspotDmg"),
+    healIncrease: opt("healIncrease"),
+    allRes: opt("allRes"),
   };
 }

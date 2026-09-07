@@ -38,4 +38,7 @@ export const coreStats = (dmgBonusLabel: string): StatField[] => [
   { key: "lunarCrystallizeDmgBonus", label: "Lunar-Crystallize DMG Bonus%",            unit: "percent", group: "lunar" },
   { key: "lunarCrystallizeElevation",label: "Lunar-Crystallize Elevated DMG Multiplier%", unit: "percent", group: "lunar" },
   { key: "lunarCrystallizeFlatDmg",  label: "Lunar-Crystallize Flat DMG Increase",      unit: "flat",    group: "lunar" },
+  { key: "stellarConductDmgBonus",   label: "Stellar-Conduct DMG Bonus%",              unit: "percent", group: "stellar" },
+  { key: "stellarSwirlDmgBonus",     label: "Stellar Swirl DMG Bonus%",                unit: "percent", group: "stellar" },
+  { key: "stellarGlimmerDmgBonus",   label: "Stellar Glimmer DMG Bonus%",              unit: "percent", group: "stellar" },
 ];

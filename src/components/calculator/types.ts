@@ -21,6 +21,8 @@ export interface SavedBuild {
   isOffline?: boolean;
 }
 
+import type { StellarType, StellarSwirlVariant, StellarResult } from "@/lib/engine/stellar";
+
 export interface CalcInstance {
   id: string;
   stats: Record<string, string>;
@@ -31,6 +33,8 @@ export interface CalcInstance {
   reactionBonus: string;
   reactionPanelBonus: string;
   lunarBaseBonus: string;
+  stellarBaseBonus?: string;
+  stellarPanelBonus?: string;
   constellationLevel: number;
   teamSupports?: SupportInstance[];    // max 3 support characters
   teamBuffsEnabled?: boolean;          // master toggle, defaults to true
@@ -57,8 +61,9 @@ export interface SavedRotation {
 }
 
 export interface ReactionExtras {
-  transformative: { type: TransformativeType; dmg: number }[];
+  transformative: { type: TransformativeType; dmg: number; res?: { nonCrit: number; crit: number; avg: number; canCrit: boolean } }[];
   lunar: { type: LunarType; res: LunarResult }[];
+  stellar: { type: StellarType; variant?: StellarSwirlVariant; label: string; res: StellarResult }[];
   notes: string[];
 }
 
@@ -74,7 +79,7 @@ export interface StatBuffSource {
 export interface StatBreakdown {
   key: string;
   label: string;
-  category?: "attributes" | "categoryDmg" | "elementalDmg" | "reactionElevation" | "debuffs" | "multipliers";
+  category?: "attributes" | "categoryDmg" | "elementalDmg" | "reactionElevation" | "reactionDmg" | "reactionCrit" | "elementalCrit" | "talentCrit" | "debuffs" | "selfRes" | "staminaAndMisc" | "multipliers";
   unit: "flat" | "percent" | "multiplier";
   raw: number;
   additions: StatBuffSource[];

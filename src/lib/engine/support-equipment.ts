@@ -585,7 +585,9 @@ export function getActiveSupportEquippedWeapons(
     supportId: string;
     enabled?: boolean;
     useCharacterBuild?: boolean;
+    equipmentSetupId?: string;
     equippedWeapon?: EquippedWeaponState | null;
+    equippedArtifact?: EquippedArtifactState | null;
     stats?: Record<string, string>;
     mechanicInputs?: Record<string, string>;
     constellationLevel?: number;
@@ -609,14 +611,12 @@ export function getActiveSupportEquippedWeapons(
 
     const normId = sup.supportId.replace(/-support$/, "");
     let equippedWeapon = sup.equippedWeapon;
-    if (sup.useCharacterBuild !== false) {
-      const setups = getSupportEquipmentSetups(normId);
-      const activeSetup = sup.equipmentSetupId
-        ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
-        : (!equippedWeapon ? setups[0] : undefined);
-      if (activeSetup?.weapon) {
-        equippedWeapon = activeSetup.weapon;
-      }
+    const setups = getSupportEquipmentSetups(normId);
+    const activeSetup = sup.equipmentSetupId
+      ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
+      : (!equippedWeapon ? setups[0] : undefined);
+    if (activeSetup?.weapon) {
+      equippedWeapon = activeSetup.weapon;
     }
 
     if (!equippedWeapon?.enabled || !equippedWeapon.weaponId) continue;
@@ -675,6 +675,7 @@ export function getActiveSupportEquippedArtifacts(
     supportId: string;
     enabled?: boolean;
     useCharacterBuild?: boolean;
+    equippedWeapon?: EquippedWeaponState | null;
     equippedArtifact?: EquippedArtifactState | null;
     equipmentSetupId?: string;
     stats?: Record<string, string>;
@@ -699,14 +700,12 @@ export function getActiveSupportEquippedArtifacts(
 
     const normId = sup.supportId.replace(/-support$/, "");
     let equippedArtifact = sup.equippedArtifact;
-    if (sup.useCharacterBuild !== false) {
-      const setups = getSupportEquipmentSetups(normId);
-      const activeSetup = sup.equipmentSetupId
-        ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
-        : (!equippedArtifact ? setups[0] : undefined);
-      if (activeSetup?.artifact) {
-        equippedArtifact = activeSetup.artifact;
-      }
+    const setups = getSupportEquipmentSetups(normId);
+    const activeSetup = sup.equipmentSetupId
+      ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
+      : (!equippedArtifact ? setups[0] : undefined);
+    if (activeSetup?.artifact) {
+      equippedArtifact = activeSetup.artifact;
     }
 
     if (!equippedArtifact?.enabled || !equippedArtifact.artifactId) continue;

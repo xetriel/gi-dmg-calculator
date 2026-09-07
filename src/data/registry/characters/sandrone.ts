@@ -1,6 +1,7 @@
 import type { CharacterConfig } from "../types";
 import { coreStats } from "../core-stats";
 import { atk, atkCharged, atkPlunge, stellarAtk } from "./hit-helpers";
+import { stellarConductFieldBuffs } from "../../../lib/engine/stellar";
 
 // All hits scale on ATK. The "-stellar" rows are the Radiance: Stellar-Conduct
 // variants (separate wiki table rows): they are reaction DMG computed through the
@@ -34,9 +35,9 @@ export const sandrone: CharacterConfig = {
   ],
   mechanicDefs: [
     { id: "polestar-field", label: "Polestar Field active", control: "toggle", defaultValue: 1,
-      hint: "Stellar-Conduct field: BRC from hits below; +20–38% Cryo DMG Bonus on non-stellar hits" },
-    { id: "polestar-hits", label: "Polestar recorded hits", control: "stacks", max: 10,
-      hint: "Cryo/Electro hits stored by the field: BRC 1 → 1.45…1.9; DMG Bonus 20% → 29…38%" },
+      hint: "Stellar-Conduct field: BRC from hits below; +20–40% Cryo DMG Bonus on non-stellar hits; -40% Phys RES" },
+    { id: "polestar-hits", label: "Polestar recorded hits", control: "stacks", max: 12,
+      hint: "Cryo/Electro hits stored by the field: BRC 1.00 → 1.45…2.00; Cryo DMG Bonus 20% → 29…40%" },
     { id: "decoding-over-50", label: "Decoding Power > 50 (A1)", control: "toggle", defaultValue: 1,
       hint: "2nd Prism Shot deals 400% of its original DMG" },
     { id: "refined-tactics", label: "Refined Tactics stacks (A1)", control: "stacks", max: 10,
@@ -125,8 +126,8 @@ export const sandrone: CharacterConfig = {
       },
       {
         name: "Polestar Field",
-        brief: "+20% Cryo/Electro DMG Bonus",
-        full: "While Polestar Field is active, party members gain +20% Cryo and Electro DMG Bonus.",
+        brief: "+20% to +40% Cryo/Electro DMG Bonus & -40% Phys RES",
+        full: "While Polestar Field is active, party members gain +20% (0 hits) or +(28 + hits)% (1-12 hits, up to +40%) Cryo and Electro DMG Bonus, and opponents within the field have their Physical RES decreased by 40%.",
         category: "dmg_bonus",
       },
       {
@@ -145,14 +146,24 @@ export const sandrone: CharacterConfig = {
       {
         stat: "dmgBonus",
         label: "Cryo/Electro DMG (Sandrone Polestar Field)",
-        compute: (ctx) => ((ctx.inputs["polestar-field"] ?? 0) > 0 ? 20 : 0),
+        compute: (ctx) => {
+          if ((ctx.inputs["polestar-field"] ?? 0) <= 0) return 0;
+          const hits = ctx.inputs["polestar-hits"] ?? 0;
+          return stellarConductFieldBuffs(hits).cryoElectroDmgBonus;
+        },
       },
       {
-        stat: "stellarSwirlDmgBonus",
+        stat: "enemyPhysicalRes",
+        label: "Enemy Phys RES Shred (Sandrone Polestar Field)",
+        compute: (ctx) => ((ctx.inputs["polestar-field"] ?? 0) > 0 ? -40 : 0),
+      },
+      {
+        stat: "stellarConductReactionDmgIncrease",
         label: "Stellar Reaction DMG (Sandrone C1)",
         compute: (ctx) => (ctx.constellationLevel >= 1 ? 30 : 0),
       },
     ],
+    stellarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14),
     lunarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14),
     formatBriefStats: (ctx) => {
       const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });

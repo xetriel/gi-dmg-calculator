@@ -20,9 +20,9 @@ const toNum = (val: string | number | undefined): number | undefined => {
 };
 
 export interface EffectiveRowDef {
-  key: keyof DamageStats | "lunarBaseBonus" | "transformativeBonus" | "vaporizeMult" | "meltMult" | "aggravateFlat" | "spreadFlat";
+  key: keyof DamageStats | "lunarBaseBonus" | "stellarBaseBonus" | "stellarPanelBonus" | "transformativeBonus" | "vaporizeMult" | "meltMult" | "aggravateFlat" | "spreadFlat";
   label: string;
-  category: "attributes" | "categoryDmg" | "elementalDmg" | "reactionElevation" | "debuffs" | "multipliers";
+  category: "attributes" | "categoryDmg" | "elementalDmg" | "reactionElevation" | "reactionDmg" | "reactionCrit" | "elementalCrit" | "talentCrit" | "debuffs" | "selfRes" | "staminaAndMisc" | "multipliers";
   unit: "flat" | "percent" | "multiplier";
   hideIfZero?: boolean;
 }
@@ -37,16 +37,13 @@ export const EFFECTIVE_ROW_DEFINITIONS: EffectiveRowDef[] = [
   { key: "critDmg", label: "CRIT DMG", category: "attributes", unit: "percent" },
   { key: "energyRecharge", label: "Energy Recharge", category: "attributes", unit: "percent" },
   { key: "healingBonus", label: "Healing Bonus", category: "attributes", unit: "percent", hideIfZero: true },
+  { key: "baseAtk", label: "Base ATK", category: "attributes", unit: "flat", hideIfZero: true },
+  { key: "baseHp", label: "Base HP", category: "attributes", unit: "flat", hideIfZero: true },
+  { key: "baseDef", label: "Base DEF", category: "attributes", unit: "flat", hideIfZero: true },
 
-  // 2. Attack Category DMG Bonuses
-  { key: "dmgBonus", label: "Common / All DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-  { key: "normalDmgBonus", label: "Normal ATK DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-  { key: "chargedDmgBonus", label: "Charged ATK DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-  { key: "plungeDmgBonus", label: "Plunging ATK DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-  { key: "skillDmgBonus", label: "Elemental Skill DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-  { key: "burstDmgBonus", label: "Elemental Burst DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
-
-  // 3. Elemental & Physical DMG Bonuses
+  // 2. Attack Category & Elemental DMG Bonuses
+  { key: "dmgBonus", label: "Common / All DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
+  { key: "commonDmgBonus", label: "Common DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
   { key: "pyroDmgBonus", label: "Pyro DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
   { key: "hydroDmgBonus", label: "Hydro DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
   { key: "dendroDmgBonus", label: "Dendro DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
@@ -56,32 +53,220 @@ export const EFFECTIVE_ROW_DEFINITIONS: EffectiveRowDef[] = [
   { key: "geoDmgBonus", label: "Geo DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
   { key: "physicalDmgBonus", label: "Physical DMG Bonus", category: "elementalDmg", unit: "percent", hideIfZero: true },
 
-  // 4. Reaction DMG Bonuses & Elevation
-  { key: "lunarChargedElevation", label: "Lunar-Charged Elevation DMG", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarBloomElevation", label: "Lunar-Bloom Elevation DMG", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarCrystallizeElevation", label: "Lunar-Crystallize Elevation DMG", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarChargedDmgBonus", label: "Lunar-Charged DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarBloomDmgBonus", label: "Lunar-Bloom DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarCrystallizeDmgBonus", label: "Lunar-Crystallize DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "stellarSwirlDmgBonus", label: "Stellar Swirl DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "stellarGlimmerDmgBonus", label: "Stellar Glimmer DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
-  { key: "lunarChargedFlatDmg", label: "Lunar-Charged Flat DMG", category: "reactionElevation", unit: "flat", hideIfZero: true },
-  { key: "lunarBloomFlatDmg", label: "Lunar-Bloom Flat DMG", category: "reactionElevation", unit: "flat", hideIfZero: true },
-  { key: "lunarCrystallizeFlatDmg", label: "Lunar-Crystallize Flat DMG", category: "reactionElevation", unit: "flat", hideIfZero: true },
-  { key: "lunarBaseBonus", label: "Lunar Reaction Base DMG Bonus", category: "reactionElevation", unit: "percent", hideIfZero: true },
+  // Elemental Damage Increases (Flat Additive)
+  { key: "commonDmgIncrease", label: "Common DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "pyroDmgIncrease", label: "Pyro DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "hydroDmgIncrease", label: "Hydro DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "dendroDmgIncrease", label: "Dendro DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "electroDmgIncrease", label: "Electro DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "anemoDmgIncrease", label: "Anemo DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "cryoDmgIncrease", label: "Cryo DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "geoDmgIncrease", label: "Geo DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+  { key: "physicalDmgIncrease", label: "Physical DMG Increase", category: "elementalDmg", unit: "flat", hideIfZero: true },
+
+  // 3. Talent DMG Bonuses, Increases & Level Boosts
+  { key: "normalDmgBonus", label: "Normal Att. DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "chargedDmgBonus", label: "Charged Att. DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "plungeDmgBonus", label: "Plunging Att. DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "plungingCollisionDmgBonus", label: "Plunging Collision DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "plungingImpactDmgBonus", label: "Plunging Impact DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "skillDmgBonus", label: "Ele. Skill DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "burstDmgBonus", label: "Ele. Burst DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "elementalAttDmgBonus", label: "Elemental Att. DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+  { key: "normalAttEleDmgBonus", label: "Normal Att. Ele. DMG Bonus", category: "categoryDmg", unit: "percent", hideIfZero: true },
+
+  { key: "normalDmgIncrease", label: "Normal Att. DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "chargedDmgIncrease", label: "Charged Att. DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "plungingCollisionDmgIncrease", label: "Plunging Collision DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "plungingImpactDmgIncrease", label: "Plunging Impact DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "skillDmgIncrease", label: "Ele. Skill DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "burstDmgIncrease", label: "Ele. Burst DMG Increase", category: "categoryDmg", unit: "flat", hideIfZero: true },
+
+  { key: "normalLevelBoost", label: "Normal Attack Level Boost", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "skillLevelBoost", label: "Ele. Skill Level Boost", category: "categoryDmg", unit: "flat", hideIfZero: true },
+  { key: "burstLevelBoost", label: "Ele. Burst Level Boost", category: "categoryDmg", unit: "flat", hideIfZero: true },
+
+  // 4. Elemental CRIT Bonuses
+  { key: "pyroCritRate", label: "Pyro CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "pyroCritDmg", label: "Pyro CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "hydroCritRate", label: "Hydro CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "hydroCritDmg", label: "Hydro CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "electroCritRate", label: "Electro CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "electroCritDmg", label: "Electro CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "cryoCritRate", label: "Cryo CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "cryoCritDmg", label: "Cryo CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "anemoCritRate", label: "Anemo CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "anemoCritDmg", label: "Anemo CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "geoCritRate", label: "Geo CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "geoCritDmg", label: "Geo CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "dendroCritRate", label: "Dendro CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "dendroCritDmg", label: "Dendro CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "physicalCritRate", label: "Physical CRIT Rate Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+  { key: "physicalCritDmg", label: "Physical CRIT DMG Bonus", category: "elementalCrit", unit: "percent", hideIfZero: true },
+
+  // 5. Talent CRIT Bonuses
+  { key: "normalCritRate", label: "Normal Att. CRIT Rate Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "normalCritDmg", label: "Normal Att. CRIT DMG Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "chargedCritRate", label: "Charged Att. CRIT Rate Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "chargedCritDmg", label: "Charged Att. CRIT DMG Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingCollisionCritRate", label: "Plunging Collision CRIT Rate", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingCollisionCritDmg", label: "Plunging Collision CRIT DMG", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingImpactCritRate", label: "Plunging Impact CRIT Rate", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingImpactCritDmg", label: "Plunging Impact CRIT DMG", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingCritRate", label: "Plunging Att. CRIT Rate", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "plungingCritDmg", label: "Plunging Att. CRIT DMG", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "skillCritRate", label: "Ele. Skill CRIT Rate Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "skillCritDmg", label: "Ele. Skill CRIT DMG Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "burstCritRate", label: "Ele. Burst CRIT Rate Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "burstCritDmg", label: "Ele. Burst CRIT DMG Bonus", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "elementalAttCritRate", label: "Elemental Att. CRIT Rate", category: "talentCrit", unit: "percent", hideIfZero: true },
+  { key: "elementalAttCritDmg", label: "Elemental Att. CRIT DMG", category: "talentCrit", unit: "percent", hideIfZero: true },
+
+  // 6. Reaction DMG Bonuses & Multipliers
+  { key: "overloadedDmgBonus", label: "Overloaded DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "shatteredDmgBonus", label: "Shattered DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "electroChargedDmgBonus", label: "Electro-Charged DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "superconductDmgBonus", label: "Superconduct DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "swirlDmgBonus", label: "Swirl DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "burningDmgBonus", label: "Burning DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "bloomDmgBonus", label: "Bloom DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "burgeonDmgBonus", label: "Burgeon DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "hyperbloomDmgBonus", label: "Hyperbloom DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "vaporizeDmgBonus", label: "Vaporize DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "meltDmgBonus", label: "Melt DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "spreadDmgBonus", label: "Spread DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "aggravateDmgBonus", label: "Aggravate DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  // Lunar Reactions
+  { key: "lunarChargedDmgBonus", label: "Lunar-Charged DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomDmgBonus", label: "Lunar-Bloom DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeDmgBonus", label: "Lunar-Crystallize DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarReactionDmgBonus", label: "Lunar Reaction DMG Bonus (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "lunarChargedBaseDmgMultiplier", label: "Lunar-Charged Base DMG Multiplier", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomBaseDmgMultiplier", label: "Lunar-Bloom Base DMG Multiplier", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeBaseDmgMultiplier", label: "Lunar-Crystallize Base DMG Multiplier", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarReactionBaseDmgMultiplier", label: "Lunar Reaction Base DMG Multiplier (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "lunarChargedSpecialDmgBonus", label: "Lunar-Charged Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomSpecialDmgBonus", label: "Lunar-Bloom Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeSpecialDmgBonus", label: "Lunar-Crystallize Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarReactionSpecialDmgBonus", label: "Lunar Reaction Special DMG Bonus (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "lunarChargedElevation", label: "Lunar-Charged Elevation DMG", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomElevation", label: "Lunar-Bloom Elevation DMG", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeElevation", label: "Lunar-Crystallize Elevation DMG", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "lunarChargedFlatDmg", label: "Lunar-Charged Flat DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarBloomFlatDmg", label: "Lunar-Bloom Flat DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarCrystallizeFlatDmg", label: "Lunar-Crystallize Flat DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarChargedReactionDmgIncrease", label: "Lunar-Charged Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarChargedDirectDmgIncrease", label: "Lunar-Charged Direct DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarBloomReactionDmgIncrease", label: "Lunar-Bloom Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarBloomDirectDmgIncrease", label: "Lunar-Bloom Direct DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarCrystallizeReactionDmgIncrease", label: "Lunar-Crystallize Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarCrystallizeDirectDmgIncrease", label: "Lunar-Crystallize Direct DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarReactionDmgIncrease", label: "Lunar Reaction DMG Increase (Superset)", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "lunarBaseBonus", label: "Lunar Reaction Base DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  // Stellar Glimmer Reactions
+  { key: "stellarConductDmgBonus", label: "Stellar-Conduct DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlDmgBonus", label: "Stellar Swirl DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarGlimmerDmgBonus", label: "Stellar Glimmer DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionDmgBonus", label: "Stellar Reaction DMG Bonus (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "stellarConductBaseDmgMultiplier", label: "Stellar-Conduct Base DMG Multiplier", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlBaseDmgMultiplier", label: "Stellar Swirl Base DMG Multiplier", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionBaseDmgMultiplier", label: "Stellar Reaction Base DMG Multiplier (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "stellarConductSpecialDmgBonus", label: "Stellar-Conduct Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlSpecialDmgBonus", label: "Stellar Swirl Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionSpecialDmgBonus", label: "Stellar Reaction Special DMG Bonus (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "stellarConductMultiplier", label: "Stellar-Conduct Multiplier (BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
+  { key: "stellarSwirlMultiplier", label: "Stellar Swirl Multiplier (BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
+  { key: "stellarReactionMultiplier", label: "Stellar Reaction Multiplier (Superset BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
+  { key: "stellarPanelBonus", label: "Stellar Glimmer Reaction DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  { key: "stellarConductReactionDmgIncrease", label: "Stellar-Conduct Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "stellarConductDirectDmgIncrease", label: "Stellar-Conduct Direct DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "stellarSwirlReactionDmgIncrease", label: "Stellar Swirl Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "stellarSwirlDirectDmgIncrease", label: "Stellar Swirl Direct DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "stellarReactionDmgIncrease", label: "Stellar Reaction DMG Increase (Superset)", category: "reactionDmg", unit: "flat", hideIfZero: true },
+  { key: "stellarBaseBonus", label: "Stellar Reaction Base DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
+
+  // 7. Reaction CRIT Bonuses
+  { key: "lunarChargedCritRate", label: "Lunar-Charged CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarChargedCritDmg", label: "Lunar-Charged CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "burningCritRate", label: "Burning CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "burningCritDmg", label: "Burning CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "bloomCritRate", label: "Bloom CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "bloomCritDmg", label: "Bloom CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "burgeonCritRate", label: "Burgeon CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "burgeonCritDmg", label: "Burgeon CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "hyperbloomCritRate", label: "Hyperbloom CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "hyperbloomCritDmg", label: "Hyperbloom CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomCritRate", label: "Lunar-Bloom CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarBloomCritDmg", label: "Lunar-Bloom CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "swirlCritRate", label: "Swirl CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "swirlCritDmg", label: "Swirl CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeCritRate", label: "Lunar-Crystallize CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarCrystallizeCritDmg", label: "Lunar-Crystallize CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarConductCritRate", label: "Stellar-Conduct CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarConductCritDmg", label: "Stellar-Conduct CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlCritRate", label: "Stellar Swirl CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlCritDmg", label: "Stellar Swirl CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarReactionCritRate", label: "Lunar Reaction CRIT Rate (Superset)", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "lunarReactionCritDmg", label: "Lunar Reaction CRIT DMG (Superset)", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionCritRate", label: "Stellar Reaction CRIT Rate (Superset)", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionCritDmg", label: "Stellar Reaction CRIT DMG (Superset)", category: "reactionCrit", unit: "percent", hideIfZero: true },
+
+  // 8. Enemy Debuffs
+  { key: "enemyRes", label: "Enemy RES (Global)", category: "debuffs", unit: "percent" },
+  { key: "enemyPhysicalRes", label: "Enemy Physical DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyAnemoRes", label: "Enemy Anemo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyGeoRes", label: "Enemy Geo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyElectroRes", label: "Enemy Electro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyHydroRes", label: "Enemy Hydro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyPyroRes", label: "Enemy Pyro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyCryoRes", label: "Enemy Cryo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyDendroRes", label: "Enemy Dendro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "defReduction", label: "DEF Reduction", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "defIgnore", label: "DEF Ignore", category: "debuffs", unit: "percent", hideIfZero: true },
+
+  // 9. Self Resistances
+  { key: "selfPhysicalRes", label: "Physical DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfAnemoRes", label: "Anemo DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfGeoRes", label: "Geo DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfElectroRes", label: "Electro DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfHydroRes", label: "Hydro DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfPyroRes", label: "Pyro DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfCryoRes", label: "Cryo DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+  { key: "selfDendroRes", label: "Dendro DMG RES", category: "selfRes", unit: "percent", hideIfZero: true },
+
+  // 10. Stamina & Misc Stats
+  { key: "stamina", label: "Stamina", category: "staminaAndMisc", unit: "flat", hideIfZero: true },
+  { key: "staminaDec", label: "Stamina Consumption Dec.", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "sprintingStaminaDec", label: "Sprinting Stamina Dec.", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "glidingStaminaDec", label: "Gliding Stamina Dec.", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "chargedAttackStaminaDec", label: "Charged Attack Stamina Dec.", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "incomingHealingBonus", label: "Incoming Healing Bonus", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "shieldStrength", label: "Shield Strength", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "cdReduction", label: "CD Reduction", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "movementSpd", label: "Movement SPD", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "atkSpd", label: "ATK SPD", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "weakspotDmg", label: "Weakspot DMG", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "dmgReduction", label: "DMG Reduction / -(DMG Bonus)", category: "staminaAndMisc", unit: "percent", hideIfZero: true },
+  { key: "healIncrease", label: "Heal Increase", category: "staminaAndMisc", unit: "flat", hideIfZero: true },
+  { key: "levelChar", label: "Character Level", category: "staminaAndMisc", unit: "flat" },
+  { key: "levelEnemy", label: "Enemy Level", category: "staminaAndMisc", unit: "flat" },
+
+  // 11. Multipliers & Reaction Math
   { key: "transformativeBonus", label: "Transformative Reaction Bonus", category: "multipliers", unit: "percent", hideIfZero: false },
   { key: "vaporizeMult", label: "Vaporize Multiplier", category: "multipliers", unit: "multiplier", hideIfZero: true },
   { key: "meltMult", label: "Melt Multiplier", category: "multipliers", unit: "multiplier", hideIfZero: true },
   { key: "aggravateFlat", label: "Aggravate Flat DMG Bonus", category: "multipliers", unit: "flat", hideIfZero: true },
   { key: "spreadFlat", label: "Spread Flat DMG Bonus", category: "multipliers", unit: "flat", hideIfZero: true },
-
-  // 5. Enemy Debuffs & Defense
-  { key: "enemyRes", label: "Enemy RES", category: "debuffs", unit: "percent" },
-  { key: "defReduction", label: "DEF Reduction", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "defIgnore", label: "DEF Ignore", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "dmgReduction", label: "DMG Reduction / -(DMG Bonus)", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "levelChar", label: "Character Level", category: "debuffs", unit: "flat" },
-  { key: "levelEnemy", label: "Enemy Level", category: "debuffs", unit: "flat" },
 ];
 
 export function resolveAllEffectiveStats(
@@ -128,7 +313,7 @@ export function resolveAllEffectiveStats(
 
   const teamRes = inst.teamBuffsEnabled !== false && inst.teamSupports?.length
     ? resolveTeamBuffs(inst.teamSupports, true, config, baseAtk, baseDef, baseHp)
-    : { statDeltas: {}, lunarBaseBonusPct: 0, sources: [], teamCrit: { critRate: 0, critDmg: 0 }, equippedArtifactIds: [], equippedWeaponIds: [] };
+    : { statDeltas: {}, lunarBaseBonusPct: 0, stellarBaseBonusPct: 0, sources: [], teamCrit: { critRate: 0, critDmg: 0 }, equippedArtifactIds: [], equippedWeaponIds: [] };
 
   const weaponRes = inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length
     ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamRes.equippedWeaponIds)
@@ -164,6 +349,11 @@ export function resolveAllEffectiveStats(
   const mechLunarBase = mechResult.lunarBaseBonusPct ?? 0;
   const totalLunarBase = rawLunarBase + teamLunarBase + mechLunarBase;
 
+  const rawStellarBase = toNum(inst.stellarBaseBonus) ?? 0;
+  const teamStellarBase = teamRes.stellarBaseBonusPct ?? 0;
+  const totalStellarBase = rawStellarBase + teamStellarBase;
+  const rawStellarPanel = toNum(inst.stellarPanelBonus) ?? 0;
+
   // Process each definition
   for (const row of EFFECTIVE_ROW_DEFINITIONS) {
     // Special handled rows
@@ -187,6 +377,25 @@ export function resolveAllEffectiveStats(
         additions,
         total: totalTransformativeBonus,
         hideIfZero: false,
+        hasExternalBuffs: false,
+      });
+      continue;
+    }
+
+    if (row.key === "stellarPanelBonus") {
+      const additions: StatBuffSource[] = [];
+      const hasValue = rawStellarPanel > 0.01;
+      if (row.hideIfZero && !hasValue) continue;
+
+      breakdowns.push({
+        key: row.key,
+        label: row.label,
+        category: row.category,
+        unit: row.unit,
+        raw: rawStellarPanel,
+        additions,
+        total: rawStellarPanel,
+        hideIfZero: row.hideIfZero,
         hasExternalBuffs: false,
       });
       continue;
@@ -224,6 +433,35 @@ export function resolveAllEffectiveStats(
         raw: rawLunarBase,
         additions,
         total: totalLunarBase,
+        hideIfZero: row.hideIfZero,
+        hasExternalBuffs: additions.some(a => a.type === "external"),
+      });
+      continue;
+    }
+
+    if (row.key === "stellarBaseBonus") {
+      const additions: StatBuffSource[] = [];
+      if (teamStellarBase > 0) {
+        additions.push({
+          source: "Team Stellar Buff",
+          value: teamStellarBase,
+          description: "Teammate Stellar reaction base DMG bonus",
+          type: "external",
+          category: "team",
+          rarity: 5,
+        });
+      }
+      const hasValue = totalStellarBase > 0.01;
+      if (row.hideIfZero && !hasValue) continue;
+
+      breakdowns.push({
+        key: row.key,
+        label: row.label,
+        category: row.category,
+        unit: row.unit,
+        raw: rawStellarBase,
+        additions,
+        total: totalStellarBase,
         hideIfZero: row.hideIfZero,
         hasExternalBuffs: additions.some(a => a.type === "external"),
       });
@@ -461,7 +699,7 @@ export function resolveAllEffectiveStats(
     const hasExternalBuffs = additions.some(a => a.type === "external");
 
     breakdowns.push({
-      key: row.key,
+      key: String(row.key),
       label: row.label,
       category: row.category,
       unit: row.unit,

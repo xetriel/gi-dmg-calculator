@@ -194,6 +194,7 @@ export const SUPPORT_CONFIGS: SupportConfig[] = RAW_CHARACTERS.filter(
   constellations: c.constellations,
   buffs: c.support.buffs,
   lunarBaseBonusCompute: c.support.lunarBaseBonusCompute,
+  stellarBaseBonusCompute: c.support.stellarBaseBonusCompute,
   formatBriefStats: c.support.formatBriefStats,
 }));
 

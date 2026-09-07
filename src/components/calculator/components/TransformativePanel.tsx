@@ -4,11 +4,17 @@ import type { CalcInstance, ReactionExtras } from "../types";
 import type { validate } from "@/lib/engine/validation";
 import { TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL, type TransformativeType } from "@/lib/engine/transformative";
 import { LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType } from "@/lib/engine/lunar";
+import {
+  STELLAR_BY_ELEMENT,
+  STELLAR_LABEL,
+  STELLAR_SWIRL_VARIANT_LABEL,
+  type StellarType,
+  type StellarSwirlVariant,
+} from "@/lib/engine/stellar";
 import { DMG_COLORS } from "../utils/colors";
+import { HitFormulaTooltip } from "./HitFormulaTooltip";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
-
-import { HitFormulaTooltip } from "./HitFormulaTooltip";
 
 interface TransformativePanelProps {
   inst: CalcInstance;
@@ -23,21 +29,15 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
   inst,
   config,
   extras,
-  validation,
-  updateInstance,
+  validation: _validation,
+  updateInstance: _updateInstance,
   onFormulaRedirect,
 }) => {
-  const err = (id: string) => validation.errors[id];
-  
-  const inputCls = (id: string, w: string) =>
-    `${w} border rounded px-2 py-0.5 text-sm bg-white dark:bg-zinc-800 text-black dark:text-white border-gray-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all ${
-      err(id) ? "border-red-500 focus:ring-red-500 dark:border-red-500" : ""
-    }`;
+  const hasTransformative = (TRANSFORMATIVE_BY_ELEMENT[config.element]?.length ?? 0) > 0;
+  const hasLunar = (LUNAR_BY_ELEMENT[config.element]?.length ?? 0) > 0;
+  const hasStellar = (STELLAR_BY_ELEMENT[config.element]?.length ?? 0) > 0;
 
-  const hasTransformative = TRANSFORMATIVE_BY_ELEMENT[config.element]?.length > 0;
-  const hasLunar = LUNAR_BY_ELEMENT[config.element]?.length > 0;
-
-  if (!hasTransformative && !hasLunar) return null;
+  if (!hasTransformative && !hasLunar && !hasStellar) return null;
 
   const getTransformativeColor = (type: TransformativeType): string => {
     switch (type) {
@@ -71,46 +71,20 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
     }
   };
 
+  const getStellarColor = (variant?: StellarSwirlVariant): string => {
+    if (variant === "initial") return DMG_COLORS["Anemo"];
+    if (variant === "vortex-lv1" || variant === "vortex-lv2") return DMG_COLORS["Cryo"];
+    return DMG_COLORS["Stellar-Conduct"];
+  };
+
   return (
     <section className="mt-5 border-t border-gray-200 dark:border-zinc-800 pt-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-sm">
           Reaction DMG ({config.element}-triggered)
         </h3>
-        <div className="flex items-center gap-2 text-[10px] text-gray-500">
-          <label className="flex items-center gap-1">
-            Bonus %
-            <input
-              className={inputCls("reactionPanelBonus", "w-14")}
-              type="number"
-              value={inst.reactionPanelBonus}
-              onChange={(e) =>
-                updateInstance(inst.id, () => ({
-                  reactionPanelBonus: e.target.value,
-                }))
-              }
-            />
-          </label>
-          {hasLunar ? (
-            <label
-              className="flex items-center gap-1"
-              title="Lunar Reaction Base DMG Bonus (Moonsign Benediction passives)"
-            >
-              Lunar Base %
-              <input
-                className={inputCls("lunarBaseBonus", "w-14")}
-                type="number"
-                value={inst.lunarBaseBonus}
-                onChange={(e) =>
-                  updateInstance(inst.id, () => ({
-                    lunarBaseBonus: e.target.value,
-                  }))
-                }
-              />
-            </label>
-          ) : null}
-        </div>
       </div>
+
       {extras ? (
         <table className="mt-1 w-full text-xs">
           <thead>
@@ -122,18 +96,24 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
             </tr>
           </thead>
           <tbody>
-            {extras.transformative.map((t: { type: TransformativeType; dmg: number }) => {
+            {extras.transformative.map((t) => {
               const color = getTransformativeColor(t.type);
-              const label = t.type === "swirl" && config.element === "Anemo" ? (() => {
-                const swirled = (() => {
-                  if (Number(inst.mechanicInputs["party-has-pyro"]) > 0) return "Pyro";
-                  if (Number(inst.mechanicInputs["party-has-hydro"]) > 0) return "Hydro";
-                  if (Number(inst.mechanicInputs["party-has-electro"]) > 0) return "Electro";
-                  if (Number(inst.mechanicInputs["party-has-cryo"]) > 0) return "Cryo";
-                  return "";
-                })();
-                return swirled ? `${swirled} Swirl` : "Swirl";
-              })() : TRANSFORMATIVE_LABEL[t.type];
+              const label =
+                t.type === "swirl" && config.element === "Anemo"
+                  ? (() => {
+                      const swirled = (() => {
+                        if (Number(inst.mechanicInputs["party-has-pyro"]) > 0) return "Pyro";
+                        if (Number(inst.mechanicInputs["party-has-hydro"]) > 0) return "Hydro";
+                        if (Number(inst.mechanicInputs["party-has-electro"]) > 0) return "Electro";
+                        if (Number(inst.mechanicInputs["party-has-cryo"]) > 0) return "Cryo";
+                        return "";
+                      })();
+                      return swirled ? `${swirled} Swirl` : "Swirl";
+                    })()
+                  : TRANSFORMATIVE_LABEL[t.type];
+
+              const canCrit = Boolean(t.res?.canCrit);
+
               return (
                 <tr
                   key={t.type}
@@ -143,28 +123,54 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                   <td className="py-1.5 font-medium" style={{ color }}>
                     {label}
                   </td>
-                  <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
-                    <div className="flex items-center justify-end gap-1.5">
-                      <span className="font-semibold">{fmt(t.dmg)}</span>
-                      <span className="text-[10px] text-gray-400">
-                        (no crit)
-                      </span>
-                      {onFormulaRedirect && (
-                        <HitFormulaTooltip
-                          hitName={`${label} Reaction`}
-                          targetAnchorId={`tr-${t.type}`}
-                          nonCrit={t.dmg}
-                          crit={t.dmg}
-                          avg={t.dmg}
-                          onFormulaRedirect={onFormulaRedirect}
-                        />
-                      )}
-                    </div>
-                  </td>
+                  {canCrit && t.res ? (
+                    <>
+                      <td className="py-1.5 pr-1 text-right tabular-nums">
+                        {fmt(t.res.nonCrit)}
+                      </td>
+                      <td className="py-1.5 pr-1 text-right tabular-nums">
+                        {fmt(t.res.crit)}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums font-semibold">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span>{fmt(t.res.avg)}</span>
+                          {onFormulaRedirect && (
+                            <HitFormulaTooltip
+                              hitName={`${label} Reaction`}
+                              targetAnchorId={`tr-${t.type}`}
+                              nonCrit={t.res.nonCrit}
+                              crit={t.res.crit}
+                              avg={t.res.avg}
+                              onFormulaRedirect={onFormulaRedirect}
+                            />
+                          )}
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <span className="font-semibold">{fmt(t.dmg)}</span>
+                        <span className="text-[10px] text-gray-400">(no crit)</span>
+                        {onFormulaRedirect && (
+                          <HitFormulaTooltip
+                            hitName={`${label} Reaction`}
+                            targetAnchorId={`tr-${t.type}`}
+                            nonCrit={t.dmg}
+                            crit={t.dmg}
+                            avg={t.dmg}
+                            onFormulaRedirect={onFormulaRedirect}
+                          />
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}
-            {extras.lunar.map((l: { type: LunarType; res: any }) => {
+
+            {/* Lunar Reactions */}
+            {extras.lunar.map((l) => {
               const color = getLunarColor(l.type);
               return (
                 <tr
@@ -191,6 +197,43 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                           nonCrit={l.res.nonCrit}
                           crit={l.res.crit}
                           avg={l.res.avg}
+                          onFormulaRedirect={onFormulaRedirect}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+
+            {/* Stellar Swirl Reactions */}
+            {extras.stellar?.map((s) => {
+              const color = getStellarColor(s.variant);
+              return (
+                <tr
+                  key={`${s.type}-${s.variant ?? ""}`}
+                  className="border-t border-gray-100 dark:border-zinc-800/60"
+                  style={{ color }}
+                >
+                  <td className="py-1.5 font-medium" style={{ color }}>
+                    {s.label}
+                  </td>
+                  <td className="py-1.5 pr-1 text-right tabular-nums">
+                    {fmt(s.res.nonCrit)}
+                  </td>
+                  <td className="py-1.5 pr-1 text-right tabular-nums">
+                    {fmt(s.res.crit)}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums font-semibold">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span>{fmt(s.res.avg)}</span>
+                      {onFormulaRedirect && (
+                        <HitFormulaTooltip
+                          hitName={`${s.label} Reaction`}
+                          targetAnchorId={`stellar-${s.variant ?? s.type}`}
+                          nonCrit={s.res.nonCrit}
+                          crit={s.res.crit}
+                          avg={s.res.avg}
                           onFormulaRedirect={onFormulaRedirect}
                         />
                       )}

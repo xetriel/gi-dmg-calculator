@@ -7,11 +7,21 @@ import type { TalentScalingData } from "@/lib/talent-scaling";
 import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, getRequiredConstellation, type RawInputs } from "@/lib/engine/validation";
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
-import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
-import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL } from "@/lib/engine/lunar";
+import { transformativeDamage, transformativeDamageWithStats, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
+import { indirectLunarDamage, LUNAR_BY_ELEMENT, LUNAR_LABEL, type LunarType, type LunarContributorParams } from "@/lib/engine/lunar";
+import {
+  indirectStellarDamage,
+  STELLAR_BY_ELEMENT,
+  STELLAR_LABEL,
+  STELLAR_SWIRL_VARIANT_LABEL,
+  type StellarType,
+  type StellarSwirlVariant,
+  type StellarResult,
+  type ContributorParams,
+} from "@/lib/engine/stellar";
 import { levelMultiplier } from "@/lib/engine/level-multiplier";
 import { encodeBuild } from "@/lib/engine/share";
-import { resolveTeamBuffs, type TeamBuffSource } from "@/lib/engine/team-buffs";
+import { resolveTeamBuffs, type TeamBuffSource, type TeamContributor } from "@/lib/engine/team-buffs";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
 import { byId as characterById } from "@/data/registry/characters";
@@ -46,6 +56,7 @@ const REACTION_LABEL: Record<ReactionType, string> = {
   vaporize: "Vaporize",
   melt: "Melt",
   aggravate: "Aggravate",
+  spread: "Spread",
 };
 
 const DIRECT_TAG: Record<"stellar" | "lunar", { label: string; cls: string; title: string }> = {
@@ -446,6 +457,8 @@ export function CharacterCalculator({
 
     // Apply team support buffs
     let lunarBaseFromTeam = 0;
+    let stellarBaseFromTeam = 0;
+    let teamContributors: TeamContributor[] = [];
     let equippedArtifactIds: string[] = [];
     let equippedWeaponIds: string[] = [];
     const baseAtkVal = toNum(inst.stats["atk.base"]) ?? 0;
@@ -467,6 +480,8 @@ export function CharacterCalculator({
         }
       }
       lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
+      stellarBaseFromTeam = teamResult.stellarBaseBonusPct;
+      teamContributors = teamResult.contributors;
       equippedArtifactIds = teamResult.equippedArtifactIds;
       equippedWeaponIds = teamResult.equippedWeaponIds;
     }
@@ -505,6 +520,10 @@ export function CharacterCalculator({
       }
     }
 
+    const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
+    const lunarBase = toNum(inst.lunarBaseBonus) ?? 0;
+    const stellarBase = toNum(inst.stellarBaseBonus) ?? 0;
+    const stellarPanelBonus = toNum(inst.stellarPanelBonus) ?? 0;
 
     const healingBonus = toNum(inst.stats["healingBonus"]) ?? 0;
     const out: Record<string, HitResult> = {};
@@ -524,6 +543,24 @@ export function CharacterCalculator({
         }
         const flatBonus = constellationFlatBonus(effects, h.key, s) + (mods.flatDmgBonus ?? 0);
         const hitCat = h.hitCategory ?? (g.type as "normal" | "skill" | "burst");
+
+        let directRx = h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined;
+        if (directRx) {
+          const isStellar = h.direct === "stellar" || directRx.stellarType !== undefined || (!directRx.lunarType && config.element === "Cryo");
+          const isLunar = h.direct === "lunar" || directRx.lunarType !== undefined;
+          const extraBase = isStellar
+            ? (stellarBase + stellarBaseFromTeam)
+            : isLunar
+            ? (lunarBase + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam)
+            : 0;
+          const extraRx = isStellar ? stellarPanelBonus : isLunar ? panelBonus : 0;
+          directRx = {
+            ...directRx,
+            baseDmgBonusPct: (directRx.baseDmgBonusPct ?? 0) + extraBase,
+            reactionBonusPct: (directRx.reactionBonusPct ?? 0) + extraRx,
+          };
+        }
+
         out[id] = computeHit(s, {
           multiplier: mult,
           scaling: h.scaling,
@@ -539,22 +576,103 @@ export function CharacterCalculator({
           hitCategory: hitCat,
           charElement: config.element,
           dmgBonusLabel: config.dmgBonusLabel,
-          directReaction: h.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+          directReaction: directRx,
         });
       }),
     );
 
-    const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
-    const lunarBase = toNum(inst.lunarBaseBonus) ?? 0;
+    // Filter contributors for lunar indirect reactions
+    const getLunarContributors = (type: LunarType) => {
+      const eligibleElements: Record<LunarType, string[]> = {
+        "lunar-charged": ["Electro", "Hydro"],
+        "lunar-crystallize": ["Geo"],
+        "lunar-bloom": ["Hydro", "Dendro"],
+      };
+      const valid = eligibleElements[type] ?? [];
+      const party: LunarContributorParams[] = [];
+      for (const sup of teamContributors) {
+        if (valid.includes(sup.element)) {
+          party.push({
+            id: sup.id,
+            name: sup.name,
+            element: sup.element,
+            levelChar: sup.levelChar,
+            em: sup.em,
+            critRate: sup.critRate,
+            critDmg: sup.critDmg,
+            enemyRes: s.enemyRes,
+            reactionBonusPct: sup.reactionBonusPct,
+            baseDmgBonusPct: lunarBase + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam,
+          });
+        }
+      }
+      return party;
+    };
+
+    // Filter contributors for stellar swirl indirect reactions
+    const getStellarSwirlContributors = () => {
+      const party: ContributorParams[] = [];
+      for (const sup of teamContributors) {
+        if (sup.element === "Anemo" || sup.element === "Cryo") {
+          party.push({
+            id: sup.id,
+            name: sup.name,
+            element: sup.element,
+            levelChar: sup.levelChar,
+            em: sup.em,
+            critRate: sup.critRate,
+            critDmg: sup.critDmg,
+            enemyRes: s.enemyRes,
+            reactionBonusPct: sup.reactionBonusPct,
+            baseDmgBonusPct: stellarBase + stellarBaseFromTeam,
+          });
+        }
+      }
+      return party;
+    };
+
+    const stellarSwirlVariants: StellarSwirlVariant[] = ["initial", "vortex-lv1", "vortex-lv2"];
+    const stellarList: {
+      type: StellarType;
+      variant?: StellarSwirlVariant;
+      label: string;
+      res: StellarResult;
+    }[] = [];
+
+    if ((STELLAR_BY_ELEMENT[config.element] ?? []).includes("stellar-swirl")) {
+      for (const variant of stellarSwirlVariants) {
+        stellarList.push({
+          type: "stellar-swirl",
+          variant,
+          label: STELLAR_SWIRL_VARIANT_LABEL[variant],
+          res: indirectStellarDamage(
+            variant,
+            s,
+            stellarBase + stellarBaseFromTeam,
+            stellarPanelBonus,
+            getStellarSwirlContributors(),
+          ),
+        });
+      }
+    }
+
     const extras = {
       transformative: (TRANSFORMATIVE_BY_ELEMENT[config.element] ?? []).map(type => ({
         type,
         dmg: transformativeDamage(type, s.levelChar, s.em, s.enemyRes, panelBonus),
+        res: transformativeDamageWithStats(type, s, panelBonus),
       })),
       lunar: (LUNAR_BY_ELEMENT[config.element] ?? []).map(type => ({
         type,
-        res: indirectLunarDamage(type, s, lunarBase + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam, panelBonus),
+        res: indirectLunarDamage(
+          type,
+          s,
+          lunarBase + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam,
+          panelBonus,
+          getLunarContributors(type),
+        ),
       })),
+      stellar: stellarList,
       notes: mech.notes,
     };
 
@@ -1604,6 +1722,7 @@ export function CharacterCalculator({
                         config={config}
                         validation={validation}
                         setStat={setStat}
+                        updateInstance={updateInstance}
                       />
 
                       {/* Reaction & Effective Stats Configuration */}
@@ -1685,6 +1804,7 @@ export function CharacterCalculator({
                       config={config}
                       validation={validation}
                       setStat={setStat}
+                      updateInstance={updateInstance}
                     />
 
                     {renderConfiguration()}
