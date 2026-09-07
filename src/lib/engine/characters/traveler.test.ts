@@ -133,18 +133,27 @@ describe("traveler mechanics", () => {
   });
 
   it("Cryo Traveler Stellar direct reaction routing with Illusory Frostmirror", () => {
-    // 2000 ATK → 0.7 * (2000/100) = 14% (capped)
+    // 2000 ATK → 0.35 * (2000/100) = 7% (capped at 7% per wiki)
     const r = resolveTravelerCryo(travelerCryo, ctxFor("traveler-cryo", {
       stats: { ...baseStats, atk: 2000 },
       inputs: { "frostglow-stacks": 4 },
     }));
     expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction).toBeDefined();
     expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.coefficient).toBe(1.0);
-    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.baseDmgBonusPct).toBe(14);
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.baseDmgBonusPct).toBe(7);
     // C0: no C6 reaction bonus
     expect(r.perHit["stellar-conduct-javelin-dmg"]?.directReaction?.reactionBonusPct).toBe(0);
-    // Frostglow +4.96% per stack on burst-javelin-dmg only
+    // Frostglow: 4 stacks × 4.96%/stack (at Lv10) = 19.84% on Cryo burst hits
     expect(r.perHit["burst-javelin-dmg"]?.bonusDmgPct).toBeCloseTo(19.84);
+    // Also applied to multi-strike keys
+    expect(r.perHit["burst-javelin-3-hit"]?.bonusDmgPct).toBeCloseTo(19.84);
+    expect(r.perHit["burst-javelin-5-hit"]?.bonusDmgPct).toBeCloseTo(19.84);
+    // Stellar-Conduct Frostglow bonus: 4 stacks × 3.31%/stack (at Lv10) = 13.24%
+    expect(r.perHit["stellar-conduct-javelin-dmg"]?.bonusDmgPct).toBeCloseTo(13.24);
+    expect(r.perHit["stellar-conduct-javelin-3-hit"]?.bonusDmgPct).toBeCloseTo(13.24);
+    // freezing-ice-stellar should have directReaction routing
+    expect(r.perHit["freezing-ice-stellar"]?.directReaction).toBeDefined();
+    expect(r.perHit["freezing-ice-stellar"]?.directReaction?.baseDmgBonusPct).toBe(7);
   });
 
   it("talent seed row counts for all Traveler forms", () => {

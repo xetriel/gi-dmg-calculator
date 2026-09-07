@@ -9,6 +9,10 @@ import { getRequiredConstellation } from "@/lib/engine/validation";
 import { ElementIcon, WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
 import { DMG_COLORS } from "../utils/colors";
+import { SupportEquipmentModal } from "./SupportEquipmentModal";
+import { getSupportEquipmentSetups } from "@/lib/engine/support-equipment";
+import { weaponById } from "@/data/registry/weapons";
+import { artifactById } from "@/data/registry/artifacts";
 
 interface TeamBuffModalProps {
   isOpen: boolean;
@@ -75,6 +79,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   const [hoveredElementFilter, setHoveredElementFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<number | "ALL">("ALL");
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+  const [equipModalSupportIndex, setEquipModalSupportIndex] = useState<number | null>(null);
 
   if (!isOpen) return null;
 
@@ -84,8 +89,12 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   const supports = currentInst.teamSupports ?? [];
   const masterEnabled = currentInst.teamBuffsEnabled !== false;
 
+  const dpsBaseAtk = Number(currentInst.stats["atk.base"] || 0);
+  const dpsBaseDef = Number(currentInst.stats["def.base"] || 0);
+  const dpsBaseHp = Number(currentInst.stats["hp.base"] || 0);
+
   // Compute live total team buff results
-  const totalResult = resolveTeamBuffs(supports, masterEnabled);
+  const totalResult = resolveTeamBuffs(supports, masterEnabled, config, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
   // Set of already added support IDs for the active setup
   const addedSupportIds = new Set(supports.map((s) => s.supportId));
@@ -166,6 +175,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       setupName = "Support Setup 1";
     }
 
+    // Try to load saved equipment setups for this support character
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const activeEq = savedEq[0] ?? null;
+
     const newSupport: SupportInstance = {
       supportId,
       stats: finalStats,
@@ -175,6 +188,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       enabled: true,
       selectedSetupId: setupId,
       selectedSetupName: setupName,
+      equipmentSetupId: activeEq?.id,
+      useCharacterBuild: true,
+      equippedWeapon: activeEq?.weapon ?? null,
+      equippedArtifact: activeEq?.artifact ?? null,
     };
 
     updateInstance(currentInst.id, () => ({
@@ -209,18 +226,27 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     if (!sConfig) return;
 
     const draft = readSupportDraft(sConfig.characterId);
-    if (!draft || !draft.instances.length) return;
+    const targetInst = draft?.instances.find((i) => i.id === sup.selectedSetupId) ?? draft?.instances[0];
 
-    const targetInst = draft.instances.find((i) => i.id === sup.selectedSetupId) ?? draft.instances[0];
-    if (!targetInst) return;
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const targetEq = sup.equipmentSetupId
+      ? (savedEq.find((e) => e.id === sup.equipmentSetupId) ?? savedEq[0])
+      : savedEq[0];
 
     updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      talentLevels: targetInst.levels ?? sup.talentLevels,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Support Setup ${targetInst.id}`,
+      ...(targetInst ? {
+        stats: targetInst.stats,
+        mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+        constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+        talentLevels: targetInst.levels ?? sup.talentLevels,
+        selectedSetupId: targetInst.id,
+        selectedSetupName: `Setup ${targetInst.id}`,
+      } : {}),
+      ...(targetEq ? {
+        equipmentSetupId: targetEq.id,
+        equippedWeapon: targetEq.weapon,
+        equippedArtifact: targetEq.artifact,
+      } : {}),
     }));
   };
 
@@ -232,24 +258,31 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     if (!sConfig) return;
 
     const draft = readSupportDraft(sConfig.characterId);
-    if (!draft) return;
+    const targetInst = draft?.instances.find((i) => i.id === setupId);
 
-    const targetInst = draft.instances.find((i) => i.id === setupId);
-    if (!targetInst) return;
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const targetEq = savedEq.find((e) => e.id === setupId) ?? savedEq[0];
 
     updateSupport(index, () => ({
-      stats: targetInst.stats,
-      mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
-      constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
-      talentLevels: targetInst.levels ?? sup.talentLevels,
-      selectedSetupId: targetInst.id,
-      selectedSetupName: `Support Setup ${targetInst.id}`,
+      ...(targetInst ? {
+        stats: targetInst.stats,
+        mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
+        constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
+        talentLevels: targetInst.levels ?? sup.talentLevels,
+        selectedSetupId: targetInst.id,
+        selectedSetupName: `Setup ${targetInst.id}`,
+      } : {}),
+      ...(targetEq ? {
+        equipmentSetupId: targetEq.id,
+        equippedWeapon: targetEq.weapon,
+        equippedArtifact: targetEq.artifact,
+      } : {}),
     }));
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-6xl h-[90vh] max-h-[850px] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-7xl h-[90vh] max-h-[880px] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
@@ -309,8 +342,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         {/* Modal Main Content: Split Grid */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-zinc-800">
           
-          {/* LEFT PANE: Support Character Catalog & Filtering (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col min-h-0 bg-gray-50/30 dark:bg-zinc-900/20">
+          {/* LEFT PANE: Support Character Catalog & Filtering (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col min-h-0 bg-gray-50/30 dark:bg-zinc-900/20">
             {/* Filter Toolbar */}
             <div className="p-4 border-b border-gray-200 dark:border-zinc-800 space-y-2.5 shrink-0">
               {/* Search Bar */}
@@ -523,8 +556,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
           </div>
 
-          {/* RIGHT PANE: Configured Support Characters for Setup (7 cols) */}
-          <div className="lg:col-span-7 flex flex-col min-h-0 bg-white dark:bg-zinc-950">
+          {/* RIGHT PANE: Configured Support Characters for Setup (8 cols) */}
+          <div className="lg:col-span-8 flex flex-col min-h-0 bg-white dark:bg-zinc-950">
             {/* Right Pane Header */}
             <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-gray-50/30 dark:bg-zinc-900/30">
               <div className="flex items-center gap-2">
@@ -536,18 +569,51 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 </span>
               </div>
 
-              {/* Master Enable Toggle */}
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300">
-                  Apply All Buffs
-                </span>
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
-                  checked={masterEnabled}
-                  onChange={toggleMaster}
-                />
-              </label>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {/* Global Use Character Builds Toggle */}
+                {supports.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const anyEnabled = supports.some((s) => s.useCharacterBuild !== false);
+                      const nextState = !anyEnabled;
+                      const updated = supports.map((s) => ({ ...s, useCharacterBuild: nextState }));
+                      updateInstance(currentInst.id, () => ({ teamSupports: updated }));
+                    }}
+                    className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      supports.every((s) => s.useCharacterBuild !== false)
+                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 shadow-2xs"
+                        : supports.some((s) => s.useCharacterBuild !== false)
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                        : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                    }`}
+                    title="Toggle Use Character Build for all supports in this team (Option 1 vs Option 2)"
+                  >
+                    <span>🛡️</span>
+                    <span>Use Character Builds:</span>
+                    <span className="font-bold">
+                      {supports.every((s) => s.useCharacterBuild !== false)
+                        ? "All ON"
+                        : supports.some((s) => s.useCharacterBuild !== false)
+                        ? "Partial"
+                        : "All OFF"}
+                    </span>
+                  </button>
+                )}
+
+                {/* Master Enable Toggle */}
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300">
+                    Apply All Buffs
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
+                    checked={masterEnabled}
+                    onChange={toggleMaster}
+                  />
+                </label>
+              </div>
             </div>
 
             {/* Configured Supports Scrollable List */}
@@ -574,7 +640,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 const briefStats = ctx && sConfig.formatBriefStats ? sConfig.formatBriefStats(ctx) : [];
 
                 // Compute individual support preview
-                const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true);
+                const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true, config, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
                 // Get available setups from working draft
                 const draft = readSupportDraft(sConfig.characterId);
@@ -612,8 +678,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-bold">
                           C{sup.constellationLevel}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border ${theme.notePill}`}>
-                          Buffing: Character Setup {currentInst.id}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold border whitespace-nowrap ${theme.notePill}`}>
+                          Target: Setup {currentInst.id}
                         </span>
                       </div>
 
@@ -644,9 +710,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     {/* Setup Switcher & Actions */}
                     <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1">
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold flex items-center gap-1 whitespace-nowrap">
                           <span>⚙️</span>
-                          <span>Support Setup:</span>
+                          <span>Setup:</span>
                         </span>
 
                         {/* Setup option buttons */}
@@ -658,14 +724,14 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                 key={s.id}
                                 type="button"
                                 onClick={() => switchSetup(index, s.id)}
-                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 ${
+                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 whitespace-nowrap ${
                                   isSelected
                                     ? theme.activeButton
                                     : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                                 }`}
-                                title={`Switch to ${sConfig.name} Support Setup ${s.id}`}
+                                title={`Switch to ${sConfig.name} Setup ${s.id}`}
                               >
-                                <span>Support Setup {s.id}</span>
+                                <span>Setup {s.id}</span>
                               </button>
                             );
                           })}
@@ -690,6 +756,91 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           title="Open dedicated support builder for this character"
                         >
                           ✎ Edit Build ↗
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Equipment Status & Action Row */}
+                    <div className="flex items-center justify-between gap-2 mb-3 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-gray-200/80 dark:border-zinc-800/80 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        {/* Toggle switch for Use Character Build */}
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none mr-1" title="Enable to apply this support's equipped weapon and artifact build (Option 2) or disable for character kit buffs only (Option 1)">
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+                            checked={sup.useCharacterBuild !== false}
+                            onChange={() => updateSupport(index, () => ({ useCharacterBuild: sup.useCharacterBuild === false ? true : false }))}
+                          />
+                          <span className="text-xs font-bold text-gray-800 dark:text-zinc-200">
+                            Use Character Build
+                          </span>
+                        </label>
+
+                        {/* Status tag */}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
+                          sup.useCharacterBuild !== false
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                        }`}>
+                          {sup.useCharacterBuild !== false ? "Build Active" : "Kit Only"}
+                        </span>
+
+                        {/* Weapon Pill */}
+                        {sup.equippedWeapon?.weaponId ? (
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
+                            sup.useCharacterBuild !== false
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                              : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
+                          }`}>
+                            <span>⚔️</span>
+                            <span className="truncate max-w-[120px]">
+                              {weaponById(sup.equippedWeapon.weaponId)?.name || sup.equippedWeapon.weaponId}
+                            </span>
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20">
+                              R{sup.equippedWeapon.refinement}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">No Weapon</span>
+                        )}
+
+                        {/* Artifact Pill */}
+                        {sup.equippedArtifact?.artifactId ? (
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
+                            sup.useCharacterBuild !== false
+                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                              : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
+                          }`}>
+                            <span>🏺</span>
+                            <span className="truncate max-w-[120px]">
+                              {artifactById(sup.equippedArtifact.artifactId)?.name || sup.equippedArtifact.artifactId}
+                            </span>
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-purple-500/20">
+                              {sup.equippedArtifact.pieceCount}-Pc
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">No Artifact</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => setEquipModalSupportIndex(index)}
+                          className={`text-xs px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all font-bold cursor-pointer flex items-center gap-1`}
+                          title={`Configure ${sConfig.name}'s weapon and artifact set`}
+                        >
+                          <span>⚙️</span>
+                          <span>Equip</span>
+                        </button>
+
+                        <Link
+                          href={`/builds?character=${sConfig.characterId}&from=${config.id}`}
+                          className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors font-semibold flex items-center gap-1"
+                          title={`Open ${sConfig.name} in dedicated Builds tab`}
+                        >
+                          <span>↗ Builds</span>
                         </Link>
                       </div>
                     </div>
@@ -759,20 +910,24 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         Active Stat Bonuses:
                       </span>
                       <div className="flex items-center gap-2 flex-wrap">
-                        {preview.sources.map((s, i) => (
-                          <span
-                            key={i}
-                            className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
-                              isActive
-                                ? theme.notePill
-                                : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
-                            }`}
-                          >
-                            {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
-                              ? fmt(s.value)
-                              : `${fmt(s.value)}%`}
-                          </span>
-                        ))}
+                        {preview.sources.map((s, i) => {
+                          const isFlat = s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def";
+                          const sign = s.value > 0 ? "+" : "";
+                          const formattedVal = `${sign}${fmt(s.value)}${isFlat ? "" : "%"}`;
+
+                          return (
+                            <span
+                              key={i}
+                              className={`text-xs font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${
+                                isActive
+                                  ? theme.notePill
+                                  : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
+                              }`}
+                            >
+                              {s.label}: {formattedVal}
+                            </span>
+                          );
+                        })}
                         {preview.sources.length === 0 && (
                           <span className="text-xs text-gray-400 dark:text-zinc-600 italic">
                             No active buffs for this setup
@@ -866,6 +1021,32 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Support Equipment Popup Modal */}
+        {equipModalSupportIndex !== null && supports[equipModalSupportIndex] && (
+          <SupportEquipmentModal
+            isOpen={true}
+            setIsOpen={(open) => {
+              if (!open) setEquipModalSupportIndex(null);
+            }}
+            supportId={supports[equipModalSupportIndex].supportId}
+            activeDpsCharacterId={config.id}
+            currentWeapon={supports[equipModalSupportIndex].equippedWeapon}
+            currentArtifact={supports[equipModalSupportIndex].equippedArtifact}
+            equipmentSetupId={supports[equipModalSupportIndex].equipmentSetupId}
+            supportStats={supports[equipModalSupportIndex].stats}
+            constellationLevel={supports[equipModalSupportIndex].constellationLevel}
+            mechanicInputs={supports[equipModalSupportIndex].mechanicInputs}
+            onSave={(eq) => {
+              updateSupport(equipModalSupportIndex, () => ({
+                equipmentSetupId: eq.equipmentSetupId,
+                equippedWeapon: eq.weapon,
+                equippedArtifact: eq.artifact,
+              }));
+              setEquipModalSupportIndex(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );

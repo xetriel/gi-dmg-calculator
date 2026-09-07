@@ -1,7 +1,7 @@
 import type { CharacterConfig } from "@/data/registry/types";
 import type { MechanicsCtx, MechanicsResult } from "../mechanics-utils";
 import type { DirectReactionParams } from "../damage";
-import { addMods, hitKeysOf, fmt } from "../mechanics-utils";
+import { addMods, hitKeysOf, coeff, fmt } from "../mechanics-utils";
 
 export function resolveTravelerCryo(config: CharacterConfig, ctx: MechanicsCtx): MechanicsResult {
   const res: MechanicsResult = { statDeltas: {}, perHit: {}, notes: [] };
@@ -26,25 +26,64 @@ export function resolveTravelerCryo(config: CharacterConfig, ctx: MechanicsCtx):
   }
 
   // A1 Ever-Keen Frost: Frostpierce Star active → NA/CA/Plunge → Cryo infusion + 80% ATK flat DMG
+  // DOES NOT apply to Charged Attack: Freezing Ice (Foreign Permafrost states this explicitly)
+  const exemptFromA1 = new Set(["freezing-ice", "freezing-ice-stellar"]);
   if (on("frostpierce-active")) {
     const naKeys = hitKeysOf(config, "normal");
     const flatDmg = 0.80 * totalAtk;
     for (const key of naKeys) {
-      addMods(res.perHit, key, { element: "Cryo", flatDmgBonus: flatDmg });
+      if (exemptFromA1.has(key)) {
+        // Cryo element infusion only, no flat DMG bonus
+        addMods(res.perHit, key, { element: "Cryo" });
+      } else {
+        addMods(res.perHit, key, { element: "Cryo", flatDmgBonus: flatDmg });
+      }
     }
-    res.notes.push(`A1 Ever-Keen Frost: NA/CA/Plunge → Cryo DMG + ${fmt(flatDmg)} Flat DMG (80% ATK)`);
+    res.notes.push(`A1 Ever-Keen Frost: NA/CA/Plunge → Cryo DMG + ${fmt(flatDmg)} Flat DMG (80% ATK, excl. Freezing Ice)`);
   }
 
-  // Frostglow Stacks (0–8): +4.96% DMG per stack to burst javelin hits
+  // Foreign Permafrost: At 3 Icepoint stacks, Charged Attack: Freezing Ice gains +140% ATK flat DMG
+  const icepointStacks = val("icepoint-stacks");
+  if (icepointStacks >= 3) {
+    const freezingFlatDmg = 1.40 * totalAtk;
+    addMods(res.perHit, "freezing-ice", { flatDmgBonus: freezingFlatDmg });
+    addMods(res.perHit, "freezing-ice-stellar", { flatDmgBonus: freezingFlatDmg });
+    res.notes.push(`Foreign Permafrost: Freezing Ice +${fmt(freezingFlatDmg)} Flat DMG (140% ATK)`);
+  }
+
+  // Frostglow Stacks (0–8): per-stack DMG bonus to burst javelin hits
+  // The per-stack bonus scales with burst talent level (looked up from scaling data)
   const stacks = Math.min(val("frostglow-stacks"), 8);
   if (stacks > 0) {
-    const bonusPct = stacks * 4.96;
-    addMods(res.perHit, "burst-javelin-dmg", { bonusDmgPct: bonusPct });
-    res.notes.push(`Frostglow Stacks (${stacks}/8): +${bonusPct.toFixed(2)}% Burst Javelin DMG`);
+    // Look up level-dependent per-stack bonus from scaling data; fall back to Lv10 defaults
+    const cryoPerStack = coeff(ctx, "burst", "frostglow-bonus") ?? 4.96;
+    const stellarConductPerStack = coeff(ctx, "burst", "stellar-conduct-frostglow-bonus") ?? 3.31;
+    const stellarSwirlPerStack = cryoPerStack; // Stellar Swirl uses same values as Cryo per wiki
+
+    const cryoBonusPct = stacks * cryoPerStack;
+    const stellarConductBonusPct = stacks * stellarConductPerStack;
+    const stellarSwirlBonusPct = stacks * stellarSwirlPerStack;
+
+    // Apply to Cryo burst keys
+    for (const key of ["burst-javelin-dmg", "burst-javelin-3-hit", "burst-javelin-5-hit"]) {
+      addMods(res.perHit, key, { bonusDmgPct: cryoBonusPct });
+    }
+    // Apply to Stellar-Conduct burst keys
+    for (const key of ["stellar-conduct-javelin-dmg", "stellar-conduct-javelin-3-hit", "stellar-conduct-javelin-5-hit"]) {
+      addMods(res.perHit, key, { bonusDmgPct: stellarConductBonusPct });
+    }
+    // Apply to Stellar Swirl burst keys
+    for (const key of ["stellar-swirl-javelin-dmg", "stellar-swirl-javelin-3-hit", "stellar-swirl-javelin-5-hit"]) {
+      addMods(res.perHit, key, { bonusDmgPct: stellarSwirlBonusPct });
+    }
+
+    res.notes.push(
+      `Frostglow Stacks (${stacks}/8): +${cryoBonusPct.toFixed(2)}% Cryo / +${stellarConductBonusPct.toFixed(2)}% Stellar-Conduct / +${stellarSwirlBonusPct.toFixed(2)}% Stellar Swirl Burst Javelin DMG`
+    );
   }
 
-  // Stellar Jubilee — Illusory Frostmirror: Base Stellar DMG Bonus +0.7% per 100 ATK (cap 14%)
-  const baseDmgBonusPct = Math.min(0.7 * (totalAtk / 100), 14);
+  // Stellar Jubilee — Illusory Frostmirror: Base Stellar DMG Bonus +0.35% per 100 ATK (cap 7%)
+  const baseDmgBonusPct = Math.min(0.35 * (totalAtk / 100), 7);
   // C6 Brumal Grimfrost: +5% per consumed Frostglow stack (max +40%) as Stellar Glimmer reaction DMG
   const c6ReactionBonusPct = cons >= 6 ? Math.min(stacks * 5, 40) : 0;
 
@@ -54,12 +93,20 @@ export function resolveTravelerCryo(config: CharacterConfig, ctx: MechanicsCtx):
     reactionBonusPct: c6ReactionBonusPct,
   };
 
-  const stellarKeys = ["stellar-conduct-javelin-dmg", "stellar-swirl-javelin-dmg"];
-  for (const key of stellarKeys) {
+  // Apply direct reaction to all stellar burst hit keys
+  const stellarBurstKeys = [
+    "stellar-conduct-javelin-dmg", "stellar-conduct-javelin-3-hit", "stellar-conduct-javelin-5-hit",
+    "stellar-swirl-javelin-dmg", "stellar-swirl-javelin-3-hit", "stellar-swirl-javelin-5-hit",
+  ];
+  for (const key of stellarBurstKeys) {
     addMods(res.perHit, key, { directReaction: direct });
   }
+
+  // Also apply direct reaction to freezing-ice-stellar (Stellar Glimmer Charged Attack)
+  addMods(res.perHit, "freezing-ice-stellar", { directReaction: { ...direct } });
+
   res.notes.push(
-    `Illusory Frostmirror: +${baseDmgBonusPct.toFixed(1)}% Base Stellar DMG (0.7%/100 ATK${baseDmgBonusPct >= 14 ? ", capped" : ""})`
+    `Illusory Frostmirror: +${baseDmgBonusPct.toFixed(1)}% Base Stellar DMG (0.35%/100 ATK${baseDmgBonusPct >= 7 ? ", capped" : ""})`
   );
   if (cons >= 6 && c6ReactionBonusPct > 0) {
     res.notes.push(`C6 Brumal Grimfrost: +${c6ReactionBonusPct}% Stellar Glimmer Reaction DMG (${stacks} stack${stacks === 1 ? "" : "s"} × 5%)`);

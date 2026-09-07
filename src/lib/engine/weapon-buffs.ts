@@ -35,6 +35,7 @@ export function resolveExternalWeaponBuffs(
   baseAtk: number = 0,
   charConfig?: CharacterConfig,
   masterEnabled: boolean = true,
+  overriddenWeaponIds?: string[] | Set<string>,
 ): ExternalWeaponBuffResult {
   const result: ExternalWeaponBuffResult = {
     statDeltas: {},
@@ -45,11 +46,22 @@ export function resolveExternalWeaponBuffs(
     return result;
   }
 
+  const overriddenSet = new Set(
+    overriddenWeaponIds instanceof Set
+      ? Array.from(overriddenWeaponIds)
+      : (overriddenWeaponIds ?? [])
+  );
+
   // Enforce max 4 weapons (including active character)
   const validWeapons = weapons.slice(0, 4);
 
   for (const inst of validWeapons) {
     if (!inst.enabled) continue;
+
+    // If this weapon is already equipped on an active support character, it is overridden
+    if (overriddenSet.has(inst.weaponId)) {
+      continue;
+    }
 
     const config = weaponById(inst.weaponId);
     if (!config) continue;

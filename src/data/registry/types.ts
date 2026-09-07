@@ -1,6 +1,7 @@
 export type ScalingSource = "atk" | "hp" | "def" | "em";
 export type Element = "Pyro" | "Hydro" | "Electro" | "Cryo" | "Anemo" | "Geo" | "Dendro";
 export type Weapon = "Sword" | "Claymore" | "Polearm" | "Catalyst" | "Bow";
+export type WeaponType = Weapon;
 
 // Hit-attached reactions supported by the engine: amplifying (vaporize/melt multiply
 // the whole hit) and catalyze (aggravate adds a level/EM-scaled additive base DMG).

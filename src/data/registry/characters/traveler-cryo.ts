@@ -24,6 +24,8 @@ export const travelerCryo: CharacterConfig = {
         { key: "charged-1", name: "Charged Attack (Hit 1)", scaling: "atk", hitCategory: "charged", element: "Physical" },
         { key: "charged-2-aether", name: "Charged Attack (Hit 2 — Aether)", scaling: "atk", hitCategory: "charged", element: "Physical" },
         { key: "charged-2-lumine", name: "Charged Attack (Hit 2 — Lumine)", scaling: "atk", hitCategory: "charged", element: "Physical" },
+        { key: "freezing-ice", name: "Charged Attack: Freezing Ice (Foreign Permafrost)", scaling: "atk", hitCategory: "charged", element: "Cryo" },
+        { key: "freezing-ice-stellar", name: "Charged Attack: Freezing Ice (Stellar Glimmer)", scaling: "atk", hitCategory: "charged", direct: "stellar", element: "Cryo" },
         { key: "plunge", name: "Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
         { key: "low-plunge", name: "Low Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
         { key: "high-plunge", name: "High Plunge DMG", scaling: "atk", hitCategory: "plunge", element: "Physical" },
@@ -42,8 +44,14 @@ export const travelerCryo: CharacterConfig = {
       name: "Elemental Burst — Frostbound Javelin",
       hits: [
         { key: "burst-javelin-dmg", name: "Ice Javelin Single Strike DMG", scaling: "atk", hitCategory: "burst", element: "Cryo" },
+        { key: "burst-javelin-3-hit", name: "Ice Javelin DMG (3 Strikes Total)", scaling: "atk", hitCategory: "burst", element: "Cryo" },
+        { key: "burst-javelin-5-hit", name: "Ice Javelin Max DMG (5 Strikes — 8 Frostglow)", scaling: "atk", hitCategory: "burst", element: "Cryo" },
         { key: "stellar-conduct-javelin-dmg", name: "Stellar-Conduct Ice Javelin Strike DMG", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
+        { key: "stellar-conduct-javelin-3-hit", name: "Stellar-Conduct Ice Javelin (3 Strikes Total)", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
+        { key: "stellar-conduct-javelin-5-hit", name: "Stellar-Conduct Ice Javelin Max DMG (5 Strikes — 8 Frostglow)", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
         { key: "stellar-swirl-javelin-dmg", name: "Stellar Swirl Ice Javelin Strike DMG", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
+        { key: "stellar-swirl-javelin-3-hit", name: "Stellar Swirl Ice Javelin (3 Strikes Total)", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
+        { key: "stellar-swirl-javelin-5-hit", name: "Stellar Swirl Ice Javelin Max DMG (5 Strikes — 8 Frostglow)", scaling: "atk", hitCategory: "burst", direct: "stellar", element: "Cryo" },
       ]
     }
   ],
@@ -53,7 +61,15 @@ export const travelerCryo: CharacterConfig = {
       label: "Frostpierce Star Active (A1 Cryo Infusion & +80% ATK Flat DMG)",
       control: "toggle",
       defaultValue: 1,
-      hint: "A1 Ever-Keen Frost: When Frostpierce Star is on the field, NA/CA/Plunge DMG converts to Cryo and gains flat DMG equal to 80% of ATK."
+      hint: "A1 Ever-Keen Frost: When Frostpierce Star is on the field, NA/CA/Plunge DMG converts to Cryo and gains flat DMG equal to 80% of ATK (does not apply to Freezing Ice)."
+    },
+    {
+      id: "icepoint-stacks",
+      label: "Icepoint Stacks (0–3) / Freezing Ice Ready",
+      control: "stacks",
+      max: 3,
+      defaultValue: 3,
+      hint: "Foreign Permafrost: At 3 stacks of Icepoint, Charged Attack converts into Freezing Ice (+140% ATK Flat DMG, unaffected by Ever-Keen Frost). Radiance: Stellar Glimmer deals direct Stellar Glimmer reaction DMG."
     },
     {
       id: "frostglow-stacks",
@@ -61,7 +77,7 @@ export const travelerCryo: CharacterConfig = {
       control: "stacks",
       max: 8,
       defaultValue: 8,
-      hint: "Consuming Frostglow stacks on Burst: +4.96% DMG per stack to Ice Javelin hits. At C6, also increases party Stellar Glimmer DMG by +5% per stack."
+      hint: "Consuming Frostglow stacks on Burst: +4.96% DMG per stack to Ice Javelin hits (at 8 stacks, strikes increase from 3 to 5). At C6, also increases party Stellar Glimmer DMG by +5% per stack."
     },
     {
       id: "c2-stellar-em",
@@ -72,13 +88,14 @@ export const travelerCryo: CharacterConfig = {
     }
   ],
   mechanics: [
-    "Ever-Keen Frost (A1): When Frostpierce Star is on the field, NA/CA/Plunge DMG converts to Cryo DMG (cannot be overridden) and increases by 80% of ATK as Flat DMG Bonus.",
+    "Ever-Keen Frost (A1): When Frostpierce Star is on the field, NA/CA/Plunge DMG converts to Cryo DMG (cannot be overridden) and increases by 80% of ATK as Flat DMG Bonus (does not apply to Charged Attack: Freezing Ice).",
     "Lucent Ice (A4): Increases the Traveler's Elemental Mastery by 8% of their ATK, up to a maximum of 160 EM.",
-    "Illusory Frostmirror (Stellar Jubilee): Base Stellar-Conduct/Stellar-Swirl DMG increases by +0.7% per 100 ATK (cap 14%).",
-    "Frostglow Stacks (0–8): Gained via Frostpierce Star coordinated attacks. Consumed on Burst cast for +4.96% DMG per stack on Ice Javelin hits.",
+    "Illusory Frostmirror (Stellar Jubilee): Base Stellar-Conduct/Stellar-Swirl DMG increases by +0.35% per 100 ATK (cap 7%).",
+    "Foreign Permafrost (Additional Talent): 3 Icepoint stacks convert Charged Attack into Freezing Ice (+140% ATK Flat DMG, gains 2 Frostglow stacks, 15s CD). Under Radiance: Stellar Glimmer, dealt as Cryo Stellar Glimmer reaction DMG.",
+    "Frostglow Stacks (0–8): Gained via Frostpierce Star coordinated attacks or Freezing Ice. Consumed on Burst cast for DMG bonus per stack on Ice Javelin hits (scales with Burst level, e.g. +4.96% at Lv10); at 8 stacks, strikes increase from 3 to 5.",
     "Somber Freeze (C1): Regenerates 5 Energy when dealing Stellar Glimmer DMG (once every 0.5s).",
     "Frostfall Reverberation (C2): Active character gains +60 EM for 5s on Ice Crystal hit. Boosted to +120 EM if Stellar Glimmer is active.",
-    "Glacier Strike (C3): Increases the Level of Frostbound Javelin by 3.",
+    "Glacial Shard (C3): Increases the Level of Frostbound Javelin by 3.",
     "Enduring Ice (C4): Extends Frostpierce Star duration by 25%.",
     "Bittercold Fog (C5): Increases the Level of Ice Fog Piercer by 3.",
     "Brumal Grimfrost (C6): Each Frostglow stack consumed increases other party members' Stellar Glimmer reaction DMG by +5% per stack (max +40%) for 15s."
@@ -86,18 +103,18 @@ export const travelerCryo: CharacterConfig = {
   constellations: [
     { level: 1, name: "Somber Freeze", description: "Regenerates 5 Elemental Energy when dealing Stellar Glimmer DMG. Can trigger once every 0.5s.", effects: [{ type: "informational" }] },
     { level: 2, name: "Frostfall Reverberation", description: "Increases active character's EM by 60 for 5s when hit by an Ice Crystal. Boosted to 120 EM when Stellar Glimmer reaction is active.", effects: [{ type: "informational" }] },
-    { level: 3, name: "Glacier Strike", description: "Increases the Level of Frostbound Javelin by 3. Maximum upgrade level is 15.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
+    { level: 3, name: "Glacial Shard", description: "Increases the Level of Frostbound Javelin by 3. Maximum upgrade level is 15.", effects: [{ type: "talent_level_bonus", talentType: "burst" }] },
     { level: 4, name: "Enduring Ice", description: "Extends the duration of the Frostpierce Star by 25%.", effects: [{ type: "informational" }] },
     { level: 5, name: "Bittercold Fog", description: "Increases the Level of Ice Fog Piercer by 3. Maximum upgrade level is 15.", effects: [{ type: "talent_level_bonus", talentType: "skill" }] },
     { level: 6, name: "Brumal Grimfrost", description: "Each Frostglow stack consumed on Burst increases other party members' Stellar Glimmer reaction DMG by 5% per stack (max 40%) for 15s.", effects: [{ type: "informational" }] }
   ],
   support: {
-    description: "Cryo Stellar support providing Moonsign Lunar/Stellar Base DMG (+0.7%/100 ATK, cap 14%), party EM share via C2, and Stellar Glimmer reaction amplification at C6.",
+    description: "Cryo Stellar support providing Moonsign Lunar/Stellar Base DMG (+0.35%/100 ATK, cap 7%), party EM share via C2, and Stellar Glimmer reaction amplification at C6.",
     buffExplanations: [
       {
         name: "Stellar Jubilee: Illusory Frostmirror",
-        brief: "+0.7% Lunar/Stellar Base DMG per 100 ATK",
-        full: "Base Stellar-Conduct and Stellar-Swirl DMG increases by 0.7% for every 100 points of the Traveler's ATK, up to a maximum of 14%.",
+        brief: "+0.35% Lunar/Stellar Base DMG per 100 ATK",
+        full: "Base Stellar-Conduct and Stellar-Swirl DMG increases by 0.35% for every 100 points of the Traveler's ATK, up to a maximum of 7%.",
         category: "lunar",
       },
       {
@@ -118,7 +135,7 @@ export const travelerCryo: CharacterConfig = {
       { key: "critRate", label: "CRIT Rate", defaultValue: "60" },
       { key: "critDmg", label: "CRIT DMG", defaultValue: "120" },
     ],
-    lunarBaseBonusCompute: (ctx) => Math.min(14, (ctx.atk / 100) * 0.7),
+    lunarBaseBonusCompute: (ctx) => Math.min(7, (ctx.atk / 100) * 0.35),
     buffs: [
       {
         stat: "em",
@@ -140,7 +157,7 @@ export const travelerCryo: CharacterConfig = {
     ],
     formatBriefStats: (ctx) => {
       const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
-      const stellarBase = Math.min(14, (ctx.atk / 100) * 0.7);
+      const stellarBase = Math.min(7, (ctx.atk / 100) * 0.35);
       return [
         { label: "Total ATK", value: fmt(ctx.atk) },
         { label: "Stellar Base", value: `+${fmt(stellarBase)}%` },

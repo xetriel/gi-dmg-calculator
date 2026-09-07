@@ -348,6 +348,13 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
           </button>
 
           <Link
+            href={`/builds?character=${config.id}${fromCharacterId ? `&from=${fromCharacterId}` : ""}`}
+            className="text-xs px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all flex items-center gap-1 font-bold"
+          >
+            <span>🛡️ Builds &amp; Equipment ↗</span>
+          </Link>
+
+          <Link
             href={`/characters/${config.id}`}
             className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all flex items-center gap-1 font-medium"
           >
