@@ -104,7 +104,25 @@ export interface StatField {
   key: StatKey;
   label: string;                         // may be character-specific (e.g. "Pyro DMG Bonus%")
   unit: "flat" | "percent";
-  group: "base" | "advanced" | "combat" | "defense" | "lunar" | "stellar" | "reactions" | "talents" | "misc";
+  group:
+    | "base"
+    | "advanced"
+    | "combat"
+    | "defense"
+    | "lunar"
+    | "stellar"
+    | "reactions"
+    | "reactionCrits"
+    | "talentIncreases"
+    | "talentCrits"
+    | "talentDmg"
+    | "talentLevels"
+    | "elementalIncreases"
+    | "elementalCrits"
+    | "enemyRes"
+    | "selfRes"
+    | "stamina"
+    | "misc";
   hasBaseAndFlat?: boolean;              // HP/ATK/DEF show Base + Flat + Total (like the Excel)
   derived?: boolean;                     // RES/Level/Defense multipliers are computed, not typed
 }
