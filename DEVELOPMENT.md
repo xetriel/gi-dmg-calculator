@@ -2,9 +2,69 @@
 
 This document logs the feature updates, architecture changes, and character releases across all versions of the Genshin Damage Calculator, matching the version displayed in the application header.
 
+## [v1.2.2] - Current UI Header Version
+
+All developments listed below were implemented during the `v1.2.2` release cycle (September 7, 2026).
+
+### Major Features & Additions
+
+- **Polestar Field Mechanics & Core Engine Alignment (September 7, 2026)**:
+  - **Sandrone Character Calculator & Support Integration**:
+    - Expanded `polestar-hits` mechanic range from 10 to 12 hits in `src/data/registry/characters/sandrone.ts`, updating mechanic hint with full 0–12 hit curve: Base Reaction Coefficient (BRC) $1.00 \to 1.45 \dots 2.00$, $+20\%$ to $+40\%$ Cryo/Electro DMG Bonus, and $-40\%$ Enemy Physical RES shred.
+    - Connected `support.buffs` to `stellarConductFieldBuffs(hits).cryoElectroDmgBonus` and added the $-40\%$ Enemy Physical RES shred team debuff.
+    - Added dynamic `stellarBaseBonusCompute: (ctx) => Math.min(0.7 * (ctx.atk / 100), 14)`.
+    - Integrated `stellarConductBRC` and `stellarConductFieldBuffs` in `src/lib/engine/characters/sandrone.ts` resolver to evaluate `polestar-field` and `polestar-hits` up to 12 hits, granting `buffs.cryoDmgBonus` and `buffs.enemyPhysicalResShred` ($-40\%$) to `res.statDeltas`, and scaling direct hit coefficients by `buffs.brc`.
+  - **Nullified Calculator-Level Polestar Field Overrides**:
+    - Deprecated and removed legacy calculator-level `polestarFieldHits` overrides from `src/components/calculator/types.ts` and `src/components/calculator/hooks/useCalculatorState.ts`.
+    - Eliminated generic `polestarHits` injection into instance state from `src/components/CharacterCalculator.tsx`.
+    - Purged root `polestarHits` overrides and mock `stellar-conduct` blocks from `src/lib/engine/formula-explainer.ts`.
+    - Replaced `polestarBrc` with `stellarPanelBonus` and wired `teamRes.stellarBaseBonusPct` in `src/lib/engine/effective-stats.ts`.
+
+- **Direct Reaction Talent Hit Engine Wiring (September 7, 2026)**:
+  - **Dynamic Multiplier Factoring in Direct Reaction Hits**:
+    - Connected talent hits configured with `directReaction` (e.g. Sandrone's Radiance: Stellar-Conduct condensed beams, prism shots, and convective rays) in both `src/components/CharacterCalculator.tsx` and `src/lib/engine/formula-explainer.ts` to dynamically incorporate:
+      - **Stellar Base %**: `inst.stellarBaseBonus` + team stellar base bonus.
+      - **Stellar Reaction %**: `inst.stellarPanelBonus`.
+      - **Lunar Base %**: `inst.lunarBaseBonus` + character and team passives.
+      - **Reaction Panel Bonus %**: `inst.reactionPanelBonus`.
+    - Adjusting reaction and stellar/lunar multipliers now triggers immediate recalculation across character direct hit outputs and formula explainer breakdown trees in real time.
+
+- **Reaction Input Migration & Pure DMG Output Table Architecture (September 7, 2026)**:
+  - **Clean DMG Output Separation**:
+    - Refactored `src/components/calculator/components/TransformativePanel.tsx` in the lower damage output section (alongside `DamageTable` and `WeaponDamageTable`) into a **pure DMG output table** with Non-Crit, Crit, and Avg columns and mathematical tooltip breakdowns.
+    - Stripped all manual reaction multiplier inputs (`reactionPanelBonus`, `lunarBaseBonus`, `stellarBaseBonus`, `stellarPanelBonus`) and the collapsible toggle out of `TransformativePanel.tsx`.
+  - **Upper Attributes Centralization**:
+    - Migrated reaction multiplier controls to `src/components/calculator/components/StatsGrid.tsx` in the upper attributes input section.
+    - Synchronized calculator instances across both `CharacterCalculator.tsx` and `SupportBuildEditorView.tsx` via `updateInstance`.
+
+- **Comprehensive Frontend Exposure for All Engine Stats (September 7, 2026)**:
+  - Completely exposed all engine statistics defined in `DamageStats` and resolved by `resolveStats()` as interactive controls in `StatsGrid.tsx` and character registry `src/data/registry/core-stats.ts`:
+    - **Standard Stats (Always Visible)**: Base Stats (HP, ATK, DEF with Base + % + Flat breakdown), Combat Stats (CRIT Rate, CRIT DMG, All DMG Bonus%, 8 Element/Physical DMG bonuses), Advanced Stats (EM, ER%, Healing Bonus%), and Target Stats (Baseline Enemy RES%, Character Level, Enemy Level, DEF Reduction%, DEF Ignore%, DMG Reduction%).
+    - **Reaction Multipliers & Reaction Stats (Expandable)**: 4 Core Multipliers (`reactionPanelBonus`, `lunarBaseBonus`, `stellarBaseBonus`, `stellarPanelBonus`), Reaction DMG Bonuses & Multipliers (Overloaded, Shattered, Electro-Charged, Superconduct, Swirl, Burning, Bloom, Burgeon, Hyperbloom, Vaporize, Melt, Spread, Aggravate, Lunar & Stellar reactions), Reaction CRIT Bonuses (CRIT Rate & CRIT DMG for transformative reactions), and Lunar/Stellar Direct Stats.
+    - **Talent Specific Modifiers (Expandable)**: Additive Flat Base DMG Increases (Normal, Charged, Plunging Collision, Plunging Impact, Skill, Burst), Category CRIT Bonuses (Normal, Charged, Plunging, Skill, Burst, Elemental Attack CRIT Rate & CRIT DMG), Specialized Talent DMG Bonuses, and Talent Level Boosts (+1 / +3).
+    - **Elemental Specific Modifiers (Expandable)**: Additive Flat Elemental & Reaction Base DMG Increases (Pyro, Hydro, Cryo, Electro, Anemo, Geo, Dendro, Physical, Common), and Element-Specific CRIT Rate & CRIT DMG Bonuses.
+    - **Target Enemy Resistances (Expandable)**: Per-element Enemy RES% overrides (Physical, Anemo, Geo, Electro, Hydro, Pyro, Cryo, Dendro RES%).
+    - **Self Resistances & Utility / Misc Stats (Expandable)**: Incoming Damage Self Resistances, Stamina & Consumption Decreases, and Combat Utility (Incoming Healing Bonus, Shield Strength, Cooldown Reduction, Movement SPD, ATK SPD, Weakspot DMG, Heal Increase, All RES).
+
+- **Space-Saving Single-Line Modular Accordion Layout (September 7, 2026)**:
+  - **Single-Line Full Width Layout (`grid-cols-1 gap-2`)**:
+    - Standardized all expandable sections in `StatsGrid.tsx` to a unified full-width single-line layout (`grid-cols-1 gap-2`), matching Base Stats and Combat Stats.
+    - Formatted every field on a single horizontal row (`flex items-center justify-between gap-3`) with generous ~300px label space, preventing text wrap or awkward breaks on long labels (e.g., `Plunging Collision DMG Increase`, `Lunar-Charged Elevated DMG Multiplier%`).
+    - Standardized card padding (`p-2.5`) and uniform input heights across all stat groups.
+  - **Active Customized Badges & Section Reset**:
+    - Implemented a glowing amber pill badge (`X customized`) that dynamically surfaces when any field in a collapsed section is non-zero.
+    - Added an inline one-click **Reset** button beside the expand/shrink toggle when a section contains customized values to restore defaults instantly.
+
+### Verification & Validation
+
+- **Automated Unit Tests**: Executed full Vitest suite (`npx vitest run`) with **53 / 53 test suites passing** (465 unit tests total). Validated Sandrone calculations, Polestar hit scaling curves, core engine direct reaction multipliers, support equipment, and team buffs without regressions.
+- **Production Build Verification**: Executed `npm run build` using Next.js Turbopack, passing TypeScript type checking and generating all 17 static and dynamic routes with zero compilation errors.
+- **Browser E2E Verification**: Recorded browser verification session (`all_stats_ui_verify_1788753750833.webp`), validating clean initial collapsed state, accordion expansion, single-line alignment without text wrap, dynamic active customized badges, live calculation reactivity, and one-click section resets.
+- **Knowledge Graph Synchronization**: Executed `graphify update .` to update the AST and codebase relationship graph (1895 nodes, 5570 edges, 302 communities).
+
 ---
 
-## [v1.2.1] - Current UI Header Version
+## [v1.2.1] (September 5, 2026)
 
 All developments listed below were implemented during the `v1.2.1` release cycle (September 5, 2026).
 
