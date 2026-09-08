@@ -746,8 +746,8 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
     }
 
     const emBonusFrac = stellarEmBonus(stats.em);
-    const emRxBonusFactor = 1 + emBonusFrac + (s.reactionBonusPct + specificDmgBonus) / 100;
-    const baseDmgBonusFactor = 1 + (s.baseDmgBonusPct + specificBaseMultiplier) / 100;
+    const emRxBonusFactor = 1 + emBonusFrac + ((s.reactionBonusPct ?? 0) + specificDmgBonus) / 100;
+    const baseDmgBonusFactor = 1 + ((s.baseDmgBonusPct ?? 0) + specificBaseMultiplier) / 100;
     const baseMultFactor = hit.baseDmgMultiplier ?? 1;
 
     const coeff = s.coefficient + rxMultiplierPct / 100;

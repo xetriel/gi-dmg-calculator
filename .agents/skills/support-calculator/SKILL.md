@@ -23,7 +23,7 @@ The Team Support Buff system allows external support characters (e.g., Ineffa, B
      - **Brief Stat Summary Badges (`formatBriefStats`)**: Key metrics (e.g., `Total ATK: 2,180`, `CRIT: 70% / 140%`, `C1`).
      - **Sync Button (`[🔄 Sync]`)**: Pulls latest stats from the support character's `localStorage` working draft.
      - **Edit Build Action (`[✎ Edit Build ↗]`)**: Direct link to the dedicated support builder (`/characters/[id]/support?from=[dpsId]&charSetup=[setupId]&supportSetup=[supportSetupId]`).
-     - **Live Computed Buffs**: Clean breakdown of active bonuses (`+1,202.4 ATK`, `+15.0% Pyro DMG`, `+14.0% Lunar Base DMG`).
+     - **Live Computed Buffs**: Clean breakdown of active bonuses (`+1,202.4 ATK`, `+15.0% Pyro DMG`, `+14.0% Lunar Base DMG`, `+7.0% Stellar Base DMG`, `+40.0% Cryo & Electro DMG (Polestar Field 12 hits)`, `-40.0% Enemy Physical RES`).
 3. **Dedicated Support Build Editor (`/characters/[id]/support`)**:
    - Dedicated route allowing deep customization of a support character's stats, artifacts, mechanics, and constellations without cluttering the main DPS page.
    - **Cross-Calculator Navigation Banner**: Renders a top banner displaying `"🛠️ Editing support build for <Parent Name>"` with a `[← Back to <Parent Name> Calculator]` button.
@@ -38,13 +38,24 @@ The Team Support Buff system allows external support characters (e.g., Ineffa, B
    - **Master Toggle (`teamBuffsEnabled`)**: Global switch in the calculator header/panel to apply or bypass all team buffs.
    - **Per-Support Toggle (`enabled`)**: Individual checkbox on each support card. A support's buffs apply if and only if **both** the master toggle and that support's individual toggle are enabled.
 6. **Additive Aggregation**:
-   - Stat deltas (`statDeltas`) and Moonsign Lunar Base DMG (`lunarBaseBonusPct`) from all active supports are accumulated additively into the DPS character's effective stats.
+   - Stat deltas (`statDeltas`), Moonsign Lunar Base DMG (`lunarBaseBonusPct`), and Stellar Base DMG (`stellarBaseBonusPct`) from all active supports are accumulated additively into the DPS character's effective stats.
 7. **Averaged Team CRIT Passthrough**:
    - Team CRIT Rate and CRIT DMG are averaged across active supports to power team-wide Lunar reaction calculations.
    - Initial CRIT Rate is derived directly from input stats (not hardcoded), and clamped to $\le 100\%$ ($1.0$) in probability calculations.
 8. **Full Persistence & Source Attribution**:
    - Support configurations are saved/loaded alongside main DPS builds in `CalcInstance.teamSupports`.
    - Every buff contribution is tracked with per-source attribution (`TeamBuffSource`), including the support's `rarity` for dynamic theming and explainer display.
+9. **Stellar Glimmer Supportive Capabilities & Polestar Field**:
+   - **Stellar Base DMG**: Support characters can compute `stellarBaseBonusCompute(ctx)` (e.g., Cryo Traveler, future Snezhnayan supports), accumulating into `stellarBaseBonusPct`.
+   - **Polestar Field (Stellar-Conduct)**: Supports triggering or sustaining a Polestar Field can provide team-wide Cryo & Electro DMG Bonus (+20% to +40%), Enemy Physical RES shred (-40%), and Stellar-Conduct Base Reaction Coefficient (1.0 to 2.0) based on recorded hits (0–12).
+   - **Stellar Swirl Support Utility**: Provides Anemo/Cryo application, Vortex AoE grouping/bursting, and a 5s jump height increase post-explosion (enabling plunge attack synergies).
+10. **Multi-Contributor Role in Indirect Reactions**:
+    - Active party supports act as individual contributors in indirect reactions (`indirectLunarDamage` and `indirectStellarDamage`).
+    - Their stats (Level, EM, CRIT, target RES) are ranked alongside the active DPS across the 4-slot combination ($0.60 \times D_1 + 0.30 \times D_2 + 0.05 \times D_3 + 0.05 \times D_4$), scaling team capacity from 60% (1 contributor) to 100% (4 contributors).
+11. **Terminology Clarity**:
+    - **Multiplier** $\equiv$ **Base Reaction Coefficient (BRC)**.
+    - **Base DMG Multiplier** $\equiv$ **\%Reaction Base DMG Bonus** (`lunarBaseBonusPct`, `stellarBaseBonusPct`).
+
 
 ---
 
@@ -134,8 +145,8 @@ The configuration modal dialog (`TeamBuffModal.tsx`) uses a split 2-pane desktop
 | `src/data/registry/types.ts` | Type definitions: `CharacterConfig`, `CharacterSupportBuffDef`, `SupportConfig`, `SupportBuff`, `SupportCtx`, `SupportStatField`, `BriefStatPill`. |
 | `src/data/registry/characters/<id>.ts` | Character configuration with embedded `support` block (e.g., `ineffa.ts`, `bennett.ts`): stat inputs, mechanic toggles, constellations, buff compute functions, `formatBriefStats`, and Moonsign formulas. |
 | `src/data/registry/characters/index.ts` | Central character & support registry exporting `CHARACTERS`, `byId(id)`, `SUPPORT_CONFIGS` array, `supportById(id)` lookup helper, and type re-exports. |
-| `src/lib/engine/team-buffs.ts` | Pure engine resolver: `resolveTeamBuffs(supports, masterEnabled)`, `resolveSupportCtx(inst)`, computing `statDeltas`, `lunarBaseBonusPct`, `sources` (with `rarity`), and `teamCrit`. |
-| `src/lib/engine/team-buffs.test.ts` | Vitest test suite testing buff computations, caps, constellation gates, toggle exclusions, ATK/stat zero edge cases, additive stacking, and brief stat formatting. |
+| `src/lib/engine/team-buffs.ts` | Pure engine resolver: `resolveTeamBuffs(supports, masterEnabled)`, `resolveSupportCtx(inst)`, computing `statDeltas`, `lunarBaseBonusPct`, `stellarBaseBonusPct`, `sources` (with `rarity`), `teamCrit`, and `contributors`. |
+| `src/lib/engine/team-buffs.test.ts` | Vitest test suite testing buff computations, caps, constellation gates, toggle exclusions, ATK/stat zero edge cases, additive stacking, Stellar Base DMG, and brief stat formatting. |
 | `src/components/calculator/rarity-theme.ts` | Centralized rarity color vibe token mapping (`getRarityTheme(rarity)`). |
 | `src/components/calculator/components/TeamBuffPanel.tsx` | In-calculator summary panel in top container above splitter with master toggle, configured character pills, and aggregated buff pills. |
 | `src/components/calculator/components/TeamBuffModal.tsx` | 2-pane popup modal dialog with search, element/rarity filters, setup switcher, brief stats, constellation slider, and mechanic condition toggles. |
@@ -171,7 +182,7 @@ export interface SupportCtx {
 ### B. Support Buff Interface (`SupportBuff`)
 ```ts
 export interface SupportBuff {
-  stat: string;              // Target stat key on DamageStats (e.g., "atk", "em", "pyroDmgBonus")
+  stat: string;              // Target stat key on DamageStats (e.g., "atk", "em", "pyroDmgBonus", "cryoDmgBonus", "enemyPhysicalRes")
   label: string;             // Human-readable attribution label (e.g., "ATK (Bennett Fantastic Voyage)")
   compute: (ctx: SupportCtx) => number; // Pure calculation returning the numerical bonus
 }
@@ -198,7 +209,22 @@ export interface BriefStatPill {
 }
 ```
 
-### E. Full Support Config (`SupportConfig`)
+### E. Team Buff Result Interface (`TeamBuffResult`)
+Emitted by `resolveTeamBuffs`:
+```ts
+export interface TeamBuffResult {
+  statDeltas: Partial<DamageStats>;       // Additive stat bonuses to active DPS
+  lunarBaseBonusPct: number;              // Aggregated Moonsign Lunar Base DMG Bonus %
+  stellarBaseBonusPct: number;            // Aggregated Stellar Base DMG Bonus %
+  sources: TeamBuffSource[];              // Per-buff attribution records
+  teamCrit: { critRate: number; critDmg: number }; // Average team CRIT ratio
+  contributors: TeamContributor[];        // Resolved support contributors for indirect reactions
+  equippedArtifactIds: string[];
+  equippedWeaponIds: string[];
+}
+```
+
+### F. Full Support Config (`SupportConfig`)
 ```ts
 export interface SupportConfig {
   id: string;                // Unique identifier, e.g. "ineffa-support" or "bennett-support"
@@ -209,11 +235,12 @@ export interface SupportConfig {
   weapon?: WeaponType;       // "Sword", "Claymore", "Polearm", "Bow", "Catalyst"
   description?: string;      // Summary of supportive capabilities
   statFields: SupportStatField[];       // Baseline stat fields
-  mechanicDefs?: MechanicDef[];         // Support-mode mechanic toggles/sliders
+  mechanicDefs?: MechanicDef[];         // Support-mode mechanic toggles/sliders (e.g. Polestar recorded hits slider)
   constellations?: Constellation[];     // Constellation definitions
   buffExplanations?: Array<{ name: string; brief: string; full: string }>; // Catalog preview
   buffs: SupportBuff[];                 // Array of buff providers
-  lunarBaseBonusCompute?: (ctx: SupportCtx) => number;  // Optional Moonsign Lunar Base DMG bonus %
+  lunarBaseBonusCompute?: (ctx: SupportCtx) => number;   // Optional Moonsign Lunar Base DMG bonus %
+  stellarBaseBonusCompute?: (ctx: SupportCtx) => number; // Optional Stellar Base DMG bonus %
   formatBriefStats?: (ctx: SupportCtx) => BriefStatPill[]; // Brief info pills for card UI
 }
 ```
@@ -228,10 +255,11 @@ Follow these steps whenever introducing a new support character or supportive ki
    - Open `src/data/registry/characters/<characterId>.ts`.
    - Add the `support: { ... }` block matching `CharacterSupportBuffDef`:
      - Define `buffs` with exact formulas, talent scaling multipliers, and constellation gates.
+     - If the support provides Polestar Field effects, configure mechanic inputs (e.g. `polestar-recorded-hits` 0–12) and compute Cryo/Electro DMG Bonus (+20% to +40%) and Enemy Physical RES shred (-40%).
      - If the support boosts talent levels (e.g. C3/C5), ensure formulas account for effective talent levels.
      - Define `buffExplanations` for rich catalog tooltips.
      - Define `formatBriefStats(ctx)` to display key metrics (e.g. Total ATK, Base ATK, HP, ER, EM).
-     - If applicable, define `lunarBaseBonusCompute(ctx)` for Moonsign characters.
+     - If applicable, define `lunarBaseBonusCompute(ctx)` for Moonsign characters or `stellarBaseBonusCompute(ctx)` for Stellar Base DMG characters.
 2. **Verify Central Registry Export**:
    - In `src/data/registry/characters/index.ts`, ensure `SUPPORT_CONFIGS` includes the new support character.
 3. **Write Unit Tests**:
@@ -241,6 +269,7 @@ Follow these steps whenever introducing a new support character or supportive ki
      - Constellation gating (e.g., buff inactive at C0, active at C6).
      - Scaling with stats (e.g., scaling with Base ATK or Max HP).
      - Proper stamping of `rarity` on `TeamBuffSource`.
+     - `stellarBaseBonusCompute` or `lunarBaseBonusCompute` returns.
      - `formatBriefStats` output formatting.
 4. **Test UI Integration**:
    - Verify that the character appears in `TeamBuffModal` with correct rarity badge and color theme.
@@ -250,3 +279,4 @@ Follow these steps whenever introducing a new support character or supportive ki
 5. **Run Verification**:
    - `npm test`
    - `npm run build`
+

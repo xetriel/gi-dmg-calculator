@@ -25,6 +25,7 @@ import { huTao } from "./hu-tao";
 import { neuvillette } from "./neuvillette";
 import { clorinde } from "./clorinde";
 import { sandrone } from "./sandrone";
+import { odette } from "./odette";
 import { zibai } from "./zibai";
 import { nefer } from "./nefer";
 import { flins } from "./flins";
@@ -67,6 +68,7 @@ import { travelerPyro } from "./traveler-pyro";
 import { travelerCryo } from "./traveler-cryo";
 import { bennett } from "./bennett";
 import { xilonen } from "./xilonen";
+import { kazuha } from "./kazuha";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
@@ -118,6 +120,8 @@ export {
   travelerCryo,
   bennett,
   xilonen,
+  kazuha,
+  odette,
 };
 
 export const RAW_CHARACTERS: CharacterConfig[] = [
@@ -168,6 +172,8 @@ export const RAW_CHARACTERS: CharacterConfig[] = [
   travelerCryo,
   bennett,
   xilonen,
+  kazuha,
+  odette,
 ];
 
 // ==========================================

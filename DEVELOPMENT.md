@@ -2,7 +2,55 @@
 
 This document logs the feature updates, architecture changes, and character releases across all versions of the Genshin Damage Calculator, matching the version displayed in the application header.
 
-## [v1.2.2] - Current UI Header Version
+## [v1.3.0] - Current UI Header Version
+
+All developments listed below were implemented during the `v1.3` release cycle (September 8, 2026).
+
+### New Character Calculators
+
+- **Odette (September 8, 2026)**: Implemented the full **Odette** character calculator and team support calculator (5★ Cryo Sword, CRIT DMG ascension stat).
+  - **DPS Calculator**: 27 talent hits defined across Normal Attack (*Adagio*), Elemental Skill (*Adagio: Phantom Night Dancers*), and Elemental Burst (*Presto: Bluebird Finale*); radiance direct reaction hits (`coda-stellar-conduct/swirl`, `plume-stellar-conduct/swirl`, `wing-stellar-conduct/swirl`, `c1-stellar-conduct/swirl`, `c4-coord-stellar-conduct/swirl`); 378 talent scaling rows synced into `TalentScaling`.
+  - **Mechanics Resolver** (`src/lib/engine/characters/odette.ts`): `resolveOdette` handles A1 Marvelous Splendor (+15% Stellar Glimmer DMG per stack, max 4 or 6 at C1), A4 Pathetique (+1.5% Base DMG Multiplier per 100 ATK above 1,000, cap +30%), Dance of Aurore (+0.7% Base Stellar Reaction DMG per 100 ATK, cap 14%), Snow Swan's Dream Burst Stellar DMG bonus (+14%–+62%), Polestar Field BRC scaling (1.00–2.00), C2 +7% ATK per stack and Cryo/Electro RES shred (−20%), and C6 +45% Elevation to all Stellar Glimmer reaction DMG.
+  - **Support Integration**: 8 embedded support buffs with brief stat pills (`Total ATK`, `CRIT`, `Odette`) and 5★ Gold theme.
+  - Verified with 11 dedicated mechanics tests, 54/54 team-buff tests (roster count 49), and 7/7 formula-explainer tests. Full suite: **55/55 test files, 500/500 tests**. Build: Next.js 16.2.9 compiled successfully (0 errors). DB: `odette: synced 378 rows`.
+
+- **Kaedehara Kazuha (September 8, 2026)**: Implemented the full **Kaedehara Kazuha** character calculator and team support calculator (5★ Anemo Sword, Elemental Mastery ascension stat).
+  - **DPS Calculator**: 25 talent hits defined across Normal Attack (*Garyuu Bladework*: 1-Hit to 5-Hit including 3-Hit split and 5-Hit ×3, Charged Attacks 1 & 2, Plunge Collision/Low/High, Midare Ranzan Low & High Plunge in Anemo, and Soumon Swordsmanship Pyro/Hydro/Electro/Cryo 200% ATK Plunge DMG), Elemental Skill (*Chihayaburu*: Press and Hold), and Elemental Burst (*Kazuha Slash*: Slashing DMG, Autumn Whirlwind DoT, and Additional Elemental DMG variants); 350 talent scaling rows synced.
+  - **Mechanics Resolver** (`src/lib/engine/characters/kazuha.ts`): `resolveKazuha` handles C2 Autumn Whirlwind (+200 EM), A4 Poetics of Fuubutsu (+0.04% Elemental DMG per EM for active swirl toggles: `a4-pyro-swirl`, `a4-hydro-swirl`, `a4-electro-swirl`, `a4-cryo-swirl`), and C6 Crimson Momiji (Anemo Infusion on Normal/Charged/Plunge hits + `0.2 × totalEM` DMG bonus).
+  - **Support Integration**: A4 Pyro/Hydro/Electro/Cryo DMG Bonuses (`0.04 × totalEM`), C2 party EM (+200), brief stat pills (`Total EM`, `A4 Bonus`, `CRIT`), and catalog previews.
+  - Verified with 7 dedicated mechanics tests and 53/53 team-buff tests. Full suite: **54/54 test files, 483/483 tests**. Build: Next.js 16.2.9 compiled successfully (0 errors). DB: `kazuha: synced 350 rows`.
+
+### Engine Fixes & Architecture
+
+- **Sandrone Character Calculator Polish & v7.0 Stellar-Swirl Integration (September 8, 2026)**:
+  - **Canonical Hit Labels**: Updated direct reaction hit display names to canonical *"Radiance: Stellar Glimmer"* labels (`Charged: Condensed Beam (Radiance: Stellar Glimmer)`, `Prism Shot 2 (Radiance: Stellar Glimmer)`, `Convective Inhibition Ray (Radiance: Stellar Glimmer)`).
+  - **A4 Passive**: Added missing 4th Ascension Passive *"A Lady's Code of Conduct"* — `a4Em = Math.min(0.08 × ATK, 160)` applied to `statDeltas.em`, tracked in `statBuffSources.em`.
+  - **Radiance: Stellar Swirl Routing**: Added `radiance-stellar-swirl` toggle enabling Radiance: Stellar Swirl branch (BRC 1.0, `stellar-swirl` damage branch) with priority resolution: Polestar Field → Stellar Swirl → neutral fallback.
+  - **Dynamic C4 / C6 Proc Scaling**: C4 scales 187.5% ATK (Stellar Swirl) vs 125% ATK (Stellar-Conduct); C6 scales 4 × 120% ATK (Stellar Swirl) vs 4 × 80% ATK (Stellar-Conduct), both elevated by +20% at C6 via `statDeltas.stellarReactionSpecialDmgBonus = 20`.
+  - **C1 Support Buff Extension**: Extended C1 support buffs to cover both `stellarConductDmgBonus` (+30%) and `stellarSwirlDmgBonus` (+30%) for party members.
+  - Verified with 12/12 Sandrone mechanics tests and 6/6 formula-explainer tests. Full suite: **54/54 test files, 487/487 tests**. Build: Next.js 16.2.9 compiled successfully (3.9s, 0 errors).
+
+- **Sandrone Engine Formula Debugging & NaN Fix (September 8, 2026)**:
+  - **Root Cause**: `res.statDeltas.enemyPhysicalRes += -40` evaluated against `undefined` (uninitialized optional key), cascading into `getTargetResForElement → resMultiplier(NaN) → nonCrit/crit/avg = NaN` for Normal Attack hits 1–3 (Physical element).
+  - **`applyStatDelta` / `applyStatDeltas`** (`src/lib/engine/damage.ts`): Implemented safe delta helpers that default uninitialized enemy-specific resistances to `stats.enemyRes` baseline before addition (e.g. $10\% - 40\% = -30\%$). Universal `enemyRes` shred also back-propagates to any instantiated specific resistances.
+  - **Hardened Engine Functions**: `getTargetResForElement`, `resMultiplier`, `defMultiplier`, and `dmgBonusMultiplier` guarded against `NaN` / `undefined`.
+  - **Consumer Updates**: Replaced manual `statDeltas` additions in `CharacterCalculator.tsx`, `formula-explainer.ts`, and `EffectiveStatsView.tsx` with canonical `applyStatDeltas` call. Updated `effective-stats.ts` to fall back uninitialized enemy-specific resistance rows to `enemyRes`.
+  - **Plunging Collision vs. Impact Routing**: Added helper functions `isPlungeCollision` and `isPlungeImpact` in `damage.ts`; routed `plungingCollisionDmgBonus` / `plungingImpactDmgBonus` and per-hit CRIT overrides separately.
+  - **Superconduct CRIT Support**: Registered `superconductCritRate` and `superconductCritDmg` in `StatKey`, `coreStats`, and validation. `transformativeDamageWithStats` now returns full `TransformativeResult` (nonCrit, crit, avg, canCrit, rxCritRate, rxCritDmg, targetRes). `TransformativePanel.tsx` updated to display `t.res?.nonCrit ?? t.dmg`.
+  - **Direct Reaction Isolation**: Direct reactions isolated from talent category flat increases/CRIT and elemental flat increases/CRIT. BRC percentage multiplier: $\text{Coeff} = \text{Base Reaction Coeff} + \frac{\text{Multiplier\%}}{100}$.
+  - **Sandrone `statBuffSources` Populated**: Added source-level attribution for Polestar Field Physical RES shred in `src/lib/engine/characters/sandrone.ts`.
+  - Verified with **53/53 test files, 475/475 tests**. Build: Next.js 16.2.9 compiled (0 errors).
+
+### Verification & Validation
+
+- **Automated Unit Tests**: Full test suite passing — **55/55 test files, 500/500 tests** after final Odette integration (individual milestones: Sandrone debug 53/53 → 475 tests; Sandrone Stellar-Swirl 54/54 → 487 tests; Kazuha 54/54 → 483 tests; Odette 55/55 → 500 tests).
+- **Production Build Verification**: All four milestones verified with `npm run build` using Next.js 16.2.9 Turbopack — zero TypeScript errors, all 14 static and dynamic routes generated cleanly each time.
+- **Database Sync**: `npx tsx prisma/seed.ts` confirmed per character — `kazuha: synced 350 rows`, `odette: synced 378 rows`; total `TalentScaling` rows: 11,562.
+- **Knowledge Graph Synchronization**: Executed `graphify update .` — final state: **1,921 nodes, 5,683 edges, 299 communities** (updated after each character milestone).
+
+---
+
+## [v1.2.2] (September 7, 2026)
 
 All developments listed below were implemented during the `v1.2.2` release cycle (September 7, 2026).
 

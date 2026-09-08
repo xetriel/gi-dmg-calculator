@@ -268,10 +268,50 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
     expect(sc?.subBreakdowns.some(s => s.includes("Reaction CRIT: CRIT Rate 30% | CRIT DMG 60%"))).toBe(true);
     expect(sc?.mainFormulaCrit).toBeDefined();
 
-    // 2. Condensed Beam (Stellar-Conduct direct reaction)
-    const beam = breakdowns.find(b => b.hitName.includes("Condensed Beam (Stellar-Conduct)"));
+    // 2. Condensed Beam (Radiance: Stellar Glimmer direct reaction)
+    const beam = breakdowns.find(b => b.hitName.includes("Condensed Beam (Radiance: Stellar Glimmer)"));
     expect(beam).toBeDefined();
     // At stack 6, base coeff is 1.70. With +80%, eff coeff is 2.50.
     expect(beam?.subBreakdowns.some(s => s.includes("Base Reaction Coefficient 2.5 = Base 1.7 + Stellar Reaction Multiplier 80%"))).toBe(true);
+  });
+
+  it("generates correct Odette direct Stellar-Conduct formula breakdowns and constellation gating", async () => {
+    const odetteConfig = (await import("../../data/registry/characters/odette")).odette;
+    const odetteScaling = buildScaling("odette");
+    const inst = {
+      id: "setup-odette",
+      stats: {
+        "atk.base": "1000",
+        "atk.flat": "1000",
+        "atk.percent": "0",
+        "critRate": "60",
+        "critDmg": "120",
+        "em": "100",
+        "enemyRes": "10",
+      },
+      hits: {},
+      levels: { normal: "10", skill: "10", burst: "10" },
+      mechanicInputs: { "polestar-field": "1", "polestar-hits": "6", "marvelous-splendor-stacks": "4" },
+      reaction: "none" as const,
+      reactionBonus: "0",
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
+      constellationLevel: 0,
+    };
+
+    const breakdowns = explainHitFormulas(odetteConfig, odetteScaling, inst);
+
+    // 1. Coda Finisher (Radiance: Stellar-Conduct)
+    const coda = breakdowns.find(b => b.hitName.includes("Coda Finisher (Radiance: Stellar-Conduct)"));
+    expect(coda).toBeDefined();
+    expect(coda?.category).toBe("skill");
+    expect(coda?.mainFormula).toContain("1.7");
+
+    // 2. C1 Additional Finisher gated at C0 (nonCrit / crit / avg are 0)
+    const c1Hit = breakdowns.find(b => b.hitName.includes("C1 Additional Finisher"));
+    expect(c1Hit).toBeDefined();
+    expect(c1Hit?.nonCrit).toBe(0);
+    expect(c1Hit?.crit).toBe(0);
+    expect(c1Hit?.avg).toBe(0);
   });
 });

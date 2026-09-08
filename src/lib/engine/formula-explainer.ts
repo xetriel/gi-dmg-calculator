@@ -129,19 +129,11 @@ export function explainHitFormulas(
   });
 
   const effectiveStats: DamageStats = { ...inputStats };
-  for (const [key, val] of Object.entries(mech.statDeltas)) {
-    if (key in effectiveStats && typeof val === "number") {
-      (effectiveStats as unknown as Record<string, number>)[key] += val;
-    }
-  }
+  applyStatDeltas(effectiveStats, mech.statDeltas);
 
   const effects = activeEffects(config, inst.constellationLevel);
   const statBonuses = constellationStatBonuses(effects);
-  for (const [key, val] of Object.entries(statBonuses)) {
-    if (key in effectiveStats) {
-      (effectiveStats as unknown as Record<string, number>)[key] += val;
-    }
-  }
+  applyStatDeltas(effectiveStats, statBonuses);
 
   // Apply team support buffs
   let lunarBaseFromTeam = 0;
@@ -150,11 +142,7 @@ export function explainHitFormulas(
     ? resolveTeamBuffs(inst.teamSupports, true, config, baseAtk, baseDef, baseHp)
     : null;
   if (teamResult) {
-    for (const [key, val] of Object.entries(teamResult.statDeltas)) {
-      if (key in effectiveStats && typeof val === "number") {
-        (effectiveStats as unknown as Record<string, number>)[key] += val;
-      }
-    }
+    applyStatDeltas(effectiveStats, teamResult.statDeltas);
     lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
     stellarBaseFromTeam = teamResult.stellarBaseBonusPct;
   }
@@ -164,11 +152,7 @@ export function explainHitFormulas(
     ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamResult?.equippedWeaponIds)
     : null;
   if (weaponResult) {
-    for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
-      if (key in effectiveStats && typeof val === "number") {
-        (effectiveStats as unknown as Record<string, number>)[key] += val;
-      }
-    }
+    applyStatDeltas(effectiveStats, weaponResult.statDeltas);
   }
 
   // Apply external artifact team buffs
@@ -176,11 +160,7 @@ export function explainHitFormulas(
     ? resolveExternalArtifactBuffs(inst.externalArtifacts, baseAtk, config, true, baseDef, baseHp, teamResult?.equippedArtifactIds)
     : null;
   if (artifactResult) {
-    for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
-      if (key in effectiveStats && typeof val === "number") {
-        (effectiveStats as unknown as Record<string, number>)[key] += val;
-      }
-    }
+    applyStatDeltas(effectiveStats, artifactResult.statDeltas);
   }
 
   const lunarBaseTotal = (toNum(inst.lunarBaseBonus) ?? 0) + (mech.lunarBaseBonusPct ?? 0) + lunarBaseFromTeam;
