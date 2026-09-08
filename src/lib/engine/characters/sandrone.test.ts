@@ -54,16 +54,78 @@ describe("sandrone mechanics", () => {
     expect(h3?.element).toBe("Physical");
     expect(h3?.hitCategory).toBe("normal");
   });
-  it("Support block provides stellarConductMultiplier and C1 provides stellarConductDmgBonus", () => {
+  it("Support block provides stellarConductMultiplier and C1 provides stellarConductDmgBonus & stellarSwirlDmgBonus", () => {
     const sBlock = sandrone.support;
     expect(sBlock).toBeDefined();
     const polestarBuff = sBlock?.buffs.find(b => b.stat === "stellarConductMultiplier");
     expect(polestarBuff).toBeDefined();
     expect(polestarBuff?.compute({ inputs: { "polestar-field": 1, "polestar-hits": 6 }, constellationLevel: 0, atk: 2000, hp: 0, def: 0, em: 0, critRate: 50, critDmg: 100, energyRecharge: 100, healingBonus: 0 })).toBe(70);
 
-    const c1Buff = sBlock?.buffs.find(b => b.stat === "stellarConductDmgBonus");
-    expect(c1Buff).toBeDefined();
-    expect(c1Buff?.compute({ inputs: {}, constellationLevel: 1, atk: 2000, hp: 0, def: 0, em: 0, critRate: 50, critDmg: 100, energyRecharge: 100, healingBonus: 0 })).toBe(30);
+    const c1ConductBuff = sBlock?.buffs.find(b => b.stat === "stellarConductDmgBonus");
+    expect(c1ConductBuff).toBeDefined();
+    expect(c1ConductBuff?.compute({ inputs: {}, constellationLevel: 1, atk: 2000, hp: 0, def: 0, em: 0, critRate: 50, critDmg: 100, energyRecharge: 100, healingBonus: 0 })).toBe(30);
+
+    const c1SwirlBuff = sBlock?.buffs.find(b => b.stat === "stellarSwirlDmgBonus");
+    expect(c1SwirlBuff).toBeDefined();
+    expect(c1SwirlBuff?.compute({ inputs: {}, constellationLevel: 1, atk: 2000, hp: 0, def: 0, em: 0, critRate: 50, critDmg: 100, energyRecharge: 100, healingBonus: 0 })).toBe(30);
+  });
+
+  it("A4: A Lady's Code of Conduct grants +8 EM per 100 ATK (cap 160)", () => {
+    const r1 = resolveSandrone(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 1000 } }));
+    expect(r1.statDeltas.em).toBe(80);
+    expect(r1.notes.some(n => n.includes("A4 A Lady's Code of Conduct: +80 EM"))).toBe(true);
+
+    const r2 = resolveSandrone(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 2000 } }));
+    expect(r2.statDeltas.em).toBe(160);
+
+    const r3 = resolveSandrone(sandrone, ctxFor("sandrone", { stats: { ...baseStats, atk: 3000 } }));
+    expect(r3.statDeltas.em).toBe(160); // capped at 160
+    expect(r3.notes.some(n => n.includes("capped"))).toBe(true);
+  });
+
+  it("Radiance: Stellar Swirl routes direct hits through stellar-swirl branch with BRC 1.0", () => {
+    const swirl = resolveSandrone(sandrone, ctxFor("sandrone", {
+      inputs: { "polestar-field": 0, "radiance-stellar-swirl": 1 },
+    }));
+    expect(swirl.perHit["condensed-beam-stellar"]?.directReaction?.stellarType).toBe("stellar-swirl");
+    expect(swirl.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBe(1.0);
+    expect(swirl.perHit["prism-shot-stellar"]?.directReaction?.stellarType).toBe("stellar-swirl");
+    expect(swirl.perHit["convective-ray-stellar"]?.directReaction?.stellarType).toBe("stellar-swirl");
+    expect(swirl.statDeltas.dmgBonus ?? 0).toBe(0); // no Polestar field DMG bonus
+    expect(swirl.notes.some(n => n.includes("Radiance: Stellar Swirl active"))).toBe(true);
+  });
+
+  it("Priority Rule: Polestar Field (Stellar-Conduct) takes priority when both are active", () => {
+    const both = resolveSandrone(sandrone, ctxFor("sandrone", {
+      inputs: { "polestar-field": 1, "polestar-hits": 4, "radiance-stellar-swirl": 1 },
+    }));
+    expect(both.perHit["condensed-beam-stellar"]?.directReaction?.stellarType).toBe("stellar-conduct");
+    expect(both.perHit["condensed-beam-stellar"]?.directReaction?.coefficient).toBeCloseTo(1.6);
+    expect(both.statDeltas.dmgBonus).toBe(32);
+    expect(both.notes.some(n => n.includes("Polestar Field: Radiance: Stellar-Conduct active"))).toBe(true);
+  });
+
+  it("C4 and C6 scale with Stellar-Conduct vs Stellar Swirl and apply C6 elevation", () => {
+    // C4 & C6 under Stellar-Conduct
+    const conductC6 = resolveSandrone(sandrone, ctxFor("sandrone", {
+      constellationLevel: 6,
+      inputs: { "polestar-field": 1, "polestar-hits": 0 },
+      stats: { ...baseStats, atk: 2000 },
+    }));
+    expect(conductC6.statDeltas.stellarReactionSpecialDmgBonus).toBe(20);
+    expect(conductC6.notes.some(n => n.includes("C4 Extra Cannon:") && n.includes("Stellar-Conduct DMG") && n.includes("125% ATK"))).toBe(true);
+    expect(conductC6.notes.some(n => n.includes("C6 Cluster Beam:") && n.includes("Stellar-Conduct DMG") && n.includes("80% ATK"))).toBe(true);
+    expect(conductC6.notes.some(n => n.includes("C6: +20% Elevation DMG to all Stellar Glimmer reaction DMG"))).toBe(true);
+
+    // C4 & C6 under Stellar Swirl
+    const swirlC6 = resolveSandrone(sandrone, ctxFor("sandrone", {
+      constellationLevel: 6,
+      inputs: { "polestar-field": 0, "radiance-stellar-swirl": 1 },
+      stats: { ...baseStats, atk: 2000 },
+    }));
+    expect(swirlC6.statDeltas.stellarReactionSpecialDmgBonus).toBe(20);
+    expect(swirlC6.notes.some(n => n.includes("C4 Extra Cannon:") && n.includes("Stellar Swirl DMG") && n.includes("187.5% ATK"))).toBe(true);
+    expect(swirlC6.notes.some(n => n.includes("C6 Cluster Beam:") && n.includes("Stellar Swirl DMG") && n.includes("120% ATK"))).toBe(true);
   });
 
   it("Normal Attack 1-3 hits compute valid non-NaN damage with Polestar Field active", () => {

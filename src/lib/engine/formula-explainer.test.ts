@@ -268,8 +268,8 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
     expect(sc?.subBreakdowns.some(s => s.includes("Reaction CRIT: CRIT Rate 30% | CRIT DMG 60%"))).toBe(true);
     expect(sc?.mainFormulaCrit).toBeDefined();
 
-    // 2. Condensed Beam (Stellar-Conduct direct reaction)
-    const beam = breakdowns.find(b => b.hitName.includes("Condensed Beam (Stellar-Conduct)"));
+    // 2. Condensed Beam (Radiance: Stellar Glimmer direct reaction)
+    const beam = breakdowns.find(b => b.hitName.includes("Condensed Beam (Radiance: Stellar Glimmer)"));
     expect(beam).toBeDefined();
     // At stack 6, base coeff is 1.70. With +80%, eff coeff is 2.50.
     expect(beam?.subBreakdowns.some(s => s.includes("Base Reaction Coefficient 2.5 = Base 1.7 + Stellar Reaction Multiplier 80%"))).toBe(true);
