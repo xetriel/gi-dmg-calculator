@@ -89,12 +89,63 @@ For standard talent hits:
 
 ### B. Direct Reaction Hit Equations (Lunar / Stellar)
 Direct Lunar and Stellar hits omit the standard Enemy DEF multiplier and replace standard DMG bonus with Special EM and reaction modifiers:
-$$\text{Base Transformative Multiplier} = 100\% + \frac{6 \times \text{Total EM}}{\text{Total EM} + 2000}$$
-$$\text{Lunar Hit DMG} = (\text{Talent\%} \times \text{Total Stat} \times \text{Base Transformative Multiplier} \times (100\% + \text{Lunar Base DMG\%}) + \text{Total Flat DMG}) \times (100\% + \text{Lunar Special DMG\%}) \times \text{RES Multiplier}$$
+
+$$\text{DMG}_{\text{Direct}} = \left( \text{Base Reaction Coefficient} \times \%\text{Ability} \times \text{Stat}_{\text{Attacker}} \times \text{Base DMG Multiplier} \times (1 + \% \text{Reaction Base DMG Bonus}) \times (1 + \%\text{EM Bonus}_{\text{LS}} + \%\text{Reaction Bonus}) + \text{Reaction Additive Base DMG Bonus} \right) \times \text{Elevation Multiplier} \times \text{RES Multiplier}_{\text{Target}} \times \text{CRIT Multiplier}$$
+
+- **Special EM Bonus**: $\%\text{EM Bonus}_{\text{LS}} = \frac{6 \times \text{Total EM}}{\text{Total EM} + 2000}$
+- **Terminology Distinction**:
+  - **Multiplier** $\equiv$ **Base Reaction Coefficient (BRC)**
+  - **Base DMG Multiplier** $\equiv$ **\%Reaction Base DMG Bonus** (e.g., Moonsign Lunar Base DMG, Stellar Base DMG)
+- **Direct Base Reaction Coefficients (BRC)**:
+  - **1.0**: Lunar-Bloom
+  - **1.0**: Stellar Swirl (Base)
+  - **1.0 to 2.0**: Stellar-Conduct (scales dynamically with Polestar Field recorded Cryo/Electro hits: $1.00$ at 0 hits, $1.40 + 0.05 \times \text{hits}$ for 1..12 hits)
+  - **1.6**: Lunar-Crystallize
+  - **3.0**: Lunar-Charged
+
+#### Sub-Breakdown for Stellar-Conduct Direct Hits:
+```text
+Base Reaction Coefficient 1.70 = Base 1.00 + Polestar Field (6 hits) +0.70
+```
 
 ---
 
-### C. Sub-Equations Decomposition Hierarchy
+### C. Indirect Reaction Hit Equations (Lunar & Stellar Glimmer)
+Reference Standard: [Genshin Impact Damage Wiki](https://genshin-impact.fandom.com/wiki/Damage)
+
+> [!IMPORTANT]
+> **Indirect Reaction Eligibility**:
+> - Indirect Lunar and Stellar Glimmer Reaction DMG caused by applying elements can **only** be dealt by:
+>   - **Lunar-Charged** (deals Electro DMG; anchor ID: `lunar-lunar-charged`)
+>   - **Lunar-Crystallize** (deals Geo DMG; anchor ID: `lunar-lunar-crystallize`)
+>   - **Stellar Swirl** (Initial Anemo: `stellar-initial`; Lv. 1 Vortex Cryo: `stellar-vortex-lv1`; Lv. 2 Vortex Cryo: `stellar-vortex-lv2`)
+> - **Exclusions**:
+>   - **Lunar-Bloom**: Dendro Cores and Bountiful Cores created via Lunar-Bloom are identical to standard Bloom cores; DMG dealt by them is **not** considered Lunar-Bloom DMG.
+>   - **Stellar-Conduct**: Does **not** deal indirect elemental application reaction DMG.
+
+#### 1. Individual Contributor Equation
+$$\text{DMG}_{\text{Individual}} = \text{Base Reaction Coefficient} \times \text{Level Multiplier}_{\text{Contributor}} \times (1 + \% \text{Reaction Base DMG Bonus}) \times (1 + \%\text{EM Bonus}_{\text{LS}} + \%\text{Reaction Bonus}) \times \text{Elevation Multiplier} \times \text{RES Multiplier}_{\text{Target}} \times \text{CRIT Multiplier}_{\text{Contributor}}$$
+
+- **Indirect Base Reaction Coefficients**:
+  - `0.75`: Stellar Swirl (Initial Anemo)
+  - `1.6`: Lunar-Crystallize (Geo)
+  - `2.0`: Stellar Swirl (Lv. 1 Vortex Cryo AoE)
+  - `3.0`: Stellar Swirl (Lv. 2 Vortex Cryo AoE)
+  - `3.0`: Lunar-Charged (Electro)
+
+#### 2. Ranked 4-Slot Combination Equation
+$$\text{DMG}_{\text{Indirect}} = 0.60 \times D_1 + 0.30 \times D_2 + 0.05 \times D_3 + 0.05 \times D_4 \quad (D_1 \ge D_2 \ge D_3 \ge D_4)$$
+
+- **Capacity Scaling**: 1 contributor active = 60%, 2 = 90%, 3 = 95%, 4 = 100% capacity.
+- **Benchmark CRIT**: Dictated by highest individual contributor ($D_1$).
+- **Stellar Swirl Multiplier Increment**:
+  ```text
+  Base Reaction Coefficient 2.20 = Base 2.00 (Lv. 1 Vortex Cryo AoE) + Stellar Swirl Multiplier 20.0%
+  ```
+
+---
+
+### D. Sub-Equations Decomposition Hierarchy
 
 Every formula card generates structured sub-breakdown lines formatted as:
 
@@ -123,6 +174,10 @@ Every formula card generates structured sub-breakdown lines formatted as:
    Total Normal Att. DMG Bonus 20% = Normal Att. DMG Bonus (Kaedehara Kazuha) 20%
    Total Pyro DMG Bonus 219.5% = Pyro DMG Bonus 40% + Art. Pyro DMG Bonus 46.6% + Team Pyro DMG Bonus 80.6% + Pyro DMG Bonus (Kaedehara Kazuha) 52.3%
    ```
+   - **Polestar Field Cryo / Electro DMG Bonus Decomposition**:
+     ```text
+     Total Cryo DMG Bonus 74.0% = Cryo DMG Bonus 40.0% + Polestar Field (6 hits) 34.0%
+     ```
 
 4. **CRIT Rate & CRIT DMG Decompositions (with Probability Clamping)**:
    ```text
@@ -139,6 +194,7 @@ Every formula card generates structured sub-breakdown lines formatted as:
 6. **Enemy RES Multiplier Decomposition**:
    ```text
    Total Enemy Pyro DMG RES -66% = Base Enemy Pyro DMG RES 10% + Team Enemy Pyro DMG RES -76%
+   Total Enemy Physical RES -30% = Base Enemy Physical RES 10% + Polestar Field -40%
    ```
 
 7. **Received Team Buffs Summary Card (`id: "received-team-buffs"`)**:
@@ -146,9 +202,13 @@ Every formula card generates structured sub-breakdown lines formatted as:
    Team ATK 115.0% = ATK (Bennett Fantastic Voyage) 1202.4 + Party ATK% (Noblesse Oblige) 203.2 + Party ATK% (TTDS) 243.8
    Team Elemental Mastery 148.44 = EM (Ineffa A4) 148.44 + Party EM (A Thousand Floating Dreams) 40.0
    Team Pyro DMG Bonus 15.0% = Pyro DMG (Bennett C6) 15.0%
+   Team Cryo & Electro DMG Bonus 35.0% = Polestar Field (7 hits) 35.0%
+   Team Enemy Physical DMG RES -40.0% = Polestar Field -40.0%
    Team Enemy Pyro DMG RES -40% = Elemental RES Shred (Viridescent Venerer) -40.0%
    Team Lunar-Charged DMG Bonus 50.0% = Lunar-Charged DMG (Ineffa C1) 50.0%
    Team Lunar Base DMG 14.0% = Lunar Base DMG (Ineffa Moonsign) 14.0%
+   Team Stellar Base DMG 7.0% = Stellar Base DMG (Cryo MC) 7.0%
+   Team Stellar Reaction DMG Bonus 40.0% = Stellar Reaction DMG (Cryo MC C6) 40.0%
    ```
 
 ---
@@ -192,12 +252,15 @@ Every formula card generates structured sub-breakdown lines formatted as:
 
 Before completing any formula breakdown task:
 1. **Anchor Matching**: Verify every hit in `DamageTable` passes an anchor ID (`hit-<groupId>:<hitIndex>`) matching the ID generated in `explainHitFormulas`.
-2. **Hover Delay**: Confirm moving the cursor from the `[?]` button to the speech bubble popover does not cause jitter or premature closing.
-3. **Anchor Navigation**: Verify clicking `[?]` jumps directly to the target hit on `/characters/[id]/formula` and smoothly centers & highlights the card.
-4. **Constellation Inactivity**: Verify hits requiring higher constellations (e.g. C2) render `"—"` at C0/C1 and do not produce erroneous formulas.
-5. **Probability Bounds**: Verify CRIT Rate sub-breakdown displays clamping bounds `Max(Min(..., 100%), 0%)`.
-6. **Unit Tests & Build**:
+2. **Reaction Anchors**: Verify transformative (`tr-<type>`), lunar (`lunar-<lunarType>`), and stellar (`stellar-initial`, `stellar-vortex-lv1`, `stellar-vortex-lv2`) have valid anchors matching `explainHitFormulas`.
+3. **Hover Delay**: Confirm moving the cursor from the `[?]` button to the speech bubble popover does not cause jitter or premature closing.
+4. **Anchor Navigation**: Verify clicking `[?]` jumps directly to the target hit on `/characters/[id]/formula` and smoothly centers & highlights the card.
+5. **Constellation Inactivity**: Verify hits requiring higher constellations (e.g. C2) render `"—"` at C0/C1 and do not produce erroneous formulas.
+6. **Probability Bounds**: Verify CRIT Rate sub-breakdown displays clamping bounds `Max(Min(..., 100%), 0%)`.
+7. **Polestar & Stellar Decomposition**: Verify Stellar-Conduct direct hit equations show correct BRC scaling based on recorded hits, and Received Team Buffs accurately groups Stellar Base DMG and Polestar Field buffs.
+8. **Unit Tests & Build**:
    ```bash
    npm test
    npm run build
    ```
+
