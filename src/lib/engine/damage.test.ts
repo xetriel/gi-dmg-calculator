@@ -6,6 +6,8 @@ import {
   amplifyingMultiplier,
   availableReactions,
   computeHit,
+  isPlungeCollision,
+  isPlungeImpact,
   type DamageStats,
 } from "./damage";
 import { validate, resolveStats, resolveHitMultipliers, statInputIds, hitId, type RawInputs } from "./validation";
@@ -246,5 +248,111 @@ describe("resolveHitMultipliers", () => {
     expect(r[hitId(0, 1)]).toBeNull();
     // A talent group with no scaling data at all also falls through to manual (null here).
     expect(r[hitId(1, 0)]).toBeNull();
+  });
+});
+
+describe("Plunging collision vs impact routing", () => {
+  it("detects plunge collision vs impact from keys and names", () => {
+    expect(isPlungeCollision("plunge", "Plunge DMG")).toBe(true);
+    expect(isPlungeCollision("plunge-collision", "Midair Collision")).toBe(true);
+    expect(isPlungeImpact("plunge", "Plunge DMG")).toBe(false);
+
+    expect(isPlungeImpact("low-plunge", "Low Plunge DMG")).toBe(true);
+    expect(isPlungeImpact("high-plunge", "High Plunge DMG")).toBe(true);
+    expect(isPlungeCollision("low-plunge", "Low Plunge DMG")).toBe(false);
+  });
+
+  it("applies collision bonus only to plunge and impact bonus only to low/high plunge", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      plungeDmgBonus: 10,
+      plungingCollisionDmgBonus: 25,
+      plungingImpactDmgBonus: 50,
+    };
+    // General plunge gets plungeDmgBonus(10) + collision(25) = +35% -> 1 + (50+35)/100 = 1.85
+    expect(dmgBonusMultiplier(s, 0, "plunge", undefined, undefined, "", "plunge", "Plunge DMG")).toBeCloseTo(1.85);
+
+    // Impact gets plungeDmgBonus(10) + impact(50) = +60% -> 1 + (50+60)/100 = 2.10
+    expect(dmgBonusMultiplier(s, 0, "plunge", undefined, undefined, "", "low-plunge", "Low Plunge DMG")).toBeCloseTo(2.10);
+    expect(dmgBonusMultiplier(s, 0, "plunge", undefined, undefined, "", "high-plunge", "High Plunge DMG")).toBeCloseTo(2.10);
+  });
+});
+
+describe("Direct Reaction Isolation and BRC Percentage Addition", () => {
+  it("isolates direct reaction hits from talent category and elemental flat/CRIT buffs", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      atk: 1000,
+      em: 0,
+      enemyRes: 10, // 0.90 RES multiplier
+      critRate: 50,
+      critDmg: 100,
+      // Talent category flat and CRIT buffs (should be ignored by direct reactions)
+      normalDmgIncrease: 500,
+      chargedDmgIncrease: 500,
+      normalCritRate: 20,
+      chargedCritRate: 20,
+      normalCritDmg: 40,
+      chargedCritDmg: 40,
+      // Elemental flat and CRIT buffs (should be ignored by direct reactions)
+      cryoDmgIncrease: 500,
+      cryoCritRate: 15,
+      cryoCritDmg: 30,
+    };
+
+    // Direct reaction hit: Stellar-Conduct condensed beam
+    const res = computeHit(s, {
+      multiplier: 100,
+      scaling: "atk",
+      element: "Cryo",
+      reaction: "none",
+      reactionBonusPct: 0,
+      hitCategory: "charged",
+      directReaction: {
+        coefficient: 1.0,
+        baseDmgBonusPct: 0,
+        reactionBonusPct: 0,
+        stellarType: "stellar-conduct",
+      },
+    });
+
+    // Base ability = 1.0 * 1.0 * 1000 = 1000
+    // RES mult = 0.90 -> Non-Crit = 900
+    expect(res.nonCrit).toBeCloseTo(900, 2);
+    // Direct CRIT should strictly use base stats: CR 50%, CD 100%
+    // NOT receiving normal/charged/cryo CRIT (50 + 20 + 15 = 85)!
+    expect(res.crit).toBeCloseTo(900 * 2.0, 2); // 100% CD -> 1800
+    expect(res.avg).toBeCloseTo(900 * (1 + 0.5 * 1.0), 2); // 50% CR, 100% CD -> 1350
+  });
+
+  it("adds stellarConductMultiplier to Base Reaction Coefficient as percentage points", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      atk: 1000,
+      em: 0,
+      enemyRes: 0, // 1.00 RES multiplier
+      critRate: 50,
+      critDmg: 100,
+      // Stellar-Conduct Multiplier +80(%)
+      stellarConductMultiplier: 80,
+    };
+
+    // Base coefficient at stack 6 is 1.70. With +80%, coeff becomes 1.70 + 0.80 = 2.50.
+    const res = computeHit(s, {
+      multiplier: 100,
+      scaling: "atk",
+      element: "Cryo",
+      reaction: "none",
+      reactionBonusPct: 0,
+      directReaction: {
+        coefficient: 1.70,
+        baseDmgBonusPct: 0,
+        reactionBonusPct: 0,
+        stellarType: "stellar-conduct",
+      },
+    });
+
+    // Base ability = (1.70 + 0.80) * 1.0 * 1000 = 2500
+    expect(res.nonCrit).toBeCloseTo(2500, 2);
   });
 });

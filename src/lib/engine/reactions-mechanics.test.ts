@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { levelMultiplier } from "./level-multiplier";
 import { catalyzeAdditive, computeHit, stellarBRC, stellarEmBonus, type DamageStats } from "./damage";
-import { transformativeDamage, TRANSFORMATIVE_BY_ELEMENT } from "./transformative";
+import { transformativeDamage, transformativeDamageWithStats, TRANSFORMATIVE_BY_ELEMENT } from "./transformative";
 import { indirectLunarDamage, lunarEmBonus, LUNAR_BY_ELEMENT } from "./lunar";
 import { resolveMechanics, type MechanicsCtx } from "./mechanics";
 import { resolveHitMultipliers, hitId } from "./validation";
@@ -84,6 +84,25 @@ describe("transformative reactions", () => {
     expect(TRANSFORMATIVE_BY_ELEMENT.Pyro).toContain("overloaded");
     expect(TRANSFORMATIVE_BY_ELEMENT.Hydro).toContain("electro-charged");
     expect(TRANSFORMATIVE_BY_ELEMENT.Geo).toEqual([]);
+    expect(TRANSFORMATIVE_BY_ELEMENT.Cryo).toContain("superconduct");
+  });
+  it("Superconduct applies superconductDmgBonus, enemyCryoRes, and can CRIT", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      em: 0,
+      enemyRes: 10,
+      enemyCryoRes: -20, // Superconduct deals Cryo DMG -> (1 - (-0.20)/2) = 1.10
+      superconductDmgBonus: 50, // +50% reaction bonus
+      superconductCritRate: 40,
+      superconductCritDmg: 80,
+    };
+    const res = transformativeDamageWithStats("superconduct", s, 0);
+    // Base coeff 1.5 * LV90 * (1 + 0.50) * 1.10 RES multiplier
+    const expectedNonCrit = 1.5 * LV90 * 1.50 * 1.10;
+    expect(res.nonCrit).toBeCloseTo(expectedNonCrit, 3);
+    expect(res.canCrit).toBe(true);
+    expect(res.crit).toBeCloseTo(expectedNonCrit * (1 + 0.80), 3);
+    expect(res.avg).toBeCloseTo(expectedNonCrit * (1 + 0.40 * 0.80), 3);
   });
 });
 

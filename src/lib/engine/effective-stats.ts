@@ -183,9 +183,9 @@ export const EFFECTIVE_ROW_DEFINITIONS: EffectiveRowDef[] = [
   { key: "stellarSwirlSpecialDmgBonus", label: "Stellar Swirl Special DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
   { key: "stellarReactionSpecialDmgBonus", label: "Stellar Reaction Special DMG Bonus (Superset)", category: "reactionDmg", unit: "percent", hideIfZero: true },
 
-  { key: "stellarConductMultiplier", label: "Stellar-Conduct Multiplier (BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
-  { key: "stellarSwirlMultiplier", label: "Stellar Swirl Multiplier (BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
-  { key: "stellarReactionMultiplier", label: "Stellar Reaction Multiplier (Superset BRC)", category: "reactionDmg", unit: "multiplier", hideIfZero: true },
+  { key: "stellarConductMultiplier", label: "Stellar-Conduct Multiplier (BRC)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarSwirlMultiplier", label: "Stellar Swirl Multiplier (BRC)", category: "reactionDmg", unit: "percent", hideIfZero: true },
+  { key: "stellarReactionMultiplier", label: "Stellar Reaction Multiplier (Superset BRC)", category: "reactionDmg", unit: "percent", hideIfZero: true },
   { key: "stellarPanelBonus", label: "Stellar Glimmer Reaction DMG Bonus", category: "reactionDmg", unit: "percent", hideIfZero: true },
 
   { key: "stellarConductReactionDmgIncrease", label: "Stellar-Conduct Reaction DMG Increase", category: "reactionDmg", unit: "flat", hideIfZero: true },
@@ -200,6 +200,8 @@ export const EFFECTIVE_ROW_DEFINITIONS: EffectiveRowDef[] = [
   { key: "lunarChargedCritDmg", label: "Lunar-Charged CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
   { key: "burningCritRate", label: "Burning CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
   { key: "burningCritDmg", label: "Burning CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "superconductCritRate", label: "Superconduct CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
+  { key: "superconductCritDmg", label: "Superconduct CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
   { key: "bloomCritRate", label: "Bloom CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
   { key: "bloomCritDmg", label: "Bloom CRIT DMG", category: "reactionCrit", unit: "percent", hideIfZero: true },
   { key: "burgeonCritRate", label: "Burgeon CRIT Rate", category: "reactionCrit", unit: "percent", hideIfZero: true },
@@ -598,8 +600,12 @@ export function resolveAllEffectiveStats(
 
     // Standard DamageStats rows
     const statKey = row.key as keyof DamageStats;
-    const raw = (inputStats[statKey] as number | undefined) ?? 0;
-    const total = (effectiveStats[statKey] as number | undefined) ?? 0;
+    const isEnemyRes = [
+      "enemyPhysicalRes", "enemyPyroRes", "enemyHydroRes", "enemyDendroRes",
+      "enemyElectroRes", "enemyAnemoRes", "enemyCryoRes", "enemyGeoRes",
+    ].includes(statKey as string);
+    const raw = (inputStats[statKey] as number | undefined) ?? (isEnemyRes ? inputStats.enemyRes : 0);
+    const total = (effectiveStats[statKey] as number | undefined) ?? (isEnemyRes ? effectiveStats.enemyRes : 0);
     const delta = total - raw;
 
     const additions: StatBuffSource[] = [];

@@ -16,10 +16,12 @@ export const sandrone: CharacterConfig = {
   stats: coreStats("Cryo DMG Bonus%"),
   talents: [
     { type: "normal", name: "Normal Attack — Self-Evident Proposition", hits: [
-      atk("1-hit", "1-Hit"), atk("2-hit", "2-Hit"), atk("3-hit", "3-Hit"),
+      { key: "1-hit", name: "1-Hit", scaling: "atk", hitCategory: "normal", element: "Physical" },
+      { key: "2-hit", name: "2-Hit", scaling: "atk", hitCategory: "normal", element: "Physical" },
+      { key: "3-hit", name: "3-Hit", scaling: "atk", hitCategory: "normal", element: "Physical" },
       atkCharged("sweeping-fire", "Charged: Sweeping Fire"),
       atkCharged("condensed-beam", "Charged: Condensed Beam"),
-      stellarAtk("condensed-beam-stellar", "Charged: Condensed Beam (Stellar-Conduct)"),
+      { key: "condensed-beam-stellar", name: "Charged: Condensed Beam (Stellar-Conduct)", scaling: "atk", direct: "stellar", hitCategory: "charged" },
       atk("power-overdrive", "DMG When in Power Overdrive"),
       atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
@@ -158,7 +160,16 @@ export const sandrone: CharacterConfig = {
         compute: (ctx) => ((ctx.inputs["polestar-field"] ?? 0) > 0 ? -40 : 0),
       },
       {
-        stat: "stellarConductReactionDmgIncrease",
+        stat: "stellarConductMultiplier",
+        label: "Stellar-Conduct Multiplier BRC (Sandrone Polestar Field)",
+        compute: (ctx) => {
+          if ((ctx.inputs["polestar-field"] ?? 0) <= 0) return 0;
+          const hits = ctx.inputs["polestar-hits"] ?? 0;
+          return hits <= 0 ? 0 : 40 + 5 * Math.min(hits, 12);
+        },
+      },
+      {
+        stat: "stellarConductDmgBonus",
         label: "Stellar Reaction DMG (Sandrone C1)",
         compute: (ctx) => (ctx.constellationLevel >= 1 ? 30 : 0),
       },

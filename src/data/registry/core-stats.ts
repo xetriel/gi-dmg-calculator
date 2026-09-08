@@ -70,14 +70,15 @@ export const reactionStats: StatField[] = [
   { key: "lunarCrystallizeSpecialDmgBonus",    label: "Lunar-Crystallize Special DMG Bonus%",    unit: "percent", group: "reactions" },
   { key: "stellarConductBaseDmgMultiplier",   label: "Stellar-Conduct Base DMG Multiplier%",   unit: "percent", group: "reactions" },
   { key: "stellarConductSpecialDmgBonus",      label: "Stellar-Conduct Special DMG Bonus%",      unit: "percent", group: "reactions" },
-  { key: "stellarConductMultiplier",          label: "Stellar-Conduct Multiplier",              unit: "flat",    group: "reactions" },
+  { key: "stellarConductMultiplier",          label: "Stellar-Conduct Multiplier%",             unit: "percent", group: "reactions" },
   { key: "stellarSwirlBaseDmgMultiplier",     label: "Stellar Swirl Base DMG Multiplier%",     unit: "percent", group: "reactions" },
   { key: "stellarSwirlSpecialDmgBonus",        label: "Stellar Swirl Special DMG Bonus%",        unit: "percent", group: "reactions" },
-  { key: "stellarSwirlMultiplier",            label: "Stellar Swirl Multiplier",                unit: "flat",    group: "reactions" },
+  { key: "stellarSwirlMultiplier",            label: "Stellar Swirl Multiplier%",               unit: "percent", group: "reactions" },
   { key: "lunarReactionBaseDmgMultiplier",    label: "Lunar Reaction Base DMG Multiplier%",    unit: "percent", group: "reactions" },
   { key: "lunarReactionSpecialDmgBonus",       label: "Lunar Reaction Special DMG Bonus%",       unit: "percent", group: "reactions" },
   { key: "stellarReactionBaseDmgMultiplier",  label: "Stellar Reaction Base DMG Multiplier%",  unit: "percent", group: "reactions" },
   { key: "stellarReactionSpecialDmgBonus",     label: "Stellar Reaction Special DMG Bonus%",     unit: "percent", group: "reactions" },
+  { key: "stellarReactionMultiplier",         label: "Stellar Reaction Multiplier%",            unit: "percent", group: "reactions" },
 ];
 
 // Reaction CRIT stats
@@ -86,6 +87,8 @@ export const reactionCritStats: StatField[] = [
   { key: "lunarChargedCritDmg",      label: "Lunar-Charged CRIT DMG%",      unit: "percent", group: "reactionCrits" },
   { key: "burningCritRate",          label: "Burning CRIT Rate%",          unit: "percent", group: "reactionCrits" },
   { key: "burningCritDmg",           label: "Burning CRIT DMG%",           unit: "percent", group: "reactionCrits" },
+  { key: "superconductCritRate",      label: "Superconduct CRIT Rate%",      unit: "percent", group: "reactionCrits" },
+  { key: "superconductCritDmg",       label: "Superconduct CRIT DMG%",       unit: "percent", group: "reactionCrits" },
   { key: "bloomCritRate",            label: "Bloom CRIT Rate%",            unit: "percent", group: "reactionCrits" },
   { key: "bloomCritDmg",             label: "Bloom CRIT DMG%",             unit: "percent", group: "reactionCrits" },
   { key: "burgeonCritRate",          label: "Burgeon CRIT Rate%",          unit: "percent", group: "reactionCrits" },

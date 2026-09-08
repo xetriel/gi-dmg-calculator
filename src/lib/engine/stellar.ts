@@ -119,6 +119,14 @@ export function stellarConductFieldBuffs(hits: number): {
   };
 }
 
+export interface IndividualStellarDamageResult {
+  nonCrit: number;
+  crit: number;
+  avg: number;
+  critRate: number;
+  critDmg: number;
+}
+
 /**
  * Computes individual theoretical indirect damage for a single contributor.
  */
@@ -127,7 +135,7 @@ export function computeIndividualStellarDamage(
   contributor: ContributorParams,
   resOverrideElement?: Element | "Physical",
   enemyResPct?: number,
-): { nonCrit: number; critRate: number; critDmg: number } {
+): IndividualStellarDamageResult {
   const emBonusFrac = stellarEmBonus(contributor.em);
   const rxBonus = 1 + emBonusFrac + (contributor.reactionBonusPct ?? 0) / 100;
   const baseDmgBonus = 1 + (contributor.baseDmgBonusPct ?? 0) / 100;
@@ -138,8 +146,15 @@ export function computeIndividualStellarDamage(
   const totalBase = baseTerm + (contributor.flatDmg ?? 0);
   const nonCrit = totalBase * elevation * res;
 
+  const cr = clamp(contributor.critRate, 0, 100) / 100;
+  const cd = contributor.critDmg / 100;
+  const crit = nonCrit * (1 + cd);
+  const avg = nonCrit * (1 + cr * cd);
+
   return {
     nonCrit,
+    crit,
+    avg,
     critRate: contributor.critRate,
     critDmg: contributor.critDmg,
   };
@@ -162,24 +177,30 @@ export function combineRankedContributors(
   // Sort descending by Non-Crit damage
   const sorted = [...individualResults].sort((a, b) => b.nonCrit - a.nonCrit);
 
-  const d1 = sorted[0]?.nonCrit ?? 0;
-  const d2 = sorted[1]?.nonCrit ?? 0;
-  const d3 = sorted[2]?.nonCrit ?? 0;
-  const d4 = sorted[3]?.nonCrit ?? 0;
+  const d1 = sorted[0];
+  const d2 = sorted[1];
+  const d3 = sorted[2];
+  const d4 = sorted[3];
 
-  const combinedNonCrit = 0.60 * d1 + 0.30 * d2 + 0.05 * d3 + 0.05 * d4;
+  const combinedNonCrit =
+    0.60 * (d1?.nonCrit ?? 0) +
+    0.30 * (d2?.nonCrit ?? 0) +
+    0.05 * (d3?.nonCrit ?? 0) +
+    0.05 * (d4?.nonCrit ?? 0);
 
   // Benchmark CRIT ratio from highest contributor (D1)
-  const benchmarkCritRate = sorted[0]?.critRate ?? 0;
-  const benchmarkCritDmg = sorted[0]?.critDmg ?? 0;
+  const benchmarkCritRate = d1?.critRate ?? 0;
+  const benchmarkCritDmg = d1?.critDmg ?? 0;
 
   const cr = clamp(benchmarkCritRate, 0, 100) / 100;
   const cd = benchmarkCritDmg / 100;
+  const combinedCrit = combinedNonCrit * (1 + cd);
+  const combinedAvg = combinedNonCrit * (1 + cr * cd);
 
   return {
     nonCrit: combinedNonCrit,
-    crit: combinedNonCrit * (1 + cd),
-    avg: combinedNonCrit * (1 + cr * cd),
+    crit: combinedCrit,
+    avg: combinedAvg,
     benchmarkCritRate,
     benchmarkCritDmg,
     contributorCount: individualResults.length,
@@ -197,7 +218,10 @@ export function indirectStellarDamage(
   panelReactionBonusPct: number = 0,
   extraContributors: ContributorParams[] = [],
 ): StellarResult {
-  const coeff = STELLAR_INDIRECT_COEFFICIENT[variant];
+  const multiplierBonusPct =
+    (stats.stellarSwirlMultiplier ?? 0) +
+    (stats.stellarReactionMultiplier ?? 0);
+  const coeff = STELLAR_INDIRECT_COEFFICIENT[variant] + multiplierBonusPct / 100;
 
   // Specific and superset bonuses for Stellar
   const specificDmgBonus =
@@ -227,6 +251,16 @@ export function indirectStellarDamage(
     (stats.stellarSwirlCritDmg ?? 0) +
     (stats.stellarReactionCritDmg ?? 0);
 
+  const variantCritRate =
+    variant === "initial"
+      ? (stats.anemoCritRate ?? 0)
+      : (stats.cryoCritRate ?? 0);
+
+  const variantCritDmg =
+    variant === "initial"
+      ? (stats.anemoCritDmg ?? 0)
+      : (stats.cryoCritDmg ?? 0);
+
   // Active character contributor
   // Initial Stellar Swirl deals Anemo DMG; Vortex explosions deal Cryo AoE DMG
   const targetRes =
@@ -239,8 +273,8 @@ export function indirectStellarDamage(
     name: "Active Character",
     levelChar: stats.levelChar,
     em: stats.em,
-    critRate: stats.critRate + specificCritRate,
-    critDmg: stats.critDmg + specificCritDmg,
+    critRate: stats.critRate + specificCritRate + variantCritRate,
+    critDmg: stats.critDmg + specificCritDmg + variantCritDmg,
     enemyRes: targetRes,
     reactionBonusPct: panelReactionBonusPct + specificDmgBonus,
     baseDmgBonusPct: specificBaseBonus,

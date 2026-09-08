@@ -326,6 +326,8 @@ export function resolveStats(raw: RawInputs): DamageStats {
     lunarChargedCritDmg: opt("lunarChargedCritDmg"),
     burningCritRate: opt("burningCritRate"),
     burningCritDmg: opt("burningCritDmg"),
+    superconductCritRate: opt("superconductCritRate"),
+    superconductCritDmg: opt("superconductCritDmg"),
     bloomCritRate: opt("bloomCritRate"),
     bloomCritDmg: opt("bloomCritDmg"),
     burgeonCritRate: opt("burgeonCritRate"),
