@@ -150,15 +150,15 @@ export const TransformativePanel: React.FC<TransformativePanelProps> = ({
                   ) : (
                     <td className="py-1.5 pr-1 text-right tabular-nums" colSpan={3}>
                       <div className="flex items-center justify-end gap-1.5">
-                        <span className="font-semibold">{fmt(t.dmg)}</span>
+                        <span className="font-semibold">{fmt(t.res?.nonCrit ?? t.dmg)}</span>
                         <span className="text-[10px] text-gray-400">(no crit)</span>
                         {onFormulaRedirect && (
                           <HitFormulaTooltip
                             hitName={`${label} Reaction`}
                             targetAnchorId={`tr-${t.type}`}
-                            nonCrit={t.dmg}
-                            crit={t.dmg}
-                            avg={t.dmg}
+                            nonCrit={t.res?.nonCrit ?? t.dmg}
+                            crit={t.res?.nonCrit ?? t.dmg}
+                            avg={t.res?.nonCrit ?? t.dmg}
                             onFormulaRedirect={onFormulaRedirect}
                           />
                         )}

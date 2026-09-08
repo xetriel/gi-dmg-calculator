@@ -229,4 +229,49 @@ describe("explainHitFormulas: Arlecchino formula breakdown", () => {
     expect(teamBuffsCard).toBeDefined();
     expect(teamBuffsCard?.subBreakdowns.some(s => s.includes("Obsidian Codex"))).toBe(true);
   });
+
+  it("generates correct Sandrone Superconduct and Stellar-Conduct formula breakdowns", async () => {
+    const sandroneConfig = (await import("../../data/registry/characters/sandrone")).sandrone;
+    const sandroneScaling = buildScaling("sandrone");
+    const inst = {
+      id: "setup-sandrone",
+      stats: {
+        "atk.base": "1000",
+        "atk.flat": "0",
+        "atk.percent": "0",
+        "critRate": "60",
+        "critDmg": "120",
+        "em": "200",
+        "enemyRes": "10",
+        "enemyCryoRes": "-20",
+        "superconductDmgBonus": "40",
+        "superconductCritRate": "30",
+        "superconductCritDmg": "60",
+        "stellarConductMultiplier": "80",
+      },
+      hits: {},
+      levels: { normal: "10", skill: "10", burst: "10" },
+      mechanicInputs: { "polestar-field": "1", "polestar-hits": "6" },
+      reaction: "none" as const,
+      reactionBonus: "0",
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
+      constellationLevel: 0,
+    };
+
+    const breakdowns = explainHitFormulas(sandroneConfig, sandroneScaling, inst);
+
+    // 1. Superconduct transformative breakdown
+    const sc = breakdowns.find(b => b.id === "tr-superconduct");
+    expect(sc).toBeDefined();
+    expect(sc?.subBreakdowns.some(s => s.includes("Superconduct DMG Bonus 40%"))).toBe(true);
+    expect(sc?.subBreakdowns.some(s => s.includes("Reaction CRIT: CRIT Rate 30% | CRIT DMG 60%"))).toBe(true);
+    expect(sc?.mainFormulaCrit).toBeDefined();
+
+    // 2. Condensed Beam (Stellar-Conduct direct reaction)
+    const beam = breakdowns.find(b => b.hitName.includes("Condensed Beam (Stellar-Conduct)"));
+    expect(beam).toBeDefined();
+    // At stack 6, base coeff is 1.70. With +80%, eff coeff is 2.50.
+    expect(beam?.subBreakdowns.some(s => s.includes("Base Reaction Coefficient 2.5 = Base 1.7 + Stellar Reaction Multiplier 80%"))).toBe(true);
+  });
 });

@@ -33,6 +33,26 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
     // Only non-stellar hits benefit from DMG Bonus — the stellar branch ignores DMG Bonus%.
     res.statDeltas.dmgBonus = (res.statDeltas.dmgBonus ?? 0) + buffs.cryoDmgBonus;
     res.statDeltas.enemyPhysicalRes = (res.statDeltas.enemyPhysicalRes ?? 0) - buffs.enemyPhysicalResShred;
+    res.statBuffSources = {
+      dmgBonus: [
+        {
+          source: "Polestar Field",
+          value: buffs.cryoDmgBonus,
+          description: "Cryo/Electro DMG Bonus on non-Stellar hits",
+          type: "mechanic",
+          category: "character",
+        },
+      ],
+      enemyPhysicalRes: [
+        {
+          source: "Polestar Field",
+          value: -buffs.enemyPhysicalResShred,
+          description: "-40% Enemy Physical RES shred",
+          type: "mechanic",
+          category: "character",
+        },
+      ],
+    };
     res.notes.push(
       `Polestar Field: BRC ×${brc.toFixed(2)} on Stellar hits (${hits} hit${hits === 1 ? "" : "s"}); +${buffs.cryoDmgBonus}% Cryo DMG Bonus on non-Stellar hits; -${buffs.enemyPhysicalResShred}% Enemy Phys RES`
     );

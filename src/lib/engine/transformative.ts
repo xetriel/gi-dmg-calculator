@@ -52,6 +52,10 @@ export interface TransformativeResult {
   canCrit: boolean;
   critRate?: number;
   critDmg?: number;
+  specificBonus: number;
+  rxCritRate: number;
+  rxCritDmg: number;
+  targetRes: number;
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
@@ -134,6 +138,8 @@ export function transformativeDamageWithStats(
       break;
     case "superconduct":
       specificBonus = stats.superconductDmgBonus ?? 0;
+      rxCritRate = stats.superconductCritRate ?? 0;
+      rxCritDmg = stats.superconductCritDmg ?? 0;
       targetRes = stats.enemyCryoRes ?? stats.enemyRes;
       break;
     case "electro-charged":
@@ -159,6 +165,10 @@ export function transformativeDamageWithStats(
       canCrit: true,
       critRate: rxCritRate,
       critDmg: rxCritDmg,
+      specificBonus,
+      rxCritRate,
+      rxCritDmg,
+      targetRes,
     };
   }
 
@@ -167,5 +177,9 @@ export function transformativeDamageWithStats(
     crit: nonCrit,
     avg: nonCrit,
     canCrit: false,
+    specificBonus,
+    rxCritRate,
+    rxCritDmg,
+    targetRes,
   };
 }

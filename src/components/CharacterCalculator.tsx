@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
-import { computeHit, availableReactions, scalingTotal, type HitResult, type DamageStats } from "@/lib/engine/damage";
+import { computeHit, availableReactions, scalingTotal, applyStatDeltas, type HitResult, type DamageStats } from "@/lib/engine/damage";
 import { validate, resolveStats, resolveHitMultipliers, effectiveTalentLevels, hitId, toNum, getRequiredConstellation, type RawInputs } from "@/lib/engine/validation";
 import { resolveMechanics, type PerHitMods } from "@/lib/engine/mechanics";
 import { transformativeDamage, transformativeDamageWithStats, TRANSFORMATIVE_BY_ELEMENT, TRANSFORMATIVE_LABEL } from "@/lib/engine/transformative";
@@ -446,14 +446,10 @@ export function CharacterCalculator({
       inputs: mechInputs,
     });
 
-    for (const [key, val] of Object.entries(mech.statDeltas)) {
-      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-    }
+    applyStatDeltas(s, mech.statDeltas);
     const effects = activeEffects(config, inst.constellationLevel);
     const statBonuses = constellationStatBonuses(effects);
-    for (const [key, val] of Object.entries(statBonuses)) {
-      if (key in s) (s as unknown as Record<string, number>)[key] += val;
-    }
+    applyStatDeltas(s, statBonuses);
 
     // Apply team support buffs
     let lunarBaseFromTeam = 0;
@@ -474,11 +470,7 @@ export function CharacterCalculator({
         baseDefVal,
         baseHpVal,
       );
-      for (const [key, val] of Object.entries(teamResult.statDeltas)) {
-        if (key in s && typeof val === "number") {
-          (s as unknown as Record<string, number>)[key] += val;
-        }
-      }
+      applyStatDeltas(s, teamResult.statDeltas);
       lunarBaseFromTeam = teamResult.lunarBaseBonusPct;
       stellarBaseFromTeam = teamResult.stellarBaseBonusPct;
       teamContributors = teamResult.contributors;
@@ -495,11 +487,7 @@ export function CharacterCalculator({
         true,
         equippedWeaponIds,
       );
-      for (const [key, val] of Object.entries(weaponResult.statDeltas)) {
-        if (key in s && typeof val === "number") {
-          (s as unknown as Record<string, number>)[key] += val;
-        }
-      }
+      applyStatDeltas(s, weaponResult.statDeltas);
     }
 
     // Apply external artifact team buffs (bypassing any overridden by active support equipment)
@@ -513,11 +501,7 @@ export function CharacterCalculator({
         baseHpVal,
         equippedArtifactIds,
       );
-      for (const [key, val] of Object.entries(artifactResult.statDeltas)) {
-        if (key in s && typeof val === "number") {
-          (s as unknown as Record<string, number>)[key] += val;
-        }
-      }
+      applyStatDeltas(s, artifactResult.statDeltas);
     }
 
     const panelBonus = toNum(inst.reactionPanelBonus) ?? 0;
@@ -577,6 +561,8 @@ export function CharacterCalculator({
           charElement: config.element,
           dmgBonusLabel: config.dmgBonusLabel,
           directReaction: directRx,
+          hitKey: h.key,
+          hitName: h.name,
         });
       }),
     );
@@ -657,11 +643,14 @@ export function CharacterCalculator({
     }
 
     const extras = {
-      transformative: (TRANSFORMATIVE_BY_ELEMENT[config.element] ?? []).map(type => ({
-        type,
-        dmg: transformativeDamage(type, s.levelChar, s.em, s.enemyRes, panelBonus),
-        res: transformativeDamageWithStats(type, s, panelBonus),
-      })),
+      transformative: (TRANSFORMATIVE_BY_ELEMENT[config.element] ?? []).map(type => {
+        const res = transformativeDamageWithStats(type, s, panelBonus);
+        return {
+          type,
+          dmg: res.nonCrit,
+          res,
+        };
+      }),
       lunar: (LUNAR_BY_ELEMENT[config.element] ?? []).map(type => ({
         type,
         res: indirectLunarDamage(
@@ -714,7 +703,7 @@ export function CharacterCalculator({
             res = computeHit(s, {
               multiplier: resolved[step.targetHitId] ?? 0,
               scaling: hitConfig.scaling,
-              element: mods.element ?? config.element,
+              element: mods.element ?? hitConfig.element ?? config.element,
               reaction: effectiveReaction,
               reactionBonusPct: Number(inst.reactionBonus || 0) + (mods.reactionBonusPct ?? 0),
               flatDmgBonus: flatBonus || undefined,
@@ -727,6 +716,8 @@ export function CharacterCalculator({
               charElement: config.element,
               dmgBonusLabel: config.dmgBonusLabel,
               directReaction: hitConfig.direct ? mods.directReaction ?? { coefficient: 1, baseDmgBonusPct: 0, reactionBonusPct: 0 } : undefined,
+              hitKey: hitConfig.key,
+              hitName: hitConfig.name,
             });
           }
         }

@@ -231,4 +231,21 @@ describe("Stellar Glimmer superset and specific stat integration", () => {
     expect(res.crit).toBeCloseTo(res.nonCrit * (1 + 0.80), 3);
     expect(res.avg).toBeCloseTo(res.nonCrit * (1 + 0.35 * 0.80), 3);
   });
+
+  it("applies stellarSwirlMultiplier and stellarReactionMultiplier to Base Reaction Coefficient", () => {
+    const s: DamageStats = {
+      ...baseStats,
+      em: 0,
+      enemyRes: 0,
+      critRate: 0,
+      critDmg: 0,
+      stellarSwirlMultiplier: 40,
+      stellarReactionMultiplier: 20,
+    };
+
+    // Initial base coeff is 0.75. With 40% + 20% = 60%, coeff becomes 0.75 + 0.60 = 1.35.
+    const res = indirectStellarDamage("initial", s, 0, 0);
+    const expected = 0.60 * (1.35 * LV90);
+    expect(res.nonCrit).toBeCloseTo(expected, 3);
+  });
 });

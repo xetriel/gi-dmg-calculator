@@ -109,6 +109,8 @@ export interface DamageStats {
   lunarChargedCritDmg?: number;
   burningCritRate?: number;
   burningCritDmg?: number;
+  superconductCritRate?: number;
+  superconductCritDmg?: number;
   bloomCritRate?: number;
   bloomCritDmg?: number;
   burgeonCritRate?: number;
@@ -282,6 +284,9 @@ export interface HitInput {
   charElement?: Element;      // character's base element for DMG Bonus routing
   dmgBonusLabel?: string;     // character's dynamic DMG bonus label
   directReaction?: DirectReactionParams; // present => compute through the direct-reaction branch
+  hitKey?: string;
+  hitName?: string;
+  plungeSubtype?: "collision" | "impact";
 }
 
 export interface HitResult {
@@ -293,6 +298,26 @@ export interface HitResult {
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
+
+export function isPlungeCollision(hitKey?: string, hitName?: string, plungeSubtype?: "collision" | "impact"): boolean {
+  if (plungeSubtype === "collision") return true;
+  if (plungeSubtype === "impact") return false;
+  if (!hitKey && !hitName) return false;
+  const k = (hitKey ?? "").toLowerCase();
+  const n = (hitName ?? "").toLowerCase();
+  if (k === "plunge" || n === "plunge" || n === "plunge dmg" || n.includes("collision") || n.includes("midair")) return true;
+  return false;
+}
+
+export function isPlungeImpact(hitKey?: string, hitName?: string, plungeSubtype?: "collision" | "impact"): boolean {
+  if (plungeSubtype === "impact") return true;
+  if (plungeSubtype === "collision") return false;
+  if (!hitKey && !hitName) return false;
+  const k = (hitKey ?? "").toLowerCase();
+  const n = (hitName ?? "").toLowerCase();
+  if (k.includes("low-plunge") || k.includes("high-plunge") || n.includes("low plunge") || n.includes("high plunge") || n.includes("impact")) return true;
+  return false;
+}
 
 export function scalingTotal(stats: DamageStats, source: ScalingSource): number {
   switch (source) {
@@ -314,7 +339,10 @@ export function dmgBonusMultiplier(
   hitCategory?: HitCategory,
   hitElement?: Element | "Physical",
   charElement?: Element,
-  dmgBonusLabel: string = ""
+  dmgBonusLabel: string = "",
+  hitKey?: string,
+  hitName?: string,
+  plungeSubtype?: "collision" | "impact",
 ): number {
   let categoryBonus = 0;
   switch (hitCategory) {
@@ -329,6 +357,11 @@ export function dmgBonusMultiplier(
       break;
     case "plunge":
       categoryBonus = (stats.plungeDmgBonus ?? 0) + (stats.plungingDmgBonus ?? 0);
+      if (isPlungeCollision(hitKey, hitName, plungeSubtype)) {
+        categoryBonus += stats.plungingCollisionDmgBonus ?? 0;
+      } else if (isPlungeImpact(hitKey, hitName, plungeSubtype)) {
+        categoryBonus += stats.plungingImpactDmgBonus ?? 0;
+      }
       break;
     case "skill":
       categoryBonus = stats.skillDmgBonus;
@@ -356,54 +389,123 @@ export function dmgBonusMultiplier(
   let elementBonus = 0;
   if (hitElement) {
     switch (hitElement) {
-      case "Pyro":     elementBonus = stats.pyroDmgBonus; break;
-      case "Hydro":    elementBonus = stats.hydroDmgBonus; break;
-      case "Dendro":   elementBonus = stats.dendroDmgBonus; break;
-      case "Electro":  elementBonus = stats.electroDmgBonus; break;
-      case "Anemo":    elementBonus = stats.anemoDmgBonus; break;
-      case "Cryo":     elementBonus = stats.cryoDmgBonus; break;
-      case "Geo":      elementBonus = stats.geoDmgBonus; break;
-      case "Physical": elementBonus = stats.physicalDmgBonus; break;
+      case "Pyro":     elementBonus = stats.pyroDmgBonus ?? 0; break;
+      case "Hydro":    elementBonus = stats.hydroDmgBonus ?? 0; break;
+      case "Dendro":   elementBonus = stats.dendroDmgBonus ?? 0; break;
+      case "Electro":  elementBonus = stats.electroDmgBonus ?? 0; break;
+      case "Anemo":    elementBonus = stats.anemoDmgBonus ?? 0; break;
+      case "Cryo":     elementBonus = stats.cryoDmgBonus ?? 0; break;
+      case "Geo":      elementBonus = stats.geoDmgBonus ?? 0; break;
+      case "Physical": elementBonus = stats.physicalDmgBonus ?? 0; break;
     }
   }
 
   // Elemental Att. DMG Bonus (for any elemental attack)
   const eleAttBonus = (hitElement && hitElement !== "Physical") ? (stats.elementalAttDmgBonus ?? 0) : 0;
+  const reduction = stats.dmgReduction ?? 0;
 
-  return 1 + (baseDmgBonus + commonBonus + categoryBonus + elementBonus + eleAttBonus + extraPct - stats.dmgReduction) / 100;
+  return 1 + (baseDmgBonus + commonBonus + categoryBonus + elementBonus + eleAttBonus + extraPct - reduction) / 100;
 }
 
 // Enemy DEF multiplier. Per requirement, DEF debuffs are negative %DEF Bonuses
 // and the total %DEF Bonus is floored at -90% (enemy DEF factor >= 0.10).
 export function defMultiplier(stats: DamageStats, extraIgnorePct: number = 0): number {
-  const defBonusPct = Math.max(-(stats.defReduction + stats.defIgnore + extraIgnorePct), -90);
+  const defReduction = stats.defReduction ?? 0;
+  const defIgnore = stats.defIgnore ?? 0;
+  const defBonusPct = Math.max(-(defReduction + defIgnore + extraIgnorePct), -90);
   const k = 1 + defBonusPct / 100; // enemy DEF factor, >= 0.10
-  const lc = stats.levelChar + 100;
-  return lc / (lc + (stats.levelEnemy + 100) * k);
+  const levelChar = (typeof stats.levelChar === "number" && !isNaN(stats.levelChar)) ? stats.levelChar : 90;
+  const levelEnemy = (typeof stats.levelEnemy === "number" && !isNaN(stats.levelEnemy)) ? stats.levelEnemy : 100;
+  const lc = levelChar + 100;
+  return lc / (lc + (levelEnemy + 100) * k);
 }
 
 // Enemy RES multiplier from a single element RES%.
 export function resMultiplier(enemyResPct: number): number {
+  if (typeof enemyResPct !== "number" || isNaN(enemyResPct)) return 0.9;
   const r = enemyResPct / 100;
   if (r < 0) return 1 - r / 2;
   if (r < 0.75) return 1 - r;
   return 1 / (4 * r + 1);
 }
 
+const ENEMY_SPECIFIC_RES_KEYS = new Set([
+  "enemyPhysicalRes",
+  "enemyPyroRes",
+  "enemyHydroRes",
+  "enemyDendroRes",
+  "enemyElectroRes",
+  "enemyAnemoRes",
+  "enemyCryoRes",
+  "enemyGeoRes",
+]);
+
+/**
+ * Safely adds a stat delta to a DamageStats object.
+ * Handles optional/undefined fields so they never evaluate to NaN.
+ * For enemy elemental/physical resistances, if not already set, the baseline is enemyRes.
+ */
+export function applyStatDelta(stats: DamageStats, key: string, delta: number): void {
+  if (typeof delta !== "number" || isNaN(delta)) return;
+
+  if (key === "enemyRes") {
+    const current = (typeof stats.enemyRes === "number" && !isNaN(stats.enemyRes)) ? stats.enemyRes : 10;
+    stats.enemyRes = current + delta;
+    // Universal RES shred also affects any already instantiated specific enemy resistances
+    for (const resKey of ENEMY_SPECIFIC_RES_KEYS) {
+      const specific = (stats as unknown as Record<string, number | undefined>)[resKey];
+      if (typeof specific === "number" && !isNaN(specific)) {
+        (stats as unknown as Record<string, number>)[resKey] = specific + delta;
+      }
+    }
+    return;
+  }
+
+  const current = (stats as unknown as Record<string, number | undefined>)[key];
+  let base: number;
+
+  if (typeof current === "number" && !isNaN(current)) {
+    base = current;
+  } else if (ENEMY_SPECIFIC_RES_KEYS.has(key)) {
+    base = (typeof stats.enemyRes === "number" && !isNaN(stats.enemyRes)) ? stats.enemyRes : 10;
+  } else {
+    base = 0;
+  }
+
+  (stats as unknown as Record<string, number>)[key] = base + delta;
+}
+
+/**
+ * Safely applies all numeric stat deltas from a partial DamageStats or Record to a DamageStats object.
+ */
+export function applyStatDeltas(
+  stats: DamageStats,
+  deltas?: Partial<DamageStats> | Record<string, number | undefined> | null
+): void {
+  if (!deltas) return;
+  for (const [key, val] of Object.entries(deltas)) {
+    if (typeof val === "number" && !isNaN(val)) {
+      applyStatDelta(stats, key, val);
+    }
+  }
+}
+
 /**
  * Resolves the specific enemy RES for a given element, falling back to the global enemyRes.
  */
 export function getTargetResForElement(stats: DamageStats, element?: Element | "Physical"): number {
-  if (!element) return stats.enemyRes;
+  const isNum = (v: unknown): v is number => typeof v === "number" && !isNaN(v);
+  const fallback = isNum(stats.enemyRes) ? stats.enemyRes : 10;
+  if (!element) return fallback;
   switch (element) {
-    case "Pyro": return stats.enemyPyroRes ?? stats.enemyRes;
-    case "Hydro": return stats.enemyHydroRes ?? stats.enemyRes;
-    case "Dendro": return stats.enemyDendroRes ?? stats.enemyRes;
-    case "Electro": return stats.enemyElectroRes ?? stats.enemyRes;
-    case "Anemo": return stats.enemyAnemoRes ?? stats.enemyRes;
-    case "Cryo": return stats.enemyCryoRes ?? stats.enemyRes;
-    case "Geo": return stats.enemyGeoRes ?? stats.enemyRes;
-    case "Physical": return stats.enemyPhysicalRes ?? stats.enemyRes;
+    case "Pyro": return isNum(stats.enemyPyroRes) ? stats.enemyPyroRes : fallback;
+    case "Hydro": return isNum(stats.enemyHydroRes) ? stats.enemyHydroRes : fallback;
+    case "Dendro": return isNum(stats.enemyDendroRes) ? stats.enemyDendroRes : fallback;
+    case "Electro": return isNum(stats.enemyElectroRes) ? stats.enemyElectroRes : fallback;
+    case "Anemo": return isNum(stats.enemyAnemoRes) ? stats.enemyAnemoRes : fallback;
+    case "Cryo": return isNum(stats.enemyCryoRes) ? stats.enemyCryoRes : fallback;
+    case "Geo": return isNum(stats.enemyGeoRes) ? stats.enemyGeoRes : fallback;
+    case "Physical": return isNum(stats.enemyPhysicalRes) ? stats.enemyPhysicalRes : fallback;
   }
 }
 
@@ -536,8 +638,15 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
       talentCritDmg = stats.chargedCritDmg ?? 0;
       break;
     case "plunge":
-      talentCritRate = (stats.plungingCritRate ?? 0) + (stats.plungingImpactCritRate ?? 0);
-      talentCritDmg = (stats.plungingCritDmg ?? 0) + (stats.plungingImpactCritDmg ?? 0);
+      talentCritRate = stats.plungingCritRate ?? 0;
+      talentCritDmg = stats.plungingCritDmg ?? 0;
+      if (isPlungeCollision(hit.hitKey, hit.hitName, hit.plungeSubtype)) {
+        talentCritRate += stats.plungingCollisionCritRate ?? 0;
+        talentCritDmg += stats.plungingCollisionCritDmg ?? 0;
+      } else if (isPlungeImpact(hit.hitKey, hit.hitName, hit.plungeSubtype)) {
+        talentCritRate += stats.plungingImpactCritRate ?? 0;
+        talentCritDmg += stats.plungingImpactCritDmg ?? 0;
+      }
       break;
     case "skill":
       talentCritRate = stats.skillCritRate ?? 0;
@@ -558,7 +667,14 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
   switch (hit.hitCategory) {
     case "normal": flatTalentIncrease = stats.normalDmgIncrease ?? 0; break;
     case "charged": flatTalentIncrease = stats.chargedDmgIncrease ?? 0; break;
-    case "plunge": flatTalentIncrease = (stats.plungingImpactDmgIncrease ?? 0) + (stats.plungingCollisionDmgIncrease ?? 0); break;
+    case "plunge": {
+      if (isPlungeCollision(hit.hitKey, hit.hitName, hit.plungeSubtype)) {
+        flatTalentIncrease = stats.plungingCollisionDmgIncrease ?? 0;
+      } else if (isPlungeImpact(hit.hitKey, hit.hitName, hit.plungeSubtype)) {
+        flatTalentIncrease = stats.plungingImpactDmgIncrease ?? 0;
+      }
+      break;
+    }
     case "skill": flatTalentIncrease = stats.skillDmgIncrease ?? 0; break;
     case "burst": flatTalentIncrease = stats.burstDmgIncrease ?? 0; break;
   }
@@ -586,6 +702,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
     let specificElevation = 0;
     let specificFlatDmg = 0;
     let specificBaseMultiplier = 0;
+    let rxMultiplierPct = 0;
     let rxCritRate = 0;
     let rxCritDmg = 0;
 
@@ -615,6 +732,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
       specificElevation = (stats.stellarConductSpecialDmgBonus ?? 0) + (stats.stellarReactionSpecialDmgBonus ?? 0);
       specificFlatDmg = (stats.stellarConductDirectDmgIncrease ?? 0) + (stats.stellarConductDmgIncrease ?? 0) + (stats.stellarReactionDmgIncrease ?? 0);
       specificBaseMultiplier = (stats.stellarConductBaseDmgMultiplier ?? 0) + (stats.stellarReactionBaseDmgMultiplier ?? 0);
+      rxMultiplierPct = (stats.stellarConductMultiplier ?? 0) + (stats.stellarReactionMultiplier ?? 0);
       rxCritRate = (stats.stellarConductCritRate ?? 0) + (stats.stellarReactionCritRate ?? 0);
       rxCritDmg = (stats.stellarConductCritDmg ?? 0) + (stats.stellarReactionCritDmg ?? 0);
     } else if (s.stellarType === "stellar-swirl") {
@@ -622,6 +740,7 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
       specificElevation = (stats.stellarSwirlSpecialDmgBonus ?? 0) + (stats.stellarReactionSpecialDmgBonus ?? 0);
       specificFlatDmg = (stats.stellarSwirlDirectDmgIncrease ?? 0) + (stats.stellarSwirlDmgIncrease ?? 0) + (stats.stellarReactionDmgIncrease ?? 0);
       specificBaseMultiplier = (stats.stellarSwirlBaseDmgMultiplier ?? 0) + (stats.stellarReactionBaseDmgMultiplier ?? 0);
+      rxMultiplierPct = (stats.stellarSwirlMultiplier ?? 0) + (stats.stellarReactionMultiplier ?? 0);
       rxCritRate = (stats.stellarSwirlCritRate ?? 0) + (stats.stellarReactionCritRate ?? 0);
       rxCritDmg = (stats.stellarSwirlCritDmg ?? 0) + (stats.stellarReactionCritDmg ?? 0);
     }
@@ -631,24 +750,31 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
     const baseDmgBonusFactor = 1 + (s.baseDmgBonusPct + specificBaseMultiplier) / 100;
     const baseMultFactor = hit.baseDmgMultiplier ?? 1;
 
-    const coeff = s.coefficient;
+    const coeff = s.coefficient + rxMultiplierPct / 100;
     const abilityBase = coeff * (hit.multiplier / 100) * scalingTotal(stats, hit.scaling);
     const scaledBase = abilityBase * emRxBonusFactor * baseDmgBonusFactor * baseMultFactor;
+    // Direct reactions ONLY receive reaction-specific flat increases and mechanic flat bonus.
+    // They strictly ignore talent category increases, elemental increases, and common flat increases!
     const totalBase =
       scaledBase +
       (hit.flatDmgBonus ?? 0) +
       (stats.flatDmgBonus ?? 0) +
-      specificFlatDmg +
-      flatTalentIncrease +
-      flatElementIncrease +
-      commonFlat;
+      specificFlatDmg;
     const specialBonusFactor = 1 + (specificElevation + (s.elevationBonusPct ?? 0)) / 100;
 
     nonCrit = totalBase * specialBonusFactor * resMultiplier(targetRes);
 
-    // Apply reaction CRIT stats alongside elemental/talent CRIT
-    eleCritRate += rxCritRate;
-    eleCritDmg += rxCritDmg;
+    // Direct reaction CRIT: strictly uses character base CRIT + hit mechanic CRIT bonus + reaction-specific CRIT.
+    // Strictly ignores talent category CRIT and elemental CRIT!
+    const directCr = clamp(stats.critRate + (hit.critRateBonusPct ?? 0) + rxCritRate, 0, 100) / 100;
+    const directCd = (stats.critDmg + (hit.critDmgBonusPct ?? 0) + rxCritDmg) / 100;
+    return {
+      nonCrit,
+      crit: nonCrit * (1 + directCd),
+      avg: nonCrit * (1 + directCr * directCd),
+      element: hit.element,
+      reaction: hit.reaction,
+    };
   } else {
     let specificCatalyzeBonus = 0;
     if (hit.reaction === "aggravate") specificCatalyzeBonus = stats.aggravateDmgBonus ?? 0;
@@ -676,7 +802,10 @@ export function computeHit(stats: DamageStats, hit: HitInput): HitResult {
         hit.hitCategory,
         hit.element,
         hit.charElement,
-        hit.dmgBonusLabel
+        hit.dmgBonusLabel,
+        hit.hitKey,
+        hit.hitName,
+        hit.plungeSubtype,
       ) *
       defMultiplier(stats, hit.defIgnorePct) *
       resMultiplier(targetRes) *
