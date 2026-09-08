@@ -25,6 +25,7 @@ import { huTao } from "./hu-tao";
 import { neuvillette } from "./neuvillette";
 import { clorinde } from "./clorinde";
 import { sandrone } from "./sandrone";
+import { odette } from "./odette";
 import { zibai } from "./zibai";
 import { nefer } from "./nefer";
 import { flins } from "./flins";
@@ -120,6 +121,7 @@ export {
   bennett,
   xilonen,
   kazuha,
+  odette,
 };
 
 export const RAW_CHARACTERS: CharacterConfig[] = [
@@ -171,6 +173,7 @@ export const RAW_CHARACTERS: CharacterConfig[] = [
   bennett,
   xilonen,
   kazuha,
+  odette,
 ];
 
 // ==========================================

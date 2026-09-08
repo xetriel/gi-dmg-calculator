@@ -520,8 +520,8 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
     });
 
-    it("all 48 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(48);
+    it("all 49 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(49);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -532,10 +532,9 @@ describe("remastered support system", () => {
     });
   });
 
-  // ── 48-Character Support Roster Coverage ────────────────────────────────
-  describe("48-Character Support Roster Completeness & Mechanics", () => {
-    it("has exactly 48 support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(48);
+  describe("49-Character Support Roster Completeness & Mechanics", () => {
+    it("has exactly 49 support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(49);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -891,6 +890,62 @@ describe("remastered support system", () => {
       expect(pills.find((p) => p.label === "Total EM")?.value).toBe("1,200");
       expect(pills.find((p) => p.label === "A4 Bonus")?.value).toBe("+48.0%");
       expect(pills.find((p) => p.label === "CRIT")?.value).toBe("60% / 120%");
+    });
+
+    it("Odette Support: Polestar Field, Marvelous Splendor, C2 RES shred & ATK%, C4 Burst share, C6 Elevation, and brief stats", () => {
+      const sup = supportById("odette");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(5);
+      expect(sup?.element).toBe("Cryo");
+      expect(sup?.weapon).toBe("Sword");
+
+      const inst: SupportInstance = {
+        supportId: "odette-support",
+        stats: { atk: "2400", critRate: "65", critDmg: "150" },
+        mechanicInputs: {
+          "polestar-field": "1",
+          "polestar-hits": "6",
+          "solo-dance-double": "1",
+          "marvelous-splendor-stacks": "4",
+          "snow-swans-dream": "1",
+        },
+        constellationLevel: 6,
+        enabled: true,
+      };
+
+      const res = resolveTeamBuffs([inst]);
+      // 1. Polestar field: 6 hits -> 34% Cryo/Electro DMG
+      expect(res.statDeltas.dmgBonus).toBe(34);
+      expect(res.statDeltas.enemyPhysicalRes).toBe(-40);
+      expect(res.statDeltas.stellarConductMultiplier).toBe(70);
+
+      // 2. A1 Marvelous Splendor (60%) + C4 Share (25% at Burst Lv10 + C5 +3 = Lv13 -> 62% * 0.5 = 31%)
+      // With C6 (which includes C5 +3 Burst): Lv13 burst bonus is 62%, 50% share is 31%.
+      // Total stellarReactionDmgBonus = 60 + 31 = 91%
+      expect(res.statDeltas.stellarReactionDmgBonus).toBe(91);
+
+      // 3. C2: 4 stacks -> +28% ATK, and -20% Cryo & Electro RES
+      expect(res.statDeltas.atkPercent).toBe(28);
+      expect(res.statDeltas.enemyCryoRes).toBe(-20);
+      expect(res.statDeltas.enemyElectroRes).toBe(-20);
+
+      // 4. C6: +25% Elevation to party
+      expect(res.statDeltas.stellarReactionSpecialDmgBonus).toBe(25);
+
+      // 5. Stellar & Lunar Base DMG (+14%)
+      expect(res.stellarBaseBonusPct).toBe(14);
+      expect(res.lunarBaseBonusPct).toBe(14);
+
+      // 6. Rarity stamping
+      const source = res.sources.find((s) => s.supportName === "Odette");
+      expect(source?.rarity).toBe(5);
+
+      // 7. Brief stats formatting
+      const ctx = resolveSupportCtx(inst);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Total ATK")?.value).toBe("2,400");
+      expect(pills.find((p) => p.label === "CRIT")?.value).toBe("65% / 150%");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
