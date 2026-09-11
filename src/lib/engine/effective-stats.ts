@@ -1,6 +1,6 @@
-import type { CharacterConfig } from "@/data/registry/types";
+import type { CharacterConfig, Element } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
-import type { DamageStats } from "./damage";
+import { getTargetResForElement, type DamageStats } from "./damage";
 import type { CalcInstance, StatBuffSource, StatBreakdown } from "@/components/calculator/types";
 import { resolveMechanics } from "./mechanics";
 import { effectiveTalentLevels, getRequiredConstellation } from "./validation";
@@ -224,15 +224,14 @@ export const EFFECTIVE_ROW_DEFINITIONS: EffectiveRowDef[] = [
   { key: "stellarReactionCritDmg", label: "Stellar Reaction CRIT DMG (Superset)", category: "reactionCrit", unit: "percent", hideIfZero: true },
 
   // 8. Enemy Debuffs
-  { key: "enemyRes", label: "Enemy RES (Global)", category: "debuffs", unit: "percent" },
-  { key: "enemyPhysicalRes", label: "Enemy Physical DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyAnemoRes", label: "Enemy Anemo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyGeoRes", label: "Enemy Geo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyElectroRes", label: "Enemy Electro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyHydroRes", label: "Enemy Hydro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyPyroRes", label: "Enemy Pyro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyCryoRes", label: "Enemy Cryo DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
-  { key: "enemyDendroRes", label: "Enemy Dendro DMG RES", category: "debuffs", unit: "percent", hideIfZero: true },
+  { key: "enemyPhysicalRes", label: "Enemy Physical DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyPyroRes", label: "Enemy Pyro DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyHydroRes", label: "Enemy Hydro DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyDendroRes", label: "Enemy Dendro DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyElectroRes", label: "Enemy Electro DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyAnemoRes", label: "Enemy Anemo DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyCryoRes", label: "Enemy Cryo DMG RES", category: "debuffs", unit: "percent" },
+  { key: "enemyGeoRes", label: "Enemy Geo DMG RES", category: "debuffs", unit: "percent" },
   { key: "defReduction", label: "DEF Reduction", category: "debuffs", unit: "percent", hideIfZero: true },
   { key: "defIgnore", label: "DEF Ignore", category: "debuffs", unit: "percent", hideIfZero: true },
 
@@ -604,8 +603,30 @@ export function resolveAllEffectiveStats(
       "enemyPhysicalRes", "enemyPyroRes", "enemyHydroRes", "enemyDendroRes",
       "enemyElectroRes", "enemyAnemoRes", "enemyCryoRes", "enemyGeoRes",
     ].includes(statKey as string);
-    const raw = (inputStats[statKey] as number | undefined) ?? (isEnemyRes ? inputStats.enemyRes : 0);
-    const total = (effectiveStats[statKey] as number | undefined) ?? (isEnemyRes ? effectiveStats.enemyRes : 0);
+
+    let raw: number;
+    let total: number;
+
+    if (isEnemyRes) {
+      const elementMap: Record<string, Element | "Physical"> = {
+        enemyPhysicalRes: "Physical",
+        enemyPyroRes: "Pyro",
+        enemyHydroRes: "Hydro",
+        enemyDendroRes: "Dendro",
+        enemyElectroRes: "Electro",
+        enemyAnemoRes: "Anemo",
+        enemyCryoRes: "Cryo",
+        enemyGeoRes: "Geo",
+      };
+      const elem = elementMap[statKey as string];
+      const baseVal = toNum(inputStats[statKey]);
+      const globalBase = toNum(inputStats.enemyRes) ?? 10;
+      raw = baseVal !== undefined ? baseVal : globalBase;
+      total = getTargetResForElement(effectiveStats, elem);
+    } else {
+      raw = (inputStats[statKey] as number | undefined) ?? 0;
+      total = (effectiveStats[statKey] as number | undefined) ?? 0;
+    }
     const delta = total - raw;
 
     const additions: StatBuffSource[] = [];
@@ -622,13 +643,24 @@ export function resolveAllEffectiveStats(
         });
       }
     }
+    if (isEnemyRes && mechResult.statBuffSources?.["enemyRes"]) {
+      for (const mSrc of mechResult.statBuffSources["enemyRes"]) {
+        additions.push({
+          source: mSrc.source,
+          value: mSrc.value,
+          description: mSrc.description,
+          type: "mechanic",
+          category: "character",
+        });
+      }
+    }
 
     // 2. Constellation stat additions
     if (config.constellations) {
       for (const c of config.constellations) {
         if (c.level <= inst.constellationLevel) {
           for (const e of c.effects) {
-            if (e.type === "stat_bonus" && e.statKey === statKey && e.statValue) {
+            if (e.type === "stat_bonus" && (e.statKey === statKey || (isEnemyRes && e.statKey === "enemyRes")) && e.statValue) {
               additions.push({
                 source: `C${c.level} (${c.name})`,
                 value: e.statValue,
@@ -644,7 +676,7 @@ export function resolveAllEffectiveStats(
 
     // 3. Team Support Buffs (External)
     for (const src of teamRes.sources) {
-      if (src.stat === statKey) {
+      if (src.stat === statKey || (isEnemyRes && src.stat === "enemyRes")) {
         additions.push({
           source: `${src.supportName} (Team)`,
           value: src.value,
@@ -658,7 +690,7 @@ export function resolveAllEffectiveStats(
 
     // 4. External Weapon Buffs (External)
     for (const src of weaponRes.sources) {
-      if (src.stat === statKey) {
+      if (src.stat === statKey || (isEnemyRes && src.stat === "enemyRes")) {
         additions.push({
           source: `${src.weaponName} (Weapon)`,
           value: src.value,
@@ -672,7 +704,7 @@ export function resolveAllEffectiveStats(
 
     // 5. External Artifact Buffs (External)
     for (const src of artifactRes.sources) {
-      if (src.stat === statKey) {
+      if (src.stat === statKey || (isEnemyRes && src.stat === "enemyRes")) {
         additions.push({
           source: `${src.artifactName} (Artifact)`,
           value: src.value,
@@ -689,9 +721,9 @@ export function resolveAllEffectiveStats(
     const unrecordedDelta = delta - recordedSum;
     if (Math.abs(unrecordedDelta) > 0.05) {
       additions.push({
-        source: "Character Mechanics / Trait Buff",
+        source: isEnemyRes ? "RES Debuff / Mechanics" : "Character Mechanics / Trait Buff",
         value: unrecordedDelta,
-        description: "Special active mechanic or ascension passive modifier",
+        description: isEnemyRes ? "Active enemy RES reduction effect" : "Special active mechanic or ascension passive modifier",
         type: "fallback",
         category: "character",
       });

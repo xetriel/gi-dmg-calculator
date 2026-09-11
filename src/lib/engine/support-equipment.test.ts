@@ -5,6 +5,8 @@ import {
   saveSupportEquipmentSetup,
   deleteSupportEquipmentSetup,
   resolveSupportEquipmentBuffs,
+  getActiveSupportEquippedWeapons,
+  getActiveSupportEquippedArtifacts,
   type SupportEquipmentSetup,
 } from "./support-equipment";
 import { resolveTeamBuffs, type SupportInstance } from "./team-buffs";
@@ -354,6 +356,172 @@ describe("Support Character Equipment System", () => {
       expect(res.equippedArtifactIds).toContain("scroll-of-the-hero-of-cinder-city");
       expect(res.sources.some((s) => s.sourceType === "weapon")).toBe(true);
       expect(res.sources.some((s) => s.sourceType === "artifact")).toBe(true);
+    });
+  });
+
+  describe("Custom Refinement and Equipment Preservation (Anti-Hydration Mismatch)", () => {
+    it("preserves Freedom-Sworn R2 on Kazuha and scales buffs to R2 without being overwritten by default R1", () => {
+      const arlecchino = characterById("arlecchino")!;
+
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: { "kazuha-swirl-pyro": "1" },
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedWeapon: {
+          weaponId: "freedom-sworn",
+          refinement: 2, // Explicitly R2!
+          inputs: { "freedom-sigils-active": "1" },
+          enabled: true,
+        },
+      };
+
+      // 1. Verify getActiveSupportEquippedWeapons preserves refinement 2
+      const activeWeps = getActiveSupportEquippedWeapons([kazuhaSupport], true, "Pyro", "Polearm", 1000);
+      expect(activeWeps.length).toBe(1);
+      expect(activeWeps[0].weapon.refinement).toBe(2);
+      expect(activeWeps[0].weapon.weaponId).toBe("freedom-sworn");
+
+      // 2. Verify resolveTeamBuffs calculates R2 values (+20% Normal DMG, +25% ATK)
+      const res = resolveTeamBuffs([kazuhaSupport], true, arlecchino, 1000);
+      expect(res.equippedWeaponIds).toContain("freedom-sworn");
+
+      // Normal DMG bonus should be 20% (R2) rather than 16% (R1)
+      const normalDmgSource = res.sources.find((s) => s.stat === "normalDmgBonus" && s.sourceType === "weapon");
+      expect(normalDmgSource).toBeDefined();
+      expect(normalDmgSource?.value).toBe(20);
+
+      // ATK bonus should be 25% of 1000 = 250 (R2) rather than 20% = 200 (R1)
+      const atkSource = res.sources.find((s) => s.stat === "atk" && s.sourceType === "weapon");
+      expect(atkSource).toBeDefined();
+      expect(atkSource?.value).toBe(250);
+    });
+
+    it("falls back cleanly to default equipment preset if equippedWeapon is omitted", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        // equippedWeapon is omitted
+      };
+
+      const activeWeps = getActiveSupportEquippedWeapons([kazuhaSupport], true, "Pyro", "Polearm", 1000);
+      expect(activeWeps.length).toBe(1);
+      expect(activeWeps[0].weapon.weaponId).toBe("freedom-sworn");
+      expect(activeWeps[0].weapon.refinement).toBe(1);
+    });
+
+    it("preserves 2-Piece artifact customization without being overwritten by 4-Piece default", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedArtifact: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 2, // Explicit 2-piece set
+          enabled: true,
+        },
+      };
+
+      const activeArts = getActiveSupportEquippedArtifacts([kazuhaSupport], true, "Pyro", 1000);
+      expect(activeArts.length).toBe(1);
+      expect(activeArts[0].artifact.pieceCount).toBe(2);
+    });
+
+    it("Viridescent Venerer 4-Pc applies -40% Elemental RES shred when equipped on Kazuha support", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: { "vv-res-shred-active": "1" },
+          enabled: true,
+        },
+        activeCharElement: "Pyro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyPyroRes).toBe(-40);
+      const vvBuff = res.partySources.find((s) => s.stat === "enemyPyroRes");
+      expect(vvBuff).toBeDefined();
+      expect(vvBuff?.value).toBe(-40);
+      // Clean non-redundant label without repeated set name
+      expect(vvBuff?.label).toBe("4-Piece Pyro RES Shred (Viridescent Venerer [Kaedehara Kazuha])");
+      expect(res.scalingExplainers.some((e) => e.includes("Viridescent Venerer"))).toBe(true);
+    });
+
+    it("Viridescent Venerer applies -40% Elemental RES shred even with unpopulated inputs defaulting to DPS element", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: {},
+          enabled: true,
+        },
+        activeCharElement: "Pyro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyPyroRes).toBe(-40);
+    });
+
+    it("Viridescent Venerer supports Cinder City style multi-swirl toggles (Hydro and Electro)", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: {
+            "vv-swirl-hydro": "1",
+            "vv-swirl-electro": "1",
+          },
+          enabled: true,
+        },
+        activeCharElement: "Hydro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyHydroRes).toBe(-40);
+      expect(res.partyStatDeltas.enemyElectroRes).toBe(-40);
+      expect(res.partyStatDeltas.enemyPyroRes).toBeUndefined();
+      expect(res.partySources.some((s) => s.label === "4-Piece Hydro RES Shred (Viridescent Venerer [Kaedehara Kazuha])")).toBe(true);
+      expect(res.partySources.some((s) => s.label === "4-Piece Electro RES Shred (Viridescent Venerer [Kaedehara Kazuha])")).toBe(true);
+    });
+
+    it("integrates Kazuha VV 4-Piece -40% RES shred into resolveTeamBuffs", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: { "a4-pyro-swirl": "1" },
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedArtifact: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: { "vv-res-shred-active": "1" },
+          enabled: true,
+        },
+      };
+
+      const arlecchino = characterById("arlecchino")!;
+      const teamRes = resolveTeamBuffs([kazuhaSupport], true, arlecchino, 1000, 800, 15000);
+
+      expect(teamRes.statDeltas.enemyPyroRes).toBe(-40);
+      expect(teamRes.sources.some((s) => s.stat === "enemyPyroRes" && s.value === -40)).toBe(true);
     });
   });
 });

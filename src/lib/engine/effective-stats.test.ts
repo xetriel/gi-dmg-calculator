@@ -251,4 +251,63 @@ describe("resolveAllEffectiveStats", () => {
     expect(lunarBaseRow).toBeDefined();
     expect(lunarBaseRow?.total).toBe(10);
   });
+
+  it("resolves Viridescent Venerer -40% RES shred from Kazuha support into effective stats", () => {
+    const inst: CalcInstance = {
+      id: "setup-1",
+      stats: { "atk.base": "1000" },
+      hits: {},
+      levels: { normal: "10", skill: "10", burst: "10" },
+      mechanicInputs: {},
+      reaction: "none",
+      reactionBonus: "0",
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
+      constellationLevel: 0,
+      teamSupports: [
+        {
+          supportId: "kazuha-support",
+          stats: { em: "1000" },
+          mechanicInputs: {},
+          constellationLevel: 0,
+          enabled: true,
+          useCharacterBuild: true,
+          equippedArtifact: {
+            artifactId: "viridescent-venerer",
+            pieceCount: 4,
+            inputs: { "vv-res-shred-active": "1" },
+            enabled: true,
+          },
+        },
+      ],
+    };
+
+    const effectiveWithVV: DamageStats = {
+      ...defaultInputStats,
+      enemyRes: -30, // 10 - 40 = -30
+    };
+
+    const breakdowns = resolveAllEffectiveStats(dummyConfig, dummyScaling, inst, defaultInputStats, effectiveWithVV);
+    const pyroResRow = breakdowns.find(b => b.key === "enemyPyroRes");
+
+    expect(pyroResRow).toBeDefined();
+    expect(pyroResRow?.raw).toBe(10);
+    expect(pyroResRow?.total).toBe(-30);
+    expect(pyroResRow?.hasExternalBuffs).toBe(true);
+
+    const vvAddition = pyroResRow?.additions.find(a => a.source.includes("Kaedehara Kazuha"));
+    expect(vvAddition).toBeDefined();
+    expect(vvAddition?.value).toBe(-40);
+    expect(vvAddition?.type).toBe("external");
+    expect(vvAddition?.category).toBe("team");
+
+    // Verify all elemental resistances are defined per element
+    const hydroResRow = breakdowns.find(b => b.key === "enemyHydroRes");
+    expect(hydroResRow).toBeDefined();
+    expect(hydroResRow?.raw).toBe(10);
+
+    const physResRow = breakdowns.find(b => b.key === "enemyPhysicalRes");
+    expect(physResRow).toBeDefined();
+    expect(physResRow?.raw).toBe(10);
+  });
 });

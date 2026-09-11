@@ -5,7 +5,7 @@ import type { WeaponType } from "@/data/registry/weapons/types";
 import type { CalcInstance, ExternalWeaponInstance } from "../types";
 import { WEAPONS, weaponById, getWeaponsForCharacter } from "@/data/registry/weapons";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
-import { getActiveSupportEquippedWeapons } from "@/lib/engine/support-equipment";
+import { getActiveSupportEquippedWeapons, saveSupportEquipmentSetup } from "@/lib/engine/support-equipment";
 import { toNum } from "@/lib/engine/validation";
 import { WeaponIcon } from "@/components/icons";
 import { getRarityTheme } from "../rarity-theme";
@@ -150,6 +150,67 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
     const updated = [...weapons];
     updated[index] = { ...updated[index], ...updater(updated[index]) };
     updateInstance(currentInst.id, () => ({ externalWeapons: updated }));
+  };
+
+  const updateSupportWeaponRefinement = (supportId: string, refinement: number) => {
+    const supIdx = teamSupports.findIndex((s) => s.supportId === supportId);
+    if (supIdx < 0) return;
+    const sup = teamSupports[supIdx];
+    const sw = supportWeapons.find((w) => w.supportId === supportId);
+    const weaponId = sup.equippedWeapon?.weaponId ?? sw?.weapon.weaponId ?? "";
+    const updatedWeapon = sup.equippedWeapon
+      ? { ...sup.equippedWeapon, refinement }
+      : { weaponId, refinement, enabled: true, inputs: sw?.weapon.inputs ?? {} };
+
+    const updatedSupports = [...teamSupports];
+    updatedSupports[supIdx] = {
+      ...sup,
+      equippedWeapon: updatedWeapon,
+    };
+
+    const normId = supportId.replace(/-support$/, "");
+    const setupId = sup.equipmentSetupId || "1";
+    saveSupportEquipmentSetup(normId, {
+      id: setupId,
+      name: `Support Setup ${setupId}`,
+      characterId: normId,
+      weapon: updatedWeapon,
+      artifact: sup.equippedArtifact ?? null,
+      updatedAt: Date.now(),
+    });
+
+    updateInstance(currentInst.id, () => ({ teamSupports: updatedSupports }));
+  };
+
+  const updateSupportWeaponInput = (supportId: string, inputKey: string, value: string) => {
+    const supIdx = teamSupports.findIndex((s) => s.supportId === supportId);
+    if (supIdx < 0) return;
+    const sup = teamSupports[supIdx];
+    const sw = supportWeapons.find((w) => w.supportId === supportId);
+    const weaponId = sup.equippedWeapon?.weaponId ?? sw?.weapon.weaponId ?? "";
+    const updatedInputs = { ...(sup.equippedWeapon?.inputs ?? sw?.weapon.inputs ?? {}), [inputKey]: value };
+    const updatedWeapon = sup.equippedWeapon
+      ? { ...sup.equippedWeapon, inputs: updatedInputs }
+      : { weaponId, refinement: sw?.weapon.refinement ?? 1, enabled: true, inputs: updatedInputs };
+
+    const updatedSupports = [...teamSupports];
+    updatedSupports[supIdx] = {
+      ...sup,
+      equippedWeapon: updatedWeapon,
+    };
+
+    const normId = supportId.replace(/-support$/, "");
+    const setupId = sup.equipmentSetupId || "1";
+    saveSupportEquipmentSetup(normId, {
+      id: setupId,
+      name: `Support Setup ${setupId}`,
+      characterId: normId,
+      weapon: updatedWeapon,
+      artifact: sup.equippedArtifact ?? null,
+      updatedAt: Date.now(),
+    });
+
+    updateInstance(currentInst.id, () => ({ teamSupports: updatedSupports }));
   };
 
   const toggleMaster = () => {
@@ -473,7 +534,61 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                               <span>Used by {sw.supportName}</span>
                             </span>
                           </div>
+
+                          {/* Refinement Selector Buttons for Support Weapon */}
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Refinement:</span>
+                            {[1, 2, 3, 4, 5].map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                onClick={() => updateSupportWeaponRefinement(sw.supportId, r)}
+                                className={`px-2 py-0.5 text-xs font-bold rounded-md cursor-pointer transition-all border ${
+                                  (sw.weapon.refinement || 1) === r
+                                    ? theme.activeButton
+                                    : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
+                                }`}
+                              >
+                                R{r}
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
+                        {/* Passive Description */}
+                        {wConfig.passiveDesc && (
+                          <div className="text-[11px] text-gray-600 dark:text-zinc-400 my-1.5 italic leading-relaxed">
+                            <span className="font-semibold text-gray-800 dark:text-zinc-200">{wConfig.passiveName}:</span> {wConfig.passiveDesc}
+                          </div>
+                        )}
+
+                        {/* Passive Condition Toggles */}
+                        {(wConfig.mechanicDefs ?? []).length > 0 && (
+                          <div className="space-y-1.5 my-2 bg-amber-500/10 dark:bg-amber-500/5 p-2 rounded-lg border border-amber-500/20">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 block">
+                              Weapon Passive Conditions
+                            </span>
+                            {wConfig.mechanicDefs?.map((m) => {
+                              const val = sw.weapon.inputs?.[m.id] ?? m.defaultValue ?? 0;
+                              const isChecked = val === "1" || Number(val) > 0;
+                              return (
+                                <label key={m.id} className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={(e) =>
+                                      updateSupportWeaponInput(sw.supportId, m.id, e.target.checked ? "1" : "0")
+                                    }
+                                    className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+                                  />
+                                  <span className="text-gray-700 dark:text-zinc-300 font-medium text-[11px]">
+                                    {m.label}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
 
                         {/* Active buffs from this support weapon */}
                         {sw.buffs.length > 0 && (

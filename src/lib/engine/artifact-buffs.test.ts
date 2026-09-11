@@ -79,7 +79,7 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
       expect(res.statDeltas.hp).toBeUndefined(); // 2pc self HP does not leak from support slot
     });
 
-    it("Viridescent Venerer: applies -40% Elemental RES shred to party", () => {
+    it("Viridescent Venerer: applies -40% Elemental RES shred to party (Pyro for Arlecchino)", () => {
       const res = resolveExternalArtifactBuffs(
         [
           {
@@ -96,7 +96,32 @@ describe("External Artifact Buffs Engine & Complete 64-Set Registry", () => {
         true
       );
 
-      expect(res.statDeltas.enemyRes).toBe(-40);
+      expect(res.statDeltas.enemyPyroRes).toBe(-40);
+    });
+
+    it("Viridescent Venerer: supports explicit swirl toggles (Hydro & Cryo)", () => {
+      const res = resolveExternalArtifactBuffs(
+        [
+          {
+            id: "a-1",
+            artifactId: "viridescent-venerer",
+            pieceCount: 4,
+            slot: "support",
+            enabled: true,
+            inputs: {
+              "vv-swirl-hydro": "1",
+              "vv-swirl-cryo": "1",
+            },
+          },
+        ],
+        1000,
+        mockArlecchino,
+        true
+      );
+
+      expect(res.statDeltas.enemyHydroRes).toBe(-40);
+      expect(res.statDeltas.enemyCryoRes).toBe(-40);
+      expect(res.statDeltas.enemyPyroRes).toBeUndefined();
     });
 
     it("Deepwood Memories: applies -30% Dendro RES shred to party", () => {

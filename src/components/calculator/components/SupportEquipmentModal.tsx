@@ -339,10 +339,19 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                     if (!wId) {
                       setActiveWeapon(null);
                     } else {
+                      const newWepCfg = weaponById(wId);
+                      const initialInputs: Record<string, string> = {};
+                      if (newWepCfg?.mechanicDefs) {
+                        for (const m of newWepCfg.mechanicDefs) {
+                          if (m.defaultValue !== undefined) {
+                            initialInputs[m.id] = String(m.defaultValue);
+                          }
+                        }
+                      }
                       setActiveWeapon({
                         weaponId: wId,
                         refinement: activeWeapon?.refinement || 1,
-                        inputs: {},
+                        inputs: initialInputs,
                         enabled: true,
                       });
                     }
@@ -478,10 +487,19 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                     if (!aId) {
                       setActiveArtifact(null);
                     } else {
+                      const newArtCfg = artifactById(aId);
+                      const initialInputs: Record<string, string> = {};
+                      if (newArtCfg?.mechanicDefs) {
+                        for (const m of newArtCfg.mechanicDefs) {
+                          if (m.defaultValue !== undefined) {
+                            initialInputs[m.id] = String(m.defaultValue);
+                          }
+                        }
+                      }
                       setActiveArtifact({
                         artifactId: aId,
                         pieceCount: activeArtifact?.pieceCount || 4,
-                        inputs: {},
+                        inputs: initialInputs,
                         enabled: true,
                       });
                     }
@@ -566,8 +584,17 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                           Artifact Passive Conditions
                         </span>
                         {relevantMechanics.map((m) => {
-                          const val = activeArtifact?.inputs?.[m.id] ?? m.defaultValue ?? 0;
-                          const isChecked = val === "1" || Number(val) > 0;
+                          const isChecked = (() => {
+                            if (activeArtifact?.inputs?.[m.id] !== undefined) {
+                              const raw = activeArtifact.inputs[m.id];
+                              return raw === "1" || Number(raw) > 0;
+                            }
+                            if (selectedArtifactCfg.id === "viridescent-venerer") {
+                              const swirlElem = m.id.replace("vv-swirl-", "").toLowerCase();
+                              return dpsCfg?.element?.toLowerCase() === swirlElem;
+                            }
+                            return (m.defaultValue ?? 0) > 0;
+                          })();
                           return (
                             <label key={m.id} className="flex items-center gap-2 text-xs cursor-pointer">
                               <input
@@ -649,7 +676,7 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                         </div>
                       </div>
                       <span className="font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0 text-sm">
-                        +{fmt(s.value)}{s.isPercent ? "%" : ""}
+                        {s.value > 0 ? `+${fmt(s.value)}` : fmt(s.value)}{s.isPercent ? "%" : ""}
                       </span>
                     </div>
                   ))}
@@ -689,7 +716,7 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
                         </div>
                       </div>
                       <span className="font-bold text-sky-600 dark:text-sky-400 shrink-0">
-                        +{fmt(s.value)}{s.isPercent ? "%" : ""}
+                        {s.value > 0 ? `+${fmt(s.value)}` : fmt(s.value)}{s.isPercent ? "%" : ""}
                       </span>
                     </div>
                   ))}

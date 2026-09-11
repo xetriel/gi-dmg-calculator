@@ -5,7 +5,7 @@ import { getRequiredConstellation } from "./validation";
 import type { CharacterConfig, Element } from "../../data/registry/types";
 import {
   resolveSupportEquipmentBuffs,
-  getSupportEquipmentSetups,
+  getDefaultEquipmentSetup,
   type EquippedWeaponState,
   type EquippedArtifactState,
 } from "./support-equipment";
@@ -217,13 +217,14 @@ export function resolveTeamBuffs(
     let equippedWeapon = inst.equippedWeapon;
     let equippedArtifact = inst.equippedArtifact;
     if (isBuildEnabled) {
-      const setups = getSupportEquipmentSetups(normId);
-      const activeSetup = inst.equipmentSetupId
-        ? (setups.find((s) => s.id === inst.equipmentSetupId) ?? setups[0])
-        : (!equippedWeapon && !equippedArtifact ? setups[0] : undefined);
-      if (activeSetup) {
-        if (activeSetup.weapon) equippedWeapon = activeSetup.weapon;
-        if (activeSetup.artifact) equippedArtifact = activeSetup.artifact;
+      if (!equippedWeapon?.weaponId || !equippedArtifact?.artifactId) {
+        const defSetup = getDefaultEquipmentSetup(normId, inst.equipmentSetupId || "1");
+        if (!equippedWeapon?.weaponId && defSetup?.weapon) {
+          equippedWeapon = defSetup.weapon;
+        }
+        if (!equippedArtifact?.artifactId && defSetup?.artifact) {
+          equippedArtifact = defSetup.artifact;
+        }
       }
     }
 
