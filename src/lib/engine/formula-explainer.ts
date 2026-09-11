@@ -995,6 +995,7 @@ export function explainHitFormulas(
       const fmtVal = isFlat ? fmt(total) : fmtPct(total);
       const parts = group.sources.map(s => `${s.label} ${isFlat ? fmt(s.value) : fmtPct(s.value)}`);
       const statLabel = stat === "em" ? "Elemental Mastery" 
+        : stat === "enemyRes" ? "Enemy RES"
         : stat === "lunarChargedDmgBonus" ? "Lunar-Charged DMG Bonus" 
         : stat === "lunarBaseBonusPct" ? "Lunar Base DMG"
         : stat === "normalDmgBonus" ? "Normal Attack DMG Bonus"

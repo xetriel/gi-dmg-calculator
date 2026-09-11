@@ -142,12 +142,7 @@ export const DEFAULT_SUPPORT_PRESETS: Record<string, {
     artifact: {
       artifactId: "viridescent-venerer",
       pieceCount: 4,
-      inputs: {
-        "vv-swirl-pyro": "1",
-        "vv-swirl-hydro": "1",
-        "vv-swirl-electro": "1",
-        "vv-swirl-cryo": "1",
-      },
+      inputs: {},
     },
   },
   citlali: {
@@ -243,6 +238,11 @@ export function getSupportEquipmentSetups(characterId: string): SupportEquipment
               inp["cinder-crystallize-cryo"] = "0";
             }
           }
+          if (setup.artifact?.artifactId === "viridescent-venerer" && setup.artifact.inputs) {
+            if (setup.artifact.inputs["vv-res-shred-active"] === undefined) {
+              setup.artifact.inputs["vv-res-shred-active"] = "1";
+            }
+          }
         }
         return parsed;
       }
@@ -302,6 +302,11 @@ export interface ResolveSupportEquipmentOpts {
   activeCharBaseAtk?: number;
   activeCharBaseDef?: number;
   activeCharBaseHp?: number;
+}
+
+function formatSupportEquipmentLabel(buffLabel: string, sourceName: string, suffix: string): string {
+  const clean = buffLabel.replace(/\s*\([^)]+\)$/, "").trim();
+  return `${clean} (${sourceName} [${suffix}])`;
 }
 
 /**
@@ -391,11 +396,15 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
           }
         }
 
-        if (buff.conditionKey && weaponCtx.inputs?.[buff.conditionKey] !== "1" && Number(weaponCtx.inputs?.[buff.conditionKey] ?? 0) <= 0) {
+        const wMechDef = buff.conditionKey ? wConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+        const wCondVal = buff.conditionKey
+          ? weaponCtx.inputs?.[buff.conditionKey] ?? (wMechDef?.defaultValue !== undefined ? String(wMechDef.defaultValue) : undefined)
+          : undefined;
+        if (buff.conditionKey && wCondVal !== undefined && wCondVal !== "1" && Number(wCondVal) <= 0) {
           val = 0;
         }
 
-        if (val > 0) {
+        if (val !== 0 && Number.isFinite(val)) {
           if (buff.isTeamBuff) {
             // Party buff granted to active character
             const scaledVal = val;
@@ -406,7 +415,7 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
               id: buff.id,
               name: wConfig.name,
               stat: buff.stat,
-              label: `${buff.label} (${wConfig.name} [${supportName}])`,
+              label: formatSupportEquipmentLabel(buff.label, wConfig.name, supportName),
               value: scaledVal,
               isPercent: buff.isPercent,
               rarity: wConfig.rarity,
@@ -424,7 +433,7 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
               id: buff.id,
               name: wConfig.name,
               stat: buff.stat,
-              label: `${buff.label} (${wConfig.name} [Self])`,
+              label: formatSupportEquipmentLabel(buff.label, wConfig.name, "Self"),
               value: val,
               isPercent: buff.isPercent,
               rarity: wConfig.rarity,
@@ -497,11 +506,15 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
           }
         }
 
-        if (buff.conditionKey && artifactCtx.inputs?.[buff.conditionKey] !== "1" && Number(artifactCtx.inputs?.[buff.conditionKey] ?? 0) <= 0) {
+        const aMechDef = buff.conditionKey ? aConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+        const aCondVal = buff.conditionKey
+          ? artifactCtx.inputs?.[buff.conditionKey] ?? (aMechDef?.defaultValue !== undefined ? String(aMechDef.defaultValue) : undefined)
+          : undefined;
+        if (buff.conditionKey && aCondVal !== undefined && aCondVal !== "1" && Number(aCondVal) <= 0) {
           val = 0;
         }
 
-        if (val > 0) {
+        if (val !== 0 && Number.isFinite(val)) {
           if (buff.isTeamBuff) {
             result.partySources.push({
               type: "artifact",
@@ -509,7 +522,7 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
               id: buff.id,
               name: aConfig.name,
               stat: buff.stat,
-              label: `${buff.label} (${aConfig.name} [${supportName}])`,
+              label: formatSupportEquipmentLabel(buff.label, aConfig.name, supportName),
               value: val,
               isPercent: buff.isPercent,
               rarity: aConfig.rarity,
@@ -526,7 +539,7 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
               id: buff.id,
               name: aConfig.name,
               stat: buff.stat,
-              label: `${buff.label} (${aConfig.name} [Self])`,
+              label: formatSupportEquipmentLabel(buff.label, aConfig.name, "Self"),
               value: val,
               isPercent: buff.isPercent,
               rarity: aConfig.rarity,

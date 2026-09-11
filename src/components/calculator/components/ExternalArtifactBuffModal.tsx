@@ -746,7 +746,11 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                             if (m.control === "toggle") {
                               const rawVal = aInst.inputs?.[m.id];
                               const defaultVal = m.defaultValue ?? 0;
-                              const isChecked = rawVal !== undefined ? (rawVal === "1" || Number(rawVal) > 0) : defaultVal > 0;
+                              const isChecked = rawVal !== undefined
+                                ? (rawVal === "1" || Number(rawVal) > 0)
+                                : (aConfig.id === "viridescent-venerer" && config.element?.toLowerCase() === m.id.replace("vv-swirl-", "").toLowerCase())
+                                  ? true
+                                  : defaultVal > 0;
 
                               return (
                                 <label

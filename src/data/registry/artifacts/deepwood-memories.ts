@@ -35,6 +35,7 @@ export const deepwoodMemories: ArtifactConfig = {
       isTeamBuff: true,
       conditionKey: "deepwood-res-shred",
       value: -30,
+      isPercent: true,
       compute: (ctx) => {
         const on = (ctx.inputs?.["deepwood-res-shred"] ?? "1") === "1" || Number(ctx.inputs?.["deepwood-res-shred"] ?? 1) > 0;
         return on ? -30 : 0;

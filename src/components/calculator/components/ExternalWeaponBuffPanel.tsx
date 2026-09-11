@@ -193,7 +193,8 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
                 return (
                   <span
                     key={i}
-                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border whitespace-nowrap ${
+                    title={`${s.label}: ${formattedVal}`}
+                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded border max-w-full truncate ${
                       masterEnabled
                         ? theme.sourceBuffPill
                         : "bg-gray-100 dark:bg-zinc-800 text-gray-400 line-through border-transparent"

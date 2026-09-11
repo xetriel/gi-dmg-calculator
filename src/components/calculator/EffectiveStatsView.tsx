@@ -14,6 +14,7 @@ import { activeEffects, constellationStatBonuses } from "@/lib/engine/constellat
 import { resolveTeamBuffs } from "@/lib/engine/team-buffs";
 import { resolveExternalWeaponBuffs } from "@/lib/engine/weapon-buffs";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
+import { applyStatDeltas } from "@/lib/engine/damage";
 import { getRarityTheme } from "./rarity-theme";
 import { ElementIcon } from "@/components/icons";
 
@@ -43,7 +44,7 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
 }) => {
   const router = useRouter();
 
-  const [instances] = useState<CalcInstance[]>(() => {
+  const [instances, setInstances] = useState<CalcInstance[]>(() => {
     const createInit = (id: string): CalcInstance => ({
       id,
       stats: getInitialStats(config),
@@ -57,27 +58,48 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
       constellationLevel: 0,
     });
 
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has("share")) {
+        try {
+          const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+          if (stored) {
+            const draft = JSON.parse(stored);
+            if (Array.isArray(draft.instances) && draft.instances.length > 0) {
+              return draft.instances;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load working draft in EffectiveStatsView:", e);
+        }
+      }
+    }
+
     if (initialBuild?.data) {
       const hyd = hydrateFromBuild(initialBuild.data, createInit);
       if (hyd && hyd.instances.length > 0) return hyd.instances;
     }
 
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
-        if (stored) {
-          const draft = JSON.parse(stored);
-          if (Array.isArray(draft.instances) && draft.instances.length > 0) {
-            return draft.instances;
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load working draft in EffectiveStatsView:", e);
-      }
-    }
-
     return [createInit("setup-1")];
   });
+
+  // Keep instances synchronized with client working draft if present
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("share")) return;
+    try {
+      const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
+      if (stored) {
+        const draft = JSON.parse(stored);
+        if (Array.isArray(draft.instances) && draft.instances.length > 0) {
+          setInstances(draft.instances);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to sync working draft in EffectiveStatsView:", e);
+    }
+  }, [config.id]);
 
   const [activeInstId, setActiveInstId] = useState<string>(() => {
     if (initialSetupId && instances.some((i) => i.id === initialSetupId)) {
@@ -109,9 +131,7 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
     }
   }, [instances]);
 
-  const sharePayload = { instances, rotations: [], activeRotationId: "" };
-  const encodedShare = encodeBuild(sharePayload);
-  const backHref = `/characters/${config.id}?${encodedShare ? `share=${encodedShare}&` : ""}setup=${activeInstId}`;
+  const backHref = `/characters/${config.id}?setup=${activeInstId}`;
 
   const handleBackToCalculator = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -154,42 +174,55 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
       inputs: mechInputs,
     });
 
-    for (const [key, val] of Object.entries(mech.statDeltas)) {
-      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-    }
+    applyStatDeltas(s, mech.statDeltas);
 
     const effects = activeEffects(config, currentInst.constellationLevel);
     const statBonuses = constellationStatBonuses(effects);
-    for (const [key, val] of Object.entries(statBonuses)) {
-      if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-    }
+    applyStatDeltas(s, statBonuses);
+
+    const baseAtkVal = toNum(currentInst.stats["atk.base"]) ?? 0;
+    const baseDefVal = toNum(currentInst.stats["def.base"]) ?? 0;
+    const baseHpVal = toNum(currentInst.stats["hp.base"]) ?? 0;
+
+    let equippedArtifactIds: string[] = [];
+    let equippedWeaponIds: string[] = [];
 
     if (currentInst.teamBuffsEnabled !== false && currentInst.teamSupports?.length) {
-      const teamRes = resolveTeamBuffs(currentInst.teamSupports, true);
-      for (const [key, val] of Object.entries(teamRes.statDeltas)) {
-        if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-      }
+      const teamRes = resolveTeamBuffs(
+        currentInst.teamSupports,
+        true,
+        config,
+        baseAtkVal,
+        baseDefVal,
+        baseHpVal
+      );
+      applyStatDeltas(s, teamRes.statDeltas);
+      equippedArtifactIds = teamRes.equippedArtifactIds;
+      equippedWeaponIds = teamRes.equippedWeaponIds;
     }
 
     if (currentInst.externalWeaponBuffsEnabled !== false && currentInst.externalWeapons?.length) {
-      const weaponRes = resolveExternalWeaponBuffs(currentInst.externalWeapons, toNum(currentInst.stats["atk.base"]) ?? 0, config, true);
-      for (const [key, val] of Object.entries(weaponRes.statDeltas)) {
-        if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-      }
+      const weaponRes = resolveExternalWeaponBuffs(
+        currentInst.externalWeapons,
+        baseAtkVal,
+        config,
+        true,
+        equippedWeaponIds
+      );
+      applyStatDeltas(s, weaponRes.statDeltas);
     }
 
     if (currentInst.externalArtifacts?.length && currentInst.externalArtifactBuffsEnabled !== false) {
       const artifactRes = resolveExternalArtifactBuffs(
         currentInst.externalArtifacts,
-        toNum(currentInst.stats["atk.base"]) ?? 0,
+        baseAtkVal,
         config,
         true,
-        toNum(currentInst.stats["def.base"]) ?? 0,
-        toNum(currentInst.stats["hp.base"]) ?? 0,
+        baseDefVal,
+        baseHpVal,
+        equippedArtifactIds
       );
-      for (const [key, val] of Object.entries(artifactRes.statDeltas)) {
-        if (key in s && typeof val === "number") (s as unknown as Record<string, number>)[key] += val;
-      }
+      applyStatDeltas(s, artifactRes.statDeltas);
     }
 
     return { inputStats, effectiveStats: s };

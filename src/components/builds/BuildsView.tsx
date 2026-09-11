@@ -419,16 +419,25 @@ export function BuildsView() {
                 value={activeWeapon?.weaponId || ""}
                 onChange={(e) => {
                   const wId = e.target.value;
-                  if (!wId) {
-                    setActiveWeapon(null);
-                  } else {
-                    setActiveWeapon({
-                      weaponId: wId,
-                      refinement: activeWeapon?.refinement || 1,
-                      inputs: {},
-                      enabled: true,
-                    });
-                  }
+                    if (!wId) {
+                      setActiveWeapon(null);
+                    } else {
+                      const newWepCfg = weaponById(wId);
+                      const initialInputs: Record<string, string> = {};
+                      if (newWepCfg?.mechanicDefs) {
+                        for (const m of newWepCfg.mechanicDefs) {
+                          if (m.defaultValue !== undefined) {
+                            initialInputs[m.id] = String(m.defaultValue);
+                          }
+                        }
+                      }
+                      setActiveWeapon({
+                        weaponId: wId,
+                        refinement: activeWeapon?.refinement || 1,
+                        inputs: initialInputs,
+                        enabled: true,
+                      });
+                    }
                 }}
                 className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
@@ -561,16 +570,25 @@ export function BuildsView() {
                 value={activeArtifact?.artifactId || ""}
                 onChange={(e) => {
                   const aId = e.target.value;
-                  if (!aId) {
-                    setActiveArtifact(null);
-                  } else {
-                    setActiveArtifact({
-                      artifactId: aId,
-                      pieceCount: activeArtifact?.pieceCount || 4,
-                      inputs: {},
-                      enabled: true,
-                    });
-                  }
+                    if (!aId) {
+                      setActiveArtifact(null);
+                    } else {
+                      const newArtCfg = artifactById(aId);
+                      const initialInputs: Record<string, string> = {};
+                      if (newArtCfg?.mechanicDefs) {
+                        for (const m of newArtCfg.mechanicDefs) {
+                          if (m.defaultValue !== undefined) {
+                            initialInputs[m.id] = String(m.defaultValue);
+                          }
+                        }
+                      }
+                      setActiveArtifact({
+                        artifactId: aId,
+                        pieceCount: activeArtifact?.pieceCount || 4,
+                        inputs: initialInputs,
+                        enabled: true,
+                      });
+                    }
                 }}
                 className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
@@ -737,7 +755,7 @@ export function BuildsView() {
                       </div>
                     </div>
                     <span className="font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0 text-sm">
-                      +{fmt(s.value)}{s.isPercent ? "%" : ""}
+                      {s.value > 0 ? `+${fmt(s.value)}` : fmt(s.value)}{s.isPercent ? "%" : ""}
                     </span>
                   </div>
                 ))}
@@ -777,7 +795,7 @@ export function BuildsView() {
                       </div>
                     </div>
                     <span className="font-bold text-sky-600 dark:text-sky-400 shrink-0">
-                      +{fmt(s.value)}{s.isPercent ? "%" : ""}
+                      {s.value > 0 ? `+${fmt(s.value)}` : fmt(s.value)}{s.isPercent ? "%" : ""}
                     </span>
                   </div>
                 ))}

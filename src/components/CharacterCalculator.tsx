@@ -1361,15 +1361,21 @@ export function CharacterCalculator({
                 : 0;
 
               const handleEffectiveStatsRedirectWithAnchor = (targetAnchorId?: string) => {
-                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
-                const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
                 if (typeof window !== "undefined") {
                   try {
+                    const draft = {
+                      instances,
+                      rotations: rotationState.rotations,
+                      activeRotationId: rotationState.activeRotationId,
+                      activeBuildId,
+                      activeBuildName,
+                    };
+                    localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
                     sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
                   } catch (e) {}
                 }
-                router.push(`/characters/${config.id}/effective-stats?share=${encoded}&setup=${inst.id}${hash}`);
+                router.push(`/characters/${config.id}/effective-stats?setup=${inst.id}${hash}`);
               };
 
               return (
@@ -1504,18 +1510,24 @@ export function CharacterCalculator({
               if (!effectiveStats || !inputStats || !extras) return null;
 
               const handleFormulaRedirectWithAnchor = (targetAnchorId?: string) => {
-                const payload = { instances, rotations: rotationState.rotations, activeRotationId: rotationState.activeRotationId };
-                const encoded = encodeBuild(payload);
                 const hash = targetAnchorId ? `#${targetAnchorId}` : "";
                 let modeParam = "";
                 if (typeof window !== "undefined") {
                   try {
+                    const draft = {
+                      instances,
+                      rotations: rotationState.rotations,
+                      activeRotationId: rotationState.activeRotationId,
+                      activeBuildId,
+                      activeBuildName,
+                    };
+                    localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
                     sessionStorage.setItem(`gi_calc_scroll_${config.id}`, window.scrollY.toString());
                     const storedMode = localStorage.getItem("gi_calc_dmg_type");
                     if (storedMode) modeParam = `&mode=${storedMode}`;
                   } catch (e) {}
                 }
-                router.push(`/characters/${config.id}/formula?share=${encoded}&setup=${inst.id}${modeParam}${hash}`);
+                router.push(`/characters/${config.id}/formula?setup=${inst.id}${modeParam}${hash}`);
               };
 
               return (

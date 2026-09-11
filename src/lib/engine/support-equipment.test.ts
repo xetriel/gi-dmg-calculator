@@ -438,5 +438,90 @@ describe("Support Character Equipment System", () => {
       expect(activeArts.length).toBe(1);
       expect(activeArts[0].artifact.pieceCount).toBe(2);
     });
+
+    it("Viridescent Venerer 4-Pc applies -40% Elemental RES shred when equipped on Kazuha support", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: { "vv-res-shred-active": "1" },
+          enabled: true,
+        },
+        activeCharElement: "Pyro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyPyroRes).toBe(-40);
+      const vvBuff = res.partySources.find((s) => s.stat === "enemyPyroRes");
+      expect(vvBuff).toBeDefined();
+      expect(vvBuff?.value).toBe(-40);
+      // Clean non-redundant label without repeated set name
+      expect(vvBuff?.label).toBe("4-Piece Pyro RES Shred (Viridescent Venerer [Kaedehara Kazuha])");
+      expect(res.scalingExplainers.some((e) => e.includes("Viridescent Venerer"))).toBe(true);
+    });
+
+    it("Viridescent Venerer applies -40% Elemental RES shred even with unpopulated inputs defaulting to DPS element", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: {},
+          enabled: true,
+        },
+        activeCharElement: "Pyro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyPyroRes).toBe(-40);
+    });
+
+    it("Viridescent Venerer supports Cinder City style multi-swirl toggles (Hydro and Electro)", () => {
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "kazuha",
+        artifactState: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: {
+            "vv-swirl-hydro": "1",
+            "vv-swirl-electro": "1",
+          },
+          enabled: true,
+        },
+        activeCharElement: "Hydro",
+        activeCharBaseAtk: 1000,
+      });
+
+      expect(res.partyStatDeltas.enemyHydroRes).toBe(-40);
+      expect(res.partyStatDeltas.enemyElectroRes).toBe(-40);
+      expect(res.partyStatDeltas.enemyPyroRes).toBeUndefined();
+      expect(res.partySources.some((s) => s.label === "4-Piece Hydro RES Shred (Viridescent Venerer [Kaedehara Kazuha])")).toBe(true);
+      expect(res.partySources.some((s) => s.label === "4-Piece Electro RES Shred (Viridescent Venerer [Kaedehara Kazuha])")).toBe(true);
+    });
+
+    it("integrates Kazuha VV 4-Piece -40% RES shred into resolveTeamBuffs", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: { "a4-pyro-swirl": "1" },
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedArtifact: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 4,
+          inputs: { "vv-res-shred-active": "1" },
+          enabled: true,
+        },
+      };
+
+      const arlecchino = characterById("arlecchino")!;
+      const teamRes = resolveTeamBuffs([kazuhaSupport], true, arlecchino, 1000, 800, 15000);
+
+      expect(teamRes.statDeltas.enemyPyroRes).toBe(-40);
+      expect(teamRes.sources.some((s) => s.stat === "enemyPyroRes" && s.value === -40)).toBe(true);
+    });
   });
 });
