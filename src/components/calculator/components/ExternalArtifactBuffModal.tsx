@@ -4,7 +4,7 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { CalcInstance, ExternalArtifactInstance } from "../types";
 import { ARTIFACTS, artifactById, filterArtifacts } from "@/data/registry/artifacts";
 import { resolveExternalArtifactBuffs } from "@/lib/engine/artifact-buffs";
-import { getActiveSupportEquippedArtifacts } from "@/lib/engine/support-equipment";
+import { getActiveSupportEquippedArtifacts, saveSupportEquipmentSetup } from "@/lib/engine/support-equipment";
 import { toNum } from "@/lib/engine/validation";
 import { getRarityTheme } from "../rarity-theme";
 
@@ -140,6 +140,67 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
     const updated = [...artifacts];
     updated[index] = { ...updated[index], ...updater(updated[index]) };
     updateInstance(currentInst.id, () => ({ externalArtifacts: updated }));
+  };
+
+  const updateSupportArtifactPieceCount = (supportId: string, pieceCount: 2 | 4) => {
+    const supIdx = teamSupports.findIndex((s) => s.supportId === supportId);
+    if (supIdx < 0) return;
+    const sup = teamSupports[supIdx];
+    const sa = supportArtifacts.find((a) => a.supportId === supportId);
+    const artifactId = sup.equippedArtifact?.artifactId ?? sa?.artifact.artifactId ?? "";
+    const updatedArtifact = sup.equippedArtifact
+      ? { ...sup.equippedArtifact, pieceCount }
+      : { artifactId, pieceCount, enabled: true, inputs: sa?.artifact.inputs ?? {} };
+
+    const updatedSupports = [...teamSupports];
+    updatedSupports[supIdx] = {
+      ...sup,
+      equippedArtifact: updatedArtifact,
+    };
+
+    const normId = supportId.replace(/-support$/, "");
+    const setupId = sup.equipmentSetupId || "1";
+    saveSupportEquipmentSetup(normId, {
+      id: setupId,
+      name: `Support Setup ${setupId}`,
+      characterId: normId,
+      weapon: sup.equippedWeapon ?? null,
+      artifact: updatedArtifact,
+      updatedAt: Date.now(),
+    });
+
+    updateInstance(currentInst.id, () => ({ teamSupports: updatedSupports }));
+  };
+
+  const updateSupportArtifactInput = (supportId: string, inputKey: string, value: string) => {
+    const supIdx = teamSupports.findIndex((s) => s.supportId === supportId);
+    if (supIdx < 0) return;
+    const sup = teamSupports[supIdx];
+    const sa = supportArtifacts.find((a) => a.supportId === supportId);
+    const artifactId = sup.equippedArtifact?.artifactId ?? sa?.artifact.artifactId ?? "";
+    const updatedInputs = { ...(sup.equippedArtifact?.inputs ?? sa?.artifact.inputs ?? {}), [inputKey]: value };
+    const updatedArtifact = sup.equippedArtifact
+      ? { ...sup.equippedArtifact, inputs: updatedInputs }
+      : { artifactId, pieceCount: sa?.artifact.pieceCount ?? 4, enabled: true, inputs: updatedInputs };
+
+    const updatedSupports = [...teamSupports];
+    updatedSupports[supIdx] = {
+      ...sup,
+      equippedArtifact: updatedArtifact,
+    };
+
+    const normId = supportId.replace(/-support$/, "");
+    const setupId = sup.equipmentSetupId || "1";
+    saveSupportEquipmentSetup(normId, {
+      id: setupId,
+      name: `Support Setup ${setupId}`,
+      characterId: normId,
+      weapon: sup.equippedWeapon ?? null,
+      artifact: updatedArtifact,
+      updatedAt: Date.now(),
+    });
+
+    updateInstance(currentInst.id, () => ({ teamSupports: updatedSupports }));
   };
 
   const toggleMaster = () => {
@@ -446,7 +507,54 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                               <span>Used by {sa.supportName}</span>
                             </span>
                           </div>
+
+                          {/* Piece Count Selector for Support Artifact */}
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-500 dark:text-zinc-400 font-semibold">Set:</span>
+                            {([2, 4] as const).map((count) => (
+                              <button
+                                key={count}
+                                type="button"
+                                onClick={() => updateSupportArtifactPieceCount(sa.supportId, count)}
+                                className={`px-2 py-0.5 text-xs font-bold rounded-md cursor-pointer transition-all border ${
+                                  sa.artifact.pieceCount === count
+                                    ? theme.activeButton
+                                    : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
+                                }`}
+                              >
+                                {count}P
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
+                        {/* Passive Condition Toggles */}
+                        {(aConfig.mechanicDefs ?? []).length > 0 && (
+                          <div className="space-y-1.5 my-2 bg-amber-500/10 dark:bg-amber-500/5 p-2 rounded-lg border border-amber-500/20">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 block">
+                              Artifact Passive Conditions
+                            </span>
+                            {aConfig.mechanicDefs?.map((m) => {
+                              const val = sa.artifact.inputs?.[m.id] ?? m.defaultValue ?? 0;
+                              const isChecked = val === "1" || Number(val) > 0;
+                              return (
+                                <label key={m.id} className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={(e) =>
+                                      updateSupportArtifactInput(sa.supportId, m.id, e.target.checked ? "1" : "0")
+                                    }
+                                    className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+                                  />
+                                  <span className="text-gray-700 dark:text-zinc-300 font-medium text-[11px]">
+                                    {m.label}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
 
                         {/* Active buffs from this support artifact */}
                         {sa.buffs.length > 0 && (

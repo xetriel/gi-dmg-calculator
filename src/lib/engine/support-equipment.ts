@@ -98,7 +98,7 @@ export const DEFAULT_SUPPORT_PRESETS: Record<string, {
     weapon: {
       weaponId: "freedom-sworn",
       refinement: 1,
-      inputs: { "freedom-sigils": "2" },
+      inputs: { "freedom-sigils-active": "1", "freedom-sigils": "2" },
     },
     artifact: {
       artifactId: "noblesse-oblige",
@@ -137,7 +137,7 @@ export const DEFAULT_SUPPORT_PRESETS: Record<string, {
     weapon: {
       weaponId: "freedom-sworn",
       refinement: 1,
-      inputs: { "freedom-sigils": "2" },
+      inputs: { "freedom-sigils-active": "1", "freedom-sigils": "2" },
     },
     artifact: {
       artifactId: "viridescent-venerer",
@@ -379,7 +379,16 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
         if (buff.compute) {
           val = buff.compute(refinement, weaponCtx);
         } else {
-          val = buff.refinementValues[refIdx] ?? 0;
+          const rawVal = buff.refinementValues[refIdx] ?? 0;
+          if (buff.isTeamBuff && buff.isPercent && buff.stat === "atk") {
+            val = (rawVal / 100) * dpsBaseAtk;
+          } else if (buff.isTeamBuff && buff.isPercent && buff.stat === "def") {
+            val = (rawVal / 100) * dpsBaseDef;
+          } else if (buff.isTeamBuff && buff.isPercent && buff.stat === "hp") {
+            val = (rawVal / 100) * dpsBaseHp;
+          } else {
+            val = rawVal;
+          }
         }
 
         if (buff.conditionKey && weaponCtx.inputs?.[buff.conditionKey] !== "1" && Number(weaponCtx.inputs?.[buff.conditionKey] ?? 0) <= 0) {
@@ -389,14 +398,7 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
         if (val > 0) {
           if (buff.isTeamBuff) {
             // Party buff granted to active character
-            let scaledVal = val;
-            if (buff.isPercent && buff.stat === "atk") {
-              scaledVal = (val / 100) * dpsBaseAtk;
-            } else if (buff.isPercent && buff.stat === "def") {
-              scaledVal = (val / 100) * dpsBaseDef;
-            } else if (buff.isPercent && buff.stat === "hp") {
-              scaledVal = (val / 100) * dpsBaseHp;
-            }
+            const scaledVal = val;
 
             result.partySources.push({
               type: "weapon",
@@ -611,12 +613,11 @@ export function getActiveSupportEquippedWeapons(
 
     const normId = sup.supportId.replace(/-support$/, "");
     let equippedWeapon = sup.equippedWeapon;
-    const setups = getSupportEquipmentSetups(normId);
-    const activeSetup = sup.equipmentSetupId
-      ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
-      : (!equippedWeapon ? setups[0] : undefined);
-    if (activeSetup?.weapon) {
-      equippedWeapon = activeSetup.weapon;
+    if (!equippedWeapon || !equippedWeapon.weaponId) {
+      const defSetup = getDefaultEquipmentSetup(normId, sup.equipmentSetupId || "1");
+      if (defSetup?.weapon) {
+        equippedWeapon = defSetup.weapon;
+      }
     }
 
     if (!equippedWeapon?.enabled || !equippedWeapon.weaponId) continue;
@@ -700,12 +701,11 @@ export function getActiveSupportEquippedArtifacts(
 
     const normId = sup.supportId.replace(/-support$/, "");
     let equippedArtifact = sup.equippedArtifact;
-    const setups = getSupportEquipmentSetups(normId);
-    const activeSetup = sup.equipmentSetupId
-      ? (setups.find((s) => s.id === sup.equipmentSetupId) ?? setups[0])
-      : (!equippedArtifact ? setups[0] : undefined);
-    if (activeSetup?.artifact) {
-      equippedArtifact = activeSetup.artifact;
+    if (!equippedArtifact || !equippedArtifact.artifactId) {
+      const defSetup = getDefaultEquipmentSetup(normId, sup.equipmentSetupId || "1");
+      if (defSetup?.artifact) {
+        equippedArtifact = defSetup.artifact;
+      }
     }
 
     if (!equippedArtifact?.enabled || !equippedArtifact.artifactId) continue;

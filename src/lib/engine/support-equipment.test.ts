@@ -5,6 +5,8 @@ import {
   saveSupportEquipmentSetup,
   deleteSupportEquipmentSetup,
   resolveSupportEquipmentBuffs,
+  getActiveSupportEquippedWeapons,
+  getActiveSupportEquippedArtifacts,
   type SupportEquipmentSetup,
 } from "./support-equipment";
 import { resolveTeamBuffs, type SupportInstance } from "./team-buffs";
@@ -354,6 +356,87 @@ describe("Support Character Equipment System", () => {
       expect(res.equippedArtifactIds).toContain("scroll-of-the-hero-of-cinder-city");
       expect(res.sources.some((s) => s.sourceType === "weapon")).toBe(true);
       expect(res.sources.some((s) => s.sourceType === "artifact")).toBe(true);
+    });
+  });
+
+  describe("Custom Refinement and Equipment Preservation (Anti-Hydration Mismatch)", () => {
+    it("preserves Freedom-Sworn R2 on Kazuha and scales buffs to R2 without being overwritten by default R1", () => {
+      const arlecchino = characterById("arlecchino")!;
+
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: { "kazuha-swirl-pyro": "1" },
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedWeapon: {
+          weaponId: "freedom-sworn",
+          refinement: 2, // Explicitly R2!
+          inputs: { "freedom-sigils-active": "1" },
+          enabled: true,
+        },
+      };
+
+      // 1. Verify getActiveSupportEquippedWeapons preserves refinement 2
+      const activeWeps = getActiveSupportEquippedWeapons([kazuhaSupport], true, "Pyro", "Polearm", 1000);
+      expect(activeWeps.length).toBe(1);
+      expect(activeWeps[0].weapon.refinement).toBe(2);
+      expect(activeWeps[0].weapon.weaponId).toBe("freedom-sworn");
+
+      // 2. Verify resolveTeamBuffs calculates R2 values (+20% Normal DMG, +25% ATK)
+      const res = resolveTeamBuffs([kazuhaSupport], true, arlecchino, 1000);
+      expect(res.equippedWeaponIds).toContain("freedom-sworn");
+
+      // Normal DMG bonus should be 20% (R2) rather than 16% (R1)
+      const normalDmgSource = res.sources.find((s) => s.stat === "normalDmgBonus" && s.sourceType === "weapon");
+      expect(normalDmgSource).toBeDefined();
+      expect(normalDmgSource?.value).toBe(20);
+
+      // ATK bonus should be 25% of 1000 = 250 (R2) rather than 20% = 200 (R1)
+      const atkSource = res.sources.find((s) => s.stat === "atk" && s.sourceType === "weapon");
+      expect(atkSource).toBeDefined();
+      expect(atkSource?.value).toBe(250);
+    });
+
+    it("falls back cleanly to default equipment preset if equippedWeapon is omitted", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        // equippedWeapon is omitted
+      };
+
+      const activeWeps = getActiveSupportEquippedWeapons([kazuhaSupport], true, "Pyro", "Polearm", 1000);
+      expect(activeWeps.length).toBe(1);
+      expect(activeWeps[0].weapon.weaponId).toBe("freedom-sworn");
+      expect(activeWeps[0].weapon.refinement).toBe(1);
+    });
+
+    it("preserves 2-Piece artifact customization without being overwritten by 4-Piece default", () => {
+      const kazuhaSupport: SupportInstance = {
+        supportId: "kazuha-support",
+        stats: { em: "1000" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+        useCharacterBuild: true,
+        equipmentSetupId: "1",
+        equippedArtifact: {
+          artifactId: "viridescent-venerer",
+          pieceCount: 2, // Explicit 2-piece set
+          enabled: true,
+        },
+      };
+
+      const activeArts = getActiveSupportEquippedArtifacts([kazuhaSupport], true, "Pyro", 1000);
+      expect(activeArts.length).toBe(1);
+      expect(activeArts[0].artifact.pieceCount).toBe(2);
     });
   });
 });
