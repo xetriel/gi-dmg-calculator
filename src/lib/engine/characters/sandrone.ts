@@ -47,15 +47,12 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
   const fieldOn = on("polestar-field");
   const swirlOn = on("radiance-stellar-swirl");
 
-  let brc = 1;
-  let stellarType: "stellar-conduct" | "stellar-swirl" = "stellar-conduct";
-
+  let conductBrc = 1.0;
   if (fieldOn) {
     // Inside Polestar Field: enters Radiance: Stellar-Conduct
     const hits = Math.min(val("polestar-hits"), 12);
     const buffs = stellarConductFieldBuffs(hits);
-    brc = buffs.brc;
-    stellarType = "stellar-conduct";
+    conductBrc = buffs.brc;
 
     // Polestar Field: Cryo/Electro DMG Bonus +20% (0 hits) or +(28+n)% (n≥1, up to +40%).
     // Physical RES reduction: -40%.
@@ -82,46 +79,92 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
       },
     ];
     res.notes.push(
-      `Polestar Field: Radiance: Stellar-Conduct active (BRC ×${brc.toFixed(2)} on Stellar hits (${hits} hit${hits === 1 ? "" : "s"}); +${buffs.cryoDmgBonus}% Cryo DMG Bonus on non-Stellar hits; -${buffs.enemyPhysicalResShred}% Enemy Phys RES)`
+      `Polestar Field: Radiance: Stellar-Conduct active (BRC ×${conductBrc.toFixed(2)} on Stellar-Conduct hits (${hits} hit${hits === 1 ? "" : "s"}); +${buffs.cryoDmgBonus}% Cryo DMG Bonus on non-Stellar hits; -${buffs.enemyPhysicalResShred}% Enemy Phys RES)`
     );
-  } else if (swirlOn) {
-    // Party Stellar Swirl triggered: enters Radiance: Stellar Swirl
-    brc = 1.0;
-    stellarType = "stellar-swirl";
+  }
+
+  if (swirlOn) {
     res.notes.push("Radiance: Stellar Swirl active: direct hits deal Stellar Swirl DMG (Base BRC ×1.00)");
-  } else {
-    // Neutral fallback
-    brc = 1.0;
-    stellarType = "stellar-conduct";
+  }
+
+  if (fieldOn && swirlOn) {
+    res.notes.push("Priority Rule: Polestar Field (Radiance: Stellar-Conduct) takes priority for single-radiance field effects");
+  }
+
+  if (!fieldOn && !swirlOn) {
     res.notes.push("Radiance: Inactive (direct hits deal standard Cryo DMG; toggle Polestar Field or Radiance: Stellar Swirl to activate Radiance)");
   }
 
-  // Stellar params shared by her three stellar hits.
-  const direct: DirectReactionParams = {
-    coefficient: brc,
+  // Direct Stellar reaction parameters for Stellar-Conduct and Stellar Swirl
+  const directConduct: DirectReactionParams = {
+    coefficient: conductBrc,
     baseDmgBonusPct,
     reactionBonusPct,
-    stellarType,
+    stellarType: "stellar-conduct",
   };
 
-  const stellarKeys = ["condensed-beam-stellar", "prism-shot-stellar", "convective-ray-stellar"];
-  for (const key of stellarKeys) addMods(res.perHit, key, { directReaction: direct });
+  const directSwirl: DirectReactionParams = {
+    coefficient: 1.0,
+    baseDmgBonusPct,
+    reactionBonusPct,
+    stellarType: "stellar-swirl",
+  };
+
+  // Route to Stellar-Conduct hits
+  const conductKeys = [
+    "condensed-beam-stellar-conduct",
+    "prism-shot-stellar-conduct",
+    "convective-ray-stellar-conduct",
+    // Backward compatibility for legacy keys
+    "condensed-beam-stellar",
+    "prism-shot-stellar",
+    "convective-ray-stellar",
+  ];
+  for (const key of conductKeys) {
+    addMods(res.perHit, key, { directReaction: directConduct });
+  }
+
+  // Route to Stellar Swirl hits
+  const swirlKeys = [
+    "condensed-beam-stellar-swirl",
+    "prism-shot-stellar-swirl",
+    "convective-ray-stellar-swirl",
+  ];
+  for (const key of swirlKeys) {
+    addMods(res.perHit, key, { directReaction: directSwirl });
+  }
+
+  // For legacy single-stellar keys, if Swirl is explicitly active without Polestar Field, route to Swirl
+  if (!fieldOn && swirlOn) {
+    for (const key of ["condensed-beam-stellar", "prism-shot-stellar", "convective-ray-stellar"]) {
+      addMods(res.perHit, key, { directReaction: directSwirl });
+    }
+  }
 
   // A1 Eternal Speculation Engine: Decoding Power > 50 → 2nd Prism Shot ×4.
   if (on("decoding-over-50")) {
+    addMods(res.perHit, "prism-shot-stellar-conduct", { baseDmgMultiplier: 4 });
+    addMods(res.perHit, "prism-shot-stellar-swirl", { baseDmgMultiplier: 4 });
     addMods(res.perHit, "prism-shot-stellar", { baseDmgMultiplier: 4 });
     res.notes.push("A1: 2nd Prism Shot deals 400% of original DMG (Decoding Power > 50)");
   }
+
   // A1: Burst in Radiance clears Refined Tactics stacks → Ray deals 100% + 10%/stack.
   const tactics = Math.min(val("refined-tactics"), 10);
   if (tactics > 0) {
-    addMods(res.perHit, "convective-ray-stellar", { baseDmgMultiplier: 1 + 0.1 * tactics });
-    res.notes.push(`A1: Convective Ray ×${(1 + 0.1 * tactics).toFixed(1)} (${tactics} Refined Tactics stack${tactics > 1 ? "s" : ""} cleared)`);
+    const rayMult = 1 + 0.1 * tactics;
+    addMods(res.perHit, "convective-ray-stellar-conduct", { baseDmgMultiplier: rayMult });
+    addMods(res.perHit, "convective-ray-stellar-swirl", { baseDmgMultiplier: rayMult });
+    addMods(res.perHit, "convective-ray-stellar", { baseDmgMultiplier: rayMult });
+    res.notes.push(`A1: Convective Ray ×${rayMult.toFixed(1)} (${tactics} Refined Tactics stack${tactics > 1 ? "s" : ""} cleared)`);
   }
+
   // C2: condensed beams +40% CRIT DMG, +20% per beam fired this Decoding (max 3).
   if (cons >= 2) {
     const beamStacks = Math.min(val("c2-beam-stacks"), 3);
     const critDmg = 40 + 20 * beamStacks;
+    addMods(res.perHit, "condensed-beam-stellar-conduct", { critDmgBonusPct: critDmg });
+    addMods(res.perHit, "condensed-beam-stellar-swirl", { critDmgBonusPct: critDmg });
     addMods(res.perHit, "condensed-beam-stellar", { critDmgBonusPct: critDmg });
     res.notes.push(`C2: +${critDmg}% CRIT DMG on Condensed Beams (${beamStacks} beam stack${beamStacks === 1 ? "" : "s"})`);
   }
@@ -145,23 +188,24 @@ export function resolveSandrone(config: CharacterConfig, ctx: MechanicsCtx): Mec
   // C4 Extra Cannon / C6 Cluster Beam: fixed-% stellar side hits, shown as notes.
   const elevationFactor = cons >= 6 ? 1.20 : 1.0;
   const emForNotes = (stats.em ?? 0) + a4Em;
-  const stellarNonCrit = (multPct: number) =>
-    brc * (multPct / 100) * stats.atk * (1 + baseDmgBonusPct / 100) *
+  const calcStellarNonCrit = (coeff: number, multPct: number) =>
+    coeff * (multPct / 100) * stats.atk * (1 + baseDmgBonusPct / 100) *
     (1 + stellarEmBonus(emForNotes) + reactionBonusPct / 100) *
     elevationFactor *
     resMultiplier(stats.enemyRes);
 
+  const activeIsSwirl = !fieldOn && swirlOn;
   if (cons >= 4) {
-    const isSwirl = stellarType === "stellar-swirl";
-    const c4Mult = isSwirl ? 187.5 : 125;
-    const rxName = isSwirl ? "Stellar Swirl" : "Stellar-Conduct";
-    res.notes.push(`C4 Extra Cannon: ${fmt(stellarNonCrit(c4Mult))} ${rxName} DMG per proc (${c4Mult}% ATK, every 4s)`);
+    const c4Mult = activeIsSwirl ? 187.5 : 125;
+    const c4Coeff = activeIsSwirl ? 1.0 : conductBrc;
+    const rxName = activeIsSwirl ? "Stellar Swirl" : "Stellar-Conduct";
+    res.notes.push(`C4 Extra Cannon: ${fmt(calcStellarNonCrit(c4Coeff, c4Mult))} ${rxName} DMG per proc (${c4Mult}% ATK, every 4s)`);
   }
   if (cons >= 6) {
-    const isSwirl = stellarType === "stellar-swirl";
-    const c6Mult = isSwirl ? 120 : 80;
-    const rxName = isSwirl ? "Stellar Swirl" : "Stellar-Conduct";
-    res.notes.push(`C6 Cluster Beam: 4 × ${fmt(stellarNonCrit(c6Mult))} ${rxName} DMG (${c6Mult}% ATK each, elevated by 20%)`);
+    const c6Mult = activeIsSwirl ? 120 : 80;
+    const c6Coeff = activeIsSwirl ? 1.0 : conductBrc;
+    const rxName = activeIsSwirl ? "Stellar Swirl" : "Stellar-Conduct";
+    res.notes.push(`C6 Cluster Beam: 4 × ${fmt(calcStellarNonCrit(c6Coeff, c6Mult))} ${rxName} DMG (${c6Mult}% ATK each, elevated by 20%)`);
   }
 
   return res;
