@@ -107,6 +107,69 @@ describe("Support Character Equipment System", () => {
       expect(res.scalingExplainers.some((e) => e.includes("Peak Patrol Song"))).toBe(true);
     });
 
+    it("Peak Patrol Song: resolves substat as percentage (+82.7%), adds passive (+16%), and scales party buff off effective DEF (3849.6 DEF -> 25.6% cap)", () => {
+      // Base DEF = 800, Input DEF% = 220%, Input Flat DEF = 500
+      // Initial DEF = 800 * (1 + 2.20) + 500 = 3060
+      const res = resolveSupportEquipmentBuffs({
+        supportCharacterId: "xilonen",
+        supportCtx: {
+          atk: 1000,
+          baseAtk: 800,
+          def: 3060,
+          baseDef: 800,
+          hp: 20000,
+          baseHp: 15000,
+          em: 0,
+          critRate: 0.05,
+          critDmg: 0.5,
+          constellationLevel: 0,
+          talentLevels: {},
+          inputs: {},
+        },
+        weaponState: {
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          inputs: { "patrol-ode-stacks": "2" },
+          enabled: true,
+        },
+        activeCharElement: "Pyro",
+        activeCharBaseAtk: 1000,
+      });
+
+      // 1. Substat is percentage (+82.7% DEF)
+      const substatSource = res.selfSources.find((s) => s.id === "peak-patrol-song-substat");
+      expect(substatSource).toBeDefined();
+      expect(substatSource?.isPercent).toBe(true);
+      expect(substatSource?.value).toBe(82.7);
+      expect(substatSource?.label).toContain("Peak Patrol Song: DEF% +82.7%");
+
+      // 2. Passive self DEF is percentage (+16% DEF)
+      const passiveSource = res.selfSources.find((s) => s.id === "patrol-self-def");
+      expect(passiveSource).toBeDefined();
+      expect(passiveSource?.isPercent).toBe(true);
+      expect(passiveSource?.value).toBe(16);
+
+      // 3. Self stat deltas:
+      // Substat: (82.7 / 100) * 800 = 661.6
+      // Passive: (16 / 100) * 800 = 128.0
+      // Total weapon DEF = 661.6 + 128.0 = 789.6
+      expect(res.selfStatDeltas.defPercent).toBeCloseTo(98.7, 1);
+      expect(res.selfStatDeltas.def).toBeCloseTo(789.6, 1);
+
+      // 4. Effective DEF used for conversion = 3060 + 789.6 = 3849.6
+      // (3849.6 / 1000) * 8 = 30.7968 -> capped at 25.6%
+      const dmgBonusSource = res.partySources.find((s) => s.stat === "dmgBonus");
+      expect(dmgBonusSource).toBeDefined();
+      expect(dmgBonusSource?.value).toBe(25.6);
+      expect(res.partyStatDeltas.dmgBonus).toBe(25.6);
+
+      // 5. Scaling explainer reflects the effective DEF (3,850) and reaches the 25.6% cap
+      const explainer = res.scalingExplainers.find((e) => e.includes("Peak Patrol Song"));
+      expect(explainer).toBeDefined();
+      expect(explainer).toContain("3,850");
+      expect(explainer).toContain("+25.6%");
+    });
+
     it("scales Scroll of the Hero of Cinder City based on Xilonen's Geo Crystallize reactions", () => {
       const res = resolveSupportEquipmentBuffs({
         supportCharacterId: "xilonen",

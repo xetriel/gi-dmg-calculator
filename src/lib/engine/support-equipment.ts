@@ -331,8 +331,13 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
   };
 
   const supportBaseAtk = opts.supportCtx?.baseAtk ?? 800;
-  const supportDef = opts.supportCtx?.def ?? 1000;
-  const supportHp = opts.supportCtx?.hp ?? 20000;
+  const supportBaseDef = opts.supportCtx?.baseDef ?? 800;
+  const supportBaseHp = opts.supportCtx?.baseHp ?? 20000;
+  const supportBaseEm = opts.supportCtx?.em ?? 0;
+
+  const supportDef = opts.supportCtx?.def ?? supportBaseDef;
+  const supportHp = opts.supportCtx?.hp ?? supportBaseHp;
+  const supportAtk = opts.supportCtx?.atk ?? supportBaseAtk;
   const supportEm = opts.supportCtx?.em ?? 0;
 
   const dpsBaseAtk = opts.activeCharBaseAtk ?? 1000;
@@ -340,239 +345,398 @@ export function resolveSupportEquipmentBuffs(opts: ResolveSupportEquipmentOpts):
   const dpsBaseHp = opts.activeCharBaseHp ?? 15000;
   const dpsElement = opts.activeCharElement;
 
-  // 1. Resolve Equipped Weapon
-  if (opts.weaponState && opts.weaponState.enabled && opts.weaponState.weaponId) {
-    const wConfig = weaponById(opts.weaponState.weaponId);
-    if (wConfig) {
-      const refinement = opts.weaponState.refinement;
-      const refIdx = Math.max(0, Math.min(4, refinement - 1));
+  const wConfig =
+    opts.weaponState && opts.weaponState.enabled && opts.weaponState.weaponId
+      ? weaponById(opts.weaponState.weaponId)
+      : null;
+  const refinement = opts.weaponState?.refinement ?? 1;
+  const refIdx = Math.max(0, Math.min(4, refinement - 1));
 
-      // Check Weapon Substat for Self Buffs
-      if (wConfig.subStat) {
+  const aConfig =
+    opts.artifactState && opts.artifactState.enabled && opts.artifactState.artifactId
+      ? artifactById(opts.artifactState.artifactId)
+      : null;
+  const pieceCount = opts.artifactState?.pieceCount ?? 4;
+
+  // 1. Resolve Wielder Self Buffs from Weapon (Substat + Passive Self Buffs)
+  if (wConfig) {
+    // Check Weapon Substat for Self Buffs
+    if (wConfig.subStat) {
+      const isPct =
+        wConfig.subStat.label.includes("%") ||
+        wConfig.subStat.type.endsWith("Pct") ||
+        ["defPct", "atkPct", "hpPct", "critRate", "critDmg", "energyRecharge", "healingBonus", "physicalDmgBonus"].includes(
+          wConfig.subStat.type
+        );
+
+      const cleanLabel = wConfig.subStat.label.endsWith("%")
+        ? wConfig.subStat.label
+        : isPct
+        ? `${wConfig.subStat.label}%`
+        : wConfig.subStat.label;
+
+      result.selfSources.push({
+        type: "weapon",
+        target: "self",
+        id: `${wConfig.id}-substat`,
+        name: wConfig.name,
+        stat: wConfig.subStat.type,
+        label: `${wConfig.name}: ${cleanLabel} +${wConfig.subStat.value}${isPct ? "%" : ""}`,
+        value: wConfig.subStat.value,
+        isPercent: isPct,
+        rarity: wConfig.rarity,
+        explainer: `Wielder base substat for ${supportName}`,
+      });
+
+      // Accumulate into selfStatDeltas
+      if (wConfig.subStat.type === "defPct" || (wConfig.subStat.type === "def" && isPct)) {
+        result.selfStatDeltas.defPercent = (result.selfStatDeltas.defPercent ?? 0) + wConfig.subStat.value;
+        result.selfStatDeltas.def = (result.selfStatDeltas.def ?? 0) + (wConfig.subStat.value / 100) * supportBaseDef;
+      } else if (wConfig.subStat.type === "atkPct" || (wConfig.subStat.type === "atk" && isPct)) {
+        result.selfStatDeltas.atkPercent = (result.selfStatDeltas.atkPercent ?? 0) + wConfig.subStat.value;
+        result.selfStatDeltas.atk = (result.selfStatDeltas.atk ?? 0) + (wConfig.subStat.value / 100) * supportBaseAtk;
+      } else if (wConfig.subStat.type === "hpPct" || (wConfig.subStat.type === "hp" && isPct)) {
+        result.selfStatDeltas.hpPercent = (result.selfStatDeltas.hpPercent ?? 0) + wConfig.subStat.value;
+        result.selfStatDeltas.hp = (result.selfStatDeltas.hp ?? 0) + (wConfig.subStat.value / 100) * supportBaseHp;
+      } else if (wConfig.subStat.type === "em") {
+        result.selfStatDeltas.em = (result.selfStatDeltas.em ?? 0) + wConfig.subStat.value;
+      } else if (wConfig.subStat.type === "critRate") {
+        result.selfStatDeltas.critRate = (result.selfStatDeltas.critRate ?? 0) + wConfig.subStat.value;
+      } else if (wConfig.subStat.type === "critDmg") {
+        result.selfStatDeltas.critDmg = (result.selfStatDeltas.critDmg ?? 0) + wConfig.subStat.value;
+      } else if (wConfig.subStat.type === "energyRecharge") {
+        result.selfStatDeltas.energyRecharge = (result.selfStatDeltas.energyRecharge ?? 0) + wConfig.subStat.value;
+      }
+    }
+
+    // Evaluate Weapon Self Buffs (passive abilities affecting wielder)
+    const selfWeaponCtx: WeaponBuffContext = {
+      refinement,
+      baseAtk: supportBaseAtk,
+      charElement: supportElement,
+      charWeapon: wConfig.type,
+      wielderElement: supportElement,
+      inputs: {
+        wielderDef: supportDef,
+        wielderHp: supportHp,
+        wielderEm: supportEm,
+        "patrol-wielder-def": supportDef,
+        "patrol-ode-stacks": "2",
+        ...(opts.weaponState?.inputs ?? {}),
+      },
+    };
+
+    for (const buff of wConfig.buffs) {
+      if (buff.isTeamBuff) continue;
+
+      let val = 0;
+      if (buff.compute) {
+        val = buff.compute(refinement, selfWeaponCtx);
+      } else {
+        val = buff.refinementValues[refIdx] ?? 0;
+      }
+
+      const wMechDef = buff.conditionKey ? wConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+      const wCondVal = buff.conditionKey
+        ? selfWeaponCtx.inputs?.[buff.conditionKey] ?? (wMechDef?.defaultValue !== undefined ? String(wMechDef.defaultValue) : undefined)
+        : undefined;
+      if (buff.conditionKey && wCondVal !== undefined && wCondVal !== "1" && Number(wCondVal) <= 0) {
+        val = 0;
+      }
+
+      if (val !== 0 && Number.isFinite(val)) {
         result.selfSources.push({
           type: "weapon",
           target: "self",
-          id: `${wConfig.id}-substat`,
+          id: buff.id,
           name: wConfig.name,
-          stat: wConfig.subStat.type,
-          label: `${wConfig.name}: ${wConfig.subStat.label} +${wConfig.subStat.value}`,
-          value: wConfig.subStat.value,
+          stat: buff.stat,
+          label: formatSupportEquipmentLabel(buff.label, wConfig.name, "Self"),
+          value: val,
+          isPercent: buff.isPercent,
           rarity: wConfig.rarity,
-          explainer: `Wielder base substat for ${supportName}`,
+          explainer: `Passive bonus affecting ${supportName}'s own attributes`,
         });
-      }
 
-      // Check Weapon Buffs
-      const weaponCtx: WeaponBuffContext = {
-        refinement,
-        baseAtk: dpsBaseAtk,
-        charElement: dpsElement,
-        charWeapon: opts.activeCharWeapon,
-        wielderElement: supportElement,
-        inputs: {
-          wielderDef: supportDef,
-          wielderHp: supportHp,
-          wielderEm: supportEm,
-          "patrol-wielder-def": supportDef,
-          "patrol-ode-stacks": "2",
-          ...(opts.weaponState.inputs ?? {}),
-        },
-      };
-
-      for (const buff of wConfig.buffs) {
-        let val = 0;
-        if (buff.compute) {
-          val = buff.compute(refinement, weaponCtx);
-        } else {
-          const rawVal = buff.refinementValues[refIdx] ?? 0;
-          if (buff.isTeamBuff && buff.isPercent && buff.stat === "atk") {
-            val = (rawVal / 100) * dpsBaseAtk;
-          } else if (buff.isTeamBuff && buff.isPercent && buff.stat === "def") {
-            val = (rawVal / 100) * dpsBaseDef;
-          } else if (buff.isTeamBuff && buff.isPercent && buff.stat === "hp") {
-            val = (rawVal / 100) * dpsBaseHp;
+        if (buff.isPercent) {
+          if (buff.stat === "def") {
+            result.selfStatDeltas.defPercent = (result.selfStatDeltas.defPercent ?? 0) + val;
+            result.selfStatDeltas.def = (result.selfStatDeltas.def ?? 0) + (val / 100) * supportBaseDef;
+          } else if (buff.stat === "atk") {
+            result.selfStatDeltas.atkPercent = (result.selfStatDeltas.atkPercent ?? 0) + val;
+            result.selfStatDeltas.atk = (result.selfStatDeltas.atk ?? 0) + (val / 100) * supportBaseAtk;
+          } else if (buff.stat === "hp") {
+            result.selfStatDeltas.hpPercent = (result.selfStatDeltas.hpPercent ?? 0) + val;
+            result.selfStatDeltas.hp = (result.selfStatDeltas.hp ?? 0) + (val / 100) * supportBaseHp;
           } else {
-            val = rawVal;
-          }
-        }
-
-        const wMechDef = buff.conditionKey ? wConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
-        const wCondVal = buff.conditionKey
-          ? weaponCtx.inputs?.[buff.conditionKey] ?? (wMechDef?.defaultValue !== undefined ? String(wMechDef.defaultValue) : undefined)
-          : undefined;
-        if (buff.conditionKey && wCondVal !== undefined && wCondVal !== "1" && Number(wCondVal) <= 0) {
-          val = 0;
-        }
-
-        if (val !== 0 && Number.isFinite(val)) {
-          if (buff.isTeamBuff) {
-            // Party buff granted to active character
-            const scaledVal = val;
-
-            result.partySources.push({
-              type: "weapon",
-              target: "party",
-              id: buff.id,
-              name: wConfig.name,
-              stat: buff.stat,
-              label: formatSupportEquipmentLabel(buff.label, wConfig.name, supportName),
-              value: scaledVal,
-              isPercent: buff.isPercent,
-              rarity: wConfig.rarity,
-              explainer: `Equipped on ${supportName} (R${refinement}) -> grants ${val}${buff.isPercent ? "%" : ""} ${buff.stat} to party teammates`,
-            });
-
-            const key = buff.stat as keyof DamageStats;
-            (result.partyStatDeltas as Record<string, number>)[key] =
-              ((result.partyStatDeltas as Record<string, number>)[key] ?? 0) + scaledVal;
-          } else {
-            // Self buff granted to support wielder
-            result.selfSources.push({
-              type: "weapon",
-              target: "self",
-              id: buff.id,
-              name: wConfig.name,
-              stat: buff.stat,
-              label: formatSupportEquipmentLabel(buff.label, wConfig.name, "Self"),
-              value: val,
-              isPercent: buff.isPercent,
-              rarity: wConfig.rarity,
-              explainer: `Passive bonus affecting ${supportName}'s own attributes`,
-            });
-
             const key = buff.stat as keyof DamageStats;
             (result.selfStatDeltas as Record<string, number>)[key] =
               ((result.selfStatDeltas as Record<string, number>)[key] ?? 0) + val;
           }
+        } else {
+          const key = buff.stat as keyof DamageStats;
+          (result.selfStatDeltas as Record<string, number>)[key] =
+            ((result.selfStatDeltas as Record<string, number>)[key] ?? 0) + val;
         }
-      }
-
-      // Add specific weapon scaling explainers
-      if (wConfig.id === "peak-patrol-song") {
-        const cap = [25.6, 32, 38.4, 44.8, 51.2][refIdx] ?? 25.6;
-        const perK = [8, 10, 12, 14, 16][refIdx] ?? 8;
-        const currentBonus = Math.min(cap, (supportDef / 1000) * perK);
-        result.scalingExplainers.push(
-          `⚔️ Peak Patrol Song (R${refinement}): Scales off ${supportName}'s DEF (${Math.round(supportDef).toLocaleString()}) -> grants +${currentBonus.toFixed(1)}% All Elemental DMG Bonus to nearby party members (Cap: ${cap}%).`
-        );
-      } else if (wConfig.id === "freedom-sworn") {
-        result.scalingExplainers.push(
-          `⚔️ Freedom-Sworn (R${refinement}): Millennial Movement grants nearby party members +20% ATK and +16% Normal/Charged/Plunging Attack DMG.`
-        );
-      } else if (wConfig.id === "thrilling-tales-of-dragon-slayers") {
-        const atkVal = [24, 30, 36, 42, 48][refIdx] ?? 48;
-        result.scalingExplainers.push(
-          `⚔️ Thrilling Tales of Dragon Slayers (R${refinement}): When switching characters, the new character taking the field gains +${atkVal}% ATK for 10s.`
-        );
       }
     }
   }
 
-  // 2. Resolve Equipped Artifact Set
-  if (opts.artifactState && opts.artifactState.enabled && opts.artifactState.artifactId) {
-    const aConfig = artifactById(opts.artifactState.artifactId);
-    if (aConfig) {
-      const pieceCount = opts.artifactState.pieceCount;
-      const artifactCtx: ArtifactBuffContext = {
-        pieceCount,
-        slot: "support",
-        baseAtk: dpsBaseAtk,
-        baseDef: dpsBaseDef,
-        baseHp: dpsBaseHp,
-        charElement: dpsElement,
-        inputs: {
-          ...(supportElement ? { wielderElement: supportElement } : {}),
-          wielderDef: supportDef,
-          wielderHp: supportHp,
-          ...(opts.artifactState.inputs ?? {}),
-        },
-      };
+  // 2. Resolve Wielder Self Buffs from Artifact Set (2-Piece / 4-Piece)
+  if (aConfig) {
+    const selfArtifactCtx: ArtifactBuffContext = {
+      pieceCount,
+      slot: "support",
+      baseAtk: supportBaseAtk,
+      baseDef: supportBaseDef,
+      baseHp: supportBaseHp,
+      charElement: supportElement,
+      inputs: {
+        ...(supportElement ? { wielderElement: supportElement } : {}),
+        wielderDef: supportDef,
+        wielderHp: supportHp,
+        wielderEm: supportEm,
+        ...(opts.artifactState?.inputs ?? {}),
+      },
+    };
 
-      for (const buff of aConfig.buffs) {
-        if (pieceCount < buff.pieceRequirement) continue;
+    for (const buff of aConfig.buffs) {
+      if (buff.isTeamBuff || pieceCount < buff.pieceRequirement) continue;
 
-        let val = 0;
-        if (buff.compute) {
-          val = buff.compute(artifactCtx);
-        } else {
-          const raw = buff.value ?? 0;
-          if (buff.isPercent) {
-            if (buff.stat === "atk") val = (raw / 100) * dpsBaseAtk;
-            else if (buff.stat === "def") val = (raw / 100) * dpsBaseDef;
-            else if (buff.stat === "hp") val = (raw / 100) * dpsBaseHp;
-            else val = raw;
-          } else {
-            val = raw;
-          }
-        }
+      let val = 0;
+      if (buff.compute) {
+        val = buff.compute(selfArtifactCtx);
+      } else {
+        val = buff.value ?? 0;
+      }
 
-        const aMechDef = buff.conditionKey ? aConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
-        const aCondVal = buff.conditionKey
-          ? artifactCtx.inputs?.[buff.conditionKey] ?? (aMechDef?.defaultValue !== undefined ? String(aMechDef.defaultValue) : undefined)
-          : undefined;
-        if (buff.conditionKey && aCondVal !== undefined && aCondVal !== "1" && Number(aCondVal) <= 0) {
-          val = 0;
-        }
+      const aMechDef = buff.conditionKey ? aConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+      const aCondVal = buff.conditionKey
+        ? selfArtifactCtx.inputs?.[buff.conditionKey] ?? (aMechDef?.defaultValue !== undefined ? String(aMechDef.defaultValue) : undefined)
+        : undefined;
+      if (buff.conditionKey && aCondVal !== undefined && aCondVal !== "1" && Number(aCondVal) <= 0) {
+        val = 0;
+      }
 
-        if (val !== 0 && Number.isFinite(val)) {
-          if (buff.isTeamBuff) {
-            result.partySources.push({
-              type: "artifact",
-              target: "party",
-              id: buff.id,
-              name: aConfig.name,
-              stat: buff.stat,
-              label: formatSupportEquipmentLabel(buff.label, aConfig.name, supportName),
-              value: val,
-              isPercent: buff.isPercent,
-              rarity: aConfig.rarity,
-              explainer: `${aConfig.name} (${pieceCount}-Pc) equipped on ${supportName} -> provides ${val}${buff.isPercent ? "%" : ""} to party`,
-            });
+      if (val !== 0 && Number.isFinite(val)) {
+        result.selfSources.push({
+          type: "artifact",
+          target: "self",
+          id: buff.id,
+          name: aConfig.name,
+          stat: buff.stat,
+          label: formatSupportEquipmentLabel(buff.label, aConfig.name, "Self"),
+          value: val,
+          isPercent: buff.isPercent,
+          rarity: aConfig.rarity,
+          explainer: `2-Piece/4-Piece self passive for ${supportName}`,
+        });
 
-            const key = buff.stat as keyof DamageStats;
-            (result.partyStatDeltas as Record<string, number>)[key] =
-              ((result.partyStatDeltas as Record<string, number>)[key] ?? 0) + val;
-          } else {
-            result.selfSources.push({
-              type: "artifact",
-              target: "self",
-              id: buff.id,
-              name: aConfig.name,
-              stat: buff.stat,
-              label: formatSupportEquipmentLabel(buff.label, aConfig.name, "Self"),
-              value: val,
-              isPercent: buff.isPercent,
-              rarity: aConfig.rarity,
-              explainer: `2-Piece/4-Piece self passive for ${supportName}`,
-            });
-
+        if (buff.isPercent) {
+          if (buff.compute) {
+            // Already computed using base stat (e.g. Husk compute returns flat DEF)
             const key = buff.stat as keyof DamageStats;
             (result.selfStatDeltas as Record<string, number>)[key] =
               ((result.selfStatDeltas as Record<string, number>)[key] ?? 0) + val;
+          } else {
+            if (buff.stat === "def") {
+              result.selfStatDeltas.defPercent = (result.selfStatDeltas.defPercent ?? 0) + val;
+              result.selfStatDeltas.def = (result.selfStatDeltas.def ?? 0) + (val / 100) * supportBaseDef;
+            } else if (buff.stat === "atk") {
+              result.selfStatDeltas.atkPercent = (result.selfStatDeltas.atkPercent ?? 0) + val;
+              result.selfStatDeltas.atk = (result.selfStatDeltas.atk ?? 0) + (val / 100) * supportBaseAtk;
+            } else if (buff.stat === "hp") {
+              result.selfStatDeltas.hpPercent = (result.selfStatDeltas.hpPercent ?? 0) + val;
+              result.selfStatDeltas.hp = (result.selfStatDeltas.hp ?? 0) + (val / 100) * supportBaseHp;
+            } else {
+              const key = buff.stat as keyof DamageStats;
+              (result.selfStatDeltas as Record<string, number>)[key] =
+                ((result.selfStatDeltas as Record<string, number>)[key] ?? 0) + val;
+            }
           }
+        } else {
+          const key = buff.stat as keyof DamageStats;
+          (result.selfStatDeltas as Record<string, number>)[key] =
+            ((result.selfStatDeltas as Record<string, number>)[key] ?? 0) + val;
+        }
+      }
+    }
+  }
+
+  // 3. Compute Effective Wielder Attributes with Self Equipment Applied
+  const effectiveSupportDef = supportDef + (result.selfStatDeltas.def ?? 0);
+  const effectiveSupportHp = supportHp + (result.selfStatDeltas.hp ?? 0);
+  const effectiveSupportAtk = supportAtk + (result.selfStatDeltas.atk ?? 0);
+  const effectiveSupportEm = supportEm + (result.selfStatDeltas.em ?? 0);
+
+  // 4. Resolve Party Buffs from Weapon
+  if (wConfig) {
+    const weaponCtx: WeaponBuffContext = {
+      refinement,
+      baseAtk: dpsBaseAtk,
+      charElement: dpsElement,
+      charWeapon: opts.activeCharWeapon,
+      wielderElement: supportElement,
+      inputs: {
+        wielderDef: effectiveSupportDef,
+        wielderHp: effectiveSupportHp,
+        wielderEm: effectiveSupportEm,
+        "patrol-wielder-def": effectiveSupportDef,
+        "patrol-ode-stacks": "2",
+        ...(opts.weaponState?.inputs ?? {}),
+      },
+    };
+
+    for (const buff of wConfig.buffs) {
+      if (!buff.isTeamBuff) continue;
+
+      let val = 0;
+      if (buff.compute) {
+        val = buff.compute(refinement, weaponCtx);
+      } else {
+        const rawVal = buff.refinementValues[refIdx] ?? 0;
+        if (buff.isPercent && buff.stat === "atk") {
+          val = (rawVal / 100) * dpsBaseAtk;
+        } else if (buff.isPercent && buff.stat === "def") {
+          val = (rawVal / 100) * dpsBaseDef;
+        } else if (buff.isPercent && buff.stat === "hp") {
+          val = (rawVal / 100) * dpsBaseHp;
+        } else {
+          val = rawVal;
         }
       }
 
-      // Add specific artifact scaling explainers
-      if (aConfig.id === "scroll-of-the-hero-of-cinder-city") {
-        const isNightsoul = opts.artifactState.inputs?.["cinder-nightsoul-active"] === "1" || Number(opts.artifactState.inputs?.["cinder-nightsoul-active"] ?? 1) > 0;
-        const bonus = isNightsoul ? 40 : 12;
-        result.scalingExplainers.push(
-          `🏺 Scroll of Cinder City (4-Pc): ${supportName} (${supportElement}) triggers reaction related to ${supportElement} ${isNightsoul ? "in Nightsoul's Blessing" : ""}, granting nearby party members +${bonus}% Elemental DMG Bonus for elements involved.`
-        );
-      } else if (aConfig.id === "noblesse-oblige") {
-        result.scalingExplainers.push(
-          `🏺 Noblesse Oblige (4-Pc): Using an Elemental Burst with ${supportName} grants all party members +20% ATK for 12s.`
-        );
-      } else if (aConfig.id === "tenacity-of-the-millelith") {
-        result.scalingExplainers.push(
-          `🏺 Tenacity of the Millelith (4-Pc): When an Elemental Skill hits an opponent, party members gain +20% ATK and +30% Shield Strength for 3s.`
-        );
-      } else if (aConfig.id === "viridescent-venerer") {
-        result.scalingExplainers.push(
-          `🏺 Viridescent Venerer (4-Pc): ${supportName} Swirls an element, decreasing opponent Elemental RES to that element by 40% for 10s.`
-        );
+      const wMechDef = buff.conditionKey ? wConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+      const wCondVal = buff.conditionKey
+        ? weaponCtx.inputs?.[buff.conditionKey] ?? (wMechDef?.defaultValue !== undefined ? String(wMechDef.defaultValue) : undefined)
+        : undefined;
+      if (buff.conditionKey && wCondVal !== undefined && wCondVal !== "1" && Number(wCondVal) <= 0) {
+        val = 0;
       }
+
+      if (val !== 0 && Number.isFinite(val)) {
+        result.partySources.push({
+          type: "weapon",
+          target: "party",
+          id: buff.id,
+          name: wConfig.name,
+          stat: buff.stat,
+          label: formatSupportEquipmentLabel(buff.label, wConfig.name, supportName),
+          value: val,
+          isPercent: buff.isPercent,
+          rarity: wConfig.rarity,
+          explainer: `Equipped on ${supportName} (R${refinement}) -> grants ${val}${buff.isPercent ? "%" : ""} ${buff.stat} to party teammates`,
+        });
+
+        const key = buff.stat as keyof DamageStats;
+        (result.partyStatDeltas as Record<string, number>)[key] =
+          ((result.partyStatDeltas as Record<string, number>)[key] ?? 0) + val;
+      }
+    }
+
+    // Add specific weapon scaling explainers using effective wielder attributes
+    if (wConfig.id === "peak-patrol-song") {
+      const cap = [25.6, 32, 38.4, 44.8, 51.2][refIdx] ?? 25.6;
+      const perK = [8, 10, 12, 14, 16][refIdx] ?? 8;
+      const currentBonus = Math.min(cap, (effectiveSupportDef / 1000) * perK);
+      result.scalingExplainers.push(
+        `⚔️ Peak Patrol Song (R${refinement}): Scales off ${supportName}'s DEF (${Math.round(effectiveSupportDef).toLocaleString("en-US")}) -> grants +${currentBonus.toFixed(1)}% All Elemental DMG Bonus to nearby party members (Cap: ${cap}%).`
+      );
+    } else if (wConfig.id === "freedom-sworn") {
+      result.scalingExplainers.push(
+        `⚔️ Freedom-Sworn (R${refinement}): Millennial Movement grants nearby party members +20% ATK and +16% Normal/Charged/Plunging Attack DMG.`
+      );
+    } else if (wConfig.id === "thrilling-tales-of-dragon-slayers") {
+      const atkVal = [24, 30, 36, 42, 48][refIdx] ?? 48;
+      result.scalingExplainers.push(
+        `⚔️ Thrilling Tales of Dragon Slayers (R${refinement}): When switching characters, the new character taking the field gains +${atkVal}% ATK for 10s.`
+      );
+    }
+  }
+
+  // 5. Resolve Party Buffs from Artifact Set
+  if (aConfig) {
+    const artifactCtx: ArtifactBuffContext = {
+      pieceCount,
+      slot: "support",
+      baseAtk: dpsBaseAtk,
+      baseDef: dpsBaseDef,
+      baseHp: dpsBaseHp,
+      charElement: dpsElement,
+      inputs: {
+        ...(supportElement ? { wielderElement: supportElement } : {}),
+        wielderDef: effectiveSupportDef,
+        wielderHp: effectiveSupportHp,
+        wielderEm: effectiveSupportEm,
+        ...(opts.artifactState?.inputs ?? {}),
+      },
+    };
+
+    for (const buff of aConfig.buffs) {
+      if (!buff.isTeamBuff || pieceCount < buff.pieceRequirement) continue;
+
+      let val = 0;
+      if (buff.compute) {
+        val = buff.compute(artifactCtx);
+      } else {
+        const raw = buff.value ?? 0;
+        if (buff.isPercent) {
+          if (buff.stat === "atk") val = (raw / 100) * dpsBaseAtk;
+          else if (buff.stat === "def") val = (raw / 100) * dpsBaseDef;
+          else if (buff.stat === "hp") val = (raw / 100) * dpsBaseHp;
+          else val = raw;
+        } else {
+          val = raw;
+        }
+      }
+
+      const aMechDef = buff.conditionKey ? aConfig.mechanicDefs?.find((m) => m.id === buff.conditionKey) : undefined;
+      const aCondVal = buff.conditionKey
+        ? artifactCtx.inputs?.[buff.conditionKey] ?? (aMechDef?.defaultValue !== undefined ? String(aMechDef.defaultValue) : undefined)
+        : undefined;
+      if (buff.conditionKey && aCondVal !== undefined && aCondVal !== "1" && Number(aCondVal) <= 0) {
+        val = 0;
+      }
+
+      if (val !== 0 && Number.isFinite(val)) {
+        result.partySources.push({
+          type: "artifact",
+          target: "party",
+          id: buff.id,
+          name: aConfig.name,
+          stat: buff.stat,
+          label: formatSupportEquipmentLabel(buff.label, aConfig.name, supportName),
+          value: val,
+          isPercent: buff.isPercent,
+          rarity: aConfig.rarity,
+          explainer: `${aConfig.name} (${pieceCount}-Pc) equipped on ${supportName} -> provides ${val}${buff.isPercent ? "%" : ""} to party`,
+        });
+
+        const key = buff.stat as keyof DamageStats;
+        (result.partyStatDeltas as Record<string, number>)[key] =
+          ((result.partyStatDeltas as Record<string, number>)[key] ?? 0) + val;
+      }
+    }
+
+    // Add specific artifact scaling explainers
+    if (aConfig.id === "scroll-of-the-hero-of-cinder-city") {
+      const isNightsoul = opts.artifactState?.inputs?.["cinder-nightsoul-active"] === "1" || Number(opts.artifactState?.inputs?.["cinder-nightsoul-active"] ?? 1) > 0;
+      const bonus = isNightsoul ? 40 : 12;
+      result.scalingExplainers.push(
+        `🏺 Scroll of Cinder City (4-Pc): ${supportName} (${supportElement}) triggers reaction related to ${supportElement} ${isNightsoul ? "in Nightsoul's Blessing" : ""}, granting nearby party members +${bonus}% Elemental DMG Bonus for elements involved.`
+      );
+    } else if (aConfig.id === "noblesse-oblige") {
+      result.scalingExplainers.push(
+        `🏺 Noblesse Oblige (4-Pc): Using an Elemental Burst with ${supportName} grants all party members +20% ATK for 12s.`
+      );
+    } else if (aConfig.id === "tenacity-of-the-millelith") {
+      result.scalingExplainers.push(
+        `🏺 Tenacity of the Millelith (4-Pc): When an Elemental Skill hits an opponent, party members gain +20% ATK and +30% Shield Strength for 3s.`
+      );
+    } else if (aConfig.id === "viridescent-venerer") {
+      result.scalingExplainers.push(
+        `🏺 Viridescent Venerer (4-Pc): ${supportName} Swirls an element, decreasing opponent Elemental RES to that element by 40% for 10s.`
+      );
     }
   }
 
@@ -640,6 +804,7 @@ export function getActiveSupportEquippedWeapons(
     const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
     const supportElement = supportCfg?.element ?? charCfg?.element;
 
+    const baseDef = Number(sup.stats?.["def.base"] ?? sup.stats?.["baseDef"] ?? 800);
     const def =
       Number(sup.stats?.["def.base"] ?? 0) * (1 + Number(sup.stats?.["def.percent"] ?? 0) / 100) +
         Number(sup.stats?.["def.flat"] ?? 0) || Number(sup.stats?.["def"] ?? 1000);
@@ -656,7 +821,7 @@ export function getActiveSupportEquippedWeapons(
         hp,
         baseHp: hp,
         def,
-        baseDef: def,
+        baseDef,
         em: Number(sup.stats?.["em"] ?? 0),
         critRate: 0.05,
         critDmg: 0.5,
@@ -728,6 +893,7 @@ export function getActiveSupportEquippedArtifacts(
     const supportName = supportCfg?.name ?? charCfg?.name ?? normId;
     const supportElement = supportCfg?.element ?? charCfg?.element;
 
+    const baseDef = Number(sup.stats?.["def.base"] ?? sup.stats?.["baseDef"] ?? 800);
     const def =
       Number(sup.stats?.["def.base"] ?? 0) * (1 + Number(sup.stats?.["def.percent"] ?? 0) / 100) +
         Number(sup.stats?.["def.flat"] ?? 0) || Number(sup.stats?.["def"] ?? 1000);
@@ -744,7 +910,7 @@ export function getActiveSupportEquippedArtifacts(
         hp,
         baseHp: hp,
         def,
-        baseDef: def,
+        baseDef,
         em: Number(sup.stats?.["em"] ?? 0),
         critRate: 0.05,
         critDmg: 0.5,

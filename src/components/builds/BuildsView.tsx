@@ -19,6 +19,7 @@ import {
   type EquippedWeaponState,
   type EquippedArtifactState,
 } from "@/lib/engine/support-equipment";
+import { resolveSupportCtx } from "@/lib/engine/team-buffs";
 import type { Element, WeaponType } from "@/data/registry/types";
 
 const fmt = (n: number, decimals = 1) =>
@@ -185,10 +186,42 @@ export function BuildsView() {
   const selectedWeaponCfg = activeWeapon ? weaponById(activeWeapon.weaponId) : null;
   const selectedArtifactCfg = activeArtifact ? artifactById(activeArtifact.artifactId) : null;
 
+  // Hydrate support context from character working draft if available
+  const supportCtx = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(`gi_calc_working_draft_${charCfg.id}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const inst = parsed.instances?.[0];
+        if (inst) {
+          return resolveSupportCtx({
+            supportId: charCfg.id,
+            stats: inst.stats ?? {},
+            mechanicInputs: inst.mechanicInputs ?? {},
+            constellationLevel: inst.constellationLevel ?? 0,
+            talentLevels: inst.levels ?? {},
+            enabled: true,
+          });
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return resolveSupportCtx({
+      supportId: charCfg.id,
+      stats: {},
+      mechanicInputs: {},
+      constellationLevel: 0,
+      enabled: true,
+    });
+  }, [charCfg.id]);
+
   // Live buff resolution
   const resolvedBuffs = useMemo(() => {
     return resolveSupportEquipmentBuffs({
       supportCharacterId: charCfg.id,
+      supportCtx,
       weaponState: activeWeapon && isWeaponEnabled ? { ...activeWeapon, enabled: true } : null,
       artifactState: activeArtifact && isArtifactEnabled ? { ...activeArtifact, enabled: true } : null,
       activeCharElement: charCfg.element,
@@ -197,7 +230,7 @@ export function BuildsView() {
       activeCharBaseDef: 800,
       activeCharBaseHp: 15000,
     });
-  }, [charCfg, activeWeapon, isWeaponEnabled, activeArtifact, isArtifactEnabled]);
+  }, [charCfg, supportCtx, activeWeapon, isWeaponEnabled, activeArtifact, isArtifactEnabled]);
 
   const fromChar = fromParam ? characterById(fromParam) : null;
 

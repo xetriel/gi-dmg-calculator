@@ -28,6 +28,8 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
   const weapons = inst.externalWeapons ?? [];
   const masterEnabled = inst.externalWeaponBuffsEnabled !== false;
   const baseAtk = toNum(inst.stats["atk.base"]) ?? 0;
+  const baseDef = toNum(inst.stats["def.base"]) ?? 0;
+  const baseHp = toNum(inst.stats["hp.base"]) ?? 0;
 
   // Retrieve active support-equipped weapons
   const teamSupports = inst.teamSupports ?? [];
@@ -38,14 +40,14 @@ export const ExternalWeaponBuffPanel: React.FC<ExternalWeaponBuffPanelProps> = (
     config.element,
     config.weapon,
     baseAtk,
-    Number(inst.stats["def.base"] ?? 0),
-    Number(inst.stats["hp.base"] ?? 0)
+    baseDef,
+    baseHp
   );
   const supportWeaponMap = new Map(supportWeapons.map((sw) => [sw.weapon.weaponId, sw]));
   const supportWeaponIds = Array.from(supportWeaponMap.keys());
 
   // Compute live preview of standalone weapon buffs (bypassing overridden duplicates)
-  const weaponResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled, supportWeaponIds);
+  const weaponResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled, supportWeaponIds, baseDef, baseHp);
 
   // Combined weapon buff sources for live preview in this panel
   const combinedWeaponSources = [

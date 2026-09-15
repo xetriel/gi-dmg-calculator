@@ -445,9 +445,9 @@ export function resolveStats(raw: RawInputs): DamageStats {
     burstLevelBoost: opt("burstLevelBoost"),
 
     // 13. Base Stat Modifications
-    baseAtk: opt("baseAtk"),
-    baseHp: opt("baseHp"),
-    baseDef: opt("baseDef"),
+    baseAtk: opt("atk.base") ?? opt("baseAtk"),
+    baseHp: opt("hp.base") ?? opt("baseHp"),
+    baseDef: opt("def.base") ?? opt("baseDef"),
 
     // 14. Stamina Buffs
     stamina: opt("stamina"),

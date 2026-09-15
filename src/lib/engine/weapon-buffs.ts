@@ -36,6 +36,8 @@ export function resolveExternalWeaponBuffs(
   charConfig?: CharacterConfig,
   masterEnabled: boolean = true,
   overriddenWeaponIds?: string[] | Set<string>,
+  baseDef: number = 0,
+  baseHp: number = 0,
 ): ExternalWeaponBuffResult {
   const result: ExternalWeaponBuffResult = {
     statDeltas: {},
@@ -70,6 +72,8 @@ export function resolveExternalWeaponBuffs(
     const ctx: WeaponBuffContext = {
       refinement,
       baseAtk,
+      baseDef,
+      baseHp,
       charElement: charConfig?.element,
       charWeapon: charConfig?.weapon,
       inputs: inst.inputs ?? {},
@@ -79,6 +83,50 @@ export function resolveExternalWeaponBuffs(
     const slot: WeaponSlot = inst.slot ?? (isMatchingClass && config.buffType === "self" ? "wielder" : "support");
     const isWielder = slot === "wielder" && isMatchingClass;
 
+    // 1. Resolve Wielder Substat if this is equipped by the matching active wielder
+    if (isWielder && config.subStat) {
+      const isPct =
+        config.subStat.label.includes("%") ||
+        config.subStat.type.endsWith("Pct") ||
+        ["defPct", "atkPct", "hpPct", "critRate", "critDmg", "energyRecharge", "healingBonus", "physicalDmgBonus"].includes(
+          config.subStat.type
+        );
+      const subVal = config.subStat.value;
+      let flatVal = subVal;
+      let targetStat: keyof DamageStats = config.subStat.type as keyof DamageStats;
+
+      if (config.subStat.type === "defPct" || (config.subStat.type === "def" && isPct)) {
+        targetStat = "def";
+        flatVal = baseDef > 0 ? (subVal / 100) * baseDef : 0;
+      } else if (config.subStat.type === "atkPct" || (config.subStat.type === "atk" && isPct)) {
+        targetStat = "atk";
+        flatVal = baseAtk > 0 ? (subVal / 100) * baseAtk : 0;
+      } else if (config.subStat.type === "hpPct" || (config.subStat.type === "hp" && isPct)) {
+        targetStat = "hp";
+        flatVal = baseHp > 0 ? (subVal / 100) * baseHp : 0;
+      } else {
+        flatVal = subVal;
+      }
+
+      if (flatVal > 0 && Number.isFinite(flatVal)) {
+        result.sources.push({
+          weaponId: config.id,
+          weaponName: config.name,
+          refinement,
+          slot,
+          buffId: `${config.id}-substat`,
+          stat: targetStat as string,
+          label: `${config.name}: ${config.subStat.label} (+${subVal}${isPct ? "%" : ""})`,
+          value: flatVal,
+          rarity: config.rarity,
+        });
+
+        (result.statDeltas as Record<string, number>)[targetStat] =
+          ((result.statDeltas as Record<string, number>)[targetStat] ?? 0) + flatVal;
+      }
+    }
+
+    // 2. Resolve Weapon Passives
     for (const buff of config.buffs) {
       // Support slot only receives team buffs (!buff.isTeamBuff is skipped)
       if (slot === "support" && !buff.isTeamBuff) {
@@ -96,7 +144,11 @@ export function resolveExternalWeaponBuffs(
       } else {
         const rawVal = buff.refinementValues[refinement - 1] ?? 0;
         if (buff.isPercent && buff.stat === "atk") {
-          val = (rawVal / 100) * baseAtk;
+          val = baseAtk > 0 ? (rawVal / 100) * baseAtk : rawVal;
+        } else if (buff.isPercent && buff.stat === "def") {
+          val = baseDef > 0 ? (rawVal / 100) * baseDef : rawVal;
+        } else if (buff.isPercent && buff.stat === "hp") {
+          val = baseHp > 0 ? (rawVal / 100) * baseHp : rawVal;
         } else {
           val = rawVal;
         }

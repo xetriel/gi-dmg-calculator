@@ -14,6 +14,16 @@ export function resolveXilonen(config: CharacterConfig, ctx: MechanicsCtx): Mech
     const a4Def = 0.20 * baseDef;
     res.statDeltas.def = (res.statDeltas.def ?? 0) + a4Def;
     res.notes.push(`A4 Portable Armored Sheath: +20% DEF (+${fmt(a4Def)}) from Nightsoul Burst`);
+    res.statBuffSources = res.statBuffSources ?? {};
+    res.statBuffSources.def = [
+      {
+        source: "A4 Portable Armored Sheath",
+        value: a4Def,
+        description: `+20% DEF (+${fmt(a4Def)}) from Nightsoul Burst`,
+        type: "mechanic",
+        category: "character",
+      },
+    ];
   }
 
   const effDef = (stats.def ?? 0) + (res.statDeltas.def ?? 0);
@@ -28,12 +38,32 @@ export function resolveXilonen(config: CharacterConfig, ctx: MechanicsCtx): Mech
     const resShred = 9 + (clampedLv - 1) * 3;
     res.statDeltas.enemyRes = (res.statDeltas.enemyRes ?? 0) - resShred;
     res.notes.push(`Source Samples: -${resShred}% Enemy Elemental RES (Skill Lv${clampedLv})`);
+    res.statBuffSources = res.statBuffSources ?? {};
+    res.statBuffSources.enemyRes = [
+      {
+        source: "Source Samples (Skill)",
+        value: -resShred,
+        description: `-${resShred}% Enemy Elemental RES (Skill Lv${clampedLv})`,
+        type: "mechanic",
+        category: "character",
+      },
+    ];
   }
 
   // C2 Chiucue Mix: Geo Source Sample grants +50% Geo DMG
   if (cons >= 2 && on("c2-chiucue-mix")) {
     res.statDeltas.geoDmgBonus = (res.statDeltas.geoDmgBonus ?? 0) + 50;
     res.notes.push("C2 Chiucue Mix: +50% Geo DMG Bonus");
+    res.statBuffSources = res.statBuffSources ?? {};
+    res.statBuffSources.geoDmgBonus = [
+      {
+        source: "C2 Chiucue Mix",
+        value: 50,
+        description: "+50% Geo DMG Bonus",
+        type: "constellation",
+        category: "character",
+      },
+    ];
   }
 
   const normalPlungeHits = [

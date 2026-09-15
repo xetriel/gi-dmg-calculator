@@ -975,5 +975,46 @@ describe("remastered support system", () => {
         expect(pills.length).toBeGreaterThanOrEqual(2);
       }
     });
+
+    it("Xilonen support with Peak Patrol Song updates C4 Blooming Blessing using effective DEF", () => {
+      // Base DEF = 800, Input DEF% = 220%, Input Flat DEF = 500 -> Initial DEF = 3060
+      // Peak Patrol Song: +82.7% substat + 16% passive = +98.7% DEF -> +789.6 flat DEF
+      // Effective DEF = 3060 + 789.6 = 3849.6 DEF
+      // C4 Flat DMG: 0.65 * 3849.6 = 2502.24
+      // Peak Patrol Song party DMG Bonus: (3849.6 / 1000) * 8 -> 25.6% cap
+      const inst: SupportInstance = {
+        supportId: "xilonen-support",
+        stats: {
+          "def.base": "800",
+          "def.percent": "220",
+          "def.flat": "500",
+        },
+        constellationLevel: 4,
+        mechanicInputs: {
+          "source-samples-active": "1",
+          "c4-blooming-blessing": "1",
+        },
+        useCharacterBuild: true,
+        equippedWeapon: {
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          inputs: { "patrol-ode-stacks": "2" },
+          enabled: true,
+        },
+        equippedArtifact: null,
+        enabled: true,
+      };
+
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.flatDmgBonus).toBeCloseTo(2502.24, 1);
+      expect(res.statDeltas.dmgBonus).toBe(25.6);
+
+      // Brief stats with includeEquipment = true reflects the effective DEF
+      const ctxWithEq = resolveSupportCtx(inst, true);
+      expect(ctxWithEq).toBeDefined();
+      const sup = supportById("xilonen");
+      const pills = sup!.formatBriefStats!(ctxWithEq!);
+      expect(pills.find((p) => p.label === "Total DEF")?.value).toBe("3,849.6");
+    });
   });
 });

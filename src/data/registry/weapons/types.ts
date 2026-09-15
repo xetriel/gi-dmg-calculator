@@ -13,6 +13,8 @@ export interface WeaponSubStat {
 export interface WeaponBuffContext {
   refinement: number;                          // 1..5
   baseAtk: number;                             // active character's base ATK
+  baseDef?: number;                            // active character's base DEF
+  baseHp?: number;                             // active character's base HP
   charElement?: Element;                       // active character's element
   charWeapon?: WeaponType;                     // active character's weapon type
   inputs?: Record<string, string | number>;    // weapon condition inputs (e.g. stacks, wielderHp)

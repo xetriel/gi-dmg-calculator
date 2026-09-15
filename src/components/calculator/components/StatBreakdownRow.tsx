@@ -65,7 +65,7 @@ export const StatBreakdownRow: React.FC<StatBreakdownRowProps> = ({
   };
 
   const formatSignedAdd = (v: number) => {
-    const prefix = v >= 0 ? "+" : "−";
+    const prefix = v >= 0 ? "+ " : "− ";
     const absV = Math.abs(v);
     if (unit === "percent") return `${prefix}${absV.toFixed(1)}%`;
     if (unit === "multiplier") return `${prefix}${absV.toFixed(2)}x`;

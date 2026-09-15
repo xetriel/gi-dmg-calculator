@@ -486,6 +486,8 @@ export function CharacterCalculator({
         config,
         true,
         equippedWeaponIds,
+        baseDefVal,
+        baseHpVal,
       );
       applyStatDeltas(s, weaponResult.statDeltas);
     }

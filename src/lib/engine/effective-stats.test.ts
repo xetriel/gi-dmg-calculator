@@ -4,6 +4,7 @@ import type { CharacterConfig } from "@/data/registry/types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import type { CalcInstance } from "@/components/calculator/types";
 import type { DamageStats } from "./damage";
+import { xilonen } from "../../data/registry/characters";
 
 const dummyConfig: CharacterConfig = {
   id: "test-ineffa",
@@ -310,4 +311,57 @@ describe("resolveAllEffectiveStats", () => {
     expect(physResRow).toBeDefined();
     expect(physResRow?.raw).toBe(10);
   });
+
+  it("resolves baseDef row properly from def.base in effective stats", () => {
+    const inst: CalcInstance = {
+      id: "setup-1",
+      stats: { "def.base": "800", "def.percent": "220", "def.flat": "500" },
+      hits: {},
+      levels: { normal: "10", skill: "10", burst: "10" },
+      mechanicInputs: { "a4-nightsoul-burst": "1" },
+      reaction: "none",
+      reactionBonus: "0",
+      reactionPanelBonus: "0",
+      lunarBaseBonus: "0",
+      constellationLevel: 0,
+    };
+
+    // Raw DEF = 800 * (1 + 2.2) + 500 = 3060
+    // A4 Passive = +20% baseDef = +160 DEF
+    // Total Effective DEF = 3220
+    const inputStatsWithDef: DamageStats = {
+      ...defaultInputStats,
+      baseDef: 800,
+      def: 3060,
+    };
+    const effectiveStatsWithDef: DamageStats = {
+      ...defaultInputStats,
+      baseDef: 800,
+      def: 3220,
+    };
+
+    const breakdowns = resolveAllEffectiveStats(xilonen, {}, inst, inputStatsWithDef, effectiveStatsWithDef);
+
+    // 1. Check Base DEF row exists and equals 800
+    const baseDefRow = breakdowns.find(b => b.key === "baseDef");
+    expect(baseDefRow).toBeDefined();
+    expect(baseDefRow?.raw).toBe(800);
+    expect(baseDefRow?.total).toBe(800);
+
+    // 2. Check DEF row breakdown has A4 Portable Armored Sheath attribution
+    const defRow = breakdowns.find(b => b.key === "def");
+    expect(defRow).toBeDefined();
+    expect(defRow?.raw).toBe(3060);
+    expect(defRow?.total).toBe(3220);
+
+    const a4Source = defRow?.additions.find(a => a.source === "A4 Portable Armored Sheath");
+    expect(a4Source).toBeDefined();
+    expect(a4Source?.value).toBe(160);
+    expect(a4Source?.type).toBe("mechanic");
+
+    // Ensure NO generic fallback was generated
+    const fallbackSource = defRow?.additions.find(a => a.type === "fallback");
+    expect(fallbackSource).toBeUndefined();
+  });
 });
+

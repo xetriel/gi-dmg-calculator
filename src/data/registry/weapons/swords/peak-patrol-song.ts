@@ -54,8 +54,11 @@ export const peakPatrolSong: WeaponConfig = {
       refinementValues: [16, 20, 24, 28, 32],
       isTeamBuff: false,
       isPercent: true,
-      conditionKey: "patrol-ode-stacks",
-      compute: (r, ctx) => { const s = Number(ctx.inputs?.['patrol-ode-stacks'] ?? 2); return s * [8, 10, 12, 14, 16][r - 1]; },
+      compute: (r, ctx) => {
+        const s = Number(ctx.inputs?.['patrol-ode-stacks'] ?? 2);
+        const pct = s * [8, 10, 12, 14, 16][r - 1];
+        return ctx.baseDef && ctx.baseDef > 0 ? (pct / 100) * ctx.baseDef : pct;
+      },
     },
     {
       id: "patrol-self-dmg",

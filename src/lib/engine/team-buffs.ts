@@ -1,5 +1,5 @@
 import type { DamageStats } from "./damage";
-import { supportById, type SupportCtx } from "../../data/registry/characters";
+import { supportById, byId as characterById, type SupportCtx } from "../../data/registry/characters";
 import { getRequiredConstellation } from "./validation";
 
 import type { CharacterConfig, Element } from "../../data/registry/types";
@@ -8,6 +8,7 @@ import {
   getDefaultEquipmentSetup,
   type EquippedWeaponState,
   type EquippedArtifactState,
+  type ResolvedSupportEquipment,
 } from "./support-equipment";
 
 // Contributor representation for indirect reaction calculations
@@ -73,7 +74,14 @@ function toNum(s: string | undefined): number {
 }
 
 // Resolve a SupportInstance's stat inputs into a SupportCtx
-export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
+export function resolveSupportCtx(
+  inst: SupportInstance,
+  includeEquipment: boolean = false,
+  dpsConfig?: CharacterConfig,
+  dpsBaseAtk: number = 0,
+  dpsBaseDef: number = 0,
+  dpsBaseHp: number = 0,
+): SupportCtx | null {
   const config = supportById(inst.supportId);
   if (!config) return null;
 
@@ -106,24 +114,24 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
     toNum(stats["def"]) ||
     0;
 
-  const atk =
+  let atk =
     resolveTriple("atk") ||
     toNum(stats["atk"]) ||
     toNum(stats["baseAtk"]) ||
     baseAtk;
-  const hp =
+  let hp =
     resolveTriple("hp") ||
     toNum(stats["hp"]) ||
     toNum(stats["baseHp"]) ||
     baseHp;
-  const def =
+  let def =
     resolveTriple("def") ||
     toNum(stats["def"]) ||
     toNum(stats["baseDef"]) ||
     baseDef;
-  const em = toNum(stats["em"]);
-  const critRate = toNum(stats["critRate"]);
-  const critDmg = toNum(stats["critDmg"]);
+  let em = toNum(stats["em"]);
+  let critRate = toNum(stats["critRate"]);
+  let critDmg = toNum(stats["critDmg"]);
 
   // Parse mechanic inputs with fallback to mechanic definition defaultValue
   const inputs: Record<string, number> = {};
@@ -145,12 +153,58 @@ export function resolveSupportCtx(inst: SupportInstance): SupportCtx | null {
     talentLevels[k] = toNum(v);
   }
 
-  return {
+  const ctx: SupportCtx = {
     atk, baseAtk, hp, baseHp, def, baseDef, em, critRate, critDmg,
     constellationLevel: inst.constellationLevel,
     talentLevels,
     inputs,
   };
+
+  const normId = inst.supportId.replace(/-support$/, "");
+
+  // Optionally incorporate equipment self buffs (for standalone views / pills)
+  if (includeEquipment) {
+    const isBuildEnabled =
+      inst.useCharacterBuild !== false &&
+      (inst.useCharacterBuild === true ||
+        Boolean(inst.equippedWeapon || inst.equippedArtifact || inst.equipmentSetupId));
+    let equippedWeapon = inst.equippedWeapon;
+    let equippedArtifact = inst.equippedArtifact;
+    if (isBuildEnabled) {
+      if (!equippedWeapon?.weaponId || !equippedArtifact?.artifactId) {
+        const defSetup = getDefaultEquipmentSetup(normId, inst.equipmentSetupId || "1");
+        if (!equippedWeapon?.weaponId && defSetup?.weapon) {
+          equippedWeapon = defSetup.weapon;
+        }
+        if (!equippedArtifact?.artifactId && defSetup?.artifact) {
+          equippedArtifact = defSetup.artifact;
+        }
+      }
+    }
+
+    if (isBuildEnabled && (equippedWeapon || equippedArtifact)) {
+      const eqBuffs = resolveSupportEquipmentBuffs({
+        supportCharacterId: inst.supportId,
+        supportCtx: ctx,
+        weaponState: equippedWeapon,
+        artifactState: equippedArtifact,
+        activeCharElement: dpsConfig?.element,
+        activeCharWeapon: dpsConfig?.weapon,
+        activeCharBaseAtk: dpsBaseAtk,
+        activeCharBaseDef: dpsBaseDef,
+        activeCharBaseHp: dpsBaseHp,
+      });
+
+      if (eqBuffs.selfStatDeltas.def) ctx.def += eqBuffs.selfStatDeltas.def;
+      if (eqBuffs.selfStatDeltas.atk) ctx.atk += eqBuffs.selfStatDeltas.atk;
+      if (eqBuffs.selfStatDeltas.hp) ctx.hp += eqBuffs.selfStatDeltas.hp;
+      if (eqBuffs.selfStatDeltas.em) ctx.em += eqBuffs.selfStatDeltas.em;
+      if (eqBuffs.selfStatDeltas.critRate) ctx.critRate += eqBuffs.selfStatDeltas.critRate;
+      if (eqBuffs.selfStatDeltas.critDmg) ctx.critDmg += eqBuffs.selfStatDeltas.critDmg;
+    }
+  }
+
+  return ctx;
 }
 
 /**
@@ -194,21 +248,6 @@ export function resolveTeamBuffs(
     const ctx = resolveSupportCtx(inst);
     if (!ctx) continue;
 
-    const supportLevel = toNum(inst.stats["levelChar"]) || toNum(inst.stats["level"]) || 90;
-    result.contributors.push({
-      id: inst.supportId,
-      name: config.name,
-      element: config.element,
-      levelChar: supportLevel,
-      em: ctx.em,
-      critRate: ctx.critRate,
-      critDmg: ctx.critDmg,
-      reactionBonusPct: toNum(inst.stats["reactionBonus"]) || 0,
-      baseDmgBonusPct: 0,
-      elevationBonusPct: 0,
-      flatDmg: 0,
-    });
-
     const isBuildEnabled =
       inst.useCharacterBuild !== false &&
       (inst.useCharacterBuild === true ||
@@ -241,6 +280,45 @@ export function resolveTeamBuffs(
         }
       }
     }
+
+    // Compute Equipped Weapon and Artifact buffs for this support FIRST
+    let eqBuffs: ResolvedSupportEquipment | null = null;
+    if (isBuildEnabled && (equippedWeapon || equippedArtifact)) {
+      eqBuffs = resolveSupportEquipmentBuffs({
+        supportCharacterId: inst.supportId,
+        supportCtx: ctx,
+        weaponState: equippedWeapon,
+        artifactState: equippedArtifact,
+        activeCharElement: dpsConfig?.element,
+        activeCharWeapon: dpsConfig?.weapon,
+        activeCharBaseAtk: dpsBaseAtk,
+        activeCharBaseDef: dpsBaseDef,
+        activeCharBaseHp: dpsBaseHp,
+      });
+
+      // Apply self stat deltas onto ctx so character buffs (like Xilonen C4) and contributors see effective stats
+      if (eqBuffs.selfStatDeltas.def) ctx.def += eqBuffs.selfStatDeltas.def;
+      if (eqBuffs.selfStatDeltas.atk) ctx.atk += eqBuffs.selfStatDeltas.atk;
+      if (eqBuffs.selfStatDeltas.hp) ctx.hp += eqBuffs.selfStatDeltas.hp;
+      if (eqBuffs.selfStatDeltas.em) ctx.em += eqBuffs.selfStatDeltas.em;
+      if (eqBuffs.selfStatDeltas.critRate) ctx.critRate += eqBuffs.selfStatDeltas.critRate;
+      if (eqBuffs.selfStatDeltas.critDmg) ctx.critDmg += eqBuffs.selfStatDeltas.critDmg;
+    }
+
+    const supportLevel = toNum(inst.stats["levelChar"]) || toNum(inst.stats["level"]) || 90;
+    result.contributors.push({
+      id: inst.supportId,
+      name: config.name,
+      element: config.element,
+      levelChar: supportLevel,
+      em: ctx.em,
+      critRate: ctx.critRate,
+      critDmg: ctx.critDmg,
+      reactionBonusPct: toNum(inst.stats["reactionBonus"]) || 0,
+      baseDmgBonusPct: 0,
+      elevationBonusPct: 0,
+      flatDmg: 0,
+    });
 
     // Compute each buff
     for (const buff of config.buffs) {
@@ -294,20 +372,8 @@ export function resolveTeamBuffs(
       }
     }
 
-    // Compute Equipped Weapon and Artifact buffs for this support (only when build is enabled)
-    if (isBuildEnabled && (equippedWeapon || equippedArtifact)) {
-      const eqBuffs = resolveSupportEquipmentBuffs({
-        supportCharacterId: inst.supportId,
-        supportCtx: ctx,
-        weaponState: equippedWeapon,
-        artifactState: equippedArtifact,
-        activeCharElement: dpsConfig?.element,
-        activeCharWeapon: dpsConfig?.weapon,
-        activeCharBaseAtk: dpsBaseAtk,
-        activeCharBaseDef: dpsBaseDef,
-        activeCharBaseHp: dpsBaseHp,
-      });
-
+    // Add party equipment buffs
+    if (eqBuffs) {
       for (const src of eqBuffs.partySources) {
         result.sources.push({
           supportName: config.name,

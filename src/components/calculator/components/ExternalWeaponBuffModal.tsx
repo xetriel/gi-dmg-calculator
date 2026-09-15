@@ -50,6 +50,8 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
   const weapons = currentInst.externalWeapons ?? [];
   const masterEnabled = currentInst.externalWeaponBuffsEnabled !== false;
   const baseAtk = toNum(currentInst.stats["atk.base"]) ?? 0;
+  const baseDef = toNum(currentInst.stats["def.base"]) ?? 0;
+  const baseHp = toNum(currentInst.stats["hp.base"]) ?? 0;
 
   // Retrieve active support-equipped weapons
   const teamSupports = currentInst.teamSupports ?? [];
@@ -60,14 +62,14 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
     config.element,
     config.weapon,
     baseAtk,
-    Number(currentInst.stats["def.base"] ?? 0),
-    Number(currentInst.stats["hp.base"] ?? 0)
+    baseDef,
+    baseHp
   );
   const supportWeaponMap = new Map(supportWeapons.map((sw) => [sw.weapon.weaponId, sw]));
   const supportWeaponIds = Array.from(supportWeaponMap.keys());
 
   // Compute live total weapon buff results (bypassing overridden duplicates)
-  const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled, supportWeaponIds);
+  const totalResult = resolveExternalWeaponBuffs(weapons, baseAtk, config, masterEnabled, supportWeaponIds, baseDef, baseHp);
 
   // Combined weapon buff sources for summary bar
   const combinedWeaponSources = [
@@ -631,7 +633,10 @@ export const ExternalWeaponBuffModal: React.FC<ExternalWeaponBuffModalProps> = (
                   [{ ...wInst, enabled: true }],
                   baseAtk,
                   config,
-                  true
+                  true,
+                  [],
+                  baseDef,
+                  baseHp
                 );
 
                 const isMatchingClass = wConfig.type === config.weapon;

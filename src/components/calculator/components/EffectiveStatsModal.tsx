@@ -109,7 +109,7 @@ export const EffectiveStatsModal: React.FC<EffectiveStatsModalProps> = ({
   };
 
   const formatSignedAdd = (v: number, unit: "flat" | "percent" | "multiplier") => {
-    const prefix = v >= 0 ? "+" : "−";
+    const prefix = v >= 0 ? "+ " : "− ";
     const absV = Math.abs(v);
     if (unit === "percent") return `${prefix}${absV.toFixed(1)}%`;
     if (unit === "multiplier") return `${prefix}${absV.toFixed(2)}x`;
@@ -331,31 +331,28 @@ export const EffectiveStatsModal: React.FC<EffectiveStatsModalProps> = ({
                         {formatVal(b.raw, b.unit)} (Raw)
                       </span>
                       {b.additions.length > 0 && (
-                        <>
-                          <span className="text-gray-400 font-sans">+</span>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {b.additions.map((add, ai) => {
-                              const isAddExt =
-                                add.type === "external" ||
-                                add.category === "team" ||
-                                add.category === "weapon" ||
-                                add.category === "artifact";
-                              return (
-                                <span
-                                  key={ai}
-                                  className={`font-semibold ${
-                                    isAddExt
-                                      ? "text-amber-600 dark:text-amber-400 font-bold"
-                                      : "text-sky-600 dark:text-sky-400"
-                                  }`}
-                                  title={`${add.source}: ${formatSignedAdd(add.value, b.unit)}`}
-                                >
-                                  {formatSignedAdd(add.value, b.unit)}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {b.additions.map((add, ai) => {
+                            const isAddExt =
+                              add.type === "external" ||
+                              add.category === "team" ||
+                              add.category === "weapon" ||
+                              add.category === "artifact";
+                            return (
+                              <span
+                                key={ai}
+                                className={`font-semibold ${
+                                  isAddExt
+                                    ? "text-amber-600 dark:text-amber-400 font-bold"
+                                    : "text-sky-600 dark:text-sky-400"
+                                }`}
+                                title={`${add.source}: ${formatSignedAdd(add.value, b.unit)}`}
+                              >
+                                {formatSignedAdd(add.value, b.unit)}
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                       <span className="text-gray-400 font-sans">=</span>
                       <span className="font-extrabold text-black dark:text-white">

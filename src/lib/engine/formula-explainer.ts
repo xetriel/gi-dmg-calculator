@@ -149,7 +149,7 @@ export function explainHitFormulas(
 
   // Apply external weapon team buffs
   const weaponResult = (inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length)
-    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamResult?.equippedWeaponIds)
+    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamResult?.equippedWeaponIds, baseDef, baseHp)
     : null;
   if (weaponResult) {
     applyStatDeltas(effectiveStats, weaponResult.statDeltas);

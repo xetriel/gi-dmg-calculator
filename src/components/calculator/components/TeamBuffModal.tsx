@@ -283,7 +283,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-7xl h-[90vh] max-h-[880px] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
-        
+
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-150 dark:border-zinc-850 shrink-0 bg-gray-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-3">
@@ -314,11 +314,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 <button
                   key={inst.id}
                   onClick={() => setActiveInstanceId(inst.id)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${isSelected
                       ? "bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs font-bold"
                       : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   <span>{`Setup ${idx + 1}`}</span>
                   {activeCount > 0 && (
@@ -341,7 +340,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
         {/* Modal Main Content: Split Grid */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-zinc-800">
-          
+
           {/* LEFT PANE: Support Character Catalog & Filtering (4 cols) */}
           <div className="lg:col-span-4 flex flex-col min-h-0 bg-gray-50/30 dark:bg-zinc-900/20">
             {/* Filter Toolbar */}
@@ -370,11 +369,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
               <div className="flex items-center gap-1 flex-wrap">
                 <button
                   onClick={() => setElementFilter("ALL")}
-                  className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border ${
-                    elementFilter === "ALL"
+                  className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border ${elementFilter === "ALL"
                       ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-2xs"
                       : "bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400"
-                  }`}
+                    }`}
                 >
                   All Elements ({SUPPORT_CONFIGS.length})
                 </button>
@@ -393,14 +391,13 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         isSelected
                           ? { backgroundColor: color, borderColor: color, color: "#ffffff" }
                           : isHovered
-                          ? { borderColor: color }
-                          : undefined
+                            ? { borderColor: color }
+                            : undefined
                       }
-                      className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border flex items-center gap-1 ${
-                        isSelected
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer border flex items-center gap-1 ${isSelected
                           ? "shadow-2xs text-white"
                           : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
-                      }`}
+                        }`}
                     >
                       <ElementIcon element={elem} className="w-3 h-3" />
                       <span>{elem}</span>
@@ -418,25 +415,24 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     r === "ALL"
                       ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-2xs"
                       : r === 5
-                      ? "bg-amber-500 text-white border-amber-600 shadow-2xs"
-                      : "bg-purple-600 text-white border-purple-700 shadow-2xs";
+                        ? "bg-amber-500 text-white border-amber-600 shadow-2xs"
+                        : "bg-purple-600 text-white border-purple-700 shadow-2xs";
 
                   const hoverClass =
                     r === "ALL"
                       ? "hover:border-gray-400"
                       : r === 5
-                      ? "hover:border-amber-400"
-                      : "hover:border-purple-400";
+                        ? "hover:border-amber-400"
+                        : "hover:border-purple-400";
 
                   return (
                     <button
                       key={r}
                       onClick={() => setRarityFilter(r)}
-                      className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${
-                        isSelected
+                      className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer border ${isSelected
                           ? activeClass
                           : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${hoverClass}`
-                      }`}
+                        }`}
                     >
                       {r === "ALL" ? "All" : `${r}★`}
                     </button>
@@ -454,11 +450,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 return (
                   <div
                     key={s.id}
-                    className={`rounded-xl border p-3 transition-all duration-150 flex flex-col justify-between gap-2.5 ${
-                      isAdded
+                    className={`rounded-xl border p-3 transition-all duration-150 flex flex-col justify-between gap-2.5 ${isAdded
                         ? `${theme.catalogAddedBg} opacity-70`
                         : `border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 ${theme.catalogBorderHover} hover:shadow-xs`
-                    }`}
+                      }`}
                   >
                     <div>
                       {/* Title, Badges & Action Button */}
@@ -486,13 +481,12 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         <button
                           onClick={() => addSupport(s.id)}
                           disabled={isAdded || isMaxReached}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer shrink-0 ${
-                            isAdded
+                          className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer shrink-0 ${isAdded
                               ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
                               : isMaxReached
-                              ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
-                              : `${theme.addButton} shadow-xs`
-                          }`}
+                                ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed border border-gray-200 dark:border-zinc-700"
+                                : `${theme.addButton} shadow-xs`
+                            }`}
                           title={isMaxReached && !isAdded ? `Maximum of ${MAX_SUPPORTS} support characters reached` : undefined}
                         >
                           {isAdded ? "Added ✓" : isMaxReached ? `Max ${MAX_SUPPORTS}` : "+ Add"}
@@ -580,13 +574,12 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                       const updated = supports.map((s) => ({ ...s, useCharacterBuild: nextState }));
                       updateInstance(currentInst.id, () => ({ teamSupports: updated }));
                     }}
-                    className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      supports.every((s) => s.useCharacterBuild !== false)
+                    className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${supports.every((s) => s.useCharacterBuild !== false)
                         ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 shadow-2xs"
                         : supports.some((s) => s.useCharacterBuild !== false)
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                        : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
-                    }`}
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                          : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
+                      }`}
                     title="Toggle Use Character Build for all supports in this team (Option 1 vs Option 2)"
                   >
                     <span>🛡️</span>
@@ -595,8 +588,8 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                       {supports.every((s) => s.useCharacterBuild !== false)
                         ? "All ON"
                         : supports.some((s) => s.useCharacterBuild !== false)
-                        ? "Partial"
-                        : "All OFF"}
+                          ? "Partial"
+                          : "All OFF"}
                     </span>
                   </button>
                 )}
@@ -650,11 +643,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 return (
                   <div
                     key={`${sup.supportId}-${index}`}
-                    className={`rounded-2xl border p-4 transition-all duration-200 shadow-xs ${
-                      isActive
+                    className={`rounded-2xl border p-4 transition-all duration-200 shadow-xs ${isActive
                         ? theme.cardBorderActive
                         : "border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/40 opacity-60"
-                    }`}
+                      }`}
                   >
                     {/* Support Card Header */}
                     <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
@@ -724,11 +716,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                 key={s.id}
                                 type="button"
                                 onClick={() => switchSetup(index, s.id)}
-                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 whitespace-nowrap ${
-                                  isSelected
+                                className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border flex items-center gap-1 whitespace-nowrap ${isSelected
                                     ? theme.activeButton
                                     : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
-                                }`}
+                                  }`}
                                 title={`Switch to ${sConfig.name} Setup ${s.id}`}
                               >
                                 <span>Setup {s.id}</span>
@@ -755,7 +746,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           className={`text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 ${theme.buttonHover} transition-all inline-flex items-center gap-1 font-semibold`}
                           title="Open dedicated support builder for this character"
                         >
-                          ✎ Edit Build ↗
+                          ✎ Quick Edit Stats ↗
                         </Link>
                       </div>
                     </div>
@@ -777,21 +768,19 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                         </label>
 
                         {/* Status tag */}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
-                          sup.useCharacterBuild !== false
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${sup.useCharacterBuild !== false
                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                             : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700"
-                        }`}>
+                          }`}>
                           {sup.useCharacterBuild !== false ? "Build Active" : "Kit Only"}
                         </span>
 
                         {/* Weapon Pill */}
                         {sup.equippedWeapon?.weaponId ? (
-                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
-                            sup.useCharacterBuild !== false
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${sup.useCharacterBuild !== false
                               ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                               : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
-                          }`}>
+                            }`}>
                             <span>⚔️</span>
                             <span className="truncate max-w-[120px]">
                               {weaponById(sup.equippedWeapon.weaponId)?.name || sup.equippedWeapon.weaponId}
@@ -806,11 +795,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
 
                         {/* Artifact Pill */}
                         {sup.equippedArtifact?.artifactId ? (
-                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${
-                            sup.useCharacterBuild !== false
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-bold ${sup.useCharacterBuild !== false
                               ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
                               : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700 opacity-60 line-through"
-                          }`}>
+                            }`}>
                             <span>🏺</span>
                             <span className="truncate max-w-[120px]">
                               {artifactById(sup.equippedArtifact.artifactId)?.name || sup.equippedArtifact.artifactId}
@@ -858,11 +846,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                 constellationLevel: sup.constellationLevel === lvl ? Math.max(0, lvl - 1) : lvl,
                               }))
                             }
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${
-                              sup.constellationLevel >= lvl
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all border ${sup.constellationLevel >= lvl
                                 ? theme.activeButton
                                 : `bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
-                            }`}
+                              }`}
                           >
                             C{lvl}
                           </button>
@@ -918,11 +905,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           return (
                             <span
                               key={i}
-                              className={`text-xs font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${
-                                isActive
+                              className={`text-xs font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${isActive
                                   ? theme.notePill
                                   : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 border-gray-200 dark:border-zinc-700"
-                              }`}
+                                }`}
                             >
                               {s.label}: {formattedVal}
                             </span>
@@ -1004,11 +990,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                     return (
                       <span
                         key={i}
-                        className={`text-xs font-extrabold px-2.5 py-1 rounded-lg border ${
-                          masterEnabled
+                        className={`text-xs font-extrabold px-2.5 py-1 rounded-lg border ${masterEnabled
                             ? theme.sourceBuffPill
                             : "bg-gray-200 dark:bg-zinc-800 text-gray-400 line-through border-transparent"
-                        }`}
+                          }`}
                       >
                         {s.label}: +{s.stat === "em" || s.stat === "atk" || s.stat === "hp" || s.stat === "def"
                           ? fmt(s.value)

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CharacterConfig, ReactionType } from "@/data/registry/types";
-import type { SavedRotation, RotationStep, SavedBuild, CalcInstance } from "../types";
+import type { SavedRotation, RotationStep, SavedBuild, CalcInstance, ExternalWeaponInstance } from "../types";
 import type { TalentScalingData } from "@/lib/talent-scaling";
 import { saveBuild, deleteBuild } from "@/app/builds/actions";
 import { encodeBuild } from "@/lib/engine/share";
 import { toNum } from "@/lib/engine/validation";
+import { getSupportEquipmentSetups } from "@/lib/engine/support-equipment";
 
 export const initialStats: Record<string, string> = {
   "hp.base": "1000",
@@ -159,6 +160,24 @@ export function useCalculatorState({
     for (const m of config.mechanicDefs ?? []) {
       initMechanics[m.id] = String(m.defaultValue ?? 0);
     }
+    const initWeapons: ExternalWeaponInstance[] = [];
+    try {
+      const setups = getSupportEquipmentSetups(config.id);
+      const activeSetup = setups[0];
+      if (activeSetup?.weapon?.enabled && activeSetup.weapon.weaponId) {
+        initWeapons.push({
+          id: `w-${activeSetup.weapon.weaponId}-init`,
+          weaponId: activeSetup.weapon.weaponId,
+          refinement: activeSetup.weapon.refinement ?? 1,
+          inputs: activeSetup.weapon.inputs ?? {},
+          enabled: true,
+          slot: "wielder",
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     return {
       id,
       stats: getInitialStats(config),
@@ -174,7 +193,7 @@ export function useCalculatorState({
       constellationLevel: 0,
       teamSupports: [],
       teamBuffsEnabled: true,
-      externalWeapons: [],
+      externalWeapons: initWeapons,
       externalWeaponBuffsEnabled: true,
     };
   };

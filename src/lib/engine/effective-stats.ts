@@ -317,7 +317,7 @@ export function resolveAllEffectiveStats(
     : { statDeltas: {}, lunarBaseBonusPct: 0, stellarBaseBonusPct: 0, sources: [], teamCrit: { critRate: 0, critDmg: 0 }, equippedArtifactIds: [], equippedWeaponIds: [] };
 
   const weaponRes = inst.externalWeaponBuffsEnabled !== false && inst.externalWeapons?.length
-    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamRes.equippedWeaponIds)
+    ? resolveExternalWeaponBuffs(inst.externalWeapons, baseAtk, config, true, teamRes.equippedWeaponIds, baseDef, baseHp)
     : { statDeltas: {}, sources: [] };
 
   const artifactRes = inst.externalArtifactBuffsEnabled !== false && inst.externalArtifacts?.length

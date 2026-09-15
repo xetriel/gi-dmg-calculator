@@ -123,7 +123,8 @@ describe("Crimson Moon's Semblance Buff Resolver", () => {
     );
 
     expect(result.statDeltas.dmgBonus).toBe(36);
-    expect(result.sources.length).toBe(2);
+    expect(result.statDeltas.critRate).toBe(22.1);
+    expect(result.sources.length).toBe(3); // 1 substat (CRIT Rate) + 2 passives
   });
 
   it("provides +84% All DMG Bonus (28% base + 56% BoL >= 30%) at R5 for Arlecchino", () => {
@@ -859,5 +860,32 @@ describe("Peak Patrol Song Role Routing & Slot Resolution", () => {
     expect(result.statDeltas.def).toBeUndefined();
     expect(result.statDeltas.dmgBonus).toBe(25.6);
   });
+
+  it("scales wielder substat (+82.7% DEF) and self passive (+16% DEF) against baseDef for wielder slot", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "peak-patrol-song",
+          refinement: 1,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "patrol-ode-stacks": "2", "patrol-wielder-def": "3200" },
+        },
+      ],
+      1000,
+      xilonen,
+      true,
+      [],
+      800 // baseDef
+    );
+
+    // Substat: 82.7% * 800 = 661.6 DEF
+    // Self passive R1: 16% * 800 = 128 DEF
+    // Total DEF delta: 661.6 + 128 = 789.6 DEF
+    expect(result.statDeltas.def).toBeCloseTo(789.6, 1);
+    expect(result.statDeltas.dmgBonus).toBe(45.6); // 25.6% party + 20% self
+  });
 });
+
 
