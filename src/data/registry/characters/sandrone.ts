@@ -21,18 +21,21 @@ export const sandrone: CharacterConfig = {
       { key: "3-hit", name: "3-Hit", scaling: "atk", hitCategory: "normal", element: "Physical" },
       atkCharged("sweeping-fire", "Charged: Sweeping Fire"),
       atkCharged("condensed-beam", "Charged: Condensed Beam"),
-      { key: "condensed-beam-stellar", name: "Charged: Condensed Beam (Radiance: Stellar Glimmer)", scaling: "atk", direct: "stellar", hitCategory: "charged" },
+      { key: "condensed-beam-stellar-conduct", name: "Charged: Condensed Beam (Radiance: Stellar-Conduct)", scaling: "atk", direct: "stellar", stellarType: "stellar-conduct", hitCategory: "charged", element: "Cryo" },
+      { key: "condensed-beam-stellar-swirl", name: "Charged: Condensed Beam (Radiance: Stellar Swirl)", scaling: "atk", direct: "stellar", stellarType: "stellar-swirl", hitCategory: "charged", element: "Cryo" },
       atk("power-overdrive", "DMG When in Power Overdrive"),
       atkPlunge("plunge", "Plunge"), atkPlunge("low-plunge", "Low Plunge"), atkPlunge("high-plunge", "High Plunge"),
     ] },
     { type: "skill", name: "Elemental Skill — Differential Analysis", hits: [
       atk("prism-shot", "Prism Shot"),
-      stellarAtk("prism-shot-stellar", "Prism Shot 2 (Radiance: Stellar Glimmer)"),
+      { key: "prism-shot-stellar-conduct", name: "Prism Shot 2 (Radiance: Stellar-Conduct)", scaling: "atk", direct: "stellar", stellarType: "stellar-conduct", hitCategory: "skill", element: "Cryo" },
+      { key: "prism-shot-stellar-swirl", name: "Prism Shot 2 (Radiance: Stellar Swirl)", scaling: "atk", direct: "stellar", stellarType: "stellar-swirl", hitCategory: "skill", element: "Cryo" },
     ] },
     { type: "burst", name: "Elemental Burst — Q.E.D.", hits: [
       atk("bombardment", "Bombardment ×3 (each)"),
       atk("convective-ray", "Convective Inhibition Ray"),
-      stellarAtk("convective-ray-stellar", "Convective Inhibition Ray (Radiance: Stellar Glimmer)"),
+      { key: "convective-ray-stellar-conduct", name: "Convective Inhibition Ray (Radiance: Stellar-Conduct)", scaling: "atk", direct: "stellar", stellarType: "stellar-conduct", hitCategory: "burst", element: "Cryo" },
+      { key: "convective-ray-stellar-swirl", name: "Convective Inhibition Ray (Radiance: Stellar Swirl)", scaling: "atk", direct: "stellar", stellarType: "stellar-swirl", hitCategory: "burst", element: "Cryo" },
     ] },
   ],
   mechanicDefs: [
@@ -41,7 +44,7 @@ export const sandrone: CharacterConfig = {
     { id: "polestar-hits", label: "Polestar recorded hits", control: "stacks", max: 12,
       hint: "Cryo/Electro hits stored by the field: BRC 1.00 → 1.45…2.00; Cryo DMG Bonus 20% → 29…40%" },
     { id: "radiance-stellar-swirl", label: "Radiance: Stellar Swirl active", control: "toggle", defaultValue: 0,
-      hint: "Party Stellar Swirl triggers Radiance: Stellar Swirl (8s); direct hits deal Stellar Swirl DMG (inactive if Polestar Field is active)" },
+      hint: "Party Stellar Swirl triggers Radiance: Stellar Swirl (8s); enables Radiance: Stellar Swirl direct reaction DMG" },
     { id: "decoding-over-50", label: "Decoding Power > 50 (A1)", control: "toggle", defaultValue: 1,
       hint: "2nd Prism Shot deals 400% of its original DMG" },
     { id: "refined-tactics", label: "Refined Tactics stacks (A1)", control: "stacks", max: 10,
@@ -68,12 +71,12 @@ export const sandrone: CharacterConfig = {
     {
       name: "Formule Phenomenale: Q.E.D.",
       type: "Elemental Burst",
-      description: "Summons a large number of Prismatic Resonance Cannons for a frontal bombardment before firing a Convective Inhibition Ray, dealing AoE Cryo DMG. Radiance: Stellar Glimmer: The Convective Inhibition Ray instead deals AoE Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG."
+      description: "In line with established ladylike behavior, Sandrone summons a large number of Prismatic Resonance Cannons for a frontal bombardment before firing on her foes with a Convective Inhibition Ray, dealing AoE Cryo DMG. Radiance: Stellar Glimmer: The Convective Inhibition Ray instead deals AoE Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG. (Radiance: Stellar-Conduct and Radiance: Stellar Swirl are both considered Radiance: Stellar Glimmer states. Characters can only be affected by one Radiance state at any one time, and where more than one state can be triggered, Radiance: Stellar-Conduct shall apply first.)"
     },
     {
       name: "Eternal Speculation Engine",
       type: "Passive Talent",
-      description: "Radiance: Stellar Glimmer: When using Differential Analysis, if Fagio's Decoding Power is greater than 50, the second Prism Shot deals 400% of its original DMG as Fagio's Decoding Power is decreased. For every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses Q.E.D. while in the Radiance: Stellar-Conduct state, all Refined Tactics stacks are cleared, causing the Convective Inhibition Ray to deal 100% + (stacks cleared) × 10% of its original DMG."
+      description: "Radiance: Stellar Glimmer: When using Differential Analysis, if Fagio's Decoding Power is greater than 50, the second Prism Shot deals 400% of its original DMG as Fagio's Decoding Power is decreased. For every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses Q.E.D. while in the Radiance: Stellar Glimmer state, all Refined Tactics stacks are cleared, causing the Convective Inhibition Ray to deal 100% + (stacks cleared) × 10% of its original DMG."
     },
     {
       name: "A Lady's Code of Conduct",
@@ -81,9 +84,9 @@ export const sandrone: CharacterConfig = {
       description: "Increases Sandrone's Elemental Mastery based on her ATK. Every 100 ATK will increase her Elemental Mastery by 8. The maximum increase she can gain this way is 160."
     },
     {
-      name: "Light of Rationalisme",
+      name: "Stellar Jubilee: Light of Rationalisme",
       type: "Passive Talent",
-      description: "Sandrone will enter the Radiance: Stellar Conduct state when she is inside a Polestar Field, or the Radiance: Stellar Swirl state for 8s after a nearby party member triggers a Stellar Swirl reaction. When a party member triggers a Superconduct or Cryo Swirl reaction, it becomes a Stellar-Conduct or Stellar Swirl reaction instead, and the Base DMG of the aforementioned reaction is also increased by 0.7% for every 100 points of Sandrone's ATK (max 14%)."
+      description: "Sandrone will enter the Radiance: Stellar-Conduct state when she is inside a Polestar Field, or the Radiance: Stellar Swirl state for 8s after a nearby party member triggers a Stellar Swirl reaction. When a party member triggers a Superconduct or Cryo Swirl reaction, it becomes a Stellar-Conduct or Stellar Swirl reaction instead, and the Base DMG of the aforementioned reaction is also increased by 0.7% for every 100 points of Sandrone's ATK (max 14%)."
     },
     {
       name: "A Caucus Prelude and a Long Tale",
