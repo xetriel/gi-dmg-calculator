@@ -4,6 +4,7 @@ import { getWeaponsForCharacter, WEAPONS, weaponById } from "../../data/registry
 import { arlecchino } from "../../data/registry/characters/arlecchino";
 import { neuvillette } from "../../data/registry/characters/neuvillette";
 import { xilonen } from "../../data/registry/characters/xilonen";
+import { flins } from "../../data/registry/characters/flins";
 
 
 describe("Full Weapon Registry Integrity (Released Weapons)", () => {
@@ -860,4 +861,156 @@ describe("Peak Patrol Song Role Routing & Slot Resolution", () => {
     expect(result.statDeltas.dmgBonus).toBe(25.6);
   });
 });
+
+describe("Prospector's Shovel Buff Resolver", () => {
+  it("provides base Electro-Charged DMG and Lunar-Charged DMG at R1 with Ascendant Gleam active", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "prospectors-shovel",
+          refinement: 1,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "prospector-moonsign-active": "1" },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    // R1: +48% Electro-Charged DMG
+    expect(result.statDeltas.electroChargedDmgBonus).toBe(48);
+    // R1: +12% base Lunar-Charged DMG + 12% Ascendant Gleam = 24%
+    expect(result.statDeltas.lunarChargedDmgBonus).toBe(24);
+  });
+
+  it("provides scaled bonuses at R5 and respects Moonsign toggle", () => {
+    // Test R5 with Ascendant Gleam ON
+    const r5On = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "prospectors-shovel",
+          refinement: 5,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "prospector-moonsign-active": "1" },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    expect(r5On.statDeltas.electroChargedDmgBonus).toBe(96);
+    // R5: +24% base + 24% Ascendant Gleam = 48%
+    expect(r5On.statDeltas.lunarChargedDmgBonus).toBe(48);
+
+    // Test R5 with Ascendant Gleam OFF
+    const r5Off = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "prospectors-shovel",
+          refinement: 5,
+          slot: "wielder",
+          enabled: true,
+          inputs: { "prospector-moonsign-active": "0" },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    expect(r5Off.statDeltas.electroChargedDmgBonus).toBe(96);
+    // Base only: 24%
+    expect(r5Off.statDeltas.lunarChargedDmgBonus).toBe(24);
+  });
+});
+
+describe("Bloodsoaked Ruins Buff Resolver", () => {
+  it("provides Lunar-Charged DMG after Burst and CRIT DMG on Requiem of Ruin at R1", () => {
+    const result = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "bloodsoaked-ruins",
+          refinement: 1,
+          slot: "wielder",
+          enabled: true,
+          inputs: {
+            "bloodsoaked-burst-active": "1",
+            "bloodsoaked-requiem-active": "1",
+          },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    // R1: +36% Lunar-Charged DMG, +28% CRIT DMG
+    expect(result.statDeltas.lunarChargedDmgBonus).toBe(36);
+    expect(result.statDeltas.critDmg).toBe(28);
+  });
+
+  it("scales correctly to R5 and respects condition toggles", () => {
+    // Both toggles ON at R5
+    const r5BothOn = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "bloodsoaked-ruins",
+          refinement: 5,
+          slot: "wielder",
+          enabled: true,
+          inputs: {
+            "bloodsoaked-burst-active": "1",
+            "bloodsoaked-requiem-active": "1",
+          },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    expect(r5BothOn.statDeltas.lunarChargedDmgBonus).toBe(84);
+    expect(r5BothOn.statDeltas.critDmg).toBe(56);
+
+    // Burst OFF, Requiem ON
+    const r5BurstOff = resolveExternalWeaponBuffs(
+      [
+        {
+          id: "1",
+          weaponId: "bloodsoaked-ruins",
+          refinement: 5,
+          slot: "wielder",
+          enabled: true,
+          inputs: {
+            "bloodsoaked-burst-active": "0",
+            "bloodsoaked-requiem-active": "1",
+          },
+        },
+      ],
+      1000,
+      flins,
+      true
+    );
+
+    expect(r5BurstOff.statDeltas.lunarChargedDmgBonus).toBeUndefined();
+    expect(r5BurstOff.statDeltas.critDmg).toBe(56);
+  });
+
+  it("verifies Bloodsoaked Ruins config and signatureFor attribute", () => {
+    const config = weaponById("bloodsoaked-ruins");
+    expect(config).toBeDefined();
+    expect(config?.passiveName).toBe("Mournful Tribute");
+    expect(config?.signatureFor).toContain("flins");
+  });
+});
+
 

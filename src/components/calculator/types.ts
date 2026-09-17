@@ -25,6 +25,7 @@ import type { StellarType, StellarSwirlVariant, StellarResult } from "@/lib/engi
 
 export interface CalcInstance {
   id: string;
+  name?: string;
   stats: Record<string, string>;
   hits: Record<string, string>;
   levels: Record<string, string>;

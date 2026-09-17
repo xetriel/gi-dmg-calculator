@@ -6,6 +6,11 @@ import type { TalentScalingData } from "@/lib/talent-scaling";
 import { saveBuild, deleteBuild } from "@/app/builds/actions";
 import { encodeBuild } from "@/lib/engine/share";
 import { toNum } from "@/lib/engine/validation";
+import {
+  getSupportEquipmentSetups,
+  syncDraftToSupportEquipment,
+  deleteUnifiedSetup,
+} from "@/lib/engine/support-equipment";
 
 export const initialStats: Record<string, string> = {
   "hp.base": "1000",
@@ -161,6 +166,7 @@ export function useCalculatorState({
     }
     return {
       id,
+      name: `Setup ${id}`,
       stats: getInitialStats(config),
       hits: {},
       levels: initLevels,
@@ -215,7 +221,15 @@ export function useCalculatorState({
       if (storedDraft) {
         const draft = JSON.parse(storedDraft);
         if (Array.isArray(draft.instances) && draft.instances.length > 0) {
-          setInstances(draft.instances);
+          const savedEq = getSupportEquipmentSetups(config.id);
+          const harmonized = draft.instances.map((inst: CalcInstance, idx: number) => {
+            const eq = savedEq.find((e) => e.id === inst.id);
+            return {
+              ...inst,
+              name: inst.name || eq?.name || `Setup ${idx + 1}`,
+            };
+          });
+          setInstances(harmonized);
         }
         if (draft.activeBuildId !== undefined) {
           setActiveBuildId(draft.activeBuildId);
@@ -746,6 +760,7 @@ export function useCalculatorState({
     const last = instances[instances.length - 1];
     const newInst: CalcInstance = {
       id: String(nextId),
+      name: `Setup ${nextId}`,
       stats: { ...last.stats },
       hits: { ...last.hits },
       levels: { ...last.levels },
@@ -758,10 +773,12 @@ export function useCalculatorState({
     };
     setInstances(s => [...s, newInst]);
     setNextId(n => n + 1);
+    syncDraftToSupportEquipment(config.id, newInst);
   };
 
   const removeInstance = (id: string) => {
     if (instances.length <= 1) return;
+    deleteUnifiedSetup(config.id, id);
     setInstances(s => s.filter(inst => inst.id !== id));
     if (benchmarkId === id) {
       setBenchmarkId(null);
@@ -772,10 +789,14 @@ export function useCalculatorState({
     setInstances(prev =>
       prev.map(inst => {
         if (inst.id !== id) return inst;
-        return {
+        const updated = {
           ...inst,
           ...updater(inst),
         };
+        if (updated.name && updated.name !== inst.name) {
+          syncDraftToSupportEquipment(config.id, updated);
+        }
+        return updated;
       })
     );
   };

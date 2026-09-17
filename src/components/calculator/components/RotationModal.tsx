@@ -218,7 +218,7 @@ export const RotationModal: React.FC<RotationModalProps> = ({
                             <th key={inst.id} className="py-2.5 px-3 text-right font-normal">
                               <div className="flex flex-col items-end gap-1">
                                 <span className="font-semibold text-gray-800 dark:text-gray-250">
-                                  Setup {idx + 1} Avg
+                                  {inst.name || `Setup ${idx + 1}`} Avg
                                 </span>
                                 <button
                                   onClick={() => setBenchmarkId(inst.id)}

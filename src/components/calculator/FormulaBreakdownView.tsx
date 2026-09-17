@@ -205,7 +205,7 @@ export const FormulaBreakdownView: React.FC<FormulaBreakdownViewProps> = ({
                     : "bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`}
               >
-                Setup #{index + 1} (C{inst.constellationLevel})
+                {inst.name || `Setup #${index + 1}`} (C{inst.constellationLevel})
               </button>
             ))}
           </div>
