@@ -520,8 +520,8 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
     });
 
-    it("all 49 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(49);
+    it("all 50 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(50);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -532,9 +532,9 @@ describe("remastered support system", () => {
     });
   });
 
-  describe("49-Character Support Roster Completeness & Mechanics", () => {
-    it("has exactly 49 support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(49);
+  describe("50-Character Support Roster Completeness & Mechanics", () => {
+    it("has exactly 50 support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(50);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -946,6 +946,58 @@ describe("remastered support system", () => {
       const pills = sup!.formatBriefStats!(ctx!);
       expect(pills.find((p) => p.label === "Total ATK")?.value).toBe("2,400");
       expect(pills.find((p) => p.label === "CRIT")?.value).toBe("65% / 150%");
+    });
+
+    it("Sucrose: A1 & A4 EM share, C6 absorption buff, and Hexerei: Secret Rite attack bonuses", () => {
+      const sup = supportById("sucrose");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(4);
+      expect(sup?.element).toBe("Anemo");
+      expect(sup?.weapon).toBe("Catalyst");
+
+      const inst: SupportInstance = {
+        supportId: "sucrose-support",
+        stats: { em: "800", critRate: "50", critDmg: "100", baseAtk: "600" },
+        mechanicInputs: {
+          "hexerei-secret-rite": "1",
+          "small-wind-spirit": "1",
+          "large-wind-spirit": "1",
+          "hexerei-target-is-hexerei": "1",
+          "burst-absorption": "1", // Pyro
+          "c6-absorption-buff": "1",
+          "a1-swirl-buff": "1",
+          "a4-em-share": "1",
+        },
+        constellationLevel: 6,
+        enabled: true,
+      };
+
+      const res = resolveTeamBuffs([inst]);
+
+      // 1. EM Share: A1 (50) + A4 (800 * 0.2 = 160) = 210
+      expect(res.statDeltas.em).toBe(210);
+
+      // 2. C6 Pyro DMG Bonus under Hexerei: 20 + 60/7 ≈ 28.57142%
+      expect(res.statDeltas.pyroDmgBonus).toBeCloseTo(20 + 60 / 7, 4);
+
+      // 3. Hexerei Attack Bonuses: 40/7 + 50/7 = 90/7 ≈ 12.85714%
+      expect(res.statDeltas.normalDmgBonus).toBeCloseTo(90 / 7, 4);
+      expect(res.statDeltas.chargedDmgBonus).toBeCloseTo(90 / 7, 4);
+      expect(res.statDeltas.plungeDmgBonus).toBeCloseTo(90 / 7, 4);
+      expect(res.statDeltas.skillDmgBonus).toBeCloseTo(90 / 7, 4);
+      expect(res.statDeltas.burstDmgBonus).toBeCloseTo(90 / 7, 4);
+
+      // 4. Rarity stamping is 4
+      const emSource = res.sources.find((s) => s.stat === "em");
+      expect(emSource?.rarity).toBe(4);
+
+      // 5. Brief stats formatting
+      const ctx = resolveSupportCtx(inst);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Total EM")?.value).toBe("800");
+      expect(pills.find((p) => p.label === "EM Share")?.value).toBe("+210");
+      expect(pills.find((p) => p.label === "CRIT")?.value).toBe("50% / 100%");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
