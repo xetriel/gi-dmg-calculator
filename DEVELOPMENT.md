@@ -2,7 +2,81 @@
 
 This document logs the feature updates, architecture changes, and character releases across all versions of the Genshin Damage Calculator, matching the version displayed in the application header.
 
-## [v1.3.0] - Current UI Header Version
+## [v1.3.1] - Current UI Header Version
+
+All developments listed below were implemented during the `v1.3.1` release cycle (September 17, 2026).
+
+### Support Setup Synchronization & Naming Architecture
+
+- **Dual-Store Setup Synchronization & "Edit Stats" Renaming (September 17, 2026)**:
+  - **Problem Solved**:
+    - Addressed naming ambiguity where the button was previously labeled *"Edit Build"*, causing conceptual confusion with the equipment *"Builds"* button/tab.
+    - Eliminated setup isolation and mismatched names: when opening a support character's Builds page from another character's calculator (e.g., Columbina's Builds from Ineffa's calculator), creating, and renaming a setup (e.g., `"Support Columbina Aubade"`), returning to the calculator or Support preview caused the setup to be missing or fall back to generic `"Setup 1"` / `"Setup 2"`.
+    - Fixed equip disconnect where the equipment modal showed renamed setups, but the support setup switcher and editor failed to reflect them.
+  - **Renamed "Edit Build" to "Edit Stats"**:
+    - **`SupportBuildEditorView.tsx`**: Renamed page headings, tooltips, and action buttons to **"Support Stats Editor"** / **"Editing support stats"** / **"Save Support Stats"**.
+    - **`TeamBuffModal.tsx`**: Renamed button link to `✎ Edit Stats ↗` with tooltip `"Open dedicated support stats editor for this character"`.
+    - **`CalculatorHeader.tsx`**: Renamed dropdown navigation action to **"Support Stats Editor"** (`Standalone support stats builder`).
+  - **Dual-Store Synchronization Architecture**:
+    - Established seamless bidirectional synchronization between `gi_support_equipment_<charId>` and `gi_calc_working_draft_<charId>`.
+    - **`support-equipment.ts`**:
+      - `syncSupportEquipmentToDraft(characterId, setup)`: Creates or updates an instance with matching `id` and `name` in the character's working draft so new setups created in Builds immediately exist in stats drafts.
+      - `syncDraftToSupportEquipment(characterId, idOrInst, name)`: Syncs renamed or newly added setups in the Stats Editor or Character Calculator back to equipment presets.
+      - `deleteUnifiedSetup(characterId, setupId)`: Atomically deletes the setup from both storage locations.
+    - **`BuildsView.tsx`**:
+      - Invokes `syncSupportEquipmentToDraft` whenever setups are added, saved, or renamed.
+      - Calls `deleteUnifiedSetup` when setups are deleted.
+      - Harmonizes instance names on component mount when a working draft already exists.
+    - **`SupportEquipmentModal.tsx`**: Triggers `syncSupportEquipmentToDraft` when adding or applying equipment presets.
+    - **`SupportBuildEditorView.tsx`**:
+      - Harmonizes loaded instances on mount with saved equipment setups via `getSupportEquipmentSetups`.
+      - Added an inline setup rename input directly adjacent to the setup tabs.
+      - Automatically updates `selectedSetupName` on the parent character's support instance upon saving.
+    - **`TeamBuffModal.tsx`**:
+      - Merged available setup IDs and labels from both `draft?.instances` and `getSupportEquipmentSetups(sConfig.characterId)` so setups created in Builds surface immediately.
+      - Dynamically displays custom setup names on the setup switcher buttons (`{s.name}`).
+  - **Setup Naming Across Calculator Views**:
+    - **`CharacterCalculator.tsx`**: Added an inline rename input header for each setup column; updated TXT/CSV export headers, benchmark labels, and OCR scanner dialogs to use `inst.name`.
+    - **Auxiliary Views**:
+      - `FormulaBreakdownView.tsx`: Displays `{inst.name || 'Setup #' + (index + 1)}`.
+      - `EffectiveStatsView.tsx`: Displays `{inst.name || 'Setup ' + (idx + 1)}`.
+      - `RotationModal.tsx`: Displays `{inst.name || 'Setup ' + (idx + 1)} Avg`.
+      - `ExternalWeaponBuffModal.tsx`, `ExternalArtifactBuffModal.tsx`, `EffectiveStatsModal.tsx`: Display custom setup names in tab switchers.
+
+### Weapon Mechanics & Buff Definitions
+
+- **Prospector's Shovel & Bloodsoaked Ruins Fixes (September 17, 2026)**:
+  - Corrected inaccurate placeholder names, descriptions, refinement scalings, mechanics, and buff definitions according to the Genshin Impact Wiki.
+  - **Prospector's Shovel** (`src/data/registry/weapons/polearms/prospectors-shovel.ts`):
+    - **Passive Name**: Updated from placeholder `"Tunneler"` to official `"Swift and Sure"`.
+    - **Passive Description**: Updated from placeholder DEF% text to:
+      > *"Electro-Charged DMG is increased by 48~96%, and Lunar-Charged DMG is increased by 12~24%. Moonsign: Ascendant Gleam: Lunar-Charged DMG is increased by an additional 12~24%."*
+    - **Mechanics (`mechanicDefs`)**: Added toggle `prospector-moonsign-active` for Moonsign: Ascendant Gleam.
+    - **Buff Definitions (`buffs`)**:
+      - `prospector-electro-charged`: `stat: "electroChargedDmgBonus"` (+48% / 60% / 72% / 84% / 96%).
+      - `prospector-lunar-charged`: `stat: "lunarChargedDmgBonus"` (+12% / 15% / 18% / 21% / 24%).
+      - `prospector-ascendant-gleam`: `stat: "lunarChargedDmgBonus"` (+12% / 15% / 18% / 21% / 24%) conditioned on Ascendant Gleam toggle.
+  - **Bloodsoaked Ruins** (`src/data/registry/weapons/polearms/bloodsoaked-ruins.ts`):
+    - **Passive Name**: Updated from placeholder `"Ancient Ruin"` to official `"Mournful Tribute"`.
+    - **Passive Description**: Updated from placeholder ATK%/Elemental DMG text to:
+      > *"For 3.5s after using an Elemental Burst, the equipping character's Lunar-Charged DMG dealt to opponents is increased by 36~84%. Additionally, after triggering a Lunar-Charged reaction, the equipping character will gain Requiem of Ruin: CRIT DMG is increased by 28~56% for 6s. They will also regain 12~16 Elemental Energy. Elemental Energy can be restored this way once every 14s."*
+    - **Signature Wielder**: Added `signatureFor: ["flins"]`.
+    - **Mechanics (`mechanicDefs`)**:
+      - `bloodsoaked-burst-active`: Toggle for Lunar-Charged DMG bonus after using an Elemental Burst (+36~84%).
+      - `bloodsoaked-requiem-active`: Toggle for Requiem of Ruin CRIT DMG bonus (+28~56%).
+    - **Buff Definitions (`buffs`)**:
+      - `bloodsoaked-lunar-charged`: `stat: "lunarChargedDmgBonus"` (+36% / 48% / 60% / 72% / 84%) conditioned on `bloodsoaked-burst-active`.
+      - `bloodsoaked-crit-dmg`: `stat: "critDmg"` (+28% / 35% / 42% / 49% / 56%) conditioned on `bloodsoaked-requiem-active`.
+
+### Verification & Validation
+
+- **Automated Unit Tests**: Full test suite passing — **56/56 test files, 528/528 tests**.
+  - Added unit tests in `src/lib/engine/support-equipment.test.ts` verifying `syncSupportEquipmentToDraft`, `syncDraftToSupportEquipment`, and `deleteUnifiedSetup`.
+  - Added weapon buff tests in `src/lib/engine/weapon-buffs.test.ts` verifying R1/R5 scaling and mechanics toggles for Prospector's Shovel and Bloodsoaked Ruins, as well as `signatureFor: ["flins"]`.
+
+---
+
+## [v1.3.0] (September 8, 2026)
 
 All developments listed below were implemented during the `v1.3` release cycle (September 8, 2026).
 
