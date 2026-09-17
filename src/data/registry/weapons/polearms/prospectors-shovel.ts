@@ -13,21 +13,53 @@ export const prospectorsShovel: WeaponConfig = {
     value: 41.3,
     baseValue: 9,
   },
-  passiveName: "Tunneler",
+  passiveName: "Swift and Sure",
   passiveDesc:
-    "Increases DEF by 16~32%.",
+    "Electro-Charged DMG is increased by 48~96%, and Lunar-Charged DMG is increased by 12~24%. Moonsign: Ascendant Gleam: Lunar-Charged DMG is increased by an additional 12~24%.",
   isSupport: false,
   buffType: "self",
+  mechanicDefs: [
+    {
+      id: "prospector-moonsign-active",
+      label: "Moonsign: Ascendant Gleam (+12~24% Lunar-Charged DMG)",
+      control: "toggle",
+      defaultValue: 1,
+      hint: "Additional +12~24% Lunar-Charged DMG when Moonsign is Ascendant Gleam",
+    },
+  ],
   buffs: [
     {
-      id: "prospector-shovel-def",
-      label: "DEF% (Prospector's Shovel)",
-      stat: "def",
-      refinementValues: [16, 20, 24, 28, 32],
+      id: "prospector-electro-charged",
+      label: "Electro-Charged DMG% (Prospector's Shovel)",
+      stat: "electroChargedDmgBonus",
+      refinementValues: [48, 60, 72, 84, 96],
       isTeamBuff: false,
       isPercent: true,
-      compute: (r) => [16, 20, 24, 28, 32][r - 1],
-    }
+      compute: (r) => [48, 60, 72, 84, 96][r - 1],
+    },
+    {
+      id: "prospector-lunar-charged",
+      label: "Lunar-Charged DMG% (Prospector's Shovel)",
+      stat: "lunarChargedDmgBonus",
+      refinementValues: [12, 15, 18, 21, 24],
+      isTeamBuff: false,
+      isPercent: true,
+      compute: (r) => [12, 15, 18, 21, 24][r - 1],
+    },
+    {
+      id: "prospector-ascendant-gleam",
+      label: "Lunar-Charged DMG% (Ascendant Gleam)",
+      stat: "lunarChargedDmgBonus",
+      refinementValues: [12, 15, 18, 21, 24],
+      isTeamBuff: false,
+      isPercent: true,
+      conditionKey: "prospector-moonsign-active",
+      compute: (r, ctx) => {
+        const on =
+          (ctx.inputs?.["prospector-moonsign-active"] ?? "1") === "1" ||
+          Number(ctx.inputs?.["prospector-moonsign-active"] ?? 1) > 0;
+        return on ? [12, 15, 18, 21, 24][r - 1] : 0;
+      },
+    },
   ],
-  
 };
