@@ -12,6 +12,8 @@ import {
   getSupportEquipmentSetups,
   saveSupportEquipmentSetup,
   deleteSupportEquipmentSetup,
+  syncSupportEquipmentToDraft,
+  deleteUnifiedSetup,
   getDefaultEquipmentSetup,
   resolveSupportEquipmentBuffs,
   getRelevantArtifactMechanics,
@@ -61,6 +63,25 @@ export function BuildsView() {
   // Load setups when selected character changes
   useEffect(() => {
     const loaded = getSupportEquipmentSetups(charCfg.id);
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(`gi_calc_working_draft_${charCfg.id}`);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          if (Array.isArray(draft.instances)) {
+            for (const inst of draft.instances) {
+              const eq = loaded.find((s) => s.id === inst.id);
+              if (eq && inst.name && eq.name !== inst.name) {
+                eq.name = inst.name;
+                saveSupportEquipmentSetup(charCfg.id, eq);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
     setSetups(loaded);
     setActiveSetupId(loaded[0]?.id || "1");
 
@@ -97,6 +118,7 @@ export function BuildsView() {
       updatedAt: Date.now(),
     };
     saveSupportEquipmentSetup(charCfg.id, newSetup);
+    syncSupportEquipmentToDraft(charCfg.id, newSetup);
     setSetups([...setups, newSetup]);
     setActiveSetupId(newId);
     setSetupName(newSetup.name);
@@ -105,7 +127,7 @@ export function BuildsView() {
   // Delete current setup
   const handleDeleteSetup = () => {
     if (setups.length <= 1) return;
-    deleteSupportEquipmentSetup(charCfg.id, activeSetupId);
+    deleteUnifiedSetup(charCfg.id, activeSetupId);
     const remaining = setups.filter((s) => s.id !== activeSetupId);
     setSetups(remaining);
     const nextId = remaining[0]?.id || "1";
@@ -139,6 +161,7 @@ export function BuildsView() {
     };
 
     saveSupportEquipmentSetup(charCfg.id, updatedSetup);
+    syncSupportEquipmentToDraft(charCfg.id, updatedSetup);
     setSetups((prev) =>
       prev.map((s) => (s.id === activeSetupId ? updatedSetup : s))
     );

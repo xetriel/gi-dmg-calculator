@@ -822,7 +822,7 @@ export function CharacterCalculator({
         );
         for (const total of Object.values(c.rotationTotals)) headline = Math.max(headline, total);
       }
-      return { label: `Setup ${i + 1}`, headline: Math.round(headline) };
+      return { label: inst.name || `Setup ${i + 1}`, headline: Math.round(headline) };
     });
     const topHeadline = setups.reduce((m, s) => Math.max(m, s.headline), 0);
     return { setupCount: instances.length, topHeadline, setups };
@@ -859,7 +859,7 @@ export function CharacterCalculator({
     text += `Generated on: ${new Date().toLocaleString("en-US")}\n`;
     text += `==================================================\n\n`;
 
-    const headers = ["Category / Stat", ...instances.map((_, idx) => `Setup ${idx + 1}`)];
+    const headers = ["Category / Stat", ...instances.map((inst, idx) => inst.name || `Setup ${idx + 1}`)];
     text += headers.join("\t") + "\n";
     text += "─".repeat(60) + "\n";
 
@@ -951,7 +951,7 @@ export function CharacterCalculator({
 
   const exportAsCsv = () => {
     let csvContent = "";
-    const headers = ["Stat / Output Column", ...instances.map((_, idx) => `Setup ${idx + 1}`)];
+    const headers = ["Stat / Output Column", ...instances.map((inst, idx) => inst.name || `Setup ${idx + 1}`)];
     csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
 
     csvContent += `"INPUT STATS"\n`;
@@ -1629,9 +1629,16 @@ export function CharacterCalculator({
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3 mb-4 shrink-0">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm">Setup {index + 1}</span>
+                      <input
+                        type="text"
+                        value={inst.name ?? `Setup ${index + 1}`}
+                        onChange={(e) => updateInstance(inst.id, () => ({ name: e.target.value }))}
+                        className="font-bold text-sm bg-transparent border-b border-transparent hover:border-gray-300 dark:hover:border-zinc-700 focus:border-blue-500 focus:outline-hidden px-0.5 py-0.5 max-w-[180px] truncate text-gray-900 dark:text-zinc-100 transition-colors"
+                        placeholder={`Setup ${index + 1}`}
+                        title="Click to rename this setup"
+                      />
                       {baseBenchmarkInst && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-0.5 rounded shrink-0">
                           Benchmark
                         </span>
                       )}
@@ -2009,7 +2016,7 @@ export function CharacterCalculator({
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-150 dark:border-zinc-850 shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
-                  Scan Stats from Screenshot - Setup {instances.findIndex(i => i.id === scannerTargetId) + 1}
+                  Scan Stats from Screenshot - {instances.find(i => i.id === scannerTargetId)?.name || `Setup ${instances.findIndex(i => i.id === scannerTargetId) + 1}`}
                 </h3>
                 <p className="text-[10px] text-gray-400 dark:text-zinc-500">
                   Auto-fill stat inputs by uploading a screenshot of the in-game Attributes or Enka.network details card
@@ -2297,7 +2304,7 @@ export function CharacterCalculator({
                   onClick={() => applyScanToSetup(scannerTargetId, scanResult)}
                   className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 px-4 py-2 text-xs font-semibold text-white dark:text-zinc-950 transition-colors cursor-pointer shadow-sm"
                 >
-                  Apply Stats to Setup {instances.findIndex(i => i.id === scannerTargetId) + 1}
+                  Apply Stats to {instances.find(i => i.id === scannerTargetId)?.name || `Setup ${instances.findIndex(i => i.id === scannerTargetId) + 1}`}
                 </button>
               )}
             </div>

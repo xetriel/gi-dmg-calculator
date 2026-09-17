@@ -10,6 +10,11 @@ import { MechanicsPanel } from "./components/MechanicsPanel";
 import { validate } from "@/lib/engine/validation";
 import { SUPPORT_CONFIGS, supportById, byId as characterById } from "@/data/registry/characters";
 import { resolveSupportCtx, type SupportInstance } from "@/lib/engine/team-buffs";
+import {
+  getSupportEquipmentSetups,
+  syncDraftToSupportEquipment,
+  deleteUnifiedSetup,
+} from "@/lib/engine/support-equipment";
 
 interface SupportBuildEditorViewProps {
   config: CharacterConfig;
@@ -81,22 +86,47 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
 
   const [activeInstanceId, setActiveInstanceId] = useState<string>("1");
 
-  // Load from localStorage on client mount
+  // Load from localStorage on client mount & harmonize with equipment setups
   useEffect(() => {
     setIsMounted(true);
     if (typeof window === "undefined") return;
     try {
+      let loadedInstances: CalcInstance[] = [];
       const stored = localStorage.getItem(`gi_calc_working_draft_${config.id}`);
       if (stored) {
         const draft = JSON.parse(stored);
         if (Array.isArray(draft.instances) && draft.instances.length > 0) {
-          setInstances(draft.instances);
-          if (initialSupportSetupId && draft.instances.some((i: CalcInstance) => i.id === initialSupportSetupId)) {
-            setActiveInstanceId(initialSupportSetupId);
-          } else {
-            setActiveInstanceId(draft.instances[0].id);
-          }
+          loadedInstances = draft.instances;
         }
+      }
+      if (loadedInstances.length === 0) {
+        loadedInstances = [createInitialInstance("1")];
+      }
+
+      // Sync with equipment setups: if equipment setup exists with a name or extra setup ID
+      const savedEq = getSupportEquipmentSetups(config.id);
+      for (const eq of savedEq) {
+        const matching = loadedInstances.find((i) => i.id === eq.id);
+        if (matching) {
+          if (!matching.name && eq.name) {
+            matching.name = eq.name;
+          }
+        } else if (loadedInstances.length < 3) {
+          loadedInstances.push({
+            ...createInitialInstance(eq.id),
+            name: eq.name,
+            stats: { ...loadedInstances[0].stats },
+            constellationLevel: loadedInstances[0].constellationLevel,
+            mechanicInputs: { ...loadedInstances[0].mechanicInputs },
+          });
+        }
+      }
+
+      setInstances(loadedInstances);
+      if (initialSupportSetupId && loadedInstances.some((i: CalcInstance) => i.id === initialSupportSetupId)) {
+        setActiveInstanceId(initialSupportSetupId);
+      } else {
+        setActiveInstanceId(loadedInstances[0].id);
       }
     } catch (e) {
       console.error("Failed to load working draft in SupportBuildEditorView:", e);
@@ -132,6 +162,11 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
       }
       localStorage.setItem(`gi_calc_working_draft_${config.id}`, JSON.stringify(draft));
 
+      // Synchronize active instance name to support equipment presets
+      if (activeInst.name) {
+        syncDraftToSupportEquipment(config.id, activeInst);
+      }
+
       // 2. Directly sync into the parent character's working draft if available
       if (fromCharacterId) {
         const parentRaw = localStorage.getItem(`gi_calc_working_draft_${fromCharacterId}`);
@@ -151,7 +186,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
                       constellationLevel: activeInst.constellationLevel,
                       talentLevels: activeInst.levels,
                       selectedSetupId: activeInst.id,
-                      selectedSetupName: `Support Setup ${activeInst.id}`,
+                      selectedSetupName: activeInst.name || `Support Setup ${activeInst.id}`,
                     };
                   }
                   return sup;
@@ -171,7 +206,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
         setTimeout(() => setSaveStatus(null), 2500);
       }
     } catch (e) {
-      console.error("Failed to save support build:", e);
+      console.error("Failed to save support stats:", e);
     }
   };
 
@@ -207,18 +242,22 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
     if (instances.length >= 3) return;
     const nextNum = instances.length + 1;
     const nextId = String(nextNum);
+    const newName = `Support Setup ${nextId}`;
     const newInst = {
       ...createInitialInstance(nextId),
+      name: newName,
       stats: { ...activeInst.stats },
       constellationLevel: activeInst.constellationLevel,
       mechanicInputs: { ...activeInst.mechanicInputs },
     };
     setInstances([...instances, newInst]);
     setActiveInstanceId(nextId);
+    syncDraftToSupportEquipment(config.id, newInst);
   };
 
   const deleteSetup = (id: string) => {
     if (instances.length <= 1) return;
+    deleteUnifiedSetup(config.id, id);
     const remaining = instances.filter((i) => i.id !== id);
     setInstances(remaining);
     if (activeInstanceId === id) {
@@ -294,13 +333,13 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-base">🛠️</span>
             <span className="text-xs text-amber-900 dark:text-amber-200 font-medium">
-              Editing support build for <strong>{fromChar.name}</strong>
+              Editing support stats for <strong>{fromChar.name}</strong>
             </span>
             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
               Character Setup {fromCharSetupId ?? "1"}
             </span>
             <span className="text-xs text-amber-700/80 dark:text-amber-400/80">
-              • Buffing with <strong>Support Setup {activeInst.id}</strong>
+              • Buffing with <strong>{activeInst.name || `Support Setup ${activeInst.id}`}</strong>
             </span>
           </div>
           <button
@@ -322,14 +361,14 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
               {config.name}
             </h1>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-              Support Build Editor
+              Support Stats Editor
             </span>
             <span className="text-xs text-gray-500 dark:text-zinc-400">
               {config.element} • {config.rarity}★
             </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-            Configure this character's standalone attributes, artifacts, and constellation. Buffs auto-sync to all party members.
+            Configure this character&apos;s standalone attributes, stats, and constellation. Buffs auto-sync to all party members.
           </p>
         </div>
 
@@ -346,7 +385,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
             }`}
           >
             <span>{saveStatus === "saved" ? "✓" : "💾"}</span>
-            <span>{saveStatus === "saved" ? "Saved!" : "Save Support Build"}</span>
+            <span>{saveStatus === "saved" ? "Saved!" : "Save Support Stats"}</span>
           </button>
 
           <Link
@@ -365,8 +404,8 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
         </div>
       </header>
 
-      {/* Setup Selector Tabs */}
-      <div className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-2 flex-wrap gap-2">
+      {/* Setup Selector Tabs & Setup Name Input */}
+      <div className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-2 flex-wrap gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           {instances.map((inst) => {
             const isActive = inst.id === activeInstanceId;
@@ -382,7 +421,7 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
                     : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:border-gray-400"
                 }`}
               >
-                <span>Support Setup {inst.id}</span>
+                <span>{inst.name || `Support Setup ${inst.id}`}</span>
                 {instances.length > 1 && (
                   <span
                     onClick={(e) => {
@@ -410,13 +449,24 @@ export const SupportBuildEditorView: React.FC<SupportBuildEditorViewProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-gray-500 dark:text-zinc-400">Name:</span>
+            <input
+              type="text"
+              value={activeInst.name ?? `Support Setup ${activeInst.id}`}
+              onChange={(e) => updateInstance(activeInst.id, () => ({ name: e.target.value }))}
+              className="text-xs font-semibold p-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white w-44"
+              placeholder={`Support Setup ${activeInst.id}`}
+              title="Rename active support setup"
+            />
+          </div>
           {hasUnsavedChanges && (
             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/50">
               ● Unsaved changes
             </span>
           )}
-          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic">
+          <span className="text-[11px] text-gray-400 dark:text-zinc-500 italic hidden sm:inline">
             Draft auto-saved to local storage
           </span>
         </div>

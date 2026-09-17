@@ -7,6 +7,10 @@ import {
   resolveSupportEquipmentBuffs,
   getActiveSupportEquippedWeapons,
   getActiveSupportEquippedArtifacts,
+  syncSupportEquipmentToDraft,
+  syncDraftToSupportEquipment,
+  deleteUnifiedSetup,
+  storageGet,
   type SupportEquipmentSetup,
 } from "./support-equipment";
 import { resolveTeamBuffs, type SupportInstance } from "./team-buffs";
@@ -522,6 +526,60 @@ describe("Support Character Equipment System", () => {
 
       expect(teamRes.statDeltas.enemyPyroRes).toBe(-40);
       expect(teamRes.sources.some((s) => s.stat === "enemyPyroRes" && s.value === -40)).toBe(true);
+    });
+  });
+
+  describe("Unified Setup Synchronization", () => {
+    it("syncs support equipment changes into working draft", () => {
+      const setup: SupportEquipmentSetup = {
+        id: "setup-columbina-aubade",
+        name: "Support Columbina Aubade",
+        characterId: "columbina",
+        weapon: { weaponId: "favonius-sword", refinement: 5, enabled: true },
+        artifact: { artifactId: "noblesse-oblige", pieceCount: 4, inputs: {}, enabled: true },
+      };
+
+      syncSupportEquipmentToDraft("columbina", setup);
+
+      const rawDraft = storageGet("gi_calc_working_draft_columbina");
+      expect(rawDraft).not.toBeNull();
+      const draft = JSON.parse(rawDraft!);
+      expect(draft.instances).toBeDefined();
+      const foundInst = draft.instances.find((i: { id: string }) => i.id === "setup-columbina-aubade");
+      expect(foundInst).toBeDefined();
+      expect(foundInst.name).toBe("Support Columbina Aubade");
+    });
+
+    it("syncs draft changes back into support equipment", () => {
+      syncDraftToSupportEquipment("columbina", "setup-columbina-aubade", "Renamed Columbina Aubade");
+
+      const setups = getSupportEquipmentSetups("columbina");
+      const found = setups.find((s) => s.id === "setup-columbina-aubade");
+      expect(found).toBeDefined();
+      expect(found?.name).toBe("Renamed Columbina Aubade");
+    });
+
+    it("deletes unified setup from both support equipment and working draft", () => {
+      // Ensure setup exists in both
+      const setup: SupportEquipmentSetup = {
+        id: "to-delete-setup",
+        name: "Temporary Setup",
+        characterId: "columbina",
+        weapon: null,
+        artifact: null,
+      };
+      saveSupportEquipmentSetup("columbina", setup);
+      syncSupportEquipmentToDraft("columbina", setup);
+
+      expect(getSupportEquipmentSetups("columbina").some((s) => s.id === "to-delete-setup")).toBe(true);
+      const draftBefore = JSON.parse(storageGet("gi_calc_working_draft_columbina")!);
+      expect(draftBefore.instances.some((i: { id: string }) => i.id === "to-delete-setup")).toBe(true);
+
+      deleteUnifiedSetup("columbina", "to-delete-setup");
+
+      expect(getSupportEquipmentSetups("columbina").some((s) => s.id === "to-delete-setup")).toBe(false);
+      const draftAfter = JSON.parse(storageGet("gi_calc_working_draft_columbina")!);
+      expect(draftAfter.instances.some((i: { id: string }) => i.id === "to-delete-setup")).toBe(false);
     });
   });
 });

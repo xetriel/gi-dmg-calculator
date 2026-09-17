@@ -247,7 +247,7 @@ export const ExternalArtifactBuffModal: React.FC<ExternalArtifactBuffModalProps>
                       : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <span>{`Setup ${idx + 1}`}</span>
+                  <span>{inst.name || `Setup ${idx + 1}`}</span>
                   {activeCount > 0 && (
                     <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold">
                       {activeCount}

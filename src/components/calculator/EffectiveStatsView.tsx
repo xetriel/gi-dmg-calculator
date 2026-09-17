@@ -302,7 +302,7 @@ export const EffectiveStatsView: React.FC<EffectiveStatsViewProps> = ({
                       : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  Setup {idx + 1}
+                  {inst.name || `Setup ${idx + 1}`}
                 </button>
               );
             })}

@@ -51,7 +51,7 @@ export interface ResolvedSupportEquipment {
 // In-memory fallback store for Node / non-browser test environments
 const inMemoryStore: Record<string, string> = {};
 
-function storageGet(key: string): string | null {
+export function storageGet(key: string): string | null {
   if (typeof window !== "undefined" && window.localStorage) {
     try { return window.localStorage.getItem(key); } catch { /* ignore */ }
   }
@@ -61,7 +61,7 @@ function storageGet(key: string): string | null {
   return inMemoryStore[key] ?? null;
 }
 
-function storageSet(key: string, val: string): void {
+export function storageSet(key: string, val: string): void {
   if (typeof window !== "undefined" && window.localStorage) {
     try { window.localStorage.setItem(key, val); return; } catch { /* ignore */ }
   }
@@ -289,6 +289,115 @@ export function deleteSupportEquipmentSetup(characterId: string, setupId: string
     storageSet(`gi_support_equipment_${normId}`, JSON.stringify(next));
   } catch (err) {
     console.error("Failed to delete support equipment setup:", err);
+  }
+}
+
+/**
+ * Synchronizes an equipment setup to the character's working draft (gi_calc_working_draft_<characterId>),
+ * ensuring that the stats draft has a corresponding instance with matching id and name.
+ */
+export function syncSupportEquipmentToDraft(characterId: string, setup: SupportEquipmentSetup): void {
+  const normId = characterId.replace(/-support$/, "");
+  try {
+    const raw = storageGet(`gi_calc_working_draft_${normId}`);
+    let draft: any = null;
+    if (raw) {
+      try {
+        draft = JSON.parse(raw);
+      } catch {
+        draft = null;
+      }
+    }
+    if (!draft || !Array.isArray(draft.instances) || draft.instances.length === 0) {
+      draft = {
+        instances: [
+          {
+            id: setup.id,
+            name: setup.name,
+            stats: {},
+            levels: { normal: "1", skill: "1", burst: "1" },
+            constellationLevel: 0,
+            rotationOptions: {},
+            externalWeapons: [],
+            externalArtifacts: [],
+          },
+        ],
+        activeInstanceId: setup.id,
+      };
+    } else {
+      const idx = draft.instances.findIndex((i: { id: string }) => i.id === setup.id);
+      if (idx >= 0) {
+        draft.instances[idx].name = setup.name;
+      } else {
+        const baseInst = draft.instances[0];
+        draft.instances.push({
+          ...baseInst,
+          id: setup.id,
+          name: setup.name,
+        });
+      }
+    }
+    storageSet(`gi_calc_working_draft_${normId}`, JSON.stringify(draft));
+  } catch (err) {
+    console.error("Failed to sync support equipment to draft:", err);
+  }
+}
+
+/**
+ * Synchronizes a draft calculation instance's name to support equipment presets (gi_support_equipment_<characterId>).
+ */
+export function syncDraftToSupportEquipment(
+  characterId: string,
+  instOrId: string | { id: string; name?: string },
+  maybeName?: string
+): void {
+  const normId = characterId.replace(/-support$/, "");
+  const id = typeof instOrId === "string" ? instOrId : instOrId.id;
+  const name = typeof instOrId === "string" ? maybeName : instOrId.name;
+  if (!name) return;
+  try {
+    const current = getSupportEquipmentSetups(normId);
+    const existingIdx = current.findIndex((s) => s.id === id);
+    if (existingIdx >= 0) {
+      if (current[existingIdx].name !== name) {
+        current[existingIdx] = {
+          ...current[existingIdx],
+          name,
+          updatedAt: Date.now(),
+        };
+        storageSet(`gi_support_equipment_${normId}`, JSON.stringify(current));
+      }
+    } else {
+      const newSetup: SupportEquipmentSetup = {
+        ...getDefaultEquipmentSetup(normId, id),
+        name,
+        updatedAt: Date.now(),
+      };
+      current.push(newSetup);
+      storageSet(`gi_support_equipment_${normId}`, JSON.stringify(current));
+    }
+  } catch (err) {
+    console.error("Failed to sync draft to support equipment:", err);
+  }
+}
+
+/**
+ * Deletes a setup from both support equipment presets and calculator working draft.
+ */
+export function deleteUnifiedSetup(characterId: string, setupId: string): void {
+  const normId = characterId.replace(/-support$/, "");
+  deleteSupportEquipmentSetup(normId, setupId);
+  try {
+    const raw = storageGet(`gi_calc_working_draft_${normId}`);
+    if (raw) {
+      const draft = JSON.parse(raw);
+      if (Array.isArray(draft.instances) && draft.instances.length > 1) {
+        draft.instances = draft.instances.filter((i: { id: string }) => i.id !== setupId);
+        storageSet(`gi_calc_working_draft_${normId}`, JSON.stringify(draft));
+      }
+    }
+  } catch (err) {
+    console.error("Failed to delete setup from draft:", err);
   }
 }
 

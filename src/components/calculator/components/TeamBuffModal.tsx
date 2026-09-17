@@ -45,6 +45,7 @@ const ELEMENT_BADGES: Record<string, string> = {
 function readSupportDraft(characterId: string): {
   instances: Array<{
     id: string;
+    name?: string;
     stats: Record<string, string>;
     mechanicInputs: Record<string, string>;
     constellationLevel: number;
@@ -162,6 +163,10 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     let setupId: string | undefined;
     let setupName: string | undefined;
 
+    // Try to load saved equipment setups for this support character
+    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+    const activeEq = savedEq[0] ?? null;
+
     if (draft && draft.instances.length > 0) {
       const firstInst = draft.instances[0];
       finalStats = firstInst.stats ?? initStats;
@@ -169,15 +174,11 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
       finalConstellation = firstInst.constellationLevel ?? 0;
       finalTalents = firstInst.levels;
       setupId = firstInst.id;
-      setupName = `Support Setup ${firstInst.id}`;
+      setupName = firstInst.name || activeEq?.name || `Support Setup ${firstInst.id}`;
     } else {
       setupId = "1";
-      setupName = "Support Setup 1";
+      setupName = activeEq?.name || "Support Setup 1";
     }
-
-    // Try to load saved equipment setups for this support character
-    const savedEq = getSupportEquipmentSetups(sConfig.characterId);
-    const activeEq = savedEq[0] ?? null;
 
     const newSupport: SupportInstance = {
       supportId,
@@ -205,13 +206,14 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     }));
   };
 
-  const updateSupport = (
-    index: number,
-    updater: (s: SupportInstance) => Partial<SupportInstance>
-  ) => {
-    const updated = [...supports];
-    updated[index] = { ...updated[index], ...updater(updated[index]) };
-    updateInstance(currentInst.id, () => ({ teamSupports: updated }));
+  const updateSupport = (index: number, updater: (s: SupportInstance) => Partial<SupportInstance>) => {
+    updateInstance(currentInst.id, (inst) => {
+      const nextSupports = [...(inst.teamSupports ?? [])];
+      if (nextSupports[index]) {
+        nextSupports[index] = { ...nextSupports[index], ...updater(nextSupports[index]) };
+      }
+      return { teamSupports: nextSupports };
+    });
   };
 
   const toggleMaster = () => {
@@ -225,13 +227,16 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     const sConfig = supportById(sup.supportId);
     if (!sConfig) return;
 
+    const currentSetupId = sup.selectedSetupId ?? "1";
     const draft = readSupportDraft(sConfig.characterId);
-    const targetInst = draft?.instances.find((i) => i.id === sup.selectedSetupId) ?? draft?.instances[0];
+    const targetInst = draft?.instances.find((i) => i.id === currentSetupId) ?? draft?.instances[0];
 
     const savedEq = getSupportEquipmentSetups(sConfig.characterId);
     const targetEq = sup.equipmentSetupId
       ? (savedEq.find((e) => e.id === sup.equipmentSetupId) ?? savedEq[0])
-      : savedEq[0];
+      : (savedEq.find((e) => e.id === currentSetupId) ?? savedEq[0]);
+
+    const resolvedName = targetInst?.name || targetEq?.name || `Setup ${currentSetupId}`;
 
     updateSupport(index, () => ({
       ...(targetInst ? {
@@ -240,7 +245,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
         talentLevels: targetInst.levels ?? sup.talentLevels,
         selectedSetupId: targetInst.id,
-        selectedSetupName: `Setup ${targetInst.id}`,
+        selectedSetupName: resolvedName,
       } : {}),
       ...(targetEq ? {
         equipmentSetupId: targetEq.id,
@@ -250,7 +255,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     }));
   };
 
-  // Switch to a different setup from the support character's working draft
+  // Switch to a different setup from the support character's working draft or equipment setups
   const switchSetup = (index: number, setupId: string) => {
     const sup = supports[index];
     if (!sup) return;
@@ -258,10 +263,12 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
     if (!sConfig) return;
 
     const draft = readSupportDraft(sConfig.characterId);
-    const targetInst = draft?.instances.find((i) => i.id === setupId);
+    const targetInst = draft?.instances.find((i) => i.id === setupId) ?? draft?.instances[0];
 
     const savedEq = getSupportEquipmentSetups(sConfig.characterId);
     const targetEq = savedEq.find((e) => e.id === setupId) ?? savedEq[0];
+
+    const resolvedName = targetInst?.name || targetEq?.name || `Setup ${setupId}`;
 
     updateSupport(index, () => ({
       ...(targetInst ? {
@@ -269,9 +276,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
         mechanicInputs: targetInst.mechanicInputs ?? sup.mechanicInputs,
         constellationLevel: targetInst.constellationLevel ?? sup.constellationLevel,
         talentLevels: targetInst.levels ?? sup.talentLevels,
-        selectedSetupId: targetInst.id,
-        selectedSetupName: `Setup ${targetInst.id}`,
       } : {}),
+      selectedSetupId: setupId,
+      selectedSetupName: resolvedName,
       ...(targetEq ? {
         equipmentSetupId: targetEq.id,
         equippedWeapon: targetEq.weapon,
@@ -320,7 +327,7 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                       : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <span>{`Setup ${idx + 1}`}</span>
+                  <span>{inst.name || `Setup ${idx + 1}`}</span>
                   {activeCount > 0 && (
                     <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold">
                       {activeCount}
@@ -642,9 +649,23 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                 // Compute individual support preview
                 const preview = resolveTeamBuffs([{ ...sup, enabled: true }], true, config, dpsBaseAtk, dpsBaseDef, dpsBaseHp);
 
-                // Get available setups from working draft
+                // Get available setups from working draft & equipment presets
                 const draft = readSupportDraft(sConfig.characterId);
-                const availableSetups = draft?.instances && draft.instances.length > 0 ? draft.instances : [{ id: "1" }];
+                const savedEq = getSupportEquipmentSetups(sConfig.characterId);
+                const allSetupIds = Array.from(
+                  new Set([
+                    ...(draft?.instances?.map((i) => i.id) ?? []),
+                    ...(savedEq.map((e) => e.id) ?? []),
+                    "1",
+                  ])
+                ).sort((a, b) => (Number(a) || 0) - (Number(b) || 0));
+
+                const availableSetups = allSetupIds.map((id) => {
+                  const dInst = draft?.instances?.find((i) => i.id === id);
+                  const eq = savedEq.find((e) => e.id === id);
+                  const name = dInst?.name || eq?.name || `Setup ${id}`;
+                  return { id, name };
+                });
                 const theme = getRarityTheme(sConfig.rarity);
 
                 return (
@@ -729,9 +750,9 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                                     ? theme.activeButton
                                     : `bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 ${theme.buttonHover}`
                                 }`}
-                                title={`Switch to ${sConfig.name} Setup ${s.id}`}
+                                title={`Switch to ${sConfig.name} - ${s.name}`}
                               >
-                                <span>Setup {s.id}</span>
+                                <span>{s.name}</span>
                               </button>
                             );
                           })}
@@ -749,13 +770,13 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
                           🔄 Sync
                         </button>
 
-                        {/* Edit in dedicated support builder */}
+                        {/* Edit in dedicated support stats editor */}
                         <Link
                           href={`/characters/${sConfig.characterId}/support?from=${config.id}&charSetup=${currentInst.id}&supportSetup=${sup.selectedSetupId ?? "1"}`}
                           className={`text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 ${theme.buttonHover} transition-all inline-flex items-center gap-1 font-semibold`}
-                          title="Open dedicated support builder for this character"
+                          title="Open dedicated support stats editor for this character"
                         >
-                          ✎ Edit Build ↗
+                          ✎ Edit Stats ↗
                         </Link>
                       </div>
                     </div>
@@ -1038,10 +1059,23 @@ export const TeamBuffModal: React.FC<TeamBuffModalProps> = ({
             constellationLevel={supports[equipModalSupportIndex].constellationLevel}
             mechanicInputs={supports[equipModalSupportIndex].mechanicInputs}
             onSave={(eq) => {
-              updateSupport(equipModalSupportIndex, () => ({
+              const sup = supports[equipModalSupportIndex];
+              const draft = sup ? readSupportDraft(sup.supportId) : null;
+              const targetInst = draft?.instances.find((i) => i.id === eq.equipmentSetupId);
+              const setupName = eq.name || targetInst?.name || `Setup ${eq.equipmentSetupId}`;
+
+              updateSupport(equipModalSupportIndex, (s) => ({
                 equipmentSetupId: eq.equipmentSetupId,
+                selectedSetupId: eq.equipmentSetupId,
+                selectedSetupName: setupName,
                 equippedWeapon: eq.weapon,
                 equippedArtifact: eq.artifact,
+                ...(targetInst ? {
+                  stats: targetInst.stats,
+                  mechanicInputs: targetInst.mechanicInputs ?? s.mechanicInputs,
+                  constellationLevel: targetInst.constellationLevel ?? s.constellationLevel,
+                  talentLevels: targetInst.levels ?? s.talentLevels,
+                } : {}),
               }));
               setEquipModalSupportIndex(null);
             }}

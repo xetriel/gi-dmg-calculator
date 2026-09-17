@@ -10,6 +10,7 @@ import { getRarityTheme } from "../rarity-theme";
 import {
   getSupportEquipmentSetups,
   saveSupportEquipmentSetup,
+  syncSupportEquipmentToDraft,
   getDefaultEquipmentSetup,
   resolveSupportEquipmentBuffs,
   getRelevantArtifactMechanics,
@@ -17,6 +18,7 @@ import {
   type EquippedWeaponState,
   type EquippedArtifactState,
 } from "@/lib/engine/support-equipment";
+import type { Element, WeaponType } from "@/data/registry/types";
 import { resolveSupportCtx } from "@/lib/engine/team-buffs";
 
 interface SupportEquipmentModalProps {
@@ -32,6 +34,7 @@ interface SupportEquipmentModalProps {
   mechanicInputs?: Record<string, string>;
   onSave: (setup: {
     equipmentSetupId: string;
+    name?: string;
     weapon: EquippedWeaponState | null;
     artifact: EquippedArtifactState | null;
   }) => void;
@@ -176,6 +179,7 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
       updatedAt: Date.now(),
     };
     saveSupportEquipmentSetup(normSupportId, newSetup);
+    syncSupportEquipmentToDraft(normSupportId, newSetup);
     setSetups([...setups, newSetup]);
     setActiveSetupId(newId);
   };
@@ -199,8 +203,10 @@ export const SupportEquipmentModal: React.FC<SupportEquipmentModalProps> = ({
     };
 
     saveSupportEquipmentSetup(normSupportId, updatedSetup);
+    syncSupportEquipmentToDraft(normSupportId, updatedSetup);
     onSave({
       equipmentSetupId: activeSetupId,
+      name: updatedSetup.name,
       weapon: finalWeapon,
       artifact: finalArtifact,
     });
