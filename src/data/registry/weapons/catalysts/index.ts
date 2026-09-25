@@ -20,6 +20,7 @@ import { flowingPurity } from "./flowing-purity";
 import { frostbearer } from "./frostbearer";
 import { fruitOfFulfillment } from "./fruit-of-fulfillment";
 import { hakushinRing } from "./hakushin-ring";
+import { hymnOfTheMaelstrom } from "./hymn-of-the-maelstrom";
 import { jadefallsSplendor } from "./jadefalls-splendor";
 import { kagurasVerity } from "./kaguras-verity";
 import { lostPrayerToTheSacredWinds } from "./lost-prayer-to-the-sacred-winds";
@@ -51,6 +52,7 @@ import { vividNotions } from "./vivid-notions";
 import { wanderingEvenstar } from "./wandering-evenstar";
 import { waveridingWhirl } from "./waveriding-whirl";
 import { wineAndSong } from "./wine-and-song";
+import { wintersHeavyHeart } from "./winters-heavy-heart";
 import type { WeaponConfig } from "../types";
 
 export {
@@ -76,6 +78,7 @@ export {
   frostbearer,
   fruitOfFulfillment,
   hakushinRing,
+  hymnOfTheMaelstrom,
   jadefallsSplendor,
   kagurasVerity,
   lostPrayerToTheSacredWinds,
@@ -107,6 +110,7 @@ export {
   wanderingEvenstar,
   waveridingWhirl,
   wineAndSong,
+  wintersHeavyHeart,
 };
 
 export const CATALYSTS: WeaponConfig[] = [
@@ -132,6 +136,7 @@ export const CATALYSTS: WeaponConfig[] = [
   frostbearer,
   fruitOfFulfillment,
   hakushinRing,
+  hymnOfTheMaelstrom,
   jadefallsSplendor,
   kagurasVerity,
   lostPrayerToTheSacredWinds,
@@ -163,4 +168,5 @@ export const CATALYSTS: WeaponConfig[] = [
   wanderingEvenstar,
   waveridingWhirl,
   wineAndSong,
+  wintersHeavyHeart,
 ];

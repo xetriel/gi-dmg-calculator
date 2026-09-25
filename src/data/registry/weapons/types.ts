@@ -47,6 +47,7 @@ export interface WeaponDamageDef {
 export interface WeaponConfig {
   id: string;                                  // slug identifier e.g. "crimson-moons-semblance", "a-thousand-floating-dreams"
   name: string;                                // "Crimson Moon's Semblance"
+  description?: string;                        // Lore / flavor description of the weapon
   type: WeaponType;
   rarity: WeaponRarity;
   baseAtk: number;                             // Lv90 Base ATK

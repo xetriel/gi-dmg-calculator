@@ -46,7 +46,10 @@ export function WeaponsWikiView() {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchName = w.name.toLowerCase().includes(q);
-        const matchPassive = w.passiveName?.toLowerCase().includes(q) || w.passiveDesc?.toLowerCase().includes(q);
+        const matchPassive =
+          w.passiveName?.toLowerCase().includes(q) ||
+          w.passiveDesc?.toLowerCase().includes(q) ||
+          w.description?.toLowerCase().includes(q);
         if (!matchName && !matchPassive) return false;
       }
       if (selectedType !== "all" && w.type !== selectedType) return false;
@@ -351,6 +354,12 @@ export function WeaponsWikiView() {
                         </div>
                       )}
                     </div>
+
+                    {weapon.description && (
+                      <p className="text-[11px] italic text-gray-500 dark:text-zinc-400 mb-2 leading-relaxed">
+                        &ldquo;{weapon.description}&rdquo;
+                      </p>
+                    )}
 
                     <p className="text-xs text-gray-600 dark:text-zinc-300 leading-relaxed">
                       {weapon.passiveDesc}

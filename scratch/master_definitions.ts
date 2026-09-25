@@ -1323,18 +1323,22 @@ export const ALL_246_WEAPONS: WeaponDef[] = [
   },
   {
     name: "Whitelake Frostfeather",
-    type: "Bow",
+    type: "Sword",
     rarity: 5,
-    baseAtk: 608,
-    lvl1BaseAtk: 46,
-    subStat: { type: "critDmg", label: "CRIT DMG%", value: 66.2, baseValue: 14.4 },
-    passiveName: "Frostfeather Gaze",
-    passiveDesc: "Increases Cryo DMG Bonus by 12~24%. Aimed Shots increase ATK by 20~40% for 10s.",
+    baseAtk: 674,
+    lvl1BaseAtk: 48,
+    subStat: { type: "critRate", label: "CRIT Rate%", value: 22.1, baseValue: 4.8 },
+    passiveName: "Snow Swan's Finale",
+    passiveDesc:
+      'When the equipping character hits an opponent with their Elemental Skill, they gain "Lake-Hued Lament": ATK increases by 8%/10%/12%/14%/16% for 8s. This effect can trigger once every 0.1s. Max 3 stacks, and each stack\'s duration is independent. At 3 stacks, the CRIT DMG of any Stellar Glimmer reaction DMG caused by the equipping character is increased by 50%/65%/80%/95%/110%, and triggering Stellar Glimmer reactions or Stellar Glimmer reaction DMG will also restore 4/4.5/5/5.5/6 Elemental Energy to the character. This Energy recovery effect can trigger once every 3.5s. Can be triggered even when the equipping character is off-field.',
     isSupport: false,
     buffType: "self",
+    mechanicDefs: [
+      { id: "lake-hued-lament-stacks", label: "Lake-Hued Lament Stacks (0-3)", control: "stacks", max: 3, defaultValue: 3, hint: "+8~16% ATK per stack; at 3 stacks grants +50~110% Stellar Glimmer reaction CRIT DMG and restores Energy" },
+    ],
     buffs: [
-      { id: "frostfeather-cryo", label: "Cryo DMG Bonus", stat: "cryoDmgBonus", refinementValues: [12, 15, 18, 21, 24], isTeamBuff: false, computeCode: "(r) => [12, 15, 18, 21, 24][r - 1]" },
-      { id: "frostfeather-atk", label: "ATK%", stat: "atk", refinementValues: [20, 25, 30, 35, 40], isTeamBuff: false, isPercent: true, computeCode: "(r, ctx) => ([20, 25, 30, 35, 40][r - 1] / 100) * ctx.baseAtk" },
+      { id: "whitelake-atk-stack", label: "ATK% (Lake-Hued Lament)", stat: "atk", refinementValues: [8, 10, 12, 14, 16], isTeamBuff: false, isPercent: true, conditionKey: "lake-hued-lament-stacks", computeCode: "(r, ctx) => { const s = Math.min(3, Math.max(0, Number(ctx.inputs?.['lake-hued-lament-stacks'] ?? 3))); return ((s * [8, 10, 12, 14, 16][r - 1]) / 100) * ctx.baseAtk; }" },
+      { id: "whitelake-stellar-crit-dmg", label: "Stellar Glimmer CRIT DMG (Lake-Hued Lament)", stat: "stellarReactionCritDmg", refinementValues: [50, 65, 80, 95, 110], isTeamBuff: false, conditionKey: "lake-hued-lament-stacks", computeCode: "(r, ctx) => { const s = Math.min(3, Math.max(0, Number(ctx.inputs?.['lake-hued-lament-stacks'] ?? 3))); return s >= 3 ? [50, 65, 80, 95, 110][r - 1] : 0; }" },
     ],
   },
   {

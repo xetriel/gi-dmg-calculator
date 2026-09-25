@@ -3,6 +3,8 @@ import type { WeaponConfig } from "../types";
 export const bladeOfAtonement: WeaponConfig = {
   id: "blade-of-atonement",
   name: "Blade of Atonement",
+  description:
+    "A greatsword passed down by the Luchkin. It is said that only the bravest warrior is qualified to wield it.",
   type: "Claymore",
   rarity: 4,
   baseAtk: 565,
