@@ -2,7 +2,70 @@
 
 This document logs the feature updates, architecture changes, and character releases across all versions of the Genshin Damage Calculator, matching the version displayed in the application header.
 
-## [v1.3.1] - Current UI Header Version
+## [v1.3.2] - Current UI Header Version
+
+All developments listed below were implemented during the `v1.3.2` release cycle (September 25, 2026).
+
+### HoYoWiki Weapon Description & Ability Updates (v7.1 Batch)
+
+Sourced all weapon descriptions, passive names, and passive text directly from the **official HoYoWiki** (`sg-wiki-api.hoyolab.com/hoyowiki/genshin/wapi/entry_page`) rather than the community Fandom wiki, ensuring combat-accurate wording and canonical phrasing.
+
+#### Batch 1 — 11 Weapons (Snezhnaya Event / Battle Pass, September 25, 2026)
+
+- **[Whitelake Frostfeather](src/data/registry/weapons/swords/whitelake-frostfeather.ts)** (5★ Sword, 674 Base ATK / 44.1% CRIT DMG):
+  - Updated description and passive *Snowhide's Respite* — ATK% from Iceberg stacks; AoE Cryo hit resets stacks.
+- **[Emberwell](src/data/registry/weapons/swords/emberwell.ts)** (5★ Sword):
+  - Updated description and passive *Burning Conviction* — DMG% scaling off HP loss.
+- **[Covenant of Frost and Snow](src/data/registry/weapons/bows/covenant-of-frost-and-snow.ts)** (5★ Bow, 542 Base ATK / 66.2% HP):
+  - Updated description and passive *Pact of Endless Ice* — team Cryo/Frozen buffs and Energy Recharge.
+- **[Echoes of the Heart](src/data/registry/weapons/catalysts/echoes-of-the-heart.ts)** (5★ Catalyst):
+  - Updated description and passive *Heart's Echo* — EM and Stellar Glimmer DMG bonus.
+- **[Song of the Vigil](src/data/registry/weapons/polearms/song-of-the-vigil.ts)** (5★ Polearm):
+  - Updated description and passive *Resonant Vigil* — Stellar Glimmer DMG and ATK% party buff.
+- **[Blade of Atonement](src/data/registry/weapons/claymores/blade-of-atonement.ts)** (5★ Claymore):
+  - Updated description and passive *Atonement* — HP-threshold conditional CRIT DMG and DMG%.
+- **[Heretic's Molten Blade](src/data/registry/weapons/swords/heretics-molten-blade.ts)** (4★ Sword, 510 Base ATK / 55.1% CRIT DMG):
+  - Updated description and passive *Gleam* — ATK% scaling with distance from opponent.
+- **[Jade Vista](src/data/registry/weapons/bows/jade-vista.ts)** (4★ Bow, 510 Base ATK / 27.6% CRIT Rate):
+  - Updated description and passive *Jade Gaze* — EM and ATK% from same/different-element members; 3-stack priority cap logic.
+- **[Forged by the Golden Melody](src/data/registry/weapons/claymores/forged-by-the-golden-melody.ts)** (4★ Claymore, 510 Base ATK / 27.6% CRIT Rate):
+  - Updated description and passive *Day and Night in Counterpoint* — ATK% / EM / Stellar Glimmer per movement type, doubled by Contrapuntal.
+- **[Clash of Kings](src/data/registry/weapons/catalysts/clash-of-kings.ts)** (4★ Catalyst, 510 Base ATK / 27.6% CRIT Rate):
+  - Updated description and passive *Without Heed for Day nor Night* — ATK% and EM from Laws of the Board.
+- **[Frostbreath](src/data/registry/weapons/polearms/frostbreath.ts)** (4★ Polearm, 510 Base ATK / 45.9% Energy Recharge):
+  - Updated description and passive *A Cast Real Far* — ATK% on reaction trigger.
+
+#### Batch 2 — 6 Weapons (v7.1 Epitome Invocation / Liyue Event, September 25, 2026)
+
+- **[Beyond the Chrysalis](src/data/registry/weapons/swords/beyond-the-chrysalis.ts)** (5★ Sword, 674 Base ATK / 44.1% CRIT DMG):
+  - New registry file. Passive *Dance of Wings Unbound*: sequenced effects on Skill/Burst — **Winds of Devotion** (+56%~120% CRIT DMG), **Winds of Defiance** (+36%~72% Stellar Swirl DMG), **Winds of Plenty** (5~7 Energy restore). Effects reset on field-swap.
+  - Registered in [`swords/index.ts`](src/data/registry/weapons/swords/index.ts).
+- **[Hymn of the Maelstrom](src/data/registry/weapons/catalysts/hymn-of-the-maelstrom.ts)** (5★ Catalyst, 542 Base ATK / 66.2% HP):
+  - New registry file. Passive *Rondo of Slumber*: +4%~8% Healing Bonus; **Vatsamonga's Vatic Vintage** (max 3 stacks) grants +4%~8% Max HP per stack and active party member gains +0.4%~0.8% ATK per 1,000 wielder HP over 40,000 (cap 8%~16%); Frozen/Stellar Swirl boosts both bonuses by 75% for 5s. Off-field capable.
+  - Registered in [`catalysts/index.ts`](src/data/registry/weapons/catalysts/index.ts).
+- **[New Bough](src/data/registry/weapons/swords/new-bough.ts)** (4★ Sword, 510 Base ATK / 55.1% CRIT DMG):
+  - New registry file. Passive *Wildgrowth*: on hit within 12s after Skill (1/s, max 3 stacks), **Verdant** effect grants +4%~8% ATK & +20~40 EM per stack. Under **Radiance: Stellar Glimmer**, changes to +6%~12% ATK & +8%~16% Stellar Glimmer DMG per stack (EM suppressed). Off-field capable.
+  - Registered in [`swords/index.ts`](src/data/registry/weapons/swords/index.ts).
+- **[Breezeborne Refrain](src/data/registry/weapons/bows/breezeborne-refrain.ts)** (4★ Bow, 510 Base ATK / 27.6% CRIT Rate):
+  - New registry file. Passive *Viper's Ballad*: +20%~40% Energy Recharge. Skill/Burst hits accumulate **Hymn of the Pure** stacks (max 3, 1/0.03s); at 3 stacks, converts to **Thus Lied the Viper** — grants nearby party members +24%~48% Stellar Glimmer DMG for 12s. Off-field capable. `isSupport: true`.
+  - Registered in [`bows/index.ts`](src/data/registry/weapons/bows/index.ts).
+- **[Winter's Heavy Heart](src/data/registry/weapons/catalysts/winters-heavy-heart.ts)** (4★ Catalyst, 510 Base ATK / 55.1% CRIT DMG):
+  - New registry file. Passive *Secrets of Frost*: **Silver-Tinged Blood Pact** — +24~48 EM per Cryo member; +4.8%~9.6% ATK per Electro member (max 4 Cryo/Electro total). Under **Radiance: Stellar Glimmer**, changes to +20~40 EM & +6%~12% Stellar Glimmer DMG per any Cryo or Electro member (max 4).
+  - Registered in [`catalysts/index.ts`](src/data/registry/weapons/catalysts/index.ts).
+- **[Silver Light](src/data/registry/weapons/swords/silver-light.ts)** (4★ Sword, 510 Base ATK / 41.4% ATK):
+  - New registry file. Passive *Radiance on the Water*: After Elemental Skill, gain +52~104 EM for 12s (max 2 independent stacks).
+  - Registered in [`swords/index.ts`](src/data/registry/weapons/swords/index.ts).
+
+#### Registry & Test Changes
+
+- **Category count update**: `WEAPONS` total updated from 246 → 252 (swords: 56→59, bows: 49→50, catalysts: 53→55).
+- **Test coverage**: Added 6 new `it()` blocks in [`weapon-buffs.test.ts`](src/lib/engine/weapon-buffs.test.ts) validating base stats, HoYoWiki description text, passive mechanic controls (stacks, toggles), and R1–R5 refinement formula correctness for all 6 weapons.
+- **Full suite**: All 56 test files, 545 tests passing.
+- **Knowledge graph**: Ran `graphify update .` → rebuilt to 1,967 nodes, 5,825 edges, 309 communities.
+
+---
+
+## [v1.3.1] - Previous Version
 
 All developments listed below were implemented during the `v1.3.1` release cycle (September 17, 2026).
 
