@@ -58,10 +58,12 @@ import { resolveXilonen } from "./characters/xilonen";
 import { resolveKazuha } from "./characters/kazuha";
 import { resolveOdette } from "./characters/odette";
 import { resolveSucrose } from "./characters/sucrose";
+import { resolveVesna } from "./characters/vesna";
 
 type CharacterResolver = (config: CharacterConfig, ctx: MechanicsCtx) => MechanicsResult;
 
 const CHARACTER_RESOLVERS: Record<string, CharacterResolver> = {
+  "vesna": resolveVesna,
   "sucrose": resolveSucrose,
   "odette": resolveOdette,
   "kazuha": resolveKazuha,

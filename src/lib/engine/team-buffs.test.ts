@@ -520,8 +520,8 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
     });
 
-    it("all 50 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(50);
+    it("all 51 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(51);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -532,9 +532,9 @@ describe("remastered support system", () => {
     });
   });
 
-  describe("50-Character Support Roster Completeness & Mechanics", () => {
-    it("has exactly 50 support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(50);
+  describe("51-Character Support Roster Completeness & Mechanics", () => {
+    it("has exactly 51 support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(51);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -946,6 +946,27 @@ describe("remastered support system", () => {
       const pills = sup!.formatBriefStats!(ctx!);
       expect(pills.find((p) => p.label === "Total ATK")?.value).toBe("2,400");
       expect(pills.find((p) => p.label === "CRIT")?.value).toBe("65% / 150%");
+    });
+
+    it("Vesna Support: Splendid Prelude Base Stellar Swirl DMG", () => {
+      const sup = supportById("vesna");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(5);
+      expect(sup?.element).toBe("Anemo");
+      expect(sup?.weapon).toBe("Sword");
+
+      const inst: SupportInstance = {
+        supportId: "vesna-support",
+        stats: { atk: "2500" },
+        mechanicInputs: {},
+        constellationLevel: 0,
+        enabled: true,
+      };
+
+      const res = resolveTeamBuffs([inst]);
+      expect(res.statDeltas.stellarSwirlBaseDmgMultiplier).toBe(14);
+      const source = res.sources.find((s) => s.supportName === "Vesna");
+      expect(source?.rarity).toBe(5);
     });
 
     it("Sucrose: A1 & A4 EM share, C6 absorption buff, and Hexerei: Secret Rite attack bonuses", () => {
