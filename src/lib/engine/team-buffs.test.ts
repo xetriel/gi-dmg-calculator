@@ -520,8 +520,8 @@ describe("remastered support system", () => {
       expect(typeof ineffaSupport?.formatBriefStats).toBe("function");
     });
 
-    it("all 51 characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(51);
+    it("all characters in CHARACTERS are clean and 100% JSON-serializable", () => {
+      expect(CHARACTERS.length).toBe(52);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -532,9 +532,9 @@ describe("remastered support system", () => {
     });
   });
 
-  describe("51-Character Support Roster Completeness & Mechanics", () => {
-    it("has exactly 51 support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(51);
+  describe("Support Roster Completeness & Mechanics", () => {
+    it("has all support characters registered", () => {
+      expect(SUPPORT_CONFIGS.length).toBe(52);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -1019,6 +1019,53 @@ describe("remastered support system", () => {
       expect(pills.find((p) => p.label === "Total EM")?.value).toBe("800");
       expect(pills.find((p) => p.label === "EM Share")?.value).toBe("+210");
       expect(pills.find((p) => p.label === "CRIT")?.value).toBe("50% / 100%");
+    });
+
+    it("Aino support: grants +80 EM at C1 and +15%/+35% reaction DMG at C6", () => {
+      const sup = supportById("aino");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(4);
+
+      // C1 test: +80 EM
+      const instC1: SupportInstance = {
+        supportId: "aino-support",
+        stats: { atk: "1400", em: "600", critRate: "50", critDmg: "100" },
+        mechanicInputs: { "c1-ash-field-em": "1", "c6-creative-genius": "0" },
+        constellationLevel: 1,
+        enabled: true,
+      };
+      const resC1 = resolveTeamBuffs([instC1]);
+      expect(resC1.statDeltas.em).toBe(80);
+      const emSource = resC1.sources.find((s) => s.stat === "em");
+      expect(emSource?.rarity).toBe(4);
+      expect(emSource?.supportName).toBe("Aino");
+
+      // C6 test with Ascendant Gleam: +35% reaction DMG
+      const instC6: SupportInstance = {
+        supportId: "aino-support",
+        stats: { atk: "1400", em: "600", critRate: "50", critDmg: "100" },
+        mechanicInputs: {
+          "c1-ash-field-em": "1",
+          "c6-creative-genius": "1",
+          "moonsign-ascendant-gleam": "1",
+        },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const resC6 = resolveTeamBuffs([instC6]);
+      expect(resC6.statDeltas.em).toBe(80);
+      expect(resC6.statDeltas.electroChargedDmgBonus).toBe(35);
+      expect(resC6.statDeltas.bloomDmgBonus).toBe(35);
+      expect(resC6.statDeltas.lunarChargedDmgBonus).toBe(35);
+      expect(resC6.statDeltas.lunarBloomDmgBonus).toBe(35);
+      expect(resC6.statDeltas.lunarCrystallizeDmgBonus).toBe(35);
+
+      // Brief stats formatting
+      const ctx = resolveSupportCtx(instC6);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "EM")?.value).toBe("600");
+      expect(pills.find((p) => p.label === "Total ATK")?.value).toBe("1,400");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {

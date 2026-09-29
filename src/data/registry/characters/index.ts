@@ -71,6 +71,7 @@ import { xilonen } from "./xilonen";
 import { kazuha } from "./kazuha";
 import { sucrose } from "./sucrose";
 import { vesna } from "./vesna";
+import { aino } from "./aino";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
@@ -126,6 +127,7 @@ export {
   odette,
   sucrose,
   vesna,
+  aino,
 };
 
 export const RAW_CHARACTERS: CharacterConfig[] = [
@@ -180,6 +182,7 @@ export const RAW_CHARACTERS: CharacterConfig[] = [
   odette,
   sucrose,
   vesna,
+  aino,
 ];
 
 // ==========================================
