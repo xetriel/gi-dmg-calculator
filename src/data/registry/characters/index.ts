@@ -74,6 +74,7 @@ import { vesna } from "./vesna";
 import { aino } from "./aino";
 import { amber } from "./amber";
 import { baizhu } from "./baizhu";
+import { barbara } from "./barbara";
 
 // Each character's full definition lives in its own file (mirrors src/data/talents/),
 // so growing the roster only ever means adding a file + one line here.
@@ -132,6 +133,7 @@ export {
   aino,
   amber,
   baizhu,
+  barbara,
 };
 
 export const RAW_CHARACTERS: CharacterConfig[] = [
@@ -189,6 +191,7 @@ export const RAW_CHARACTERS: CharacterConfig[] = [
   aino,
   amber,
   baizhu,
+  barbara,
 ];
 
 // ==========================================

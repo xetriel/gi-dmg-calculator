@@ -521,7 +521,7 @@ describe("remastered support system", () => {
     });
 
     it("all characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(54);
+      expect(CHARACTERS.length).toBe(55);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -534,7 +534,7 @@ describe("remastered support system", () => {
 
   describe("Support Roster Completeness & Mechanics", () => {
     it("has all support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(54);
+      expect(SUPPORT_CONFIGS.length).toBe(55);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -1141,6 +1141,42 @@ describe("remastered support system", () => {
       expect(pills.find((p) => p.label === "Total HP")?.value).toBe("50,000");
       expect(pills.find((p) => p.label === "A4 Bonus")?.value).toBe("+100% Bloom / +40.0% Spread");
       expect(pills.find((p) => p.label === "CRIT")?.value).toBe("40% / 90%");
+    });
+
+    it("Barbara support: C2 Vitality Burst grants +15% Hydro DMG bonus to team", () => {
+      const sup = supportById("barbara");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(4);
+
+      // C0: no Hydro buff
+      const instC0: SupportInstance = {
+        supportId: "barbara-support",
+        stats: { hp: "28000", baseHp: "9787", critRate: "40", critDmg: "80" },
+        mechanicInputs: { "c2-hydro-bonus": "1", "melody-loop-active": "1" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const resC0 = resolveTeamBuffs([instC0]);
+      expect(resC0.statDeltas.hydroDmgBonus).toBeUndefined();
+
+      // C2: +15% Hydro DMG
+      const instC2: SupportInstance = {
+        supportId: "barbara-support",
+        stats: { hp: "28000", baseHp: "9787", critRate: "40", critDmg: "80" },
+        mechanicInputs: { "c2-hydro-bonus": "1", "melody-loop-active": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const resC2 = resolveTeamBuffs([instC2]);
+      expect(resC2.statDeltas.hydroDmgBonus).toBe(15);
+      expect(resC2.sources.some((s) => s.label === "Hydro DMG (Barbara C2 Vitality Burst)" && s.value === 15)).toBe(true);
+
+      // Brief stats formatting
+      const ctx = resolveSupportCtx(instC2);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Total HP")?.value).toBe("28,000");
+      expect(pills.find((p) => p.label === "C2 Hydro")?.value).toBe("+15.0% Hydro DMG");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
