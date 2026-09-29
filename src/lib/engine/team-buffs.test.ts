@@ -521,7 +521,7 @@ describe("remastered support system", () => {
     });
 
     it("all characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(52);
+      expect(CHARACTERS.length).toBe(54);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -534,7 +534,7 @@ describe("remastered support system", () => {
 
   describe("Support Roster Completeness & Mechanics", () => {
     it("has all support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(52);
+      expect(SUPPORT_CONFIGS.length).toBe(54);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -1066,6 +1066,81 @@ describe("remastered support system", () => {
       const pills = sup!.formatBriefStats!(ctx!);
       expect(pills.find((p) => p.label === "EM")?.value).toBe("600");
       expect(pills.find((p) => p.label === "Total ATK")?.value).toBe("1,400");
+    });
+
+    it("Amber support: C6 Wildfire grants +15% ATK to party when C6 is unlocked", () => {
+      const sup = supportById("amber");
+      expect(sup).toBeDefined();
+
+      const instC0: SupportInstance = {
+        supportId: "amber-support",
+        stats: { baseAtk: "700", critRate: "60", critDmg: "120", energyRecharge: "160" },
+        mechanicInputs: { "c6-wildfire": "1" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const resC0 = resolveTeamBuffs([instC0]);
+      expect(resC0.statDeltas.atkPercent).toBeUndefined();
+
+      const instC6: SupportInstance = {
+        supportId: "amber-support",
+        stats: { baseAtk: "700", critRate: "60", critDmg: "120", energyRecharge: "160" },
+        mechanicInputs: { "c6-wildfire": "1" },
+        constellationLevel: 6,
+        enabled: true,
+      };
+      const resC6 = resolveTeamBuffs([instC6]);
+      expect(resC6.statDeltas.atkPercent).toBe(15);
+      expect(resC6.sources.some((s) => s.label === "Party ATK% (Amber C6 Wildfire)" && s.value === 15)).toBe(true);
+
+      // Brief stats formatting
+      const ctx = resolveSupportCtx(instC6);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Base ATK")?.value).toBe("700");
+      expect(pills.find((p) => p.label === "CRIT")?.value).toBe("60% / 120%");
+    });
+
+    it("Baizhu provides A4 reaction buffs and C4 EM buff", () => {
+      const sup = supportById("baizhu");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(5);
+
+      const instC0: SupportInstance = {
+        supportId: "baizhu-support",
+        stats: { hp: "50000", baseHp: "13348", critRate: "40", critDmg: "90" },
+        mechanicInputs: { "a4-verdant-favor": "1", "c4-art-of-perception": "1" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const resC0 = resolveTeamBuffs([instC0]);
+      expect(resC0.statDeltas.bloomDmgBonus).toBe(100);
+      expect(resC0.statDeltas.hyperbloomDmgBonus).toBe(100);
+      expect(resC0.statDeltas.burgeonDmgBonus).toBe(100);
+      expect(resC0.statDeltas.burningDmgBonus).toBe(100);
+      expect(resC0.statDeltas.lunarBloomDmgBonus).toBeCloseTo(35, 5);
+      expect(resC0.statDeltas.spreadDmgBonus).toBeCloseTo(40, 5);
+      expect(resC0.statDeltas.aggravateDmgBonus).toBeCloseTo(40, 5);
+      expect(resC0.statDeltas.em).toBeUndefined(); // C4 only
+
+      const instC4: SupportInstance = {
+        supportId: "baizhu-support",
+        stats: { hp: "50000", baseHp: "13348", critRate: "40", critDmg: "90" },
+        mechanicInputs: { "a4-verdant-favor": "1", "c4-art-of-perception": "1" },
+        constellationLevel: 4,
+        enabled: true,
+      };
+      const resC4 = resolveTeamBuffs([instC4]);
+      expect(resC4.statDeltas.em).toBe(80);
+      expect(resC4.sources.some((s) => s.label === "Elemental Mastery (Baizhu C4 Ancient Art of Perception)" && s.value === 80)).toBe(true);
+
+      // Brief stats formatting
+      const ctx = resolveSupportCtx(instC4);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Total HP")?.value).toBe("50,000");
+      expect(pills.find((p) => p.label === "A4 Bonus")?.value).toBe("+100% Bloom / +40.0% Spread");
+      expect(pills.find((p) => p.label === "CRIT")?.value).toBe("40% / 90%");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
