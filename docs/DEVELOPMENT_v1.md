@@ -2,7 +2,124 @@
 
 This document logs the feature updates, architecture changes, and character releases across all versions of the Genshin Damage Calculator, matching the version displayed in the application header.
 
-## [v1.3.2] - Current UI Header Version
+## [v1.3.21] - Current UI Header Version
+
+All developments listed below were implemented during the `v1.3.21` release cycle (September 29, 2026).
+
+### New Character Calculators (v1.3.21 Character Batch)
+
+Integrated four comprehensive character calculators, talent scaling seed matrices, pure mechanics resolvers, and party support configurations for **Aino**, **Amber**, **Baizhu**, and **Barbara**.
+
+#### 1. Aino (September 29, 2026)
+- **Character Definition & Party Support Configuration** ([`src/data/registry/characters/aino.ts`](src/data/registry/characters/aino.ts)):
+  - 4-Star Hydro Claymore from Nod-Krai (`atk`-scaling with prominent EM dual-scaling).
+  - Lv. 90 Base Stats: 11,201 HP, 242 ATK, 607 DEF, and +96 Elemental Mastery ascension stat.
+  - Defined 14 talent hits across Normal Attack (9 hits), Elemental Skill *Musecatcher* (2 hits), Elemental Burst *Precision Hydronic Cooler* (2 hits), and C2 off-field water cannon (1 hit).
+  - Full `wikiTalents`, `mechanicDefs`, and `constellations` (C1–C6).
+  - Configured `support` block for party support calculations with 4-star purple rarity theming, C1 EM sharing (+80 EM), C6 reaction amplification (+15% standard, +35% with Moonsign: Ascendant Gleam) across Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize, and brief info stat pills (`formatBriefStats`).
+- **Talent Scaling Seed (196 Rows)** ([`src/data/talents/aino.ts`](src/data/talents/aino.ts)):
+  - Complete Lv. 1–14 arrays matching wiki multipliers and standard 1.80 factor growth curves for all 14 hits ($14 \times 14 = 196$ total rows).
+  - Synced to `TalentScaling` database via `prisma/seed.ts` (`aino: synced 196 rows`).
+- **Mechanics Resolver** ([`src/lib/engine/characters/aino.ts`](src/lib/engine/characters/aino.ts)):
+  - **A4 Structured Power Booster**: Adds $+0.50 \times \text{EM}$ additive base flat DMG to Burst water ball hits.
+  - **C1 Theory of Ash—Field Equilibrium**: Grants $+80\text{ EM}$ to Aino and feeds directly into effective EM for A4 scaling.
+  - **C2 Principle of Transference in Gear Differentials**: Deals $25\% \text{ ATK} + 100\% \text{ EM}$ (Burst DMG) while off-field during Burst (gated by constellation level $\ge 2$ and off-field toggle).
+  - **C6 The Burden of Creative Genius**: Grants $+15\%$ ($+35\%$ under Moonsign: Ascendant Gleam) reaction DMG to Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize.
+  - Tagged all Normal Attack strikes as Physical DMG.
+- **Registries Integration**:
+  - Registered in [`src/data/registry/characters/index.ts`](src/data/registry/characters/index.ts) (`RAW_CHARACTERS`, `SUPPORT_CONFIGS`).
+  - Registered in [`src/data/talents/index.ts`](src/data/talents/index.ts) (`TALENT_SEED`).
+  - Registered in [`src/lib/engine/mechanics.ts`](src/lib/engine/mechanics.ts) (`CHARACTER_RESOLVERS["aino"]`).
+
+#### 2. Amber (September 29, 2026)
+- **Character Definition & Party Support Configuration** ([`src/data/registry/characters/amber.ts`](src/data/registry/characters/amber.ts)):
+  - 4-Star Pyro Bow from Mondstadt (`atk`-scaling).
+  - Lv. 90 Base Stats: 9,461 HP, 223 ATK, 601 DEF, and +24.0% ATK ascension stat.
+  - Defined 17 talent hits across:
+    - **Sharpshooter (Normal Attack)**: `1-hit`, `2-hit`, `3-hit`, `4-hit`, `5-hit`, `aimed`, `aimed-c1` (C1 20% DMG arrow, `minConstellation: 1`), `fully-charged-aimed` (Pyro), `fully-charged-aimed-c1` (C1 20% DMG arrow, `minConstellation: 1`), `plunge`, `low-plunge`, `high-plunge`.
+    - **Explosive Puppet (Skill)**: `skill-hp` (Baron Bunny inherited HP), `explosion-dmg` (AoE Pyro DMG), `manual-detonation-c2` (C2 manual foot detonation, `minConstellation: 2`).
+    - **Fiery Rain (Burst)**: `burst-wave-dmg` (Pyro DMG per wave), `burst-total-dmg` (18 waves cumulative Pyro DMG).
+  - Mechanic Controls (`mechanicDefs`): `a4-precise-shot` (+15% ATK for 10s on weak spot hit), `weakspot-auto-crit` (guaranteed +100% CRIT Rate on aimed shots), `c2-manual-detonation` (+200% DMG bonus to Baron Bunny manual explosion), and `c6-wildfire` (+15% ATK & +15% Movement SPD to party after Burst).
+  - Party Support (`support` block): Amber provides team-wide **+15% ATK** buff at C6 via `resolveTeamBuffs`.
+- **Talent Scaling Seed (238 Rows)** ([`src/data/talents/amber.ts`](src/data/talents/amber.ts)):
+  - Complete Lv. 1–14 scaling arrays for all 17 hits ($17 \times 14 = 238$ rows).
+  - Synced to `TalentScaling` database via `prisma/seed.ts` (`amber: synced 238 rows`).
+- **Mechanics Resolver** ([`src/lib/engine/characters/amber.ts`](src/lib/engine/characters/amber.ts)):
+  - **A1**: Adds `critRateBonusPct: 10` to `burst-wave-dmg` and `burst-total-dmg`.
+  - **A4**: Adds `statDeltas.atk` (+15% Base ATK) and `statDeltas.atkPercent` (+15%).
+  - **Weakspot Auto-Crit**: Adds `critRateBonusPct: 100` to all aimed shot variants.
+  - **C1**: Enables secondary arrows (`baseDmgMultiplier: 1.0` when C1+, `0` when C0).
+  - **C2**: Unlocks manual detonation row with `bonusDmgPct: 200` (`baseDmgMultiplier: 1.0` when C2+, `0` when C0/C1).
+  - **C6**: Adds `statDeltas.atk` (+15% Base ATK) and `statDeltas.movementSpd` (+15%).
+- **Registries Integration**:
+  - Registered in [`src/data/registry/characters/index.ts`](src/data/registry/characters/index.ts) (`RAW_CHARACTERS`, `SUPPORT_CONFIGS`).
+  - Registered in [`src/data/talents/index.ts`](src/data/talents/index.ts) (`TALENT_SEED`).
+  - Registered in [`src/lib/engine/mechanics.ts`](src/lib/engine/mechanics.ts) (`CHARACTER_RESOLVERS["amber"]`).
+
+#### 3. Baizhu (September 29, 2026)
+- **Character Definition & Support Configuration** ([`src/data/registry/characters/baizhu.ts`](src/data/registry/characters/baizhu.ts)):
+  - 5-Star Dendro Catalyst from Liyue (`hp`-scaling healer & reaction buffer).
+  - Lv. 90 Base Stats: 13,348 HP, 193 ATK, 500 DEF, and +28.8% HP% ascension stat. Primary `scalingSource: "hp"`.
+  - Defined 15 talent hits across Normal Attacks (9 hits: `1-hit`, `2-hit`, `3-hit-a`, `3-hit-b`, `4-hit`, `charged`, `plunge`, `low-plunge`, `high-plunge`), Skill (3 hits: `skill-dmg`, `skill-heal`, `c2-splice-dmg`), and Burst (3 hits: `burst-spiritvein`, `burst-heal`, `burst-shield`).
+  - Mechanic Controls (`mechanicDefs`): `a1-hp-threshold` (Five Fortunes Forever toggle), `a4-verdant-favor` (Year of Verdant Favor toggle), and `c4-art-of-perception` (Ancient Art of Perception toggle).
+  - Party Support (`support` block): 5★ Gold rarity theming; A4 reaction DMG bonuses (Burning/Bloom/Hyperbloom/Burgeon $+2\%$ per 1,000 HP, Lunar-Bloom $+0.7\%$ per 1,000 HP, Aggravate/Spread $+0.8\%$ per 1,000 HP up to 50,000 HP cap) and C4 $+80$ Elemental Mastery buff, with dynamic `formatBriefStats` pills.
+- **Talent Scaling Seed (210 Rows)** ([`src/data/talents/baizhu.ts`](src/data/talents/baizhu.ts)):
+  - Complete Lv. 1–14 arrays for all 15 hits ($15 \times 14 = 210$ rows) matched to HoYoWiki entry 3609.
+  - Synced to `TalentScaling` database via `prisma/seed.ts` (`baizhu: synced 210 rows`).
+- **Mechanics Resolver** ([`src/lib/engine/characters/baizhu.ts`](src/lib/engine/characters/baizhu.ts)):
+  - **A1 Five Fortunes Forever**: $+25\%$ Dendro DMG Bonus when HP $\ge 50\%$, or $+20\%$ Healing Bonus when HP $< 50\%$.
+  - **A4 Year of Verdant Favor**: Reaction DMG bonuses scaled by $\min(\text{HP}, 50000) / 1000$ to Burning, Bloom, Hyperbloom, Burgeon, Lunar-Bloom, Spread, and Aggravate.
+  - **C2 All-Seeing Speculation**: Unlocks `c2-splice-dmg` with `baseDmgMultiplier: 1.0` at C2+ (gated to `0` below C2).
+  - **C4 Ancient Art of Perception**: Party $+80$ EM buff when active.
+  - **C6 Aura Flow**: $+8\%$ Max HP Flat DMG bonus applied to `burst-spiritvein`.
+- **Registries Integration**:
+  - Registered in [`src/data/registry/characters/index.ts`](src/data/registry/characters/index.ts) (`RAW_CHARACTERS`, `SUPPORT_CONFIGS`).
+  - Registered in [`src/data/talents/index.ts`](src/data/talents/index.ts) (`TALENT_SEED`).
+  - Registered in [`src/lib/engine/mechanics.ts`](src/lib/engine/mechanics.ts) (`CHARACTER_RESOLVERS["baizhu"]`).
+
+#### 4. Barbara (September 29, 2026)
+- **Character Definition & Support Configuration** ([`src/data/registry/characters/barbara.ts`](src/data/registry/characters/barbara.ts)):
+  - 4-Star Hydro Catalyst from Mondstadt (`hp`-scaling healer & Hydro buffer).
+  - Lv. 90 Base Stats: 9,787 HP, 159 ATK, 669 DEF, and +24.0% HP% ascension stat. Primary `scalingSource: "hp"`.
+  - Defined 13 talent hits:
+    - **Normal Attack (Whisper of Water)**: `1-hit`, `2-hit`, `3-hit`, `4-hit`, `charged`, `plunge`, `low-plunge`, `high-plunge` (all dealing Hydro DMG).
+    - **Elemental Skill (Let the Show Begin♪)**: `droplet-dmg` (Hydro DMG), `skill-heal-per-hit` (HP scaling, heal), `skill-charged-heal` ($4\times$ Normal Attack heal, HP scaling, heal), `skill-continuous-heal` (HP scaling, heal).
+    - **Elemental Burst (Shining Miracle♪)**: `burst-heal` (HP scaling, heal).
+  - Mechanic Controls (`mechanicDefs`): `melody-loop-active` (toggles Melody Loop active state), `c2-hydro-bonus` (toggles C2 Vitality Burst +15% Hydro DMG Bonus during Melody Loop, gated by C2).
+  - Party Support (`support` block): 4★ Purple theming in `TeamBuffModal`; party buff of +15% Hydro DMG to the active character via C2 Vitality Burst; brief info pills for Total HP, C2 Hydro DMG Bonus, Healing Bonus%, and ER%; dedicated support build editor backed at `/characters/barbara/support`.
+- **Talent Scaling Seed (182 Rows)** ([`src/data/talents/barbara.ts`](src/data/talents/barbara.ts)):
+  - Complete Lv. 1–14 scaling matrices for all 13 hit keys ($13 \times 14 = 182$ rows).
+  - Synced to `TalentScaling` database via `prisma/seed.ts` (`barbara: synced 182 rows`).
+- **Mechanics Resolver** ([`src/lib/engine/characters/barbara.ts`](src/lib/engine/characters/barbara.ts)):
+  - **C2 Vitality Burst**: Calculates +15% Hydro DMG bonus when C2+ is unlocked and both Melody Loop and C2 toggles are active.
+  - **In-Game Exact Flat Healing Injection**: Adds level-scaled flat healing into `res.perHit` for `skill-heal-per-hit`, `skill-charged-heal` ($4\times$), `skill-continuous-heal`, and `burst-heal` (accounting for C3/C5 +3 talent level boosts).
+  - Informational mechanics notes for A1 (-12% Stamina consumption), A4 duration extension, C1 (energy regen), C4 (energy on charged attacks), and C6 (100% HP revive off-field).
+- **Registries Integration**:
+  - Registered in [`src/data/registry/characters/index.ts`](src/data/registry/characters/index.ts) (`RAW_CHARACTERS`, `SUPPORT_CONFIGS`).
+  - Registered in [`src/data/talents/index.ts`](src/data/talents/index.ts) (`TALENT_SEED`).
+  - Registered in [`src/lib/engine/mechanics.ts`](src/lib/engine/mechanics.ts) (`CHARACTER_RESOLVERS["barbara"]`).
+
+### Verification & Validation
+
+- **Automated Unit Tests**:
+  - Dedicated character test suites:
+    - [`src/lib/engine/characters/aino.test.ts`](src/lib/engine/characters/aino.test.ts): A4 EM scaling, C1 EM bonus, C2 hit gating, C6 reaction buffs, Physical tagging, support definitions, and 196-row seed validation.
+    - [`src/lib/engine/characters/amber.test.ts`](src/lib/engine/characters/amber.test.ts): A1 Burst CRIT Rate, A4 Precise Shot ATK buff, weakspot auto-crit, C1 secondary arrow gating, C2 manual detonation, C6 Wildfire, and 238-row seed validation.
+    - [`src/lib/engine/characters/baizhu.test.ts`](src/lib/engine/characters/baizhu.test.ts): Baseline stats, A1 toggle, A4 scaling & 50,000 HP cap, C2 hit gating, C4 EM buff, C6 HP flat DMG, and 210-row seed validation.
+    - [`src/lib/engine/characters/barbara.test.ts`](src/lib/engine/characters/barbara.test.ts): C2 toggle & gating, flat healing injection at Lv10, C3/C5 constellation level boost scaling, $4\times$ charged heal ratio, and 182-row seed validation.
+  - Party Buff Suite: [`src/lib/engine/team-buffs.test.ts`](src/lib/engine/team-buffs.test.ts) updated with test cases for all four characters; support roster expanded to **55 characters**.
+  - Full project test suite: **61 test files, 586 tests passing cleanly** (0 failures).
+- **Database Synchronization**:
+  - Synced 826 new talent scaling rows across all four characters via `prisma/seed.ts` (Aino: 196, Amber: 238, Baizhu: 210, Barbara: 182).
+  - Total `TalentScaling` database rows: **12,945 rows**.
+- **Production Build Verification**:
+  - `npm run build` executed with Next.js 16.2.9 Turbopack: 0 TypeScript errors, 0 lint warnings, and clean generation for all routes.
+- **Knowledge Graph Synchronization**:
+  - Ran `graphify update .` to synchronize AST knowledge graph (2,042 nodes, 315 communities).
+
+---
+
+## [v1.3.2] - Previous Version
 
 All developments listed below were implemented during the `v1.3.2` release cycle (September 25, 2026).
 
