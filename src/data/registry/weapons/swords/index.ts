@@ -3,6 +3,7 @@ import { amenomaKageuchi } from "./amenoma-kageuchi";
 import { aquilaFavonia } from "./aquila-favonia";
 import { athameArtis } from "./athame-artis";
 import { azurelight } from "./azurelight";
+import { beyondTheChrysalis } from "./beyond-the-chrysalis";
 import { blackcliffLongsword } from "./blackcliff-longsword";
 import { calamityOfEshu } from "./calamity-of-eshu";
 import { cinnabarSpindle } from "./cinnabar-spindle";
@@ -29,6 +30,7 @@ import { lightbearingMoonshard } from "./lightbearing-moonshard";
 import { lionsRoar } from "./lions-roar";
 import { mistsplitterReforged } from "./mistsplitter-reforged";
 import { moonweaversDawn } from "./moonweavers-dawn";
+import { newBough } from "./new-bough";
 import { peakPatrolSong } from "./peak-patrol-song";
 import { primordialJadeCutter } from "./primordial-jade-cutter";
 import { prototypeRancour } from "./prototype-rancour";
@@ -36,6 +38,7 @@ import { royalLongsword } from "./royal-longsword";
 import { sacrificialSword } from "./sacrificial-sword";
 import { sapwoodBlade } from "./sapwood-blade";
 import { serenitysCall } from "./serenitys-call";
+import { silverLight } from "./silver-light";
 import { silverSword } from "./silver-sword";
 import { skyriderSword } from "./skyrider-sword";
 import { skywardBlade } from "./skyward-blade";
@@ -62,6 +65,7 @@ export {
   aquilaFavonia,
   athameArtis,
   azurelight,
+  beyondTheChrysalis,
   blackcliffLongsword,
   calamityOfEshu,
   cinnabarSpindle,
@@ -88,6 +92,7 @@ export {
   lionsRoar,
   mistsplitterReforged,
   moonweaversDawn,
+  newBough,
   peakPatrolSong,
   primordialJadeCutter,
   prototypeRancour,
@@ -95,6 +100,7 @@ export {
   sacrificialSword,
   sapwoodBlade,
   serenitysCall,
+  silverLight,
   silverSword,
   skyriderSword,
   skywardBlade,
@@ -121,6 +127,7 @@ export const SWORDS: WeaponConfig[] = [
   aquilaFavonia,
   athameArtis,
   azurelight,
+  beyondTheChrysalis,
   blackcliffLongsword,
   calamityOfEshu,
   cinnabarSpindle,
@@ -147,6 +154,7 @@ export const SWORDS: WeaponConfig[] = [
   lionsRoar,
   mistsplitterReforged,
   moonweaversDawn,
+  newBough,
   peakPatrolSong,
   primordialJadeCutter,
   prototypeRancour,
@@ -154,6 +162,7 @@ export const SWORDS: WeaponConfig[] = [
   sacrificialSword,
   sapwoodBlade,
   serenitysCall,
+  silverLight,
   silverSword,
   skyriderSword,
   skywardBlade,

@@ -22,73 +22,81 @@ async function main() {
   console.log(`Done. TalentScaling total rows: ${total}`);
 
   // Sync weapons
-  for (const weapon of WEAPONS) {
-    const buffConfigJson = weapon.buffs.length > 0 ? JSON.parse(JSON.stringify(weapon.buffs)) : undefined;
-    await prisma.weapon.upsert({
-      where: { id: weapon.id },
-      update: {
-        name: weapon.name,
-        type: weapon.type,
-        rarity: weapon.rarity,
-        baseAtk: weapon.baseAtk,
-        subStatType: weapon.subStat?.type ?? null,
-        subStatValue: weapon.subStat?.value ?? null,
-        passiveName: weapon.passiveName,
-        passiveDesc: weapon.passiveDesc,
-        isSupport: weapon.isSupport,
-        buffType: weapon.buffType,
-        buffConfig: buffConfigJson,
-      },
-      create: {
-        id: weapon.id,
-        name: weapon.name,
-        type: weapon.type,
-        rarity: weapon.rarity,
-        baseAtk: weapon.baseAtk,
-        subStatType: weapon.subStat?.type ?? null,
-        subStatValue: weapon.subStat?.value ?? null,
-        passiveName: weapon.passiveName,
-        passiveDesc: weapon.passiveDesc,
-        isSupport: weapon.isSupport,
-        buffType: weapon.buffType,
-        buffConfig: buffConfigJson,
-      },
-    });
-  }
+  try {
+    for (const weapon of WEAPONS) {
+      const buffConfigJson = weapon.buffs.length > 0 ? JSON.parse(JSON.stringify(weapon.buffs)) : undefined;
+      await prisma.weapon.upsert({
+        where: { id: weapon.id },
+        update: {
+          name: weapon.name,
+          type: weapon.type,
+          rarity: weapon.rarity,
+          baseAtk: weapon.baseAtk,
+          subStatType: weapon.subStat?.type ?? null,
+          subStatValue: weapon.subStat?.value ?? null,
+          passiveName: weapon.passiveName,
+          passiveDesc: weapon.passiveDesc,
+          isSupport: weapon.isSupport,
+          buffType: weapon.buffType,
+          buffConfig: buffConfigJson,
+        },
+        create: {
+          id: weapon.id,
+          name: weapon.name,
+          type: weapon.type,
+          rarity: weapon.rarity,
+          baseAtk: weapon.baseAtk,
+          subStatType: weapon.subStat?.type ?? null,
+          subStatValue: weapon.subStat?.value ?? null,
+          passiveName: weapon.passiveName,
+          passiveDesc: weapon.passiveDesc,
+          isSupport: weapon.isSupport,
+          buffType: weapon.buffType,
+          buffConfig: buffConfigJson,
+        },
+      });
+    }
 
-  const weaponCount = await (prisma as any).weapon.count();
-  console.log(`Done. Weapon total rows: ${weaponCount}`);
+    const weaponCount = await (prisma as any).weapon.count();
+    console.log(`Done. Weapon total rows: ${weaponCount}`);
+  } catch (err: any) {
+    console.warn("Skipping weapon sync (table does not exist or unmigrated):", err?.message ?? err);
+  }
 
   // Sync artifacts
-  const { ARTIFACTS } = await import("../src/data/registry/artifacts");
-  for (const artifact of ARTIFACTS) {
-    const buffConfigJson = artifact.buffs.length > 0 ? JSON.parse(JSON.stringify(artifact.buffs)) : undefined;
-    await (prisma as any).artifact?.upsert({
-      where: { id: artifact.id },
-      update: {
-        name: artifact.name,
-        rarity: artifact.rarity,
-        twoPieceDesc: artifact.twoPieceDesc,
-        fourPieceDesc: artifact.fourPieceDesc,
-        isSupport: artifact.isSupport,
-        buffType: artifact.buffType,
-        buffConfig: buffConfigJson,
-      },
-      create: {
-        id: artifact.id,
-        name: artifact.name,
-        rarity: artifact.rarity,
-        twoPieceDesc: artifact.twoPieceDesc,
-        fourPieceDesc: artifact.fourPieceDesc,
-        isSupport: artifact.isSupport,
-        buffType: artifact.buffType,
-        buffConfig: buffConfigJson,
-      },
-    });
-  }
+  try {
+    const { ARTIFACTS } = await import("../src/data/registry/artifacts");
+    for (const artifact of ARTIFACTS) {
+      const buffConfigJson = artifact.buffs.length > 0 ? JSON.parse(JSON.stringify(artifact.buffs)) : undefined;
+      await (prisma as any).artifact?.upsert({
+        where: { id: artifact.id },
+        update: {
+          name: artifact.name,
+          rarity: artifact.rarity,
+          twoPieceDesc: artifact.twoPieceDesc,
+          fourPieceDesc: artifact.fourPieceDesc,
+          isSupport: artifact.isSupport,
+          buffType: artifact.buffType,
+          buffConfig: buffConfigJson,
+        },
+        create: {
+          id: artifact.id,
+          name: artifact.name,
+          rarity: artifact.rarity,
+          twoPieceDesc: artifact.twoPieceDesc,
+          fourPieceDesc: artifact.fourPieceDesc,
+          isSupport: artifact.isSupport,
+          buffType: artifact.buffType,
+          buffConfig: buffConfigJson,
+        },
+      });
+    }
 
-  const artifactCount = await (prisma as any).artifact?.count();
-  console.log(`Done. Artifact total rows: ${artifactCount ?? ARTIFACTS.length}`);
+    const artifactCount = await (prisma as any).artifact?.count();
+    console.log(`Done. Artifact total rows: ${artifactCount ?? ARTIFACTS.length}`);
+  } catch (err: any) {
+    console.warn("Skipping artifact sync (table does not exist or unmigrated):", err?.message ?? err);
+  }
 
   await prisma.$disconnect();
 }

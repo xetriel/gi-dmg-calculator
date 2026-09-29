@@ -1,32 +1,32 @@
-# Graph Report - gi-dmg-calculator  (2026-09-17)
+# Graph Report - gi-dmg-calculator  (2026-09-29)
 
 ## Corpus Check
-- 663 files · ~419,993 words
+- 691 files · ~447,682 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1944 nodes · 5805 edges · 299 communities (74 shown, 225 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.8)
+- 2049 nodes · 6059 edges · 314 communities (75 shown, 239 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 56 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8bdb8d2d`
+- Built from commit: `e4a0b62f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- useCalculatorState.ts
+- Project Development Documentation
 - mechanics.ts
-- talents/xinyan.ts
+- core-stats.ts
 - devDependencies
 - swords/index.ts
-- coreStats
+- CharacterConfig
 - weapons/index.ts
 - compilerOptions
 - DamageStats
-- validation.ts
+- formula-explainer.ts
 - ArtifactConfig
-- effective-stats/page.tsx
+- useCalculatorState.ts
 - WikiSidebar.tsx
 - bows/index.ts
 - extract-wiki.ts
@@ -36,13 +36,13 @@
 - Formula Breakdown & Explainer Skill & Implementation Standard
 - Support Calculator Skill & Implementation Standard
 - talents/alhaitham.ts
-- CharacterTalentSeed
+- layout.tsx
 - characters/index.ts
-- getRarityTheme
+- ExternalWeaponBuffModal.tsx
 - talents/skirk.ts
-- formula-explainer.ts
-- registry/types.ts
-- Development Guide & Architecture
+- damage.ts
+- registry/characters/linnea.ts
+- Character Calculator Skill Spec
 - catalysts/index.ts
 - eslint.config.mjs
 - next.config.ts
@@ -52,7 +52,7 @@
 - AGENTS Rules
 - CLAUDE Guide
 - claymores/index.ts
-- registry/characters/linnea.ts
+- CharacterTalentSeed
 - Anemo Element Icon
 - Cryo Element Icon
 - Dendro Element Icon
@@ -67,10 +67,10 @@
 - Sword Weapon Icon
 - talents/mizuki.ts
 - polearms/index.ts
-- artifacts/types.ts
-- StatBreakdownRow.tsx
+- artifacts/index.ts
+- support-equipment.ts
 - clean_weapon_categories.ts
-- a-day-carved-from-rising-winds.ts
+- HistoryView.tsx
 - weapons/types.ts
 - WeaponConfig
 - External Weapon Team Buff Skill & Implementation Standard
@@ -90,28 +90,28 @@
 - aqua-simulacra.ts
 - astral-vultures-crimson-plumage.ts
 - blackcliff-warbow.ts
-- chain-breaker.ts
+- sucrose.test.ts
 - compound-bow.ts
 - covenant-of-frost-and-snow.ts
-- elegy-for-the-end.ts
-- fading-twilight.ts
-- flower-wreathed-feathers.ts
+- fetch_new_weapons.js
+- lunar.ts
+- aubade-of-morningstar-and-moon.ts
 - hamayumi.ts
-- hunters-bow.ts
-- kings-squire.ts
+- weapon-buffs.test.ts
+- breezeborne-refrain.ts
 - polar-star.ts
-- predator.ts
+- cloudforged.ts
 - rainbow-serpents-rain-bow.ts
-- range-gauge.ts
-- raven-bow.ts
-- royal-bow.ts
+- bloodstained-chivalry.ts
+- defenders-will.ts
+- favonius-warbow.ts
 - sacrificial-bow.ts
 - scion-of-the-blazing-sun.ts
 - seasoned-hunters-bow.ts
-- sequence-of-solitude.ts
-- silvershower-heartstrings.ts
+- golden-frostbound-oath.ts
+- emblem-of-severed-fate.ts
 - snare-hook.ts
-- song-of-stillness.ts
+- fragment-of-harmonic-whimsy.ts
 - the-daybreak-chronicles.ts
 - the-first-great-magic.ts
 - the-stringless.ts
@@ -121,47 +121,47 @@
 - Effective Stats & Buffs Breakdown Skill & Architectural Standard
 - apprentices-notes.ts
 - ash-graven-drinking-horn.ts
-- ballad-of-the-boundless-blue.ts
+- mouuns-moon.ts
 - blackcliff-agate.ts
 - cranes-echoing-call.ts
-- deepwood-memories.ts
+- gi_stat_db.sql
 - emerald-orb.ts
 - eye-of-perception.ts
-- damage.ts
+- gladiators-finale.ts
 - artifact-rarity.test.ts
 - fruit-of-fulfillment.ts
 - hakushin-ring.ts
-- support-equipment.ts
-- nocturnes-curtain-call.ts
-- echoes-of-an-offering.ts
+- Element
+- instructor.ts
+- 0_init/migration.sql
 - pocket-grimoire.ts
 - execute_sync.ts
 - reliquary-of-truth.ts
-- SupportEquipmentModal.tsx
+- TeamBuffModal.tsx
 - RarityRangeBadge.tsx
-- celestial-gift.ts
+- lucky-dog.ts
 - skyward-atlas.ts
-- solar-pearl.ts
-- starcallers-watch.ts
-- flower-of-paradise-lost.ts
-- gilded-dreams.ts
+- prayers-for-destiny.ts
+- marechaussee-hunter.ts
+- 20260702120000_add_talent_scaling/migration.sql
+- 20260703120000_add_export_log/migration.sql
 - the-widsith.ts
-- thrilling-tales-of-dragon-slayers.ts
-- tome-of-the-eternal-flow.ts
-- tulaytullahs-remembrance.ts
+- rust.ts
+- vermillion-hereafter.ts
+- sharpshooters-oath.ts
 - twin-nephrite.ts
 - vivid-notions.ts
 - wandering-evenstar.ts
-- waveriding-whirl.ts
+- slingshot.ts
 - wine-and-song.ts
 - akuoumaru.ts
-- weapon-buffs.test.ts
+- night-of-the-skys-unveiling.ts
 - blackcliff-slasher.ts
-- lavawalker.ts
-- core-stats.ts
+- prayers-for-wisdom.ts
+- shimenawas-reminiscence.ts
 - debate-club.ts
 - earth-shaker.ts
-- angelos-heptades.ts
+- cashflow-supervision.ts
 - clash-of-kings.ts
 - ferrous-shadow.ts
 - forest-regalia.ts
@@ -175,28 +175,28 @@
 - sacrificial-greatsword.ts
 - serpent-spine.ts
 - skyrider-greatsword.ts
-- maiden-beloved.ts
+- crimson-witch-of-flames.ts
 - snow-tombed-starsilver.ts
 - frostbearer.ts
-- kaguras-verity.ts
+- dawning-frost.ts
 - talking-stick.ts
-- martial-artist.ts
+- thundering-fury.ts
 - the-unforged.ts
 - tidal-shadow.ts
-- lost-prayer-to-the-sacred-winds.ts
+- wanderers-troupe.ts
 - verdict.ts
 - waster-greatsword.ts
 - white-iron-greatsword.ts
-- obsidian-codex.ts
+- finale-of-the-deep-galleries.ts
 - wolfs-gravestone.ts
-- beginners-protector.ts
+- gambler.ts
 - black-tassel.ts
 - talents/ayaka.ts
 - crimson-moons-semblance.ts
 - nightweavers-looking-glass.ts
 - deathmatch.ts
-- otherworldly-story.ts
-- ring-of-yaxche.ts
+- end-of-the-line.ts
+- jade-vista.ts
 - dragons-bane.ts
 - dragonspine-spear.ts
 - a-thousand-blazing-suns.ts
@@ -205,13 +205,13 @@
 - footprint-of-the-rainbow.ts
 - flame-forged-insight.ts
 - halberd.ts
-- kitain-cross-spear.ts
+- prototype-crescent.ts
 - fruitful-hook.ts
 - lumidouce-elegy.ts
 - katsuragikiri-nagamasa.ts
 - lithic-blade.ts
 - mountain-bracing-bolt.ts
-- primordial-jade-winged-spear.ts
+- range-gauge.ts
 - talents/durin.ts
 - prototype-starglitter.ts
 - royal-spear.ts
@@ -219,7 +219,7 @@
 - staff-of-homa.ts
 - tamayuratei-no-ohanashi.ts
 - the-catch.ts
-- vortex-vanquisher.ts
+- recurve-bow.ts
 - portable-power-saw.ts
 - white-tassel.ts
 - talents/mavuika.ts
@@ -231,36 +231,36 @@
 - cool-steel.ts
 - engulfing-lightning.ts
 - frostbreath.ts
-- festering-desire.ts
-- missive-windspear.ts
+- song-of-stillness.ts
+- flowing-purity.ts
 - prospectors-shovel.ts
 - rightful-reward.ts
-- harbinger-of-dawn.ts
+- jadefalls-splendor.ts
 - iron-sting.ts
-- kagotsurube-isshin.ts
+- oathsworn-eye.ts
 - sacrificers-staff.ts
-- lightbearing-moonshard.ts
+- prototype-amber.ts
 - lions-roar.ts
 - song-of-the-vigil.ts
 - mistsplitter-reforged.ts
 - peak-patrol-song.ts
 - staff-of-the-scarlet-sands.ts
-- royal-longsword.ts
+- sacrificial-fragments.ts
 - symphonist-of-scents.ts
-- silver-sword.ts
-- skyrider-sword.ts
+- lost-prayer-to-the-sacred-winds.ts
+- sunny-morning-sleep-in.ts
 - splendor-of-tranquil-waters.ts
-- blackcliff-longsword.ts
+- surfs-up.ts
 - dark-iron-sword.ts
-- dull-blade.ts
+- winters-heavy-heart.ts
 - toukabou-shigure.ts
 - travelers-handy-sword.ts
 - uraku-misugiri.ts
 - wolf-fang.ts
-- xiphos-moonlight.ts
-- unfinished-reverie.ts
-- prayers-for-illumination.ts
-- artifacts/index.ts
+- mappa-mare.ts
+- otherworldly-story.ts
+- resolution-of-sojourner.ts
+- artifacts/types.ts
 - favonius-sword.ts
 - finale-of-the-deep.ts
 - mechanics/page.tsx
@@ -270,84 +270,103 @@
 - External Artifact Team Buff Skill & Implementation Standard
 - generate_artifact_sql.ts
 - generate_all_artifacts.ts
-- emblem-of-severed-fate.ts
-- key-of-khaj-nisut.ts
-- moonweavers-dawn.ts
-- fragment-of-harmonic-whimsy.ts
-- favonius-codex.ts
-- prayers-for-wisdom.ts
-- primordial-jade-cutter.ts
-- scarlet-proof.ts
-- talents/varka.ts
-- thundersoother.ts
-- vermillion-hereafter.ts
-- vourukashas-glow.ts
 - old-mercs-pal.ts
-- talents/bennett.ts
 - rainslasher.ts
+- moonweavers-dawn.ts
+- skyward-pride.ts
+- favonius-codex.ts
+- sacrificial-jade.ts
+- primordial-jade-cutter.ts
+- the-bell.ts
+- solar-pearl.ts
+- whiteblind.ts
+- tome-of-the-eternal-flow.ts
+- beginners-protector.ts
+- kitain-cross-spear.ts
+- missive-windspear.ts
 - long-nights-oath.ts
 - sacrificial-sword.ts
-- talents/diluc.ts
-- talents/xilonen.ts
+- beyond-the-chrysalis.ts
+- primordial-jade-winged-spear.ts
 - prayers-to-springtime.ts
 - talents/types.ts
-- talents/ganyu.ts
-- skyward-pride.ts
-- serenitys-call.ts
-- the-bell.ts
-- whiteblind.ts
+- calamity-of-eshu.ts
+- vortex-vanquisher.ts
+- fillet-blade.ts
+- talents/vesna.ts
+- talents/ayato.ts
 - sword-of-narzissenkreuz.ts
-- magic-guide.ts
-- the-black-sword.ts
+- freedom-sworn.ts
+- heretics-molten-blade.ts
 - memory-of-dust.ts
 - whitelake-frostfeather.ts
-- talents/dehya.ts
-- talents/neuvillette.ts
-- talents/traveler-anemo.ts
-- talents/traveler-dendro.ts
-- talents/traveler-hydro.ts
+- light-of-foliar-incision.ts
+- new-bough.ts
+- prototype-rancour.ts
+- sapwood-blade.ts
+- silver-light.ts
 - royal-grimoire.ts
-- ReactionsWikiView.tsx
-- weapon-buffs.ts
+- calculator/types.ts
+- skyward-blade.ts
+- sturdy-bone.ts
 - CharacterCalculator.tsx
+- sword-of-descension.ts
+- Initial Project Plan
+- the-alley-flash.ts
+- the-dockhands-assistant.ts
+- talents/cyno.ts
+- Genshin Impact Damage Calculator Overview
+- talents/bennett.ts
+- talents/clorinde.ts
+- talents/columbina.ts
+- talents/ganyu.ts
+- talents/itto.ts
+- talents/mualani.ts
+- talents/traveler-anemo.ts
+- talents/xilonen.ts
+- talents/zibai.ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `WeaponConfig` - 258 edges
-2. `CharacterConfig` - 147 edges
-3. `addMods()` - 93 edges
+1. `WeaponConfig` - 264 edges
+2. `CharacterConfig` - 157 edges
+3. `addMods()` - 103 edges
 4. `ArtifactConfig` - 73 edges
-5. `fmt()` - 65 edges
-6. `MechanicsCtx` - 63 edges
-7. `MechanicsResult` - 54 edges
-8. `coreStats()` - 52 edges
-9. `CharacterTalentSeed` - 52 edges
-10. `flattenSeed()` - 45 edges
+5. `MechanicsCtx` - 68 edges
+6. `fmt()` - 67 edges
+7. `MechanicsResult` - 59 edges
+8. `coreStats()` - 57 edges
+9. `CharacterTalentSeed` - 57 edges
+10. `flattenSeed()` - 50 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Character Calculator Skill Spec` --conceptually_related_to--> `Development Guide & Architecture`  [INFERRED]
-  .agents/skills/character-calculator/SKILL.md → DEVELOPMENT.md
-- `Initial Project Plan` --conceptually_related_to--> `Development Guide & Architecture`  [INFERRED]
-  initial-plan.md → DEVELOPMENT.md
 - `main()` --calls--> `flattenSeed()`  [EXTRACTED]
   prisma/seed.ts → src/data/talents/index.ts
 - `SupportBuildEditorViewProps` --references--> `CharacterConfig`  [EXTRACTED]
   src/components/calculator/SupportBuildEditorView.tsx → src/data/registry/types.ts
 - `TeamBuffPanelProps` --references--> `CalcInstance`  [EXTRACTED]
   src/components/calculator/components/TeamBuffPanel.tsx → src/components/calculator/types.ts
+- `ExternalArtifactBuffResult` --references--> `DamageStats`  [EXTRACTED]
+  src/lib/engine/artifact-buffs.ts → src/lib/engine/damage.ts
+- `manualResolved()` --calls--> `resolveHitMultipliers()`  [EXTRACTED]
+  src/lib/engine/damage.test.ts → src/lib/engine/validation.ts
 
 ## Import Cycles
 - 3-file cycle: `src/data/registry/types.ts -> src/lib/engine/lunar.ts -> src/lib/engine/damage.ts -> src/data/registry/types.ts`
 - 3-file cycle: `src/data/registry/types.ts -> src/lib/engine/stellar.ts -> src/lib/engine/damage.ts -> src/data/registry/types.ts`
 
-## Communities (299 total, 225 thin omitted)
+## Communities (314 total, 239 thin omitted)
 
-### Community 0 - "useCalculatorState.ts"
-Cohesion: 0.33
-Nodes (10): deleteBuild(), saveBuild(), fmt(), FormulaBreakdownView(), FormulaBreakdownViewProps, getInitialStats(), hydrateFromBuild(), initialStats (+2 more)
+### Community 0 - "Project Development Documentation"
+Cohesion: 0.05
+Nodes (36): 1. Aino (September 29, 2026), 2. Amber (September 29, 2026), 3. Baizhu (September 29, 2026), 4. Barbara (September 29, 2026), Added, Batch 1 — 11 Weapons (Snezhnaya Event / Battle Pass, September 25, 2026), Batch 2 — 6 Weapons (v7.1 Epitome Invocation / Liyue Event, September 25, 2026), Bug Fixes & Adjustments (+28 more)
 
 ### Community 1 - "mechanics.ts"
+Cohesion: 0.05
+Nodes (83): main(), flattenSeed(), TALENT_SEED, resolveAino(), resolveAlhaitham(), resolveAloy(), resolveAmber(), resolveArlecchino() (+75 more)
+
+### Community 2 - "core-stats.ts"
 Cohesion: 0.06
-Nodes (75): main(), flattenSeed(), TALENT_SEED, resolveAlhaitham(), resolveAloy(), resolveArlecchino(), resolveAyaka(), resolveAyato() (+67 more)
+Nodes (24): amber, itto, kazuha, lyney, travelerDendro, travelerPyro, advancedStats, baseStats (+16 more)
 
 ### Community 3 - "devDependencies"
 Cohesion: 0.04
@@ -355,43 +374,43 @@ Nodes (48): dotenv, eslint, eslint-config-next, next, dependencies, html-to-imag
 
 ### Community 4 - "swords/index.ts"
 Cohesion: 0.10
-Nodes (14): absolution, calamityOfEshu, exaiphanesBlade, fluteOfEzpitzal, freedomSworn, hereticsMoltenBlade, lightOfFoliarIncision, prototypeRancour (+6 more)
+Nodes (15): absolution, amenomaKageuchi, aquilaFavonia, blackcliffLongsword, dullBlade, exaiphanesBlade, festeringDesire, fluteOfEzpitzal (+7 more)
 
-### Community 5 - "coreStats"
-Cohesion: 0.19
-Nodes (15): bennett, BENNETT_BURST_RATIOS, atk(), atkCharged(), atkPlunge(), healHp(), hp(), hpCharged() (+7 more)
+### Community 5 - "CharacterConfig"
+Cohesion: 0.25
+Nodes (12): bennett, BENNETT_BURST_RATIOS, atk(), atkCharged(), atkPlunge(), healHp(), lunarAtk(), lunarEm() (+4 more)
 
 ### Community 6 - "weapons/index.ts"
-Cohesion: 0.07
-Nodes (30): codebaseNormMap, extraInCodebase, matched, missingInCodebase, norm(), userList, userNormSet, idSet (+22 more)
+Cohesion: 0.09
+Nodes (22): codebaseNormMap, extraInCodebase, matched, missingInCodebase, norm(), userList, userNormSet, idSet (+14 more)
 
 ### Community 7 - "compilerOptions"
 Cohesion: 0.07
 Nodes (28): dom, dom.iterable, esnext, **/*.mts, .next/dev/types/**/*.ts, next-env.d.ts, .next/types/**/*.ts, node_modules (+20 more)
 
 ### Community 8 - "DamageStats"
-Cohesion: 0.09
-Nodes (22): CATEGORY_TABS, EffectiveStatsModal(), EffectiveStatsModalProps, EffectiveStatsViewProps, baseStats, MockCtxOverride, mockScaling, defaultStats (+14 more)
+Cohesion: 0.08
+Nodes (25): CATEGORY_TABS, EffectiveStatsModal(), EffectiveStatsModalProps, EffectiveStatsViewProps, FormulaBreakdownViewProps, ExternalWeaponInstance, WeaponSlot, baseStats (+17 more)
 
-### Community 9 - "validation.ts"
-Cohesion: 0.18
-Nodes (28): ExternalWeaponBuffPanel(), ExternalWeaponBuffPanelProps, fmt(), CATEGORY_TABS, EffectiveStatsView(), CharacterCalculator(), activeEffects(), constellationFlatBonus() (+20 more)
+### Community 9 - "formula-explainer.ts"
+Cohesion: 0.26
+Nodes (24): CATEGORY_TABS, EffectiveStatsView(), CharacterCalculator(), resolveExternalArtifactBuffs(), activeEffects(), constellationFlatBonus(), constellationStatBonuses(), applyStatDeltas() (+16 more)
 
 ### Community 10 - "ArtifactConfig"
 Cohesion: 0.09
-Nodes (12): aubadeOfMorningstarAndMoon, crimsonWitchOfFlames, finaleOfTheDeepGalleries, gambler, gladiatorsFinale, goldenTroupe, luckyDog, nymphsDream (+4 more)
+Nodes (12): braveHeart, gildedDreams, heartOfDepth, nymphsDream, oceanHuedClam, prayersForIllumination, retracingBolide, scholar (+4 more)
 
-### Community 11 - "effective-stats/page.tsx"
-Cohesion: 0.05
-Nodes (42): DbStatusInfo, getDbStatus(), parseDatabaseUrl(), dynamic, EffectiveStatsPage(), loadScaling(), dynamic, FormulaPage() (+34 more)
+### Community 11 - "useCalculatorState.ts"
+Cohesion: 0.11
+Nodes (29): deleteBuild(), saveBuild(), dynamic, EffectiveStatsPage(), loadScaling(), dynamic, FormulaPage(), loadScaling() (+21 more)
 
 ### Community 12 - "WikiSidebar.tsx"
-Cohesion: 0.08
-Nodes (24): ELEMENTS, WEAPONS, metadata, metadata, metadata, ELEMENT_COLORS, ElementIcon(), WeaponIcon() (+16 more)
+Cohesion: 0.07
+Nodes (27): ELEMENTS, WEAPONS, metadata, metadata, metadata, metadata, AppSidebar(), ELEMENT_COLORS (+19 more)
 
 ### Community 13 - "bows/index.ts"
 Cohesion: 0.12
-Nodes (12): alleyHunter, endOfTheLine, favoniusWarbow, goldenFrostboundOath, huntersPath, ibisPiercer, jadeVista, mitternachtsWaltz (+4 more)
+Nodes (12): alleyHunter, chainBreaker, elegyForTheEnd, huntersBow, huntersPath, ibisPiercer, kingsSquire, messenger (+4 more)
 
 ### Community 14 - "extract-wiki.ts"
 Cohesion: 0.20
@@ -421,45 +440,41 @@ Nodes (19): 1. Core Architecture & Philosophy, 2. Rarity-Focused Theming Archite
 Cohesion: 0.33
 Nodes (3): alhaithamSeed, ALTERNATE_FACTORS, NA_FACTORS
 
-### Community 21 - "CharacterTalentSeed"
-Cohesion: 0.11
-Nodes (10): aloySeed, columbinaSeed, heizouSeed, huTaoSeed, ittoSeed, kleeSeed, neferSeed, travelerCryoSeed (+2 more)
+### Community 21 - "layout.tsx"
+Cohesion: 0.21
+Nodes (13): DbStatusInfo, getDbStatus(), parseDatabaseUrl(), geistMono, geistSans, metadata, RootLayout(), DbStatusBadge() (+5 more)
 
 ### Community 22 - "characters/index.ts"
-Cohesion: 0.06
-Nodes (36): alhaitham, aloy, ayaka, ayato, clorinde, cyno, dehya, diluc (+28 more)
+Cohesion: 0.04
+Nodes (52): aino, alhaitham, aloy, ayaka, ayato, baizhu, barbara, clorinde (+44 more)
 
-### Community 23 - "getRarityTheme"
-Cohesion: 0.15
-Nodes (21): ExternalArtifactBuffModal(), ExternalArtifactBuffModalProps, fmt(), ExternalArtifactBuffPanel(), ExternalArtifactBuffPanelProps, fmt(), getRarityTheme(), RARITY_THEMES (+13 more)
+### Community 23 - "ExternalWeaponBuffModal.tsx"
+Cohesion: 0.16
+Nodes (22): ExternalArtifactBuffModal(), ExternalArtifactBuffModalProps, fmt(), ExternalArtifactBuffPanel(), ExternalArtifactBuffPanelProps, fmt(), ExternalWeaponBuffModal(), ExternalWeaponBuffModalProps (+14 more)
 
 ### Community 24 - "talents/skirk.ts"
 Cohesion: 0.33
 Nodes (3): NA_FACTORS, SKILL_BURST_FACTORS, skirkSeed
 
-### Community 25 - "formula-explainer.ts"
+### Community 25 - "damage.ts"
 Cohesion: 0.11
-Nodes (39): Element, WeaponDamageDef, catalyzeAdditive(), resMultiplier(), stellarEmBonus(), AMP_BASE, FormulaBreakdown, LEVEL_MULTIPLIERS (+31 more)
+Nodes (38): HitCategory, ScalingSource, resolveSandrone(), AMP_BASE, amplifyingMultiplier(), applyStatDelta(), availableReactions(), CATALYZE_BASE (+30 more)
 
-### Community 26 - "registry/types.ts"
-Cohesion: 0.11
-Nodes (15): mizuki, tartaglia, xiao, BriefStatPill, CharacterSupportBuffDef, Constellation, ConstellationEffect, StatField (+7 more)
-
-### Community 27 - "Development Guide & Architecture"
-Cohesion: 0.50
-Nodes (4): Character Calculator Skill Spec, Development Guide & Architecture, Initial Project Plan, Genshin Impact Damage Calculator Overview
+### Community 26 - "registry/characters/linnea.ts"
+Cohesion: 0.28
+Nodes (5): def(), defPlunge(), lunarDef(), zibai, TalentHit
 
 ### Community 28 - "catalysts/index.ts"
 Cohesion: 0.10
-Nodes (14): aThousandFloatingDreams, blackmarrowLantern, cashflowSupervision, dawningFrost, dodocoTales, flowingPurity, jadefallsSplendor, mappaMare (+6 more)
+Nodes (14): aThousandFloatingDreams, angelosHeptades, balladOfTheBoundlessBlue, blackmarrowLantern, dodocoTales, hymnOfTheMaelstrom, kagurasVerity, magicGuide (+6 more)
 
 ### Community 37 - "claymores/index.ts"
 Cohesion: 0.12
 Nodes (12): aTeaspoonOfTranscendence, beaconOfTheReedSea, bladeOfAtonement, bloodtaintedGreatsword, favoniusGreatsword, forgedByTheGoldenMelody, luxuriousSeaLord, makhairaAquamarine (+4 more)
 
-### Community 38 - "registry/characters/linnea.ts"
-Cohesion: 0.28
-Nodes (5): def(), defPlunge(), lunarDef(), zibai, TalentHit
+### Community 38 - "CharacterTalentSeed"
+Cohesion: 0.10
+Nodes (11): aloySeed, arlecchinoSeed, heizouSeed, ineffaSeed, linneaSeed, neuvilletteSeed, CharacterTalentSeed, varkaSeed (+3 more)
 
 ### Community 52 - "talents/mizuki.ts"
 Cohesion: 0.33
@@ -469,25 +484,29 @@ Nodes (3): mizukiSeed, NA_FACTORS, SKILL_BURST_FACTORS
 Cohesion: 0.13
 Nodes (11): balladOfTheFjords, calamityQueller, crescentPike, dialoguesOfTheDesertSages, disasterAndRemorse, fracturedHalo, ironPoint, lithicSpear (+3 more)
 
-### Community 54 - "artifacts/types.ts"
-Cohesion: 0.09
-Nodes (11): heartOfTheFurnace, scholar, scrollOfTheHeroOfCinderCity, silkenMoonsSerenade, songOfDaysPast, theExile, tinyMiracle, ArtifactBuffContext (+3 more)
+### Community 54 - "artifacts/index.ts"
+Cohesion: 0.07
+Nodes (23): aDayCarvedFromRisingWinds, archaicPetra, celestialGift, disenchantmentInDeepShadow, echoesOfAnOffering, goldenTroupe, heartOfTheFurnace, huskOfOpulentDreams (+15 more)
 
-### Community 55 - "StatBreakdownRow.tsx"
-Cohesion: 0.60
-Nodes (4): fmt(), StatBreakdownRow(), StatBreakdownRowProps, StatBuffSource
+### Community 55 - "support-equipment.ts"
+Cohesion: 0.17
+Nodes (31): metadata, ALL_ELEMENTS, BuildsView(), fmt(), fmt(), SupportEquipmentModal(), SupportEquipmentModalProps, artifactById() (+23 more)
 
 ### Community 56 - "clean_weapon_categories.ts"
 Cohesion: 0.12
 Nodes (16): catalystExports, catalystFiles, catalystsDir, catalystsToRemove, claymoreExports, claymoreFiles, claymoresDir, claymoresToRemove (+8 more)
 
+### Community 57 - "HistoryView.tsx"
+Cohesion: 0.18
+Nodes (12): deleteExportLog(), ExportFormat, ExportLogRow, ExportSummary, getExportLogs(), dynamic, HistoryPage(), ComparePanel() (+4 more)
+
 ### Community 58 - "weapons/types.ts"
 Cohesion: 0.12
-Nodes (9): amenomaKageuchi, aquilaFavonia, emberwell, filletBlade, sturdyBone, summitShaper, WeaponBuffDef, WeaponRarity (+1 more)
+Nodes (9): emberwell, harbingerOfDawn, kagotsurubeIsshin, keyOfKhajNisut, lightbearingMoonshard, summitShaper, WeaponBuffDef, WeaponRarity (+1 more)
 
 ### Community 59 - "WeaponConfig"
 Cohesion: 0.15
-Nodes (7): amosBow, cloudforged, messenger, mouunsMoon, rust, slingshot, WeaponConfig
+Nodes (7): amosBow, fadingTwilight, flowerWreathedFeathers, predator, sequenceOfSolitude, silvershowerHeartstrings, WeaponConfig
 
 ### Community 60 - "External Weapon Team Buff Skill & Implementation Standard"
 Cohesion: 0.20
@@ -541,45 +560,49 @@ Nodes (5): BuffDef, MechanicDef, POLEARMS_DATA, SubStat, WeaponData
 Cohesion: 0.29
 Nodes (5): BuffDef, MechanicDef, SubStat, SWORDS_DATA, WeaponData
 
+### Community 80 - "fetch_new_weapons.js"
+Cohesion: 0.38
+Nodes (6): cleanHtml(), entries, fetchEntry(), fs, https, run()
+
+### Community 81 - "lunar.ts"
+Cohesion: 0.21
+Nodes (10): metadata, ReactionsWikiView(), clamp(), combineRankedLunarContributors(), computeIndividualLunarDamage(), LUNAR_INDIRECT_MULTIPLIER, LUNAR_LABEL, LunarContributorParams (+2 more)
+
+### Community 84 - "weapon-buffs.test.ts"
+Cohesion: 0.19
+Nodes (7): arlecchino, columbina, flins, hp(), hpCharged(), neuvillette, xilonen
+
 ### Community 105 - "Effective Stats & Buffs Breakdown Skill & Architectural Standard"
 Cohesion: 0.14
 Nodes (13): 1. Core Architecture & Philosophy, 2. File Architecture & Module Registry, 3. HTTP 431 URL Safety Standard (CRITICAL RULE), 4. Per-Element Enemy Resistance Standard (CRITICAL RULE), 5. Category Organization & Stat Classification, 6. Hash Anchor Navigation & Focus View Deep-Linking, 7. Rarity-Themed Source Badges, 8. Verification & Testing Checklist (+5 more)
 
-### Community 114 - "damage.ts"
-Cohesion: 0.16
-Nodes (21): HitCategory, ScalingSource, AMP_BASE, amplifyingMultiplier(), applyStatDelta(), availableReactions(), CATALYZE_BASE, clamp() (+13 more)
+### Community 111 - "gi_stat_db.sql"
+Cohesion: 0.40
+Nodes (4): `Artifact`, `Build`, `Rotation`, `Weapon`
 
 ### Community 115 - "artifact-rarity.test.ts"
 Cohesion: 0.33
 Nodes (4): adventurer, berserker, blizzardStrayer, initiate
 
-### Community 118 - "support-equipment.ts"
-Cohesion: 0.15
-Nodes (31): metadata, ALL_ELEMENTS, BuildsView(), fmt(), SupportEquipmentModal(), fmt(), SupportBuildEditorView(), SupportBuildEditorViewProps (+23 more)
+### Community 118 - "Element"
+Cohesion: 0.33
+Nodes (6): Element, WeaponBuffContext, WeaponDamageDef, ActiveSupportEquippedArtifact, ActiveSupportEquippedWeapon, TeamContributor
 
 ### Community 122 - "execute_sync.ts"
 Cohesion: 0.12
 Nodes (19): categories, categoryFolders, existingDir, EXTRA_4_STAR_WEAPONS, weaponMap, baseDir, categoryExports, categoryPlural (+11 more)
 
-### Community 124 - "SupportEquipmentModal.tsx"
-Cohesion: 0.17
-Nodes (20): fmt(), SupportEquipmentModalProps, ELEMENT_BADGES, fmt(), readSupportDraft(), TeamBuffModal(), TeamBuffModalProps, fmt() (+12 more)
+### Community 124 - "TeamBuffModal.tsx"
+Cohesion: 0.20
+Nodes (15): ELEMENT_BADGES, fmt(), readSupportDraft(), TeamBuffModal(), TeamBuffModalProps, fmt(), TeamBuffPanel(), TeamBuffPanelProps (+7 more)
 
 ### Community 125 - "RarityRangeBadge.tsx"
 Cohesion: 0.26
 Nodes (10): metadata, ArtifactsWikiView(), ArtifactRarityPills(), getRarityBadgeClasses(), RarityPill(), RarityRangeBadge(), RarityRangeBadgeProps, ArtifactRarityRange (+2 more)
 
-### Community 142 - "weapon-buffs.test.ts"
-Cohesion: 0.24
-Nodes (5): arlecchino, columbina, flins, neuvillette, xilonen
-
-### Community 145 - "core-stats.ts"
-Cohesion: 0.09
-Nodes (20): mualani, travelerAnemo, advancedStats, baseStats, combatStats(), defenseStats, elementalCritsStats, elementalIncreasesStats (+12 more)
-
 ### Community 154 - "talents/index.ts"
-Cohesion: 0.09
-Nodes (16): arlecchinoSeed, ayatoSeed, clorindeSeed, eulaSeed, flinsSeed, ineffaSeed, kavehSeed, kazuhaSeed (+8 more)
+Cohesion: 0.08
+Nodes (18): ainoSeed, amberSeed, baizhuSeed, barbaraSeed, dilucSeed, eulaSeed, huTaoSeed, kazuhaSeed (+10 more)
 
 ### Community 178 - "talents/ayaka.ts"
 Cohesion: 0.33
@@ -593,9 +616,9 @@ Nodes (3): ALTERNATE_FACTORS, durinSeed, NA_FACTORS
 Cohesion: 0.33
 Nodes (3): mavuikaSeed, NA_FACTORS, SKILL_BURST_FACTORS
 
-### Community 247 - "artifacts/index.ts"
-Cohesion: 0.07
-Nodes (22): archaicPetra, bloodstainedChivalry, braveHeart, defendersWill, desertPavilionChronicle, disenchantmentInDeepShadow, heartOfDepth, huskOfOpulentDreams (+14 more)
+### Community 247 - "artifacts/types.ts"
+Cohesion: 0.09
+Nodes (11): deepwoodMemories, desertPavilionChronicle, flowerOfParadiseLost, noblesseOblige, obsidianCodex, scrollOfTheHeroOfCinderCity, ArtifactBuffContext, ArtifactBuffDef (+3 more)
 
 ### Community 255 - "External Artifact Team Buff Skill & Implementation Standard"
 Cohesion: 0.20
@@ -606,40 +629,36 @@ Cohesion: 0.48
 Nodes (6): ALL_ARTIFACTS, generateArtifactFile(), main(), RawArtifact, toCamelCase(), toPascalCase()
 
 ### Community 278 - "talents/types.ts"
-Cohesion: 0.13
-Nodes (10): TalentType, cynoSeed, TalentRow, odetteSeed, sucroseSeed, travelerElectroSeed, travelerPyroSeed, HitKind (+2 more)
+Cohesion: 0.12
+Nodes (11): TalentType, dehyaSeed, flinsSeed, TalentRow, kavehSeed, odetteSeed, travelerDendroSeed, travelerGeoSeed (+3 more)
 
-### Community 296 - "ReactionsWikiView.tsx"
-Cohesion: 0.40
-Nodes (3): metadata, ReactionsWikiView(), LUNAR_INDIRECT_MULTIPLIER
-
-### Community 297 - "weapon-buffs.ts"
-Cohesion: 0.40
-Nodes (5): ExternalWeaponInstance, WeaponBuffContext, WeaponSlot, ExternalWeaponBuffResult, ExternalWeaponBuffSource
+### Community 296 - "calculator/types.ts"
+Cohesion: 0.10
+Nodes (30): fmt(), HitFormulaTooltip(), HitFormulaTooltipProps, fmt(), StatBreakdownRow(), StatBreakdownRowProps, fmt(), TransformativePanel() (+22 more)
 
 ### Community 299 - "CharacterCalculator.tsx"
 Cohesion: 0.08
-Nodes (53): CalculatorHeader(), CalculatorHeaderProps, DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), fmt(), HitFormulaTooltip() (+45 more)
+Nodes (48): CalculatorHeader(), CalculatorHeaderProps, DamageTable(), DamageTableProps, DIRECT_TAG, fmt(), MechanicsPanel(), MechanicsPanelProps (+40 more)
 
 ## Knowledge Gaps
-- **360 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+355 more)
+- **397 isolated node(s):** `eslintConfig`, ``Build``, ``Rotation``, ``Weapon``, ``Artifact`` (+392 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **225 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **239 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `WeaponConfig` connect `WeaponConfig` to `swords/index.ts`, `weapons/index.ts`, `ArtifactConfig`, `bows/index.ts`, `catalysts/index.ts`, `claymores/index.ts`, `polearms/index.ts`, `weapons/types.ts`, `aqua-simulacra.ts`, `astral-vultures-crimson-plumage.ts`, `blackcliff-warbow.ts`, `chain-breaker.ts`, `compound-bow.ts`, `covenant-of-frost-and-snow.ts`, `elegy-for-the-end.ts`, `fading-twilight.ts`, `flower-wreathed-feathers.ts`, `hamayumi.ts`, `hunters-bow.ts`, `kings-squire.ts`, `polar-star.ts`, `predator.ts`, `rainbow-serpents-rain-bow.ts`, `range-gauge.ts`, `raven-bow.ts`, `royal-bow.ts`, `sacrificial-bow.ts`, `scion-of-the-blazing-sun.ts`, `seasoned-hunters-bow.ts`, `sequence-of-solitude.ts`, `silvershower-heartstrings.ts`, `snare-hook.ts`, `song-of-stillness.ts`, `the-daybreak-chronicles.ts`, `the-first-great-magic.ts`, `the-stringless.ts`, `the-viridescent-hunt.ts`, `thundering-pulse.ts`, `windblume-ode.ts`, `apprentices-notes.ts`, `ash-graven-drinking-horn.ts`, `ballad-of-the-boundless-blue.ts`, `blackcliff-agate.ts`, `cranes-echoing-call.ts`, `emerald-orb.ts`, `eye-of-perception.ts`, `fruit-of-fulfillment.ts`, `hakushin-ring.ts`, `support-equipment.ts`, `nocturnes-curtain-call.ts`, `pocket-grimoire.ts`, `reliquary-of-truth.ts`, `SupportEquipmentModal.tsx`, `skyward-atlas.ts`, `solar-pearl.ts`, `starcallers-watch.ts`, `the-widsith.ts`, `thrilling-tales-of-dragon-slayers.ts`, `tome-of-the-eternal-flow.ts`, `tulaytullahs-remembrance.ts`, `twin-nephrite.ts`, `vivid-notions.ts`, `wandering-evenstar.ts`, `waveriding-whirl.ts`, `wine-and-song.ts`, `akuoumaru.ts`, `blackcliff-slasher.ts`, `debate-club.ts`, `earth-shaker.ts`, `angelos-heptades.ts`, `clash-of-kings.ts`, `ferrous-shadow.ts`, `forest-regalia.ts`, `gest-of-the-mighty-wolf.ts`, `echoes-of-the-heart.ts`, `etherlight-spindlelute.ts`, `prototype-archaic.ts`, `everlasting-moonglow.ts`, `royal-greatsword.ts`, `sacrificial-greatsword.ts`, `serpent-spine.ts`, `skyrider-greatsword.ts`, `snow-tombed-starsilver.ts`, `frostbearer.ts`, `kaguras-verity.ts`, `talking-stick.ts`, `the-unforged.ts`, `tidal-shadow.ts`, `lost-prayer-to-the-sacred-winds.ts`, `verdict.ts`, `waster-greatsword.ts`, `white-iron-greatsword.ts`, `wolfs-gravestone.ts`, `beginners-protector.ts`, `black-tassel.ts`, `crimson-moons-semblance.ts`, `nightweavers-looking-glass.ts`, `deathmatch.ts`, `otherworldly-story.ts`, `ring-of-yaxche.ts`, `dragons-bane.ts`, `dragonspine-spear.ts`, `a-thousand-blazing-suns.ts`, `favonius-lance.ts`, `fang-of-the-mountain-king.ts`, `footprint-of-the-rainbow.ts`, `flame-forged-insight.ts`, `halberd.ts`, `kitain-cross-spear.ts`, `fruitful-hook.ts`, `lumidouce-elegy.ts`, `katsuragikiri-nagamasa.ts`, `lithic-blade.ts`, `mountain-bracing-bolt.ts`, `primordial-jade-winged-spear.ts`, `prototype-starglitter.ts`, `royal-spear.ts`, `skyward-spine.ts`, `staff-of-homa.ts`, `tamayuratei-no-ohanashi.ts`, `the-catch.ts`, `vortex-vanquisher.ts`, `portable-power-saw.ts`, `white-tassel.ts`, `athame-artis.ts`, `azurelight.ts`, `blackcliff-pole.ts`, `cinnabar-spindle.ts`, `bloodsoaked-ruins.ts`, `cool-steel.ts`, `engulfing-lightning.ts`, `frostbreath.ts`, `festering-desire.ts`, `missive-windspear.ts`, `prospectors-shovel.ts`, `rightful-reward.ts`, `harbinger-of-dawn.ts`, `iron-sting.ts`, `kagotsurube-isshin.ts`, `sacrificers-staff.ts`, `lightbearing-moonshard.ts`, `lions-roar.ts`, `song-of-the-vigil.ts`, `mistsplitter-reforged.ts`, `peak-patrol-song.ts`, `staff-of-the-scarlet-sands.ts`, `royal-longsword.ts`, `symphonist-of-scents.ts`, `silver-sword.ts`, `skyrider-sword.ts`, `splendor-of-tranquil-waters.ts`, `blackcliff-longsword.ts`, `dark-iron-sword.ts`, `dull-blade.ts`, `toukabou-shigure.ts`, `travelers-handy-sword.ts`, `uraku-misugiri.ts`, `wolf-fang.ts`, `xiphos-moonlight.ts`, `favonius-sword.ts`, `finale-of-the-deep.ts`, `mailed-flower.ts`, `fleuve-cendre-ferryman.ts`, `haran-geppaku-futsu.ts`, `key-of-khaj-nisut.ts`, `moonweavers-dawn.ts`, `favonius-codex.ts`, `primordial-jade-cutter.ts`, `old-mercs-pal.ts`, `rainslasher.ts`, `sacrificial-sword.ts`, `skyward-pride.ts`, `serenitys-call.ts`, `the-bell.ts`, `whiteblind.ts`, `sword-of-narzissenkreuz.ts`, `magic-guide.ts`, `the-black-sword.ts`, `memory-of-dust.ts`, `whitelake-frostfeather.ts`, `royal-grimoire.ts`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **Why does `CharacterConfig` connect `characters/index.ts` to `useCalculatorState.ts`, `mechanics.ts`, `weapons/types.ts`, `coreStats`, `weapons/index.ts`, `registry/characters/linnea.ts`, `DamageStats`, `validation.ts`, `weapon-buffs.ts`, `CharacterCalculator.tsx`, `weapon-buffs.test.ts`, `core-stats.ts`, `support-equipment.ts`, `getRarityTheme`, `artifacts/types.ts`, `formula-explainer.ts`, `registry/types.ts`, `SupportEquipmentModal.tsx`?**
-  _High betweenness centrality (0.062) - this node is a cross-community bridge._
-- **Why does `Element` connect `formula-explainer.ts` to `mechanics.ts`, `weapons/types.ts`, `weapon-buffs.ts`, `validation.ts`, `CharacterCalculator.tsx`, `WikiSidebar.tsx`, `damage.ts`, `artifacts/types.ts`, `support-equipment.ts`, `registry/types.ts`, `SupportEquipmentModal.tsx`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **What connects `eslintConfig`, `nextConfig`, `name` to the rest of the system?**
-  _360 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `WeaponConfig` connect `WeaponConfig` to `swords/index.ts`, `weapons/index.ts`, `ArtifactConfig`, `bows/index.ts`, `catalysts/index.ts`, `claymores/index.ts`, `polearms/index.ts`, `support-equipment.ts`, `weapons/types.ts`, `aqua-simulacra.ts`, `astral-vultures-crimson-plumage.ts`, `blackcliff-warbow.ts`, `compound-bow.ts`, `covenant-of-frost-and-snow.ts`, `hamayumi.ts`, `breezeborne-refrain.ts`, `polar-star.ts`, `cloudforged.ts`, `rainbow-serpents-rain-bow.ts`, `favonius-warbow.ts`, `sacrificial-bow.ts`, `scion-of-the-blazing-sun.ts`, `seasoned-hunters-bow.ts`, `golden-frostbound-oath.ts`, `snare-hook.ts`, `the-daybreak-chronicles.ts`, `the-first-great-magic.ts`, `the-stringless.ts`, `the-viridescent-hunt.ts`, `thundering-pulse.ts`, `windblume-ode.ts`, `apprentices-notes.ts`, `ash-graven-drinking-horn.ts`, `mouuns-moon.ts`, `blackcliff-agate.ts`, `cranes-echoing-call.ts`, `emerald-orb.ts`, `eye-of-perception.ts`, `fruit-of-fulfillment.ts`, `hakushin-ring.ts`, `pocket-grimoire.ts`, `reliquary-of-truth.ts`, `skyward-atlas.ts`, `the-widsith.ts`, `rust.ts`, `sharpshooters-oath.ts`, `twin-nephrite.ts`, `vivid-notions.ts`, `wandering-evenstar.ts`, `slingshot.ts`, `wine-and-song.ts`, `akuoumaru.ts`, `blackcliff-slasher.ts`, `debate-club.ts`, `earth-shaker.ts`, `cashflow-supervision.ts`, `clash-of-kings.ts`, `ferrous-shadow.ts`, `forest-regalia.ts`, `gest-of-the-mighty-wolf.ts`, `echoes-of-the-heart.ts`, `etherlight-spindlelute.ts`, `prototype-archaic.ts`, `everlasting-moonglow.ts`, `royal-greatsword.ts`, `sacrificial-greatsword.ts`, `serpent-spine.ts`, `skyrider-greatsword.ts`, `snow-tombed-starsilver.ts`, `frostbearer.ts`, `dawning-frost.ts`, `talking-stick.ts`, `the-unforged.ts`, `tidal-shadow.ts`, `verdict.ts`, `waster-greatsword.ts`, `white-iron-greatsword.ts`, `wolfs-gravestone.ts`, `black-tassel.ts`, `crimson-moons-semblance.ts`, `nightweavers-looking-glass.ts`, `deathmatch.ts`, `end-of-the-line.ts`, `jade-vista.ts`, `dragons-bane.ts`, `dragonspine-spear.ts`, `a-thousand-blazing-suns.ts`, `favonius-lance.ts`, `fang-of-the-mountain-king.ts`, `footprint-of-the-rainbow.ts`, `flame-forged-insight.ts`, `halberd.ts`, `prototype-crescent.ts`, `fruitful-hook.ts`, `lumidouce-elegy.ts`, `katsuragikiri-nagamasa.ts`, `lithic-blade.ts`, `mountain-bracing-bolt.ts`, `range-gauge.ts`, `prototype-starglitter.ts`, `royal-spear.ts`, `skyward-spine.ts`, `staff-of-homa.ts`, `tamayuratei-no-ohanashi.ts`, `the-catch.ts`, `recurve-bow.ts`, `portable-power-saw.ts`, `white-tassel.ts`, `athame-artis.ts`, `azurelight.ts`, `blackcliff-pole.ts`, `cinnabar-spindle.ts`, `bloodsoaked-ruins.ts`, `cool-steel.ts`, `engulfing-lightning.ts`, `frostbreath.ts`, `song-of-stillness.ts`, `flowing-purity.ts`, `prospectors-shovel.ts`, `rightful-reward.ts`, `jadefalls-splendor.ts`, `iron-sting.ts`, `oathsworn-eye.ts`, `sacrificers-staff.ts`, `prototype-amber.ts`, `lions-roar.ts`, `song-of-the-vigil.ts`, `mistsplitter-reforged.ts`, `peak-patrol-song.ts`, `staff-of-the-scarlet-sands.ts`, `sacrificial-fragments.ts`, `symphonist-of-scents.ts`, `lost-prayer-to-the-sacred-winds.ts`, `sunny-morning-sleep-in.ts`, `splendor-of-tranquil-waters.ts`, `surfs-up.ts`, `dark-iron-sword.ts`, `winters-heavy-heart.ts`, `toukabou-shigure.ts`, `travelers-handy-sword.ts`, `uraku-misugiri.ts`, `wolf-fang.ts`, `mappa-mare.ts`, `otherworldly-story.ts`, `favonius-sword.ts`, `finale-of-the-deep.ts`, `mailed-flower.ts`, `fleuve-cendre-ferryman.ts`, `haran-geppaku-futsu.ts`, `old-mercs-pal.ts`, `rainslasher.ts`, `moonweavers-dawn.ts`, `skyward-pride.ts`, `favonius-codex.ts`, `sacrificial-jade.ts`, `primordial-jade-cutter.ts`, `the-bell.ts`, `solar-pearl.ts`, `whiteblind.ts`, `tome-of-the-eternal-flow.ts`, `beginners-protector.ts`, `kitain-cross-spear.ts`, `missive-windspear.ts`, `sacrificial-sword.ts`, `beyond-the-chrysalis.ts`, `primordial-jade-winged-spear.ts`, `calamity-of-eshu.ts`, `vortex-vanquisher.ts`, `fillet-blade.ts`, `sword-of-narzissenkreuz.ts`, `freedom-sworn.ts`, `heretics-molten-blade.ts`, `memory-of-dust.ts`, `whitelake-frostfeather.ts`, `light-of-foliar-incision.ts`, `new-bough.ts`, `prototype-rancour.ts`, `sapwood-blade.ts`, `silver-light.ts`, `royal-grimoire.ts`, `skyward-blade.ts`, `sturdy-bone.ts`, `sword-of-descension.ts`, `the-alley-flash.ts`, `the-dockhands-assistant.ts`?**
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `CharacterConfig` connect `CharacterConfig` to `mechanics.ts`, `core-stats.ts`, `weapons/types.ts`, `DamageStats`, `calculator/types.ts`, `formula-explainer.ts`, `CharacterCalculator.tsx`, `useCalculatorState.ts`, `weapon-buffs.test.ts`, `characters/index.ts`, `ExternalWeaponBuffModal.tsx`, `damage.ts`, `registry/characters/linnea.ts`, `artifacts/types.ts`, `TeamBuffModal.tsx`?**
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+- **Why does `Element` connect `Element` to `mechanics.ts`, `calculator/types.ts`, `formula-explainer.ts`, `CharacterCalculator.tsx`, `WikiSidebar.tsx`, `lunar.ts`, `support-equipment.ts`, `characters/index.ts`, `artifacts/types.ts`, `damage.ts`, `weapons/types.ts`, `TeamBuffModal.tsx`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **What connects `eslintConfig`, ``Build``, ``Rotation`` to the rest of the system?**
+  _397 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Project Development Documentation` be split into smaller, more focused modules?**
+  _Cohesion score 0.05405405405405406 - nodes in this community are weakly interconnected._
 - **Should `mechanics.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05737874097007224 - nodes in this community are weakly interconnected._
-- **Should `devDependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected._
-- **Should `swords/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.10344827586206896 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05091591762430311 - nodes in this community are weakly interconnected._
+- **Should `core-stats.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._

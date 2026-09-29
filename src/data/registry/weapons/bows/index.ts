@@ -3,6 +3,7 @@ import { amosBow } from "./amos-bow";
 import { aquaSimulacra } from "./aqua-simulacra";
 import { astralVulturesCrimsonPlumage } from "./astral-vultures-crimson-plumage";
 import { blackcliffWarbow } from "./blackcliff-warbow";
+import { breezeborneRefrain } from "./breezeborne-refrain";
 import { chainBreaker } from "./chain-breaker";
 import { cloudforged } from "./cloudforged";
 import { compoundBow } from "./compound-bow";
@@ -55,6 +56,7 @@ export {
   aquaSimulacra,
   astralVulturesCrimsonPlumage,
   blackcliffWarbow,
+  breezeborneRefrain,
   chainBreaker,
   cloudforged,
   compoundBow,
@@ -107,6 +109,7 @@ export const BOWS: WeaponConfig[] = [
   aquaSimulacra,
   astralVulturesCrimsonPlumage,
   blackcliffWarbow,
+  breezeborneRefrain,
   chainBreaker,
   cloudforged,
   compoundBow,
