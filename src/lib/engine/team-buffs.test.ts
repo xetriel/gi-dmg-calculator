@@ -521,7 +521,7 @@ describe("remastered support system", () => {
     });
 
     it("all characters in CHARACTERS are clean and 100% JSON-serializable", () => {
-      expect(CHARACTERS.length).toBe(55);
+      expect(CHARACTERS.length).toBe(56);
       for (const char of CHARACTERS) {
         expect((char as unknown as Record<string, unknown>).support).toBeUndefined();
         const serialized = JSON.stringify(char);
@@ -534,7 +534,7 @@ describe("remastered support system", () => {
 
   describe("Support Roster Completeness & Mechanics", () => {
     it("has all support characters registered", () => {
-      expect(SUPPORT_CONFIGS.length).toBe(55);
+      expect(SUPPORT_CONFIGS.length).toBe(56);
       for (const char of CHARACTERS) {
         const sup = supportById(char.id);
         expect(sup, `Missing support for ${char.id}`).toBeDefined();
@@ -1177,6 +1177,60 @@ describe("remastered support system", () => {
       const pills = sup!.formatBriefStats!(ctx!);
       expect(pills.find((p) => p.label === "Total HP")?.value).toBe("28,000");
       expect(pills.find((p) => p.label === "C2 Hydro")?.value).toBe("+15.0% Hydro DMG");
+    });
+
+    it("Candace support: grants Normal Attack DMG Bonus based on Max HP, scales with A4 and C2", () => {
+      const sup = supportById("candace");
+      expect(sup).toBeDefined();
+      expect(sup?.rarity).toBe(4);
+
+      // 1. C0 Candace with 35,000 HP:
+      // Base: 20% + A4: (35000 / 1000) * 0.5 = 17.5% -> Total: 37.5%
+      const instC0: SupportInstance = {
+        supportId: "candace-support",
+        stats: { hp: "35000", baseHp: "10875", critRate: "50", critDmg: "100" },
+        mechanicInputs: { "prayer-of-crimson-crown": "1", "c2-max-hp-buff": "0" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const resC0 = resolveTeamBuffs([instC0]);
+      expect(resC0.statDeltas.normalDmgBonus).toBeCloseTo(37.5, 2);
+      expect(resC0.sources.some((s) => s.label === "Normal ATK DMG (Candace Burst + A4)" && Math.abs(s.value - 37.5) < 0.01)).toBe(true);
+
+      // Check rarity 4 stamping
+      const source = resC0.sources.find((s) => s.label === "Normal ATK DMG (Candace Burst + A4)");
+      expect(source?.rarity).toBe(4);
+
+      // 2. Prayer of the Crimson Crown toggled off: 0 buff
+      const instOff: SupportInstance = {
+        supportId: "candace-support",
+        stats: { hp: "35000", baseHp: "10875", critRate: "50", critDmg: "100" },
+        mechanicInputs: { "prayer-of-crimson-crown": "0", "c2-max-hp-buff": "0" },
+        constellationLevel: 0,
+        enabled: true,
+      };
+      const resOff = resolveTeamBuffs([instOff]);
+      expect(resOff.statDeltas.normalDmgBonus).toBeUndefined();
+
+      // 3. C2 active (+20% Base HP = +2,175 HP -> 37,175 HP):
+      // Base: 20% + A4: (37175 / 1000) * 0.5 = 18.5875% -> Total: 38.5875%
+      const instC2: SupportInstance = {
+        supportId: "candace-support",
+        stats: { hp: "35000", baseHp: "10875", critRate: "50", critDmg: "100" },
+        mechanicInputs: { "prayer-of-crimson-crown": "1", "c2-max-hp-buff": "1" },
+        constellationLevel: 2,
+        enabled: true,
+      };
+      const resC2 = resolveTeamBuffs([instC2]);
+      expect(resC2.statDeltas.normalDmgBonus).toBeCloseTo(38.5875, 4);
+
+      // 4. Brief stats formatting
+      const ctx = resolveSupportCtx(instC2);
+      expect(ctx).toBeDefined();
+      const pills = sup!.formatBriefStats!(ctx!);
+      expect(pills.find((p) => p.label === "Max HP")?.value).toBe("37,175");
+      expect(pills.find((p) => p.label === "NA Buff")?.value).toBe("+38.6%");
+      expect(pills.find((p) => p.label === "CRIT")?.value).toBe("50% / 100%");
     });
 
     it("Pure Hypercarries (Arlecchino, Xiao, Cyno, etc.) resolve with 0 buffs and non-throwing formatBriefStats", () => {
